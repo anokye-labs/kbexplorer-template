@@ -1,0 +1,42 @@
+:root {
+  --bg: #0D0D0D;
+  --fg: #E8E4E0;
+  --fg-muted: #9A9590;
+  --accent: #E8A838;
+  --border: rgba(255, 255, 255, 0.08);
+  --font-heading: 'Instrument Serif', serif;
+  --font-body: 'General Sans', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
