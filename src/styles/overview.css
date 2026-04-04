@@ -1,0 +1,234 @@
+/* OverviewView — Card grid grouped by cluster */
+
+.overview {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.overview__title {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.overview__subtitle {
+  color: var(--fg-muted);
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+
+.overview__stats {
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Cluster section */
+.overview__cluster {
+  margin-bottom: 2.5rem;
+}
+
+.overview__cluster-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+}
+
+.overview__cluster-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Card grid — responsive */
+.overview__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .overview__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .overview__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card */
+.overview__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--fg);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.overview__card:hover {
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.overview__card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.overview__card-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.overview__card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--fg-muted);
+}
+
+.overview__card-connections {
+  white-space: nowrap;
+}
+
+.overview__card-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Loading screen */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.loading-screen__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: kb-spin 0.8s linear infinite;
+}
+
+@keyframes kb-spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-screen__text {
+  color: var(--fg-muted);
+  font-family: var(--font-body);
+}
+
+.loading-screen__skeletons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 800px;
+  width: 100%;
+  padding: 0 2rem;
+}
+
+@media (max-width: 960px) {
+  .loading-screen__skeletons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .loading-screen__skeletons {
+    grid-template-columns: 1fr;
+  }
+}
+
+.loading-screen__skeleton {
+  height: 72px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  animation: kb-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes kb-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Error screen */
+.error-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  flex-direction: column;
+  gap: 12px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-screen__icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.error-screen__heading {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+}
+
+.error-screen__message {
+  color: var(--fg-muted);
+  max-width: 500px;
+}
+
+.error-screen__rate-limit {
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.error-screen__retry {
+  margin-top: 8px;
+  padding: 8px 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.error-screen__retry:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
