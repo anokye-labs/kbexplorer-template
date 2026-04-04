@@ -1,11 +1,18 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useParams } from 'react-router-dom';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
+import { ReadingView } from './views/ReadingView';
 import GraphView from './views/GraphView';
 import { OverviewView } from './views/OverviewView';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ErrorScreen } from './components/ErrorScreen';
 import './styles/visuals.css';
 import './styles/overview.css';
+import './styles/reading.css';
+
+function ReadingRoute({ graph, config }: { graph: import('./types').KBGraph; config: import('./types').KBConfig }) {
+  const { id } = useParams<{ id: string }>();
+  return <ReadingView graph={graph} config={config} nodeId={id ?? ''} />;
+}
 
 function Explorer() {
   const state = useKnowledgeBase();
@@ -21,11 +28,7 @@ function Explorer() {
       <Route path="/graph" element={
         <GraphView graph={graph} config={config} />
       } />
-      <Route path="/node/:id" element={
-        <div style={{ padding: '2rem' }}>
-          <p style={{ color: 'var(--fg-muted)' }}>Reading view — coming next</p>
-        </div>
-      } />
+      <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} />} />
     </Routes>
   );
 }
