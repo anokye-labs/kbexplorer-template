@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
+import GraphView from './views/GraphView';
 import { OverviewView } from './views/OverviewView';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ErrorScreen } from './components/ErrorScreen';
@@ -18,10 +19,7 @@ function Explorer() {
     <Routes>
       <Route path="/" element={<OverviewView graph={graph} config={config} />} />
       <Route path="/graph" element={
-        <div style={{ padding: '2rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading)' }}>Constellation</h1>
-          <p style={{ color: 'var(--fg-muted)' }}>Graph view — coming next</p>
-        </div>
+        <GraphView graph={graph} config={config} />
       } />
       <Route path="/node/:id" element={
         <div style={{ padding: '2rem' }}>
