@@ -83,7 +83,7 @@
 
 /* ── Prose ────────────────────────────────────────────── */
 .kb-prose {
-  max-width: 780px;
+  max-width: var(--prose-max-width, 780px);
   font-size: 1.05rem;
   line-height: 1.7;
   color: var(--fg);
@@ -378,7 +378,7 @@
 }
 
 /* ── Responsive ──────────────────────────────────────── */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .kb-reading-body {
     flex-direction: row;
   }
@@ -396,7 +396,23 @@
   }
 }
 
-@media (max-width: 767px) {
+/* Tablet: stacked layout, reduced spacing */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .kb-reading-header {
+    padding: 0 1.25rem 1.75rem;
+  }
+
+  .kb-reading-body {
+    padding: 0 1.25rem 2.5rem;
+  }
+
+  .kb-reading-title {
+    font-size: 2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
   .kb-reading-back {
     padding: 0.75rem 1rem;
   }
@@ -411,9 +427,21 @@
 
   .kb-reading-body {
     padding: 0 1rem 2rem;
+    gap: 2rem;
   }
 
   .kb-nav-footer__link {
     padding: 1rem;
+  }
+
+  .kb-prose pre {
+    font-size: 0.8rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .kb-prose table {
+    font-size: 0.85rem;
+    display: block;
+    overflow-x: auto;
   }
 }

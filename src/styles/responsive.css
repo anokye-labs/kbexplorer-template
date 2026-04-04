@@ -1,0 +1,36 @@
+/* ── Cross-cutting responsive rules ──────────────────── */
+
+/* Tablet: reduced padding, tighter spacing */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .overview {
+    padding: 1.5rem;
+  }
+
+  .overview__title {
+    font-size: 2rem;
+  }
+
+  .overview__stats {
+    margin-bottom: 2rem;
+  }
+
+  .overview__cluster {
+    margin-bottom: 2rem;
+  }
+}
+
+/* Mobile: prevent horizontal overflow */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+  }
+
+  .kb-hero {
+    height: 40vh;
+    min-height: 200px;
+  }
+
+  .kb-reading-header--hero {
+    margin-top: -5rem;
+  }
+}

@@ -7,6 +7,7 @@
   --font-heading: 'Instrument Serif', serif;
   --font-body: 'General Sans', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --prose-max-width: 780px;
 }
 
 *,

@@ -12,6 +12,7 @@ import { ErrorScreen } from './components/ErrorScreen';
 import './styles/visuals.css';
 import './styles/overview.css';
 import './styles/reading.css';
+import './styles/responsive.css';
 
 function ReadingRoute({ graph, config }: { graph: import('./types').KBGraph; config: import('./types').KBConfig }) {
   const { id } = useParams<{ id: string }>();
