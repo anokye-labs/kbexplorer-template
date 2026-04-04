@@ -84,7 +84,7 @@ export default function GraphView({ graph, config }: GraphViewProps) {
         id: n.id,
         label: n.title,
         title: `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
-        font: { color: '#C8B8A8', face: 'General Sans', size: 12 },
+        font: { color: '#C8B8A8', face: 'General Sans, sans-serif', size: 12, strokeWidth: 3, strokeColor: '#0D0D0D' },
         ...visConfig,
       };
     });
@@ -107,13 +107,13 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       physics: {
         solver: 'forceAtlas2Based',
         forceAtlas2Based: {
-          gravitationalConstant: -80,
-          centralGravity: 0.01,
-          springLength: 120,
-          springConstant: 0.08,
+          gravitationalConstant: -120,
+          centralGravity: 0.008,
+          springLength: 180,
+          springConstant: 0.04,
           damping: 0.4,
         },
-        stabilization: { iterations: 150 },
+        stabilization: { iterations: 250 },
       },
       interaction: {
         hover: true,

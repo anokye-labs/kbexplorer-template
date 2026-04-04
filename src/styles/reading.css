@@ -84,7 +84,7 @@
 /* ── Prose ────────────────────────────────────────────── */
 .kb-prose {
   max-width: var(--prose-max-width, 780px);
-  font-size: 1.05rem;
+  font-size: var(--prose-font-size, 1.05rem);
   line-height: 1.7;
   color: var(--fg);
 }
