@@ -1,0 +1,115 @@
+/* Visual identity system styles */
+
+/* ── Hero (full-bleed) ──────────────────────────────── */
+.kb-hero {
+  position: relative;
+  width: 100%;
+  height: 60vh;
+  min-height: 300px;
+  max-height: 680px;
+  overflow: hidden;
+}
+
+.kb-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: heroReveal 1s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+.kb-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 13, 13, 0.1) 0%,
+    rgba(13, 13, 13, 0.3) 50%,
+    rgba(13, 13, 13, 0.95) 85%,
+    var(--bg) 100%
+  );
+}
+
+@keyframes heroReveal {
+  from { opacity: 0; transform: scale(1.05); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── HUD blurred background ─────────────────────────── */
+.kb-hud-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.12;
+  filter: blur(24px) saturate(1.3);
+  transition: background-image 0.6s;
+  pointer-events: none;
+}
+
+/* ── Image thumbnails ───────────────────────────────── */
+.kb-visual {
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.kb-visual--circular {
+  border-radius: 50%;
+}
+
+.kb-visual--card {
+  border: 1px solid var(--border);
+}
+
+.kb-visual--header {
+  border: 2px solid var(--border);
+}
+
+.kb-visual--hud-thumb {
+  border: 1px solid rgba(212, 168, 67, 0.1);
+}
+
+.kb-visual--edge-preview {
+  border: 2px solid var(--border);
+  border-radius: 50%;
+}
+
+.kb-visual--connection {
+  border: 1px solid var(--border);
+}
+
+/* ── Emoji ──────────────────────────────────────────── */
+.kb-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.kb-emoji--card { font-size: 28px; }
+.kb-emoji--header { font-size: 48px; }
+.kb-emoji--hud-thumb { font-size: 20px; }
+.kb-emoji--edge-preview { font-size: 20px; }
+.kb-emoji--connection { font-size: 18px; }
+
+/* ── Letter fallback ────────────────────────────────── */
+.kb-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.kb-letter--card { width: 48px; height: 48px; font-size: 20px; }
+.kb-letter--header { width: 80px; height: 80px; font-size: 32px; }
+.kb-letter--hud-thumb { width: 44px; height: 44px; font-size: 18px; border-radius: 6px; }
+.kb-letter--edge-preview { width: 40px; height: 40px; font-size: 16px; border-radius: 50%; }
+.kb-letter--connection { width: 36px; height: 36px; font-size: 14px; border-radius: 6px; }
