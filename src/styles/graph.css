@@ -98,3 +98,30 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .graph-back {
+    top: 12px;
+    left: 12px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .graph-legend {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-width: auto;
+    padding: 10px 14px;
+    gap: 4px 12px;
+  }
+
+  .graph-legend-title {
+    width: 100%;
+    text-align: center;
+  }
+}

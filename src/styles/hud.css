@@ -281,6 +281,22 @@ body.theme-light .hud-related-card:hover {
 
 /* ── Responsive ─────────────────────────────────────── */
 
+/* Tablet: reduce HUD height, hide minimap */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hud {
+    height: 120px;
+  }
+
+  .hud-panel--left {
+    display: none;
+  }
+
+  .hud-panel--right {
+    width: 200px;
+  }
+}
+
+/* Mobile: collapsed HUD */
 @media (max-width: 768px) {
   .hud {
     height: 60px;
