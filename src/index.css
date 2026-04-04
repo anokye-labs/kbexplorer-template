@@ -40,3 +40,23 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+/* ── Light theme ────────────────────────────────────── */
+
+body.theme-light {
+  --bg: #FAFAFA;
+  --fg: #1A1A1A;
+  --fg-muted: #6B6B6B;
+  --accent: #C07820;
+  --border: rgba(0, 0, 0, 0.08);
+}
+
+/* ── Sepia theme ────────────────────────────────────── */
+
+body.theme-sepia {
+  --bg: #F5ECD7;
+  --fg: #2A2520;
+  --fg-muted: #7A7068;
+  --accent: #8B6914;
+  --border: rgba(0, 0, 0, 0.08);
+}

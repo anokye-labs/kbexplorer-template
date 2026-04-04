@@ -1,5 +1,9 @@
+import { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
+import { useTheme } from './hooks/useTheme';
+import { useKeyboardNav } from './hooks/useKeyboardNav';
+import { HUD } from './components/HUD';
 import './styles/visuals.css';
 
 function LoadingScreen() {
@@ -38,8 +42,47 @@ function ErrorScreen({ message }: { message: string }) {
   );
 }
 
+function useCurrentNodeId(): string | null {
+  const [nodeId, setNodeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    function update() {
+      const match = window.location.hash.match(/#\/node\/(.+)/);
+      setNodeId(match ? decodeURIComponent(match[1]) : null);
+    }
+    update();
+    window.addEventListener('hashchange', update);
+    return () => window.removeEventListener('hashchange', update);
+  }, []);
+
+  return nodeId;
+}
+
+function useIsGraphRoute(): boolean {
+  const [isGraph, setIsGraph] = useState(false);
+
+  useEffect(() => {
+    function update() {
+      setIsGraph(window.location.hash === '#/graph');
+    }
+    update();
+    window.addEventListener('hashchange', update);
+    return () => window.removeEventListener('hashchange', update);
+  }, []);
+
+  return isGraph;
+}
+
 function Explorer() {
   const state = useKnowledgeBase();
+  const [theme, setTheme] = useTheme();
+  const currentNodeId = useCurrentNodeId();
+  const isGraph = useIsGraphRoute();
+
+  useKeyboardNav(
+    state.status === 'ready' ? state.graph : null,
+    setTheme,
+  );
 
   if (state.status === 'loading') return <LoadingScreen />;
   if (state.status === 'error') return <ErrorScreen message={state.error} />;
@@ -47,54 +90,67 @@ function Explorer() {
   const { graph, config } = state;
 
   return (
-    <Routes>
-      <Route path="/" element={
-        <div style={{ padding: '2rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading)', marginBottom: '0.5rem' }}>
-            {config.title}
-          </h1>
-          {config.subtitle && (
-            <p style={{ color: 'var(--fg-muted)', marginBottom: '2rem' }}>
-              {config.subtitle}
-            </p>
-          )}
-          <p style={{ color: 'var(--fg-muted)' }}>
-            {graph.nodes.length} nodes · {graph.edges.length} edges · {graph.clusters.length} clusters
-          </p>
-          <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {graph.nodes.slice(0, 20).map(node => (
-              <a
-                key={node.id}
-                href={`#/node/${encodeURIComponent(node.id)}`}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '12px 16px',
-                  background: 'rgba(255,255,255,0.03)',
-                  borderRadius: '8px', border: '1px solid var(--border)',
-                }}
-              >
-                <span style={{ fontSize: 20 }}>{node.emoji ?? '📌'}</span>
-                <span>{node.title}</span>
-                <span style={{ color: 'var(--fg-muted)', fontSize: '0.85rem', marginLeft: 'auto' }}>
-                  {node.cluster}
-                </span>
-              </a>
-            ))}
-          </div>
-        </div>
-      } />
-      <Route path="/graph" element={
-        <div style={{ padding: '2rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading)' }}>Constellation</h1>
-          <p style={{ color: 'var(--fg-muted)' }}>Graph view — coming next</p>
-        </div>
-      } />
-      <Route path="/node/:id" element={
-        <div style={{ padding: '2rem' }}>
-          <p style={{ color: 'var(--fg-muted)' }}>Reading view — coming next</p>
-        </div>
-      } />
-    </Routes>
+    <>
+      <div style={{ paddingBottom: isGraph ? 0 : 180 }}>
+        <Routes>
+          <Route path="/" element={
+            <div style={{ padding: '2rem' }}>
+              <h1 style={{ fontFamily: 'var(--font-heading)', marginBottom: '0.5rem' }}>
+                {config.title}
+              </h1>
+              {config.subtitle && (
+                <p style={{ color: 'var(--fg-muted)', marginBottom: '2rem' }}>
+                  {config.subtitle}
+                </p>
+              )}
+              <p style={{ color: 'var(--fg-muted)' }}>
+                {graph.nodes.length} nodes · {graph.edges.length} edges · {graph.clusters.length} clusters
+              </p>
+              <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {graph.nodes.slice(0, 20).map(node => (
+                  <a
+                    key={node.id}
+                    href={`#/node/${encodeURIComponent(node.id)}`}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '12px 16px',
+                      background: 'rgba(255,255,255,0.03)',
+                      borderRadius: '8px', border: '1px solid var(--border)',
+                    }}
+                  >
+                    <span style={{ fontSize: 20 }}>{node.emoji ?? '📌'}</span>
+                    <span>{node.title}</span>
+                    <span style={{ color: 'var(--fg-muted)', fontSize: '0.85rem', marginLeft: 'auto' }}>
+                      {node.cluster}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          } />
+          <Route path="/graph" element={
+            <div style={{ padding: '2rem' }}>
+              <h1 style={{ fontFamily: 'var(--font-heading)' }}>Constellation</h1>
+              <p style={{ color: 'var(--fg-muted)' }}>Graph view — coming next</p>
+            </div>
+          } />
+          <Route path="/node/:id" element={
+            <div style={{ padding: '2rem' }}>
+              <p style={{ color: 'var(--fg-muted)' }}>Reading view — coming next</p>
+            </div>
+          } />
+        </Routes>
+      </div>
+      {!isGraph && (
+        <HUD
+          graph={graph}
+          config={config}
+          currentNodeId={currentNodeId}
+          theme={theme}
+          onThemeChange={setTheme}
+        />
+      )}
+    </>
   );
 }
 
