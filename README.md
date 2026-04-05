@@ -8,7 +8,7 @@ Interactive Knowledge Base Explorer — turn any GitHub repository into a naviga
 
 ## What is kbexplorer?
 
-**kbexplorer** is a React + TypeScript application by [Anokye Labs](https://github.com/anokye-labs) that presents knowledge as an interactive, explorable graph. Point it at any GitHub repository and it transforms issues, pull requests, source files, and documentation into an interconnected constellation — navigable through a card grid, a force-directed network, or deep-dive reading views.
+**kbexplorer** is a React + TypeScript application by [Anokye Labs](https://github.com/anokye-labs) that presents knowledge as an interactive, explorable graph. Point it at any GitHub repository and it transforms issues, source files, and documentation into an interconnected constellation — navigable through a card grid, a force-directed network, or deep-dive reading views. Built on the **Fluent 2** design system with `@fluentui/react-components`.
 
 The project draws inspiration from three systems: **Claws**, a structured knowledge-base browser designed for fast retrieval; **Mukaase**, a narrative-first reader that treats content as linked prose; and **Okoto walkthrough**, an interactive tutorial engine that guides learners through a topic graph step by step. kbexplorer synthesizes these ideas into a single tool — exploration, narrative reading, and guided walkthrough in one interface.
 
@@ -20,7 +20,7 @@ Everything runs client-side. Content is fetched at runtime from the GitHub API w
 - **Constellation graph** — force-directed network visualization powered by [vis-network](https://visjs.github.io/vis-network/docs/network/)
 - **Reading view** — full markdown prose with rendered HTML content
 - **Persistent HUD** — minimap, related-nodes panel, and reading tools visible across views
-- **Theme switching** — dark, light, and sepia modes with customizable fonts
+- **Theme switching** — dark and light modes via Fluent 2 (`webDarkTheme` / `webLightTheme`)
 - **Keyboard navigation** — full keyboard support for view switching and node traversal
 - **Responsive design** — adapts from desktop to mobile layouts
 - **Runtime content** — fetches from GitHub API with localStorage caching (no rebuild needed)
@@ -31,7 +31,7 @@ kbexplorer supports two content modes, configured by the presence of a `source.p
 
 ### Repo-aware (default)
 
-When no content path is set, kbexplorer treats the target GitHub repository itself as the knowledge base. It fetches issues, pull requests, the README, and source files, then maps them into a graph. Issue labels become clusters; cross-references become edges.
+When no content path is set, kbexplorer treats the target GitHub repository itself as the knowledge base. It fetches issues, the README, and the directory structure, then maps them into a graph. Pull requests are filtered out — they are implementation artifacts, not knowledge. Issue labels become clusters; cross-references become edges.
 
 For a live example, explore this project's own [issues](https://github.com/anokye-labs/kbexplorer/issues) — each one becomes a navigable node in the graph.
 
@@ -41,15 +41,15 @@ When `source.path` points to a directory of markdown files (e.g., `content/`), k
 
 ## Visual Identity System
 
-kbexplorer provides four visual modes for presenting nodes. Each mode determines what asset type appears across seven surfaces in the UI.
+kbexplorer provides four visual modes for presenting nodes. In repo-aware mode, **Fluent icons** from `@fluentui/react-icons` are the default — `SparkleRegular` for features, `WrenchRegular` for tasks, `BugRegular` for bugs, `DocumentRegular` for files, and `FolderRegular` for directories. The `NodeVisual` component (`src/components/NodeVisual.tsx`) resolves icons from a `FLUENT_ICONS` map, falling back to letter-avatars.
 
 ### Modes
 
 | Mode | Assets | Best For |
 |------|--------|----------|
+| `fluent-icons` | Fluent icon SVGs | Repo-aware mode (default) |
 | `sprites` | Character illustrations | Technical walkthroughs, branded docs |
 | `heroes` | Full-bleed photography | Essays, narratives, editorial |
-| `emoji` | Unicode emoji | Lightweight, text-focused |
 | `none` | Text only | Minimal deployments |
 
 ### Surfaces
@@ -66,7 +66,7 @@ Visuals appear on these surfaces throughout the application:
 | Loading screen | Visual shown during initial content fetch |
 | Page favicon | Dynamic favicon reflecting the active node |
 
-A `fallback` mode activates when the primary mode's asset is missing for a given node (e.g., a node without a `sprite` field falls back to `emoji`).
+A `fallback` mode activates when the primary mode's asset is missing for a given node (e.g., a node without a matching Fluent icon falls back to a letter-avatar against a cluster-colored background).
 
 ## Getting Started
 
@@ -138,11 +138,11 @@ visuals:
     nodeSizeByConnections: true
 
 theme:
-  default: dark          # dark | light | sepia
+  default: dark          # dark | light
   font:
-    heading: "Instrument Serif"
-    body: "General Sans"
-    mono: "JetBrains Mono"
+    heading: "Segoe UI"
+    body: "Segoe UI"
+    mono: "Cascadia Code"
 
 graph:
   physics: true
@@ -204,7 +204,7 @@ Clusters group nodes by topic. Define them in `config.yaml` with a display name 
 
 ### Connections
 
-Connections create explicit edges between nodes. In repo-aware mode, connections are inferred from issue cross-references and PR links. In authored mode, declare them in frontmatter.
+Connections create explicit edges between nodes. In repo-aware mode, connections are inferred from issue cross-references (`#N` patterns in issue bodies). In authored mode, declare them in frontmatter.
 
 ## Deployment
 
@@ -249,6 +249,8 @@ src/
 | Package | Purpose |
 |---------|---------|
 | `react` / `react-dom` | UI framework (v19) |
+| `@fluentui/react-components` | Fluent 2 design system (Card, Button, Slider, Badge, etc.) |
+| `@fluentui/react-icons` | Fluent icon SVGs (SparkleRegular, FolderRegular, etc.) |
 | `react-router-dom` | Client-side routing |
 | `vis-network` / `vis-data` | Graph visualization |
 | `@octokit/rest` | GitHub API client |
