@@ -3,6 +3,37 @@
  */
 import type { KBNode, VisualMode, SourceConfig } from '../types';
 import { resolveImageUrl } from '../api';
+import {
+  SparkleRegular,
+  WrenchRegular,
+  BugRegular,
+  LightbulbRegular,
+  DocumentRegular,
+  QuestionCircleRegular,
+  PinRegular,
+  FolderRegular,
+  MergeRegular,
+  BranchForkRegular,
+  FlagRegular,
+} from '@fluentui/react-icons';
+
+export const FLUENT_ICONS: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
+  Sparkle: SparkleRegular,
+  Wrench: WrenchRegular,
+  Bug: BugRegular,
+  Lightbulb: LightbulbRegular,
+  Document: DocumentRegular,
+  QuestionCircle: QuestionCircleRegular,
+  Pin: PinRegular,
+  Folder: FolderRegular,
+  Merge: MergeRegular,
+  BranchFork: BranchForkRegular,
+  Flag: FlagRegular,
+};
+
+export function isFluentIconName(value: string): boolean {
+  return FLUENT_ICONS.hasOwnProperty(value);
+}
 
 interface NodeVisualProps {
   node: KBNode;
@@ -86,8 +117,20 @@ export function NodeVisual({ node, mode, surface, source, className }: NodeVisua
     );
   }
 
-  // Emoji mode
+  // Emoji / icon mode
   if (mode === 'emoji' && node.emoji) {
+    if (isFluentIconName(node.emoji)) {
+      const Icon = FLUENT_ICONS[node.emoji];
+      return (
+        <span
+          className={`kb-emoji kb-emoji--${surface} ${className ?? ''}`}
+          role="img"
+          aria-label={node.title}
+        >
+          <Icon style={{ fontSize: size.width || 24 }} />
+        </span>
+      );
+    }
     return (
       <span
         className={`kb-emoji kb-emoji--${surface} ${className ?? ''}`}
@@ -108,7 +151,19 @@ export function NodeVisual({ node, mode, surface, source, className }: NodeVisua
     );
   }
 
-  // Emoji fallback for modes that lack an image
+  // Emoji/icon fallback for modes that lack an image
+  if (node.emoji && isFluentIconName(node.emoji)) {
+    const Icon = FLUENT_ICONS[node.emoji];
+    return (
+      <span
+        className={`kb-emoji kb-emoji--${surface} ${className ?? ''}`}
+        role="img"
+        aria-label={node.title}
+      >
+        <Icon style={{ fontSize: size.width || 24 }} />
+      </span>
+    );
+  }
   return (
     <span
       className={`kb-emoji kb-emoji--${surface} ${className ?? ''}`}
