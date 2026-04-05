@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { KBGraph, Theme } from '../types';
-import { nextTheme } from './useTheme';
+import { nextTheme, type ThemeMode } from './useTheme';
 
 /**
  * Global keyboard shortcuts.
@@ -23,12 +23,9 @@ export function useKeyboardNav(
 
       switch (e.key) {
         case 't': {
-          const body = document.body;
-          const current: Theme = body.classList.contains('theme-light')
-            ? 'light'
-            : body.classList.contains('theme-sepia')
-              ? 'sepia'
-              : 'dark';
+          // Read current theme from localStorage since we no longer use body classes
+          const stored = localStorage.getItem('kbe-theme') as ThemeMode | null;
+          const current: ThemeMode = stored === 'light' ? 'light' : 'dark';
           setTheme(nextTheme(current));
           break;
         }

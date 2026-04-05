@@ -1,47 +1,38 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { Theme } from '../types';
+import { useState, useCallback } from 'react';
+import {
+  webDarkTheme,
+  webLightTheme,
+  type Theme as FluentTheme,
+} from '@fluentui/react-components';
+
+export type ThemeMode = 'dark' | 'light';
 
 const STORAGE_KEY = 'kbe-theme';
-const THEMES: Theme[] = ['dark', 'light', 'sepia'];
-const CLASS_MAP: Record<Theme, string> = {
-  dark: '',
-  light: 'theme-light',
-  sepia: 'theme-sepia',
-};
 
-function readStored(): Theme {
+function readStored(): ThemeMode {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
-    if (v && THEMES.includes(v as Theme)) return v as Theme;
+    if (v === 'light' || v === 'dark') return v;
   } catch { /* ignore */ }
   return 'dark';
 }
 
-function applyBodyClass(theme: Theme) {
-  document.body.classList.remove('theme-light', 'theme-sepia');
-  const cls = CLASS_MAP[theme];
-  if (cls) document.body.classList.add(cls);
-}
+const THEME_MAP: Record<ThemeMode, FluentTheme> = {
+  dark: webDarkTheme,
+  light: webLightTheme,
+};
 
-export function useTheme(): [Theme, (t: Theme) => void] {
-  const [theme, setThemeState] = useState<Theme>(readStored);
+export function useTheme(): [ThemeMode, FluentTheme, (t: ThemeMode) => void] {
+  const [mode, setModeState] = useState<ThemeMode>(readStored);
 
-  const setTheme = useCallback((t: Theme) => {
-    setThemeState(t);
+  const setMode = useCallback((t: ThemeMode) => {
+    setModeState(t);
     localStorage.setItem(STORAGE_KEY, t);
-    applyBodyClass(t);
   }, []);
 
-  // Apply on mount
-  useEffect(() => {
-    applyBodyClass(theme);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return [theme, setTheme];
+  return [mode, THEME_MAP[mode], setMode];
 }
 
-/** Cycle to the next theme in order. */
-export function nextTheme(current: Theme): Theme {
-  const i = THEMES.indexOf(current);
-  return THEMES[(i + 1) % THEMES.length];
+export function nextTheme(current: ThemeMode): ThemeMode {
+  return current === 'dark' ? 'light' : 'dark';
 }
