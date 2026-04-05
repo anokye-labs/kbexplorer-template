@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, useParams } from 'react-router-dom';
+import { FluentProvider } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme } from './hooks/useTheme';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
@@ -52,13 +53,13 @@ function useIsGraphRoute(): boolean {
 
 function Explorer() {
   const state = useKnowledgeBase();
-  const [theme, setTheme] = useTheme();
+  const [themeMode, , setThemeMode] = useTheme();
   const currentNodeId = useCurrentNodeId();
   const isGraph = useIsGraphRoute();
 
   useKeyboardNav(
     state.status === 'ready' ? state.graph : null,
-    setTheme,
+    setThemeMode as (t: import('./types').Theme) => void,
   );
 
   if (state.status === 'loading') return <LoadingScreen />;
@@ -80,8 +81,8 @@ function Explorer() {
           graph={graph}
           config={config}
           currentNodeId={currentNodeId}
-          theme={theme}
-          onThemeChange={setTheme}
+          theme={themeMode}
+          onThemeChange={setThemeMode as (t: import('./types').Theme) => void}
         />
       )}
     </>
@@ -89,10 +90,14 @@ function Explorer() {
 }
 
 function App() {
+  const [, fluentTheme] = useTheme();
+
   return (
-    <HashRouter>
-      <Explorer />
-    </HashRouter>
+    <FluentProvider theme={fluentTheme} style={{ height: '100%' }}>
+      <HashRouter>
+        <Explorer />
+      </HashRouter>
+    </FluentProvider>
   );
 }
 
