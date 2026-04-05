@@ -20,6 +20,7 @@ import {
   MapRegular,
   WeatherMoonRegular,
   WeatherSunnyRegular,
+  BookRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
@@ -324,7 +325,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     const posMap = minimapPositionsRef.current;
     if (posMap.size === 0) return;
 
-    const edgeColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.15)';
+    const edgeColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.12)';
     const highlightColor = theme === 'dark' ? HIGHLIGHT_COLOR_DARK : HIGHLIGHT_COLOR_LIGHT;
 
     const dpr = window.devicePixelRatio || 1;
@@ -655,6 +656,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
               icon={<WeatherSunnyRegular />}
               onClick={() => onThemeChange('light')}
               title="Light"
+            />
+            <Button
+              appearance={theme === 'sepia' ? 'primary' : 'subtle'}
+              size="small"
+              icon={<BookRegular />}
+              onClick={() => onThemeChange('sepia')}
+              title="Sepia"
             />
           </div>
 
