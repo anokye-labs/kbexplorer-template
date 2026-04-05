@@ -22,7 +22,7 @@ import {
   WeatherSunnyRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
-import { NodeVisual } from './NodeVisual';
+import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { getVisNodeConfig } from './NodeVisual';
 import { getNodeDegrees } from '../engine/graph';
 
@@ -42,8 +42,8 @@ const LABEL_COLOR = '#d6d6d6';
 const LABEL_STROKE_COLOR = '#1f1f1f';
 const EDGE_COLOR = '#383838';
 const EDGE_HOVER_COLOR = '#5c5c5c';
-const MINIMAP_EDGE_COLOR = 'rgba(255, 255, 255, 0.06)';
-const HIGHLIGHT_COLOR = '#479ef5';  // colorBrandForeground1
+const HIGHLIGHT_COLOR_DARK = '#479ef5';  // colorBrandForeground1
+const HIGHLIGHT_COLOR_LIGHT = '#0f6cbd';
 const FONT_FAMILY = `'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif`;
 
 function readPersisted(key: string, fallback: number): number {
@@ -140,7 +140,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: tokens.spacingHorizontalXS,
     flexShrink: 0,
-    minWidth: '140px',
+    minWidth: '180px',
     textDecoration: 'none',
     color: 'inherit',
     cursor: 'pointer',
@@ -150,7 +150,8 @@ const useStyles = makeStyles({
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
-    maxWidth: '140px',
+    whiteSpace: 'normal',
+    maxWidth: '180px',
   },
   toolRow: {
     display: 'flex',
@@ -323,6 +324,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     const posMap = minimapPositionsRef.current;
     if (posMap.size === 0) return;
 
+    const edgeColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.15)';
+    const highlightColor = theme === 'dark' ? HIGHLIGHT_COLOR_DARK : HIGHLIGHT_COLOR_LIGHT;
+
     const dpr = window.devicePixelRatio || 1;
     const W = 200, H = 140;
     canvas.width = W * dpr;
@@ -348,7 +352,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     }
 
     // Draw edges
-    ctx.strokeStyle = MINIMAP_EDGE_COLOR;
+    ctx.strokeStyle = edgeColor;
     ctx.lineWidth = 0.5;
     for (const edge of graph.edges) {
       const from = posMap.get(edge.from);
@@ -373,15 +377,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
       const color = clusterColorMap.get(node.cluster) ?? '#888'; // data fallback, intentionally not a theme token
       ctx.beginPath();
       ctx.arc(cx, cy, isCurrent ? 4 : 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = isCurrent ? HIGHLIGHT_COLOR : color;
+      ctx.fillStyle = isCurrent ? highlightColor : color;
       ctx.fill();
       if (isCurrent) {
-        ctx.strokeStyle = HIGHLIGHT_COLOR;
+        ctx.strokeStyle = highlightColor;
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
     }
-  }, [graph, currentNodeId]);
+  }, [graph, currentNodeId, theme]);
 
   useEffect(() => { drawMinimap(); }, [drawMinimap]);
 
@@ -401,7 +405,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
         id: n.id,
         label: n.title,
         title: `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
-        font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 11, strokeWidth: 3, strokeColor: LABEL_STROKE_COLOR },
+        font: {
+          color: theme === 'dark' ? LABEL_COLOR : '#242424',
+          face: FONT_FAMILY,
+          size: 11,
+          strokeWidth: 3,
+          strokeColor: theme === 'dark' ? LABEL_STROKE_COLOR : '#ffffff',
+        },
         ...visConfig,
       };
     });
@@ -411,7 +421,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
       from: e.from,
       to: e.to,
       title: e.description,
-      color: { color: EDGE_COLOR, hover: EDGE_HOVER_COLOR, highlight: EDGE_HOVER_COLOR },
+      color: {
+        color: theme === 'dark' ? EDGE_COLOR : '#c0c0c0',
+        hover: theme === 'dark' ? EDGE_HOVER_COLOR : '#808080',
+        highlight: theme === 'dark' ? EDGE_HOVER_COLOR : '#808080',
+      },
       width: 1,
       dashes: [3, 5],
     }));
@@ -465,7 +479,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
       overlayNetworkRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapExpanded, graph, config]);
+  }, [mapExpanded, graph, config, theme]);
 
   const navigateTo = useCallback((hash: string) => {
     window.location.hash = hash;
@@ -563,7 +577,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
             />
             {currentNode ? (
               <div className={styles.currentNode}>
-                <span style={{ fontSize: tokens.fontSizeBase500 }}>{currentNode.emoji ?? '📌'}</span>
+                {currentNode.emoji && isFluentIconName(currentNode.emoji) ? (
+                  (() => { const Icon = FLUENT_ICONS[currentNode.emoji]; return <Icon style={{ fontSize: 20 }} />; })()
+                ) : (
+                  <span style={{ fontSize: tokens.fontSizeBase500 }}>{currentNode.emoji ?? ''}</span>
+                )}
                 <Body1Strong className={styles.currentTitle}>{currentNode.title}</Body1Strong>
                 <Caption1 style={{ color: tokens.colorNeutralForeground3, whiteSpace: 'nowrap' }}>
                   {currentNode.cluster}
