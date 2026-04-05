@@ -1,11 +1,30 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Network } from 'vis-network/standalone';
 import { DataSet } from 'vis-data';
+import {
+  makeStyles,
+  tokens,
+  Button,
+  Divider,
+  Slider,
+  Card,
+  Badge,
+  Body1Strong,
+  Caption1,
+  Caption2,
+} from '@fluentui/react-components';
+import {
+  ChevronLeftRegular,
+  ChevronRightRegular,
+  DismissRegular,
+  MapRegular,
+  WeatherMoonRegular,
+  WeatherSunnyRegular,
+} from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
 import { NodeVisual } from './NodeVisual';
 import { getVisNodeConfig } from './NodeVisual';
 import { getNodeDegrees } from '../engine/graph';
-import '../styles/hud.css';
 
 interface HUDProps {
   graph: KBGraph;
@@ -18,6 +37,15 @@ interface HUDProps {
 const FONT_SIZES = [0.92, 1.0, 1.08, 1.18, 1.3];
 const COL_WIDTHS = [580, 680, 780, 960, 1200];
 
+// Fluent 2 dark-theme hex values for vis-network / canvas
+const LABEL_COLOR = '#d6d6d6';
+const LABEL_STROKE_COLOR = '#1f1f1f';
+const EDGE_COLOR = '#383838';
+const EDGE_HOVER_COLOR = '#5c5c5c';
+const MINIMAP_EDGE_COLOR = 'rgba(255, 255, 255, 0.06)';
+const HIGHLIGHT_COLOR = '#479ef5';  // colorBrandForeground1
+const FONT_FAMILY = `'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif`;
+
 function readPersisted(key: string, fallback: number): number {
   try {
     const v = localStorage.getItem(key);
@@ -29,7 +57,163 @@ function readPersisted(key: string, fallback: number): number {
   return fallback;
 }
 
+const useStyles = makeStyles({
+  hud: {
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '170px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    display: 'flex',
+    zIndex: 100,
+    color: tokens.colorNeutralForeground1,
+  },
+  panelLeft: {
+    width: '232px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '12px 16px',
+    flexShrink: 0,
+  },
+  panelCenter: {
+    flex: 1,
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '12px 16px',
+    gap: tokens.spacingVerticalS,
+  },
+  panelRight: {
+    width: '240px',
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '12px 16px',
+    flexShrink: 0,
+    gap: tokens.spacingVerticalSNudge,
+    justifyContent: 'center',
+  },
+  minimap: {
+    width: '200px',
+    height: '140px',
+    cursor: 'pointer',
+    borderRadius: tokens.borderRadiusMedium,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  navRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+  },
+  currentNode: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    flex: 1,
+    minWidth: 0,
+  },
+  currentTitle: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  placeholder: {
+    color: tokens.colorNeutralForeground3,
+    fontSize: tokens.fontSizeBase200,
+    textAlign: 'center',
+    padding: '8px 0',
+  },
+  relatedStrip: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalS,
+    overflowX: 'auto',
+    overflowY: 'hidden',
+    flex: 1,
+    minHeight: 0,
+    scrollbarWidth: 'thin',
+  },
+  relatedCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+    flexShrink: 0,
+    textDecoration: 'none',
+    color: 'inherit',
+    cursor: 'pointer',
+  },
+  relatedTitle: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '120px',
+  },
+  toolRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+  },
+  toolLabel: {
+    width: '54px',
+    flexShrink: 0,
+  },
+  slider: {
+    flex: 1,
+    minWidth: 0,
+  },
+  // Constellation overlay
+  overlay: {
+    position: 'fixed',
+    inset: '0',
+    zIndex: 200,
+    backgroundColor: tokens.colorBackgroundOverlay,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    animationName: {
+      from: { opacity: 0 },
+      to: { opacity: 1 },
+    },
+    animationDuration: '0.25s',
+    animationTimingFunction: 'ease-out',
+  },
+  overlayInner: {
+    width: '90vw',
+    height: '80vh',
+    maxWidth: '1200px',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusXLarge,
+    overflow: 'hidden',
+  },
+  overlayHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 20px',
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    flexShrink: 0,
+  },
+  overlayLegend: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalL,
+    padding: '8px 20px',
+    flexWrap: 'wrap',
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    flexShrink: 0,
+  },
+  overlayGraph: {
+    flex: 1,
+    minHeight: 0,
+  },
+});
+
 export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDProps) {
+  const styles = useStyles();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const overlayNetworkRef = useRef<Network | null>(null);
@@ -62,11 +246,10 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     localStorage.setItem('kbe-col-width', String(colWidth));
   }, [colWidth]);
 
-  // Draw minimap using force-directed positions via a hidden vis-network
+  // Minimap layout positions via hidden vis-network
   const minimapPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   useEffect(() => {
-    // Compute positions using a temporary off-screen vis-network
     const tempDiv = document.createElement('div');
     tempDiv.style.cssText = 'position:absolute;left:-9999px;width:400px;height:280px;';
     document.body.appendChild(tempDiv);
@@ -145,7 +328,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, W, H);
 
-    // Compute bounding box
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const pos of posMap.values()) {
       minX = Math.min(minX, pos.x); maxX = Math.max(maxX, pos.x);
@@ -164,7 +346,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     }
 
     // Draw edges
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+    ctx.strokeStyle = MINIMAP_EDGE_COLOR;
     ctx.lineWidth = 0.5;
     for (const edge of graph.edges) {
       const from = posMap.get(edge.from);
@@ -189,20 +371,19 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
       const color = clusterColorMap.get(node.cluster) ?? '#888';
       ctx.beginPath();
       ctx.arc(cx, cy, isCurrent ? 4 : 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = isCurrent ? '#E8C350' : color;
+      ctx.fillStyle = isCurrent ? HIGHLIGHT_COLOR : color;
       ctx.fill();
       if (isCurrent) {
-        ctx.strokeStyle = '#E8C350';
+        ctx.strokeStyle = HIGHLIGHT_COLOR;
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
     }
   }, [graph, currentNodeId]);
 
-  // Redraw minimap when current node changes
   useEffect(() => { drawMinimap(); }, [drawMinimap]);
 
-  // Expanded map overlay (vis-network instance)
+  // Expanded map overlay (vis-network)
   useEffect(() => {
     if (!mapExpanded || !overlayRef.current) return;
 
@@ -218,7 +399,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
         id: n.id,
         label: n.title,
         title: `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
-        font: { color: '#C8B8A8', face: 'General Sans, sans-serif', size: 11, strokeWidth: 3, strokeColor: '#0D0D0D' },
+        font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 11, strokeWidth: 3, strokeColor: LABEL_STROKE_COLOR },
         ...visConfig,
       };
     });
@@ -228,7 +409,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
       from: e.from,
       to: e.to,
       title: e.description,
-      color: { color: '#2A2620', hover: '#4A4438', highlight: '#4A4438' },
+      color: { color: EDGE_COLOR, hover: EDGE_HOVER_COLOR, highlight: EDGE_HOVER_COLOR },
       width: 1,
       dashes: [3, 5],
     }));
@@ -268,7 +449,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
       }
     });
 
-    // Highlight current node
     if (currentNodeId) {
       net.once('stabilized', () => {
         net.selectNodes([currentNodeId]);
@@ -303,132 +483,181 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
 
   return (
     <>
-      {/* ── Constellation overlay (expanded minimap) ─── */}
+      {/* Constellation overlay */}
       {mapExpanded && (
-        <div className="hud-overlay" onClick={(e) => { if (e.target === e.currentTarget) setMapExpanded(false); }}>
-          <div className="hud-overlay-inner">
-            <div className="hud-overlay-header">
-              <span className="hud-overlay-title">Constellation</span>
-              <button className="hud-overlay-close" onClick={() => setMapExpanded(false)}>×</button>
+        <div className={styles.overlay} onClick={(e) => { if (e.target === e.currentTarget) setMapExpanded(false); }}>
+          <div className={styles.overlayInner}>
+            <div className={styles.overlayHeader}>
+              <Body1Strong>Constellation</Body1Strong>
+              <Button
+                appearance="subtle"
+                icon={<DismissRegular />}
+                onClick={() => setMapExpanded(false)}
+                aria-label="Close"
+              />
             </div>
-            <div className="hud-overlay-legend">
+            <div className={styles.overlayLegend}>
               {graph.clusters.map(c => (
-                <span key={c.id} className="hud-overlay-legend-item">
-                  <span className="hud-overlay-legend-dot" style={{ background: c.color }} />
+                <Badge
+                  key={c.id}
+                  appearance="outline"
+                  color="informative"
+                  size="small"
+                  icon={
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: c.color,
+                        display: 'inline-block',
+                      }}
+                    />
+                  }
+                >
                   {c.name}
-                </span>
+                </Badge>
               ))}
             </div>
-            <div ref={overlayRef} className="hud-overlay-graph" />
+            <div ref={overlayRef} className={styles.overlayGraph} />
           </div>
         </div>
       )}
 
-      <div className="hud">
-        {/* ── Left: Minimap ─── */}
-        <div className="hud-panel hud-panel--left">
+      <div className={styles.hud}>
+        {/* Left: Minimap */}
+        <div className={styles.panelLeft}>
           <canvas
             ref={canvasRef}
-            className="hud-minimap"
+            className={styles.minimap}
             width={200}
             height={140}
             onClick={() => setMapExpanded(true)}
             title="Expand constellation"
           />
-          <span className="hud-minimap-label">MAP</span>
+          <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
         </div>
 
-        {/* ── Center: Navigation ─── */}
-        <div className="hud-panel hud-panel--center">
-          <div className="hud-nav-row">
-            <button className="hud-btn" onClick={() => setMapExpanded(true)}>MAP</button>
-            <button
-              className="hud-btn hud-btn--nav"
+        <Divider vertical />
+
+        {/* Center: Navigation */}
+        <div className={styles.panelCenter}>
+          <div className={styles.navRow}>
+            <Button
+              appearance="outline"
+              size="small"
+              icon={<MapRegular />}
+              onClick={() => setMapExpanded(true)}
+            >
+              MAP
+            </Button>
+            <Button
+              appearance="subtle"
+              size="small"
+              icon={<ChevronLeftRegular />}
               onClick={goPrev}
               disabled={!currentNode}
               title="Previous node (←)"
-            >◀</button>
+            />
             {currentNode ? (
-              <div className="hud-current-node">
+              <div className={styles.currentNode}>
                 <span style={{ fontSize: 20 }}>{currentNode.emoji ?? '📌'}</span>
-                <span className="hud-current-title">{currentNode.title}</span>
-                <span className="hud-current-cluster">{currentNode.cluster}</span>
+                <Body1Strong className={styles.currentTitle}>{currentNode.title}</Body1Strong>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3, whiteSpace: 'nowrap' }}>
+                  {currentNode.cluster}
+                </Caption1>
               </div>
             ) : (
-              <span className="hud-placeholder">Click any node to begin reading</span>
+              <span className={styles.placeholder}>Click any node to begin reading</span>
             )}
-            <button
-              className="hud-btn hud-btn--nav"
+            <Button
+              appearance="subtle"
+              size="small"
+              icon={<ChevronRightRegular />}
               onClick={goNext}
               disabled={!currentNode}
               title="Next node (→)"
-            >▶</button>
+            />
           </div>
 
-          <div className="hud-nav-row" style={{ alignItems: 'flex-start' }}>
-            <span className="hud-related-label">Related</span>
-            <div className="hud-related-strip">
+          <div className={styles.navRow} style={{ alignItems: 'flex-start' }}>
+            <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Related
+            </Caption2>
+            <div className={styles.relatedStrip}>
               {relatedNodes.length > 0 ? (
                 relatedNodes.map(n => (
                   <a
                     key={n.id}
-                    className="hud-related-card"
                     href={`#/node/${encodeURIComponent(n.id)}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
                   >
-                    <NodeVisual
-                      node={n}
-                      mode={config.visuals.mode}
-                      surface="hud-thumb"
-                      source={config.source}
-                    />
-                    <span className="hud-related-title">{n.title}</span>
+                    <Card
+                      appearance="subtle"
+                      size="small"
+                      className={styles.relatedCard}
+                    >
+                      <NodeVisual
+                        node={n}
+                        mode={config.visuals.mode}
+                        surface="hud-thumb"
+                        source={config.source}
+                      />
+                      <Caption1 className={styles.relatedTitle}>{n.title}</Caption1>
+                    </Card>
                   </a>
                 ))
               ) : currentNode ? (
-                <span className="hud-placeholder" style={{ fontSize: '0.78rem' }}>No related nodes</span>
+                <span className={styles.placeholder} style={{ fontSize: tokens.fontSizeBase200 }}>No related nodes</span>
               ) : null}
             </div>
           </div>
         </div>
 
-        {/* ── Right: Reading Tools ─── */}
-        <div className="hud-panel hud-panel--right">
-          <div className="hud-tool-row">
-            <span className="hud-tool-label">Theme</span>
-            {(['dark', 'light', 'sepia'] as Theme[]).map(t => (
-              <button
-                key={t}
-                className={`hud-theme-btn hud-theme-btn--${t} ${theme === t ? 'hud-theme-btn--active' : ''}`}
-                onClick={() => onThemeChange(t)}
-                title={t}
-              />
-            ))}
+        <Divider vertical />
+
+        {/* Right: Reading Tools */}
+        <div className={styles.panelRight}>
+          <div className={styles.toolRow}>
+            <Caption2 className={styles.toolLabel}>Theme</Caption2>
+            <Button
+              appearance={theme === 'dark' ? 'primary' : 'subtle'}
+              size="small"
+              icon={<WeatherMoonRegular />}
+              onClick={() => onThemeChange('dark')}
+              title="Dark"
+            />
+            <Button
+              appearance={theme === 'light' ? 'primary' : 'subtle'}
+              size="small"
+              icon={<WeatherSunnyRegular />}
+              onClick={() => onThemeChange('light')}
+              title="Light"
+            />
           </div>
 
-          <div className="hud-tool-row">
-            <span className="hud-tool-label">Aa</span>
-            <input
-              type="range"
-              className="hud-range"
+          <div className={styles.toolRow}>
+            <Caption2 className={styles.toolLabel}>Aa</Caption2>
+            <Slider
+              className={styles.slider}
               min={0}
               max={4}
               step={1}
               value={fontSize}
-              onChange={e => setFontSize(Number(e.target.value))}
+              onChange={(_e, data) => setFontSize(data.value)}
               title={`Font size: ${FONT_SIZES[fontSize]}rem`}
             />
           </div>
 
-          <div className="hud-tool-row">
-            <span className="hud-tool-label">↔</span>
-            <input
-              type="range"
-              className="hud-range"
+          <div className={styles.toolRow}>
+            <Caption2 className={styles.toolLabel}>Width</Caption2>
+            <Slider
+              className={styles.slider}
               min={0}
               max={4}
               step={1}
               value={colWidth}
-              onChange={e => setColWidth(Number(e.target.value))}
+              onChange={(_e, data) => setColWidth(data.value)}
               title={`Column width: ${COL_WIDTHS[colWidth]}px`}
             />
           </div>

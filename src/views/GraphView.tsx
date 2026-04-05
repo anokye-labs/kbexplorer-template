@@ -1,20 +1,81 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Network } from 'vis-network/standalone';
 import { DataSet } from 'vis-data';
+import {
+  makeStyles,
+  tokens,
+  Button,
+  Card,
+  CardHeader,
+  Badge,
+  Caption1,
+} from '@fluentui/react-components';
+import { ArrowLeftRegular } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig } from '../types';
 import { getVisNodeConfig } from '../components/NodeVisual';
 import { getNodeDegrees } from '../engine/graph';
-import '../styles/graph.css';
 
 interface GraphViewProps {
   graph: KBGraph;
   config: KBConfig;
 }
 
+// Fluent 2 dark-theme hex values for vis-network (not React components)
+const LABEL_COLOR = '#d6d6d6';       // colorNeutralForeground2
+const LABEL_STROKE_COLOR = '#1f1f1f'; // colorNeutralBackground1
+const EDGE_COLOR = '#383838';         // colorNeutralStroke2
+const EDGE_HOVER_COLOR = '#5c5c5c';   // colorNeutralStroke1Hover
+const FONT_FAMILY = `'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif`;
+
+const useStyles = makeStyles({
+  container: {
+    position: 'fixed',
+    inset: '0',
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: tokens.colorNeutralBackground1,
+    zIndex: 1,
+  },
+  canvas: {
+    width: '100%',
+    height: '100%',
+  },
+  backButton: {
+    position: 'absolute',
+    top: '20px',
+    left: '20px',
+    zIndex: 10,
+  },
+  legend: {
+    position: 'absolute',
+    bottom: '20px',
+    left: '20px',
+    zIndex: 10,
+    minWidth: '140px',
+  },
+  legendItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalSNudge,
+    padding: '4px 6px',
+    borderRadius: tokens.borderRadiusMedium,
+    cursor: 'pointer',
+    userSelect: 'none',
+    transitionProperty: 'background',
+    transitionDuration: '0.15s',
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+    },
+  },
+  legendItemActive: {
+    backgroundColor: tokens.colorNeutralBackground1Selected,
+  },
+});
+
 export default function GraphView({ graph, config }: GraphViewProps) {
+  const styles = useStyles();
   const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<Network | null>(null);
-  // Keep a ref to the nodes DataSet so we can update it from the cluster filter
   const nodesRef = useRef<DataSet<Record<string, unknown>> | null>(null);
   const [activeCluster, setActiveCluster] = useState<string | null>(null);
 
@@ -42,7 +103,7 @@ export default function GraphView({ graph, config }: GraphViewProps) {
             opacity: 1,
             ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
             label: n.title,
-            font: { color: '#C8B8A8', face: 'General Sans', size: 12 },
+            font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 12 },
           };
         });
         ds.update(updates);
@@ -60,8 +121,8 @@ export default function GraphView({ graph, config }: GraphViewProps) {
           ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
           label: n.title,
           font: {
-            color: inCluster ? '#C8B8A8' : 'rgba(200,184,168,0.15)',
-            face: 'General Sans',
+            color: inCluster ? LABEL_COLOR : 'rgba(214,214,214,0.15)',
+            face: FONT_FAMILY,
             size: 12,
           },
         };
@@ -84,7 +145,7 @@ export default function GraphView({ graph, config }: GraphViewProps) {
         id: n.id,
         label: n.title,
         title: `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
-        font: { color: '#C8B8A8', face: 'General Sans, sans-serif', size: 12, strokeWidth: 3, strokeColor: '#0D0D0D' },
+        font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 12, strokeWidth: 3, strokeColor: LABEL_STROKE_COLOR },
         ...visConfig,
       };
     });
@@ -94,7 +155,7 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       from: e.from,
       to: e.to,
       title: e.description,
-      color: { color: '#2A2620', hover: '#4A4438', highlight: '#4A4438' },
+      color: { color: EDGE_COLOR, hover: EDGE_HOVER_COLOR, highlight: EDGE_HOVER_COLOR },
       width: 1.5,
       dashes: [4, 6],
     }));
@@ -143,26 +204,33 @@ export default function GraphView({ graph, config }: GraphViewProps) {
   }, [graph, config]);
 
   return (
-    <div className="graph-container">
-      <a className="graph-back" href="#/">
-        ← Overview
-      </a>
+    <div className={styles.container}>
+      <div className={styles.backButton}>
+        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
+          Overview
+        </Button>
+      </div>
 
-      <div ref={containerRef} className="graph-canvas" />
+      <div ref={containerRef} className={styles.canvas} />
 
-      <div className="graph-legend">
-        <div className="graph-legend-title">Clusters</div>
+      <Card className={styles.legend} size="small">
+        <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
         {graph.clusters.map(c => (
           <div
             key={c.id}
-            className={`graph-legend-item${activeCluster === c.id ? ' graph-legend-item--active' : ''}`}
+            className={`${styles.legendItem} ${activeCluster === c.id ? styles.legendItemActive : ''}`}
             onClick={() => handleClusterClick(c.id)}
           >
-            <span className="graph-legend-dot" style={{ background: c.color }} />
-            {c.name}
+            <Badge
+              appearance="filled"
+              size="tiny"
+              color="brand"
+              style={{ backgroundColor: c.color, minWidth: 10, width: 10, height: 10 }}
+            />
+            <Caption1>{c.name}</Caption1>
           </div>
         ))}
-      </div>
+      </Card>
     </div>
   );
 }

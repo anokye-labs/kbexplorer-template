@@ -1,3 +1,18 @@
+import {
+  makeStyles,
+  tokens,
+  Button,
+  Title1,
+  Subtitle2,
+  Badge,
+  Card,
+  Caption1,
+} from '@fluentui/react-components';
+import {
+  ArrowLeftRegular,
+  ChevronLeftRegular,
+  ChevronRightRegular,
+} from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 
@@ -22,18 +37,144 @@ function getClusterNodes(nodes: KBNode[], clusterId: string): KBNode[] {
     .sort((a, b) => a.id.localeCompare(b.id));
 }
 
+const useStyles = makeStyles({
+  root: {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  backLink: {
+    padding: '16px 24px',
+  },
+  header: {
+    padding: '0 24px 32px',
+    maxWidth: '1120px',
+    width: '100%',
+    margin: '0 auto',
+  },
+  headerHero: {
+    position: 'relative',
+    marginTop: '-8rem',
+    zIndex: 1,
+    paddingTop: 0,
+  },
+  headerVisual: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    marginBottom: tokens.spacingVerticalS,
+  },
+  clusterBadge: {
+    marginBottom: tokens.spacingVerticalS,
+  },
+  body: {
+    display: 'flex',
+    flexDirection: 'column',
+    maxWidth: '1120px',
+    width: '100%',
+    margin: '0 auto',
+    padding: '0 24px 48px',
+    gap: tokens.spacingVerticalXXXL,
+  },
+  connectionsAside: {
+    flexShrink: 0,
+  },
+  connectionsTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    marginBottom: tokens.spacingVerticalM,
+  },
+  connectionsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+  },
+  connectionCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalSNudge,
+    textDecoration: 'none',
+    color: 'inherit',
+    cursor: 'pointer',
+  },
+  connectionInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    minWidth: 0,
+    flex: 1,
+  },
+  connectionTitle: {
+    fontWeight: tokens.fontWeightSemibold,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  connectionPill: {
+    marginLeft: 'auto',
+    flexShrink: 0,
+  },
+  navFooter: {
+    marginTop: 'auto',
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    display: 'flex',
+  },
+  navLink: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    textDecoration: 'none',
+    color: 'inherit',
+  },
+  navLinkNext: {
+    textAlign: 'right',
+    alignItems: 'flex-end',
+    borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  navLinkDisabled: {
+    pointerEvents: 'none',
+    opacity: 0.3,
+  },
+  navTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+  },
+  notFound: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100vh',
+    gap: tokens.spacingVerticalM,
+    textAlign: 'center',
+    padding: tokens.spacingHorizontalXXL,
+  },
+  // responsive — desktop sidebar
+  '@media (min-width: 1025px)': {
+    body: {
+      flexDirection: 'row',
+    },
+  },
+});
+
 export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
+  const styles = useStyles();
   const node = graph.nodes.find(n => n.id === nodeId);
 
   if (!node) {
     return (
-      <div className="kb-reading-notfound">
+      <div className={styles.notFound}>
         <span style={{ fontSize: 48 }}>🔍</span>
-        <h1>Node not found</h1>
-        <p style={{ color: 'var(--fg-muted)' }}>
-          No node with id "{nodeId}" exists in this knowledge base.
-        </p>
-        <a href="#/" className="kb-reading-back">← Back to overview</a>
+        <Title1>Node not found</Title1>
+        <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+          No node with id &quot;{nodeId}&quot; exists in this knowledge base.
+        </Caption1>
+        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
+          Back to overview
+        </Button>
       </div>
     );
   }
@@ -60,18 +201,22 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   const showHero = mode === 'heroes' && !!node.image;
 
   return (
-    <div className="kb-reading">
+    <div className={styles.root}>
       {/* Hero image */}
       {showHero && (
         <NodeVisual node={node} mode={mode} surface="hero" source={source} />
       )}
 
       {/* Back link */}
-      <a href="#/" className="kb-reading-back">← Back to overview</a>
+      <div className={styles.backLink}>
+        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
+          Back to overview
+        </Button>
+      </div>
 
       {/* Header */}
-      <header className={`kb-reading-header ${showHero ? 'kb-reading-header--hero' : ''}`}>
-        <div className="kb-reading-header__visual">
+      <header className={`${styles.header} ${showHero ? styles.headerHero : ''}`}>
+        <div className={styles.headerVisual}>
           {!showHero && (mode === 'sprites' && node.sprite) && (
             <NodeVisual node={node} mode={mode} surface="header" source={source} />
           )}
@@ -79,30 +224,26 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
             <NodeVisual node={node} mode="emoji" surface="header" source={source} />
           )}
         </div>
-        <div className="kb-reading-cluster">
-          <span
-            className="kb-reading-cluster__dot"
-            style={{ background: cluster.color }}
-          />
-          {cluster.name}
+        <div className={styles.clusterBadge}>
+          <Badge appearance="outline" color="informative">{cluster.name}</Badge>
         </div>
-        <h1 className="kb-reading-title">{node.title}</h1>
+        <Title1>{node.title}</Title1>
       </header>
 
       {/* Body: prose + connections */}
-      <div className="kb-reading-body">
+      <div className={`${styles.body} kb-reading-body`}>
         <div
           className="kb-prose"
           dangerouslySetInnerHTML={{ __html: node.content }}
         />
 
         {connectedNodes.length > 0 && (
-          <aside className="kb-connections">
-            <h2 className="kb-connections__title">
-              Connected
-              <span className="kb-connections__count">{connectedNodes.length}</span>
-            </h2>
-            <div className="kb-connections__list">
+          <aside className={`${styles.connectionsAside} kb-connections`}>
+            <div className={styles.connectionsTitle}>
+              <Subtitle2>Connected</Subtitle2>
+              <Badge appearance="outline" size="small">{connectedNodes.length}</Badge>
+            </div>
+            <div className={styles.connectionsList}>
               {connectedNodes.map(cn => {
                 const cnCluster = findCluster(config, graph.clusters, cn.cluster);
                 const desc = connectionMap.get(cn.id) ?? '';
@@ -110,27 +251,40 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
                   <a
                     key={cn.id}
                     href={`#/node/${encodeURIComponent(cn.id)}`}
-                    className="kb-connection-card"
+                    className={styles.connectionCard}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
                   >
-                    <NodeVisual
-                      node={cn}
-                      mode={mode}
-                      surface="connection"
-                      source={source}
-                    />
-                    <div className="kb-connection-card__info">
-                      <span className="kb-connection-card__title">{cn.title}</span>
-                      {desc && (
-                        <span className="kb-connection-card__desc">{desc}</span>
-                      )}
-                    </div>
-                    <span className="kb-connection-pill">
-                      <span
-                        className="kb-connection-pill__dot"
-                        style={{ background: cnCluster.color }}
+                    <Card size="small" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' }}>
+                      <NodeVisual
+                        node={cn}
+                        mode={mode}
+                        surface="connection"
+                        source={source}
                       />
-                      {cnCluster.name}
-                    </span>
+                      <div className={styles.connectionInfo}>
+                        <Caption1 className={styles.connectionTitle}>{cn.title}</Caption1>
+                        {desc && <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>{desc}</Caption1>}
+                      </div>
+                      <Badge
+                        appearance="outline"
+                        color="informative"
+                        size="small"
+                        className={styles.connectionPill}
+                        icon={
+                          <span
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: '50%',
+                              background: cnCluster.color,
+                              display: 'inline-block',
+                            }}
+                          />
+                        }
+                      >
+                        {cnCluster.name}
+                      </Badge>
+                    </Card>
                   </a>
                 );
               })}
@@ -140,31 +294,36 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
       </div>
 
       {/* Prev / Next */}
-      <nav className="kb-nav-footer">
-        <a
+      <nav className={styles.navFooter}>
+        <Button
+          appearance="subtle"
+          icon={<ChevronLeftRegular />}
+          as="a"
           href={prev ? `#/node/${encodeURIComponent(prev.id)}` : undefined}
-          className={`kb-nav-footer__link ${!prev ? 'kb-nav-footer__link--disabled' : ''}`}
+          className={`${styles.navLink} ${!prev ? styles.navLinkDisabled : ''}`}
           aria-disabled={!prev}
+          style={{ flex: 1, justifyContent: 'flex-start' }}
         >
-          <span className="kb-nav-footer__label">← Previous</span>
-          <span className="kb-nav-footer__title">
+          <span className={styles.navTitle}>
             {prev?.emoji && <span>{prev.emoji}</span>}
             {prev?.title ?? '—'}
           </span>
-          <span className="kb-nav-footer__cluster">{cluster.name}</span>
-        </a>
-        <a
+        </Button>
+        <Button
+          appearance="subtle"
+          icon={<ChevronRightRegular />}
+          iconPosition="after"
+          as="a"
           href={next ? `#/node/${encodeURIComponent(next.id)}` : undefined}
-          className={`kb-nav-footer__link kb-nav-footer__link--next ${!next ? 'kb-nav-footer__link--disabled' : ''}`}
+          className={`${styles.navLink} ${styles.navLinkNext} ${!next ? styles.navLinkDisabled : ''}`}
           aria-disabled={!next}
+          style={{ flex: 1, justifyContent: 'flex-end' }}
         >
-          <span className="kb-nav-footer__label">Next →</span>
-          <span className="kb-nav-footer__title">
+          <span className={styles.navTitle}>
             {next?.emoji && <span>{next.emoji}</span>}
             {next?.title ?? '—'}
           </span>
-          <span className="kb-nav-footer__cluster">{cluster.name}</span>
-        </a>
+        </Button>
       </nav>
     </div>
   );
