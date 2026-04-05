@@ -45,11 +45,17 @@ const useStyles = makeStyles({
     marginLeft: 'auto',
     marginRight: 'auto',
   },
+  title: {
+    display: 'block',
+    marginBottom: tokens.spacingVerticalS,
+  },
   subtitle: {
+    display: 'block',
     color: tokens.colorNeutralForeground3,
     marginBottom: tokens.spacingVerticalS,
   },
   stats: {
+    display: 'block',
     color: tokens.colorNeutralForeground3,
     marginBottom: tokens.spacingVerticalXXL,
   },
@@ -113,7 +119,7 @@ export function OverviewView({ graph, config }: OverviewViewProps) {
 
   return (
     <div className={classes.root}>
-      <Title1 as="h1">{config.title}</Title1>
+      <Title1 as="h1" className={classes.title}>{config.title}</Title1>
       {config.subtitle && (
         <Body1 className={classes.subtitle}>{config.subtitle}</Body1>
       )}

@@ -51,9 +51,8 @@ function useIsGraphRoute(): boolean {
   return isGraph;
 }
 
-function Explorer() {
+function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void }) {
   const state = useKnowledgeBase();
-  const [themeMode, , setThemeMode] = useTheme();
   const currentNodeId = useCurrentNodeId();
   const isGraph = useIsGraphRoute();
 
@@ -90,12 +89,12 @@ function Explorer() {
 }
 
 function App() {
-  const [, fluentTheme] = useTheme();
+  const [themeMode, fluentTheme, setThemeMode] = useTheme();
 
   return (
     <FluentProvider theme={fluentTheme} style={{ height: '100%' }}>
       <HashRouter>
-        <Explorer />
+        <Explorer themeMode={themeMode} setThemeMode={setThemeMode} />
       </HashRouter>
     </FluentProvider>
   );
