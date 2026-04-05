@@ -23,7 +23,7 @@ interface GraphViewProps {
 // Fluent 2 dark-theme hex values for vis-network (not React components)
 const LABEL_COLOR = '#d6d6d6';       // colorNeutralForeground2
 const LABEL_STROKE_COLOR = '#1f1f1f'; // colorNeutralBackground1
-const EDGE_COLOR = '#383838';         // colorNeutralStroke2
+const EDGE_COLOR = '#505050';         // brighter for visibility on dark bg
 const EDGE_HOVER_COLOR = '#5c5c5c';   // colorNeutralStroke1Hover
 const FONT_FAMILY = `'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif`;
 
@@ -42,14 +42,14 @@ const useStyles = makeStyles({
   },
   backButton: {
     position: 'absolute',
-    top: '20px',
-    left: '20px',
+    top: tokens.spacingVerticalL,
+    left: tokens.spacingHorizontalL,
     zIndex: 10,
   },
   legend: {
     position: 'absolute',
-    bottom: '20px',
-    left: '20px',
+    bottom: tokens.spacingVerticalL,
+    left: tokens.spacingHorizontalL,
     zIndex: 10,
     minWidth: '140px',
   },
@@ -57,7 +57,7 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     gap: tokens.spacingHorizontalSNudge,
-    padding: '4px 6px',
+    padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalSNudge}`,
     borderRadius: tokens.borderRadiusMedium,
     cursor: 'pointer',
     userSelect: 'none',
@@ -96,13 +96,13 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       if (!next) {
         const updates = graph.nodes.map(n => {
           const deg = degrees.get(n.id) ?? 0;
-          const size = Math.min(20 + deg * 5, 50);
+          const size = Math.min(24 + deg * 3, 40);
           const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
           return {
             id: n.id,
             opacity: 1,
             ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
-            label: n.title,
+            label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
             font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 12 },
           };
         });
@@ -113,13 +113,13 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       const updates = graph.nodes.map(n => {
         const inCluster = n.cluster === next;
         const deg = degrees.get(n.id) ?? 0;
-        const size = Math.min(20 + deg * 5, 50);
+        const size = Math.min(24 + deg * 3, 40);
         const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
         return {
           id: n.id,
           opacity: inCluster ? 1 : 0.15,
           ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
-          label: n.title,
+          label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
           font: {
             color: inCluster ? LABEL_COLOR : 'rgba(214,214,214,0.15)',
             face: FONT_FAMILY,
@@ -137,13 +137,13 @@ export default function GraphView({ graph, config }: GraphViewProps) {
 
     const nodeData = graph.nodes.map(n => {
       const deg = degrees.get(n.id) ?? 0;
-      const size = Math.min(20 + deg * 5, 50);
+      const size = Math.min(24 + deg * 3, 40);
       const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
       const visConfig = getVisNodeConfig(n, config.visuals.mode, config.source, color, size);
 
       return {
         id: n.id,
-        label: n.title,
+        label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
         title: `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
         font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 12, strokeWidth: 3, strokeColor: LABEL_STROKE_COLOR },
         ...visConfig,
@@ -156,8 +156,8 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       to: e.to,
       title: e.description,
       color: { color: EDGE_COLOR, hover: EDGE_HOVER_COLOR, highlight: EDGE_HOVER_COLOR },
-      width: 1.5,
-      dashes: [4, 6],
+      width: 2,
+      dashes: false,
     }));
 
     const nodes = new DataSet(nodeData);
@@ -165,6 +165,11 @@ export default function GraphView({ graph, config }: GraphViewProps) {
     nodesRef.current = nodes;
 
     const network = new Network(containerRef.current, { nodes, edges }, {
+      nodes: {
+        scaling: {
+          label: { enabled: true, min: 8, max: 14 },
+        },
+      },
       physics: {
         solver: 'forceAtlas2Based',
         forceAtlas2Based: {
@@ -213,7 +218,7 @@ export default function GraphView({ graph, config }: GraphViewProps) {
 
       <div ref={containerRef} className={styles.canvas} />
 
-      <Card className={styles.legend} size="small">
+      <Card className={styles.legend} size="small" style={{ maxHeight: '400px', overflowY: 'auto' }}>
         <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
         {graph.clusters.map(c => (
           <div

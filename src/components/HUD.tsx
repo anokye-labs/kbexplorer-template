@@ -63,7 +63,7 @@ const useStyles = makeStyles({
     bottom: 0,
     left: 0,
     right: 0,
-    height: '170px',
+    height: '168px',
     backgroundColor: tokens.colorNeutralBackground1,
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
@@ -76,7 +76,7 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '12px 16px',
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
     flexShrink: 0,
   },
   panelCenter: {
@@ -84,14 +84,14 @@ const useStyles = makeStyles({
     minWidth: 0,
     display: 'flex',
     flexDirection: 'column',
-    padding: '12px 16px',
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
     gap: tokens.spacingVerticalS,
   },
   panelRight: {
     width: '240px',
     display: 'flex',
     flexDirection: 'column',
-    padding: '12px 16px',
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
     flexShrink: 0,
     gap: tokens.spacingVerticalSNudge,
     justifyContent: 'center',
@@ -124,7 +124,7 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground3,
     fontSize: tokens.fontSizeBase200,
     textAlign: 'center',
-    padding: '8px 0',
+    padding: `${tokens.spacingVerticalS} 0`,
   },
   relatedStrip: {
     display: 'flex',
@@ -140,15 +140,17 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: tokens.spacingHorizontalXS,
     flexShrink: 0,
+    minWidth: '140px',
     textDecoration: 'none',
     color: 'inherit',
     cursor: 'pointer',
   },
   relatedTitle: {
-    whiteSpace: 'nowrap',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    maxWidth: '120px',
+    maxWidth: '140px',
   },
   toolRow: {
     display: 'flex',
@@ -201,7 +203,7 @@ const useStyles = makeStyles({
   overlayLegend: {
     display: 'flex',
     gap: tokens.spacingHorizontalL,
-    padding: '8px 20px',
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalXL}`,
     flexWrap: 'wrap',
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     flexShrink: 0,
@@ -260,7 +262,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     const nodeData = graph.nodes.map(n => {
       const deg = degrees.get(n.id) ?? 0;
       const size = Math.min(10 + deg * 3, 30);
-      const color = clusterColorMap.get(n.cluster) ?? '#888';
+      const color = clusterColorMap.get(n.cluster) ?? '#888'; // data fallback, intentionally not a theme token
       return {
         id: n.id,
         label: '',
@@ -368,7 +370,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
       if (!pos) continue;
       const [cx, cy] = toCanvas(pos.x, pos.y);
       const isCurrent = node.id === currentNodeId;
-      const color = clusterColorMap.get(node.cluster) ?? '#888';
+      const color = clusterColorMap.get(node.cluster) ?? '#888'; // data fallback, intentionally not a theme token
       ctx.beginPath();
       ctx.arc(cx, cy, isCurrent ? 4 : 2.5, 0, Math.PI * 2);
       ctx.fillStyle = isCurrent ? HIGHLIGHT_COLOR : color;
@@ -393,7 +395,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     const nodeData = graph.nodes.map(n => {
       const deg = degrees.get(n.id) ?? 0;
       const size = Math.min(18 + deg * 4, 45);
-      const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
+      const color = clusterColorMap.get(n.cluster) ?? '#9A8A78'; // data fallback, intentionally not a theme token
       const visConfig = getVisNodeConfig(n, config.visuals.mode, config.source, color, size);
       return {
         id: n.id,
@@ -561,7 +563,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
             />
             {currentNode ? (
               <div className={styles.currentNode}>
-                <span style={{ fontSize: 20 }}>{currentNode.emoji ?? '📌'}</span>
+                <span style={{ fontSize: tokens.fontSizeBase500 }}>{currentNode.emoji ?? '📌'}</span>
                 <Body1Strong className={styles.currentTitle}>{currentNode.title}</Body1Strong>
                 <Caption1 style={{ color: tokens.colorNeutralForeground3, whiteSpace: 'nowrap' }}>
                   {currentNode.cluster}
@@ -580,6 +582,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
             />
           </div>
 
+          {currentNode && (
           <div className={styles.navRow} style={{ alignItems: 'flex-start' }}>
             <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Related
@@ -607,11 +610,12 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
                     </Card>
                   </a>
                 ))
-              ) : currentNode ? (
+              ) : (
                 <span className={styles.placeholder} style={{ fontSize: tokens.fontSizeBase200 }}>No related nodes</span>
-              ) : null}
+              )}
             </div>
           </div>
+          )}
         </div>
 
         <Divider vertical />
@@ -636,6 +640,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
             />
           </div>
 
+          {currentNode && (
+          <>
           <div className={styles.toolRow}>
             <Caption2 className={styles.toolLabel}>Aa</Caption2>
             <Slider
@@ -661,6 +667,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
               title={`Column width: ${COL_WIDTHS[colWidth]}px`}
             />
           </div>
+          </>
+          )}
         </div>
       </div>
     </>

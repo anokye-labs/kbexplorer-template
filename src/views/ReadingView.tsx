@@ -44,10 +44,10 @@ const useStyles = makeStyles({
     flexDirection: 'column',
   },
   backLink: {
-    padding: '16px 24px',
+    padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalXL}`,
   },
   header: {
-    padding: '0 24px 32px',
+    padding: `0 ${tokens.spacingHorizontalXL} ${tokens.spacingVerticalXXL}`,
     maxWidth: '1120px',
     width: '100%',
     margin: '0 auto',
@@ -73,7 +73,7 @@ const useStyles = makeStyles({
     maxWidth: '1120px',
     width: '100%',
     margin: '0 auto',
-    padding: '0 24px 48px',
+    padding: `0 ${tokens.spacingHorizontalXL} ${tokens.spacingVerticalXXXL}`,
     gap: tokens.spacingVerticalXXXL,
   },
   connectionsAside: {
@@ -101,7 +101,7 @@ const useStyles = makeStyles({
   connectionInfo: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap: tokens.spacingHorizontalXXS,
     minWidth: 0,
     flex: 1,
   },
@@ -124,7 +124,7 @@ const useStyles = makeStyles({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
+    gap: tokens.spacingHorizontalXXS,
     textDecoration: 'none',
     color: 'inherit',
   },
@@ -167,7 +167,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   if (!node) {
     return (
       <div className={styles.notFound}>
-        <span style={{ fontSize: 48 }}>🔍</span>
+        <span style={{ fontSize: tokens.fontSizeHero800 }}>🔍</span>
         <Title1>Node not found</Title1>
         <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
           No node with id &quot;{nodeId}&quot; exists in this knowledge base.
@@ -225,7 +225,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
           )}
         </div>
         <div className={styles.clusterBadge}>
-          <Badge appearance="outline" color="informative">{cluster.name}</Badge>
+          <Badge appearance="tint" color="informative">{cluster.name}</Badge>
         </div>
         <Title1>{node.title}</Title1>
       </header>
@@ -241,7 +241,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
           <aside className={`${styles.connectionsAside} kb-connections`}>
             <div className={styles.connectionsTitle}>
               <Subtitle2>Connected</Subtitle2>
-              <Badge appearance="outline" size="small">{connectedNodes.length}</Badge>
+              <Badge appearance="tint" size="small">{connectedNodes.length}</Badge>
             </div>
             <div className={styles.connectionsList}>
               {connectedNodes.map(cn => {
@@ -254,7 +254,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
                     className={styles.connectionCard}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >
-                    <Card size="small" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' }}>
+                    <Card size="small" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: tokens.spacingHorizontalS, width: '100%' }}>
                       <NodeVisual
                         node={cn}
                         mode={mode}
@@ -266,7 +266,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
                         {desc && <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>{desc}</Caption1>}
                       </div>
                       <Badge
-                        appearance="outline"
+                        appearance="tint"
                         color="informative"
                         size="small"
                         className={styles.connectionPill}

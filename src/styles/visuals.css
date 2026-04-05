@@ -93,10 +93,10 @@
 }
 
 .kb-emoji--card { font-size: 28px; }
-.kb-emoji--header { font-size: 48px; }
+.kb-emoji--header { font-size: 40px; }
 .kb-emoji--hud-thumb { font-size: 20px; }
 .kb-emoji--edge-preview { font-size: 20px; }
-.kb-emoji--connection { font-size: 18px; }
+.kb-emoji--connection { font-size: 20px; }
 
 /* ── Letter fallback ────────────────────────────────── */
 /* Fluent colorNeutralBackground3 (#2e2e2e dark), colorNeutralForeground2 (#d6d6d6 dark) */
@@ -105,7 +105,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-family: var(--font-heading);
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
   font-weight: 600;
   color: var(--colorNeutralForeground2, #d6d6d6);
   background: var(--colorNeutralBackground3, #2e2e2e);
@@ -115,6 +115,6 @@
 
 .kb-letter--card { width: 48px; height: 48px; font-size: 20px; }
 .kb-letter--header { width: 80px; height: 80px; font-size: 32px; }
-.kb-letter--hud-thumb { width: 44px; height: 44px; font-size: 18px; border-radius: 4px; }
+.kb-letter--hud-thumb { width: 44px; height: 44px; font-size: 16px; border-radius: 4px; /* borderRadiusMedium */ }
 .kb-letter--edge-preview { width: 40px; height: 40px; font-size: 16px; border-radius: 50%; }
 .kb-letter--connection { width: 36px; height: 36px; font-size: 14px; border-radius: 4px; }
