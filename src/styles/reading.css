@@ -1,0 +1,180 @@
+/* ── Prose (dangerouslySetInnerHTML — Fluent 2 dark-theme values) ── */
+
+.kb-prose {
+  max-width: var(--prose-max-width, 780px);
+  font-size: var(--prose-font-size, 14px);
+  line-height: 20px;
+  color: var(--colorNeutralForeground1);
+}
+
+/* Headings — Fluent 2 type ramp, semibold */
+.kb-prose h1 {
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 24px;  /* Title3 */
+  font-weight: 600;
+  margin: 2.5rem 0 1rem;
+  line-height: 32px;
+  color: var(--colorNeutralForeground1);
+}
+
+.kb-prose h2 {
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 20px;  /* Subtitle1 */
+  font-weight: 600;
+  margin: 2rem 0 0.75rem;
+  line-height: 26px;
+  color: var(--colorNeutralForeground1);
+}
+
+.kb-prose h3 {
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 16px;  /* Subtitle2 */
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+  line-height: 22px;
+  color: var(--colorNeutralForeground1);
+}
+
+.kb-prose h4 {
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+  line-height: 20px;
+  color: var(--colorNeutralForeground1);
+}
+
+.kb-prose p {
+  margin: 0 0 1.25rem;
+}
+
+.kb-prose ul,
+.kb-prose ol {
+  margin: 0 0 1.25rem;
+  padding-left: 1.5em;
+}
+
+.kb-prose li {
+  margin-bottom: 4px;
+}
+
+.kb-prose li > ul,
+.kb-prose li > ol {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+/* Blockquote — Fluent brand stroke left border */
+.kb-prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.75rem 1.25rem;
+  border-left: 3px solid var(--colorBrandStroke1);
+  background: var(--colorNeutralBackground3);
+  border-radius: 0 4px 4px 0; /* borderRadiusMedium */
+  color: var(--colorNeutralForeground3);
+}
+
+.kb-prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Code — Fluent neutral background + border radius */
+.kb-prose code {
+  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.88em;
+  padding: 0.15em 0.4em;
+  background: var(--colorNeutralBackground3);
+  border-radius: 4px; /* borderRadiusMedium */
+  border: 1px solid var(--colorNeutralStroke2);
+}
+
+.kb-prose pre {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--colorNeutralBackground3);
+  border: 1px solid var(--colorNeutralStroke2);
+  border-radius: 8px; /* borderRadiusLarge */
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+.kb-prose pre code {
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+}
+
+/* Links — Fluent brand foreground link */
+.kb-prose a {
+  color: var(--colorBrandForegroundLink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.kb-prose a:hover {
+  color: var(--colorBrandForegroundLinkHover);
+}
+
+.kb-prose hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid var(--colorNeutralStroke2);
+}
+
+.kb-prose table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.kb-prose th,
+.kb-prose td {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--colorNeutralStroke2);
+  text-align: left;
+}
+
+.kb-prose th {
+  background: var(--colorNeutralBackground3);
+  font-weight: 600;
+}
+
+.kb-prose img {
+  max-width: 100%;
+  border-radius: 8px; /* borderRadiusLarge */
+  margin: 1rem 0;
+}
+
+/* ── Responsive layout ───────────────────────────────── */
+@media (min-width: 1025px) {
+  .kb-reading-body {
+    flex-direction: row;
+  }
+
+  .kb-prose {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .kb-connections {
+    width: 280px;
+    position: sticky;
+    top: 2rem;
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .kb-prose pre {
+    font-size: 0.8rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .kb-prose table {
+    font-size: 0.85rem;
+    display: block;
+    overflow-x: auto;
+  }
+}

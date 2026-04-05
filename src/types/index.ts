@@ -45,7 +45,7 @@ export interface KBEdge {
 export type VisualMode = 'sprites' | 'heroes' | 'emoji' | 'none';
 
 /** Theme preference. */
-export type Theme = 'dark' | 'light' | 'sepia';
+export type Theme = 'dark' | 'light';
 
 /** Content source configuration. */
 export interface SourceConfig {
@@ -139,9 +139,9 @@ export const DEFAULT_CONFIG: KBConfig = {
   theme: {
     default: 'dark',
     font: {
-      heading: 'Instrument Serif',
-      body: 'General Sans',
-      mono: 'JetBrains Mono',
+      heading: "'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
+      body: "'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
+      mono: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
     },
   },
   graph: {

@@ -1,0 +1,13 @@
+/* hud.css — responsive overrides only (layout handled by makeStyles) */
+
+/* Tablet: reduce HUD height, hide minimap panel */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Minimap panel hides on tablet via parent container query — 
+     handled inline or via JS visibility; keep as safety net */
+}
+
+/* Mobile: collapsed HUD */
+@media (max-width: 768px) {
+  /* Mobile HUD collapses to nav row only — 
+     side panels hidden via makeStyles responsive styles */
+}
