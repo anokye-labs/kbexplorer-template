@@ -1,3 +1,16 @@
+import {
+  Title1,
+  Subtitle2,
+  Caption1,
+  Body1,
+  Body1Strong,
+  Card,
+  CardHeader,
+  Badge,
+  CounterBadge,
+  makeStyles,
+  tokens,
+} from '@fluentui/react-components';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 
@@ -22,70 +35,145 @@ function groupByCluster(
     .map(cluster => ({ cluster, nodes: map.get(cluster.id)! }));
 }
 
+const useStyles = makeStyles({
+  root: {
+    paddingTop: tokens.spacingVerticalXXL,
+    paddingBottom: tokens.spacingVerticalXXL,
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
+    maxWidth: '1200px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
+  subtitle: {
+    color: tokens.colorNeutralForeground3,
+    marginBottom: tokens.spacingVerticalS,
+  },
+  stats: {
+    color: tokens.colorNeutralForeground3,
+    marginBottom: tokens.spacingVerticalXXL,
+  },
+  cluster: {
+    marginBottom: tokens.spacingVerticalXXL,
+  },
+  clusterHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    marginBottom: tokens.spacingVerticalM,
+  },
+  clusterDot: {
+    width: '10px',
+    height: '10px',
+    borderRadius: tokens.borderRadiusCircular,
+    flexShrink: 0,
+    display: 'inline-block',
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: tokens.spacingHorizontalL,
+    '@media (max-width: 1024px)': {
+      gridTemplateColumns: 'repeat(2, 1fr)',
+    },
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr',
+    },
+  },
+  card: {
+    cursor: 'pointer',
+  },
+  cardInner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+  },
+  cardBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXXS,
+    minWidth: 0,
+    flex: 1,
+  },
+  cardTitle: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  cardMeta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+  },
+});
+
 export function OverviewView({ graph, config }: OverviewViewProps) {
+  const classes = useStyles();
   const groups = groupByCluster(graph.nodes, graph.clusters);
 
   return (
-    <div className="overview">
-      <h1 className="overview__title">{config.title}</h1>
+    <div className={classes.root}>
+      <Title1 as="h1">{config.title}</Title1>
       {config.subtitle && (
-        <p className="overview__subtitle">{config.subtitle}</p>
+        <Body1 className={classes.subtitle}>{config.subtitle}</Body1>
       )}
-      <p className="overview__stats">
+      <Caption1 className={classes.stats} as="p">
         {graph.nodes.length} nodes · {graph.edges.length} edges · {graph.clusters.length} clusters
-      </p>
+      </Caption1>
 
       {groups.map(({ cluster, nodes }) => (
-        <section key={cluster.id} className="overview__cluster">
-          <h2 className="overview__cluster-header">
+        <section key={cluster.id} className={classes.cluster}>
+          <div className={classes.clusterHeader}>
             <span
-              className="overview__cluster-dot"
+              className={classes.clusterDot}
               style={{ background: cluster.color }}
             />
-            {cluster.name}
-          </h2>
+            <Subtitle2>{cluster.name}</Subtitle2>
+          </div>
 
-          <div className="overview__grid">
+          <div className={classes.grid}>
             {nodes.map(node => (
-              <a
+              <Card
                 key={node.id}
-                href={`#/node/${encodeURIComponent(node.id)}`}
-                className="overview__card"
-                style={{
-                  ['--cluster-glow' as string]: cluster.color,
-                }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget;
-                  el.style.borderColor = cluster.color + '66';
-                  el.style.boxShadow = `0 4px 20px ${cluster.color}22`;
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget;
-                  el.style.borderColor = '';
-                  el.style.boxShadow = '';
+                appearance="filled-alternative"
+                className={classes.card}
+                onClick={() => {
+                  window.location.hash = `#/node/${encodeURIComponent(node.id)}`;
                 }}
               >
-                <NodeVisual
-                  node={node}
-                  mode={config.visuals.mode}
-                  surface="card"
-                  source={config.source}
+                <CardHeader
+                  image={
+                    <NodeVisual
+                      node={node}
+                      mode={config.visuals.mode}
+                      surface="card"
+                      source={config.source}
+                    />
+                  }
+                  header={
+                    <Body1Strong className={classes.cardTitle}>
+                      {node.title}
+                    </Body1Strong>
+                  }
+                  description={
+                    <div className={classes.cardMeta}>
+                      <CounterBadge
+                        count={node.connections.length}
+                        appearance="filled"
+                        color="informative"
+                        size="small"
+                      />
+                      <Badge
+                        appearance="outline"
+                        color="informative"
+                        size="small"
+                      >
+                        {cluster.name}
+                      </Badge>
+                    </div>
+                  }
                 />
-                <div className="overview__card-body">
-                  <span className="overview__card-title">{node.title}</span>
-                  <span className="overview__card-meta">
-                    <span className="overview__card-connections">
-                      {node.connections.length} connection{node.connections.length !== 1 ? 's' : ''}
-                    </span>
-                    <span
-                      className="overview__card-pill"
-                      style={{ borderColor: cluster.color + '44' }}
-                    >
-                      {cluster.name}
-                    </span>
-                  </span>
-                </div>
-              </a>
+              </Card>
             ))}
           </div>
         </section>
