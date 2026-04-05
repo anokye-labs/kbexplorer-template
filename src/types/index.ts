@@ -45,7 +45,7 @@ export interface KBEdge {
 export type VisualMode = 'sprites' | 'heroes' | 'emoji' | 'none';
 
 /** Theme preference. */
-export type Theme = 'dark' | 'light';
+export type Theme = 'dark' | 'light' | 'sepia';
 
 /** Content source configuration. */
 export interface SourceConfig {
