@@ -1,13 +1,23 @@
+import { Spinner, Body1, makeStyles, tokens } from '@fluentui/react-components';
+
+const useStyles = makeStyles({
+  root: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100vh',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXL,
+  },
+});
+
 export function LoadingScreen() {
+  const classes = useStyles();
+
   return (
-    <div className="loading-screen">
-      <div className="loading-screen__spinner" />
-      <p className="loading-screen__text">Loading knowledge base…</p>
-      <div className="loading-screen__skeletons">
-        {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="loading-screen__skeleton" />
-        ))}
-      </div>
+    <div className={classes.root}>
+      <Spinner size="large" />
+      <Body1>Loading knowledge base…</Body1>
     </div>
   );
 }
