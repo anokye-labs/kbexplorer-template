@@ -68,7 +68,7 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
 
   return (
     <>
-      <div style={{ paddingBottom: isGraph ? 0 : 180 }}>
+      <div style={{ paddingBottom: isGraph ? 0 : 184 }}>
         <Routes>
           <Route path="/" element={<OverviewView graph={graph} config={config} />} />
           <Route path="/graph" element={<GraphView graph={graph} config={config} />} />

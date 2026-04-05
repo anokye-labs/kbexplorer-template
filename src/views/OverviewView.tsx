@@ -77,17 +77,16 @@ const useStyles = makeStyles({
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
     gap: tokens.spacingHorizontalL,
-    '@media (max-width: 1024px)': {
-      gridTemplateColumns: 'repeat(2, 1fr)',
-    },
     '@media (max-width: 768px)': {
       gridTemplateColumns: '1fr',
     },
   },
   card: {
     cursor: 'pointer',
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusLarge,
   },
   cardInner: {
     display: 'flex',
@@ -102,9 +101,10 @@ const useStyles = makeStyles({
     flex: 1,
   },
   cardTitle: {
-    whiteSpace: 'nowrap',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
-    textOverflow: 'ellipsis',
   },
   cardMeta: {
     display: 'flex',
@@ -163,14 +163,16 @@ export function OverviewView({ graph, config }: OverviewViewProps) {
                   }
                   description={
                     <div className={classes.cardMeta}>
-                      <CounterBadge
-                        count={node.connections.length}
-                        appearance="filled"
-                        color="informative"
-                        size="small"
-                      />
+                      {node.connections.length > 0 && (
+                        <CounterBadge
+                          count={node.connections.length}
+                          appearance="filled"
+                          color="informative"
+                          size="small"
+                        />
+                      )}
                       <Badge
-                        appearance="outline"
+                        appearance="tint"
                         color="informative"
                         size="small"
                       >
