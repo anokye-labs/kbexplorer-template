@@ -46,7 +46,7 @@ interface HUDProps {
 }
 
 const FONT_SIZES = [0.92, 1.0, 1.08, 1.18, 1.3];
-const COL_WIDTHS = [580, 680, 780, 960, 1200];
+const COL_WIDTHS = [580, 780, 960, 1200, 1600];
 
 // Fluent 2 dark-theme hex values for vis-network / canvas
 const LABEL_COLOR = '#d6d6d6';
