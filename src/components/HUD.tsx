@@ -46,7 +46,7 @@ interface HUDProps {
 }
 
 const FONT_SIZES = [0.92, 1.0, 1.08, 1.18, 1.3];
-const COL_WIDTHS = [580, 780, 960, 1200, 1600];
+const COL_WIDTHS = ['50%', '65%', '75%', '85%', '100%'];
 
 // Fluent 2 dark-theme hex values for vis-network / canvas
 const LABEL_COLOR = '#d6d6d6';
@@ -341,7 +341,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   }, [fontSize]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--prose-max-width', `${COL_WIDTHS[colWidth]}px`);
+    document.documentElement.style.setProperty('--prose-max-width', COL_WIDTHS[colWidth]);
     localStorage.setItem('kbe-col-width', String(colWidth));
   }, [colWidth]);
 
@@ -904,7 +904,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   step={1}
                   value={colWidth}
                   onChange={(_e, data) => setColWidth(data.value)}
-                  title={`Column width: ${COL_WIDTHS[colWidth]}px`}
+                  title={`Column width: ${COL_WIDTHS[colWidth]}`}
                 />
               </div>
               </>
