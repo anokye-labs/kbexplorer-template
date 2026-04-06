@@ -5,6 +5,7 @@ import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme } from './hooks/useTheme';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
 import { HUD } from './components/HUD';
+import type { DockPosition } from './components/HUD';
 import { ReadingView } from './views/ReadingView';
 import GraphView from './views/GraphView';
 import { OverviewView } from './views/OverviewView';
@@ -56,6 +57,13 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
   const currentNodeId = useCurrentNodeId();
   const isGraph = useIsGraphRoute();
 
+  const [hudCollapsed, setHudCollapsed] = useState(() => {
+    try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
+  });
+  const [hudDock, setHudDock] = useState<DockPosition>(() => {
+    try { return (localStorage.getItem('kbe-hud-dock') ?? 'bottom') as DockPosition; } catch { return 'bottom'; }
+  });
+
   useKeyboardNav(
     state.status === 'ready' ? state.graph : null,
     setThemeMode as (t: import('./types').Theme) => void,
@@ -66,9 +74,17 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
 
   const { graph, config } = state;
 
+  const paddingSize = hudCollapsed ? 40 : (hudDock === 'left' || hudDock === 'right' ? 280 : 184);
+  const paddingStyle = isGraph ? {} : (
+    hudDock === 'top' ? { paddingTop: paddingSize }
+    : hudDock === 'left' ? { paddingLeft: paddingSize }
+    : hudDock === 'right' ? { paddingRight: paddingSize }
+    : { paddingBottom: paddingSize }
+  );
+
   return (
     <>
-      <div style={{ paddingBottom: isGraph ? 0 : 184 }}>
+      <div style={paddingStyle}>
         <Routes>
           <Route path="/" element={<OverviewView graph={graph} config={config} />} />
           <Route path="/graph" element={<GraphView graph={graph} config={config} />} />
@@ -82,6 +98,8 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
           currentNodeId={currentNodeId}
           theme={themeMode}
           onThemeChange={setThemeMode as (t: import('./types').Theme) => void}
+          onCollapsedChange={setHudCollapsed}
+          onDockChange={setHudDock}
         />
       )}
     </>

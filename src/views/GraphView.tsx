@@ -15,6 +15,20 @@ import type { KBGraph, KBConfig } from '../types';
 import { getVisNodeConfig } from '../components/NodeVisual';
 import { getNodeDegrees } from '../engine/graph';
 
+const ICON_SHAPE_MAP: Record<string, string> = {
+  Sparkle: 'star',
+  Flag: 'star',
+  Wrench: 'hexagon',
+  Bug: 'triangleDown',
+  Lightbulb: 'diamond',
+  Document: 'square',
+  QuestionCircle: 'diamond',
+  Pin: 'dot',
+  Folder: 'square',
+  Merge: 'triangle',
+  BranchFork: 'triangle',
+};
+
 interface GraphViewProps {
   graph: KBGraph;
   config: KBConfig;
@@ -98,10 +112,12 @@ export default function GraphView({ graph, config }: GraphViewProps) {
           const deg = degrees.get(n.id) ?? 0;
           const size = Math.min(24 + deg * 3, 40);
           const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
+          const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
           return {
             id: n.id,
             opacity: 1,
             ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
+            shape: nodeShape,
             label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
             font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 12 },
           };
@@ -115,10 +131,12 @@ export default function GraphView({ graph, config }: GraphViewProps) {
         const deg = degrees.get(n.id) ?? 0;
         const size = Math.min(24 + deg * 3, 40);
         const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
+        const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
         return {
           id: n.id,
           opacity: inCluster ? 1 : 0.15,
           ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
+          shape: nodeShape,
           label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
           font: {
             color: inCluster ? LABEL_COLOR : 'rgba(214,214,214,0.15)',
@@ -140,13 +158,17 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       const size = Math.min(24 + deg * 3, 40);
       const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
       const visConfig = getVisNodeConfig(n, config.visuals.mode, config.source, color, size);
+      const truncatedLabel = n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title;
+      const fullTitle = `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`;
+      const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
 
       return {
         id: n.id,
-        label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
-        title: `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
+        label: truncatedLabel,
+        title: fullTitle,
         font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 12, strokeWidth: 3, strokeColor: LABEL_STROKE_COLOR },
         ...visConfig,
+        shape: nodeShape,
       };
     });
 
