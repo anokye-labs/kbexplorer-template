@@ -3,9 +3,7 @@ import {
   tokens,
   Button,
   Title1,
-  Subtitle2,
   Badge,
-  Card,
   Caption1,
 } from '@fluentui/react-components';
 import {
@@ -199,15 +197,6 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   const source = config.source;
   const cluster = findCluster(config, graph.clusters, node.cluster);
 
-  // Connected nodes
-  const relatedIds = graph.related[nodeId] ?? [];
-  const connectionMap = new Map(
-    node.connections.map(c => [c.to, c.description])
-  );
-  const connectedNodes = relatedIds
-    .map(id => graph.nodes.find(n => n.id === id))
-    .filter((n): n is KBNode => n != null);
-
   // Prev/next within cluster
   const clusterNodes = getClusterNodes(graph.nodes, node.cluster);
   const idx = clusterNodes.findIndex(n => n.id === nodeId);
@@ -252,61 +241,6 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
           className="kb-prose"
           dangerouslySetInnerHTML={{ __html: node.content }}
         />
-
-        {connectedNodes.length > 0 && (
-          <aside className={`${styles.connectionsAside} kb-connections`}>
-            <div className={styles.connectionsTitle}>
-              <Subtitle2>Connected</Subtitle2>
-              <Badge appearance="tint" size="small">{connectedNodes.length}</Badge>
-            </div>
-            <div className={styles.connectionsList}>
-              {connectedNodes.map(cn => {
-                const cnCluster = findCluster(config, graph.clusters, cn.cluster);
-                const desc = connectionMap.get(cn.id) ?? '';
-                return (
-                  <a
-                    key={cn.id}
-                    href={`#/node/${encodeURIComponent(cn.id)}`}
-                    className={styles.connectionCard}
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                  >
-                    <Card appearance="filled-alternative" size="small" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: tokens.spacingHorizontalS, width: '100%' }}>
-                      <NodeVisual
-                        node={cn}
-                        mode={mode}
-                        surface="connection"
-                        source={source}
-                      />
-                      <div className={styles.connectionInfo}>
-                        <Caption1 className={styles.connectionTitle}>{cn.title}</Caption1>
-                        {desc && <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>{desc}</Caption1>}
-                      </div>
-                      <Badge
-                        appearance="tint"
-                        color="informative"
-                        size="small"
-                        className={styles.connectionPill}
-                        icon={
-                          <span
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: '50%',
-                              background: cnCluster.color,
-                              display: 'inline-block',
-                            }}
-                          />
-                        }
-                      >
-                        {cnCluster.name}
-                      </Badge>
-                    </Card>
-                  </a>
-                );
-              })}
-            </div>
-          </aside>
-        )}
       </div>
 
       {/* Prev / Next */}
