@@ -48,7 +48,7 @@ const useStyles = makeStyles({
   },
   header: {
     padding: `0 ${tokens.spacingHorizontalXL} ${tokens.spacingVerticalXXL}`,
-    maxWidth: '1120px',
+    maxWidth: 'var(--prose-max-width, 75%)',
     width: '100%',
     margin: '0 auto',
   },
@@ -70,7 +70,7 @@ const useStyles = makeStyles({
   body: {
     display: 'flex',
     flexDirection: 'column',
-    maxWidth: '1120px',
+    maxWidth: 'var(--prose-max-width, 75%)',
     width: '100%',
     margin: '0 auto',
     padding: `0 ${tokens.spacingHorizontalXL} ${tokens.spacingVerticalXXXL}`,
