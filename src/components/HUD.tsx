@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Network } from 'vis-network/standalone';
 import { DataSet } from 'vis-data';
 import {
@@ -16,6 +16,12 @@ import {
 import {
   ChevronLeftRegular,
   ChevronRightRegular,
+  ChevronUpRegular,
+  ChevronDownRegular,
+  ArrowDownRegular,
+  ArrowUpRegular,
+  ArrowLeftRegular,
+  ArrowRightRegular,
   DismissRegular,
   MapRegular,
   WeatherMoonRegular,
@@ -27,12 +33,16 @@ import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { getVisNodeConfig } from './NodeVisual';
 import { getNodeDegrees } from '../engine/graph';
 
+export type DockPosition = 'bottom' | 'left' | 'right' | 'top';
+
 interface HUDProps {
   graph: KBGraph;
   config: KBConfig;
   currentNodeId: string | null;
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
+  onCollapsedChange?: (collapsed: boolean) => void;
+  onDockChange?: (dock: DockPosition) => void;
 }
 
 const FONT_SIZES = [0.92, 1.0, 1.08, 1.18, 1.3];
@@ -47,6 +57,20 @@ const HIGHLIGHT_COLOR_DARK = '#479ef5';  // colorBrandForeground1
 const HIGHLIGHT_COLOR_LIGHT = '#0f6cbd';
 const FONT_FAMILY = `'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif`;
 
+const ICON_SHAPE_MAP: Record<string, string> = {
+  Sparkle: 'star',
+  Flag: 'star',
+  Wrench: 'hexagon',
+  Bug: 'triangleDown',
+  Lightbulb: 'diamond',
+  Document: 'square',
+  QuestionCircle: 'diamond',
+  Pin: 'dot',
+  Folder: 'square',
+  Merge: 'triangle',
+  BranchFork: 'triangle',
+};
+
 function readPersisted(key: string, fallback: number): number {
   try {
     const v = localStorage.getItem(key);
@@ -58,18 +82,23 @@ function readPersisted(key: string, fallback: number): number {
   return fallback;
 }
 
-const useStyles = makeStyles({
+function readPersistedString(key: string, fallback: string): string {
+  try {
+    const v = localStorage.getItem(key);
+    if (v !== null) return v;
+  } catch { /* ignore */ }
+  return fallback;
+}
+
+const useStyles= makeStyles({
   hud: {
     position: 'fixed',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '168px',
     backgroundColor: tokens.colorNeutralBackground1,
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
     zIndex: 100,
     color: tokens.colorNeutralForeground1,
+    boxShadow: tokens.shadow16,
+    overflow: 'hidden',
   },
   panelLeft: {
     width: '232px',
@@ -130,11 +159,14 @@ const useStyles = makeStyles({
   relatedStrip: {
     display: 'flex',
     gap: tokens.spacingHorizontalS,
-    overflowX: 'auto',
-    overflowY: 'hidden',
+    flexWrap: 'wrap',
+    overflowY: 'auto',
+    overflowX: 'hidden',
     flex: 1,
     minHeight: 0,
     scrollbarWidth: 'thin',
+    alignItems: 'flex-start',
+    alignContent: 'flex-start',
   },
   relatedCard: {
     display: 'flex',
@@ -171,28 +203,49 @@ const useStyles = makeStyles({
   overlay: {
     position: 'fixed',
     inset: '0',
-    zIndex: 200,
+    zIndex: 300,
     backgroundColor: tokens.colorBackgroundOverlay,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     animationName: {
-      from: { opacity: 0 },
-      to: { opacity: 1 },
+      from: {
+        opacity: 0,
+        transform: 'scale(0.3)',
+        transformOrigin: 'bottom left',
+      },
+      to: {
+        opacity: 1,
+        transform: 'scale(1)',
+        transformOrigin: 'bottom left',
+      },
     },
-    animationDuration: '0.25s',
-    animationTimingFunction: 'ease-out',
+    animationDuration: '0.35s',
+    animationTimingFunction: 'cubic-bezier(0.33, 1, 0.68, 1)',
   },
   overlayInner: {
-    width: '90vw',
-    height: '80vh',
-    maxWidth: '1200px',
+    width: '96vw',
+    height: '94vh',
+    maxWidth: '1600px',
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: tokens.colorNeutralBackground1,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusXLarge,
     overflow: 'hidden',
+    boxShadow: tokens.shadow64,
+    animationName: {
+      from: {
+        opacity: 0,
+        transform: 'scale(0.4) translate(-30%, 30%)',
+      },
+      to: {
+        opacity: 1,
+        transform: 'scale(1) translate(0, 0)',
+      },
+    },
+    animationDuration: '0.4s',
+    animationTimingFunction: 'cubic-bezier(0.33, 1, 0.68, 1)',
   },
   overlayHeader: {
     display: 'flex',
@@ -214,9 +267,32 @@ const useStyles = makeStyles({
     flex: 1,
     minHeight: 0,
   },
+  collapsedBar: {
+    display: 'flex',
+    alignItems: 'center',
+    flex: 1,
+    padding: `0 ${tokens.spacingHorizontalM}`,
+    gap: tokens.spacingHorizontalS,
+  },
+  collapseBtn: {
+    position: 'absolute',
+    zIndex: 1,
+  },
+  expandedContent: {
+    display: 'flex',
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
+    position: 'relative',
+  },
+  dockBtnGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+  },
 });
 
-export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDProps) {
+export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
   const styles = useStyles();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -225,6 +301,25 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
   const [fontSize, setFontSize] = useState(() => readPersisted('kbe-font-size', 1));
   const [colWidth, setColWidth] = useState(() => readPersisted('kbe-col-width', 2));
   const [mapExpanded, setMapExpanded] = useState(false);
+
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
+  });
+  const [dock, setDock] = useState<DockPosition>(() =>
+    readPersistedString('kbe-hud-dock', 'bottom') as DockPosition,
+  );
+
+  const handleCollapse = useCallback((value: boolean) => {
+    setCollapsed(value);
+    try { localStorage.setItem('kbe-hud-collapsed', String(value)); } catch { /* ignore */ }
+    onCollapsedChange?.(value);
+  }, [onCollapsedChange]);
+
+  const handleDockChange = useCallback((value: DockPosition) => {
+    setDock(value);
+    try { localStorage.setItem('kbe-hud-dock', value); } catch { /* ignore */ }
+    onDockChange?.(value);
+  }, [onDockChange]);
 
   const currentNode = currentNodeId
     ? graph.nodes.find(n => n.id === currentNodeId) ?? null
@@ -402,9 +497,10 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
       const size = Math.min(18 + deg * 4, 45);
       const color = clusterColorMap.get(n.cluster) ?? '#9A8A78'; // data fallback, intentionally not a theme token
       const visConfig = getVisNodeConfig(n, config.visuals.mode, config.source, color, size);
+      const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
       return {
         id: n.id,
-        label: n.title,
+        label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
         title: `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
         font: {
           color: theme === 'dark' ? LABEL_COLOR : '#242424',
@@ -414,6 +510,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
           strokeColor: theme === 'dark' ? LABEL_STROKE_COLOR : '#ffffff',
         },
         ...visConfig,
+        shape: nodeShape,
       };
     });
 
@@ -469,7 +566,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     if (currentNodeId) {
       net.once('stabilized', () => {
         net.selectNodes([currentNodeId]);
-        net.focus(currentNodeId, { scale: 1.2, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+        net.focus(currentNodeId, { scale: 1.0, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+      });
+    } else {
+      net.once('stabilized', () => {
+        net.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
       });
     }
 
@@ -497,6 +598,70 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
     const next = (currentIdx + 1) % graph.nodes.length;
     navigateTo(`#/node/${encodeURIComponent(graph.nodes[next].id)}`);
   };
+
+  const isVertical = dock === 'left' || dock === 'right';
+  const contentDirection: 'column' | 'row' = isVertical ? 'column' : 'row';
+
+  const hudContainerStyle: React.CSSProperties = {
+    transition: isVertical ? 'width 0.3s ease-out' : 'height 0.3s ease-out',
+    ...(dock === 'bottom' ? {
+      bottom: 0, left: 0, right: 0,
+      height: collapsed ? 40 : 168,
+      borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    } : dock === 'top' ? {
+      top: 0, left: 0, right: 0,
+      height: collapsed ? 40 : 168,
+      borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    } : dock === 'left' ? {
+      top: 0, left: 0, bottom: 0,
+      width: collapsed ? 40 : 280,
+      borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
+    } : {
+      top: 0, right: 0, bottom: 0,
+      width: collapsed ? 40 : 280,
+      borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
+    }),
+  };
+
+  // Collapse button position depends on dock
+  const collapseBtnStyle: React.CSSProperties = dock === 'top'
+    ? { bottom: 4, right: 8 }
+    : dock === 'left'
+    ? { top: 4, right: 4 }
+    : dock === 'right'
+    ? { top: 4, left: 4 }
+    : { top: 4, right: 8 };
+
+  const collapseIcon = dock === 'top' ? <ChevronUpRegular /> : dock === 'left' ? <ChevronLeftRegular /> : dock === 'right' ? <ChevronRightRegular /> : <ChevronDownRegular />;
+  const expandIcon = dock === 'top' ? <ChevronDownRegular /> : dock === 'left' ? <ChevronRightRegular /> : dock === 'right' ? <ChevronLeftRegular /> : <ChevronUpRegular />;
+
+  const themeButtons = (
+    <>
+      <Button
+        appearance={theme === 'dark' ? 'primary' : 'subtle'}
+        size="small"
+        icon={<WeatherMoonRegular />}
+        onClick={() => onThemeChange('dark')}
+        title="Dark"
+      />
+      <Button
+        appearance={theme === 'light' ? 'primary' : 'subtle'}
+        size="small"
+        icon={<WeatherSunnyRegular />}
+        onClick={() => onThemeChange('light')}
+        title="Light"
+      />
+      <Button
+        appearance={theme === 'sepia' ? 'primary' : 'subtle'}
+        size="small"
+        icon={<BookRegular />}
+        onClick={() => onThemeChange('sepia')}
+        title="Sepia"
+      />
+    </>
+  );
+
+  const nodeTitle = currentNode?.title ?? config.title;
 
   return (
     <>
@@ -541,161 +706,212 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange }: HUDP
         </div>
       )}
 
-      <div className={styles.hud}>
-        {/* Left: Minimap */}
-        <div className={styles.panelLeft}>
-          <canvas
-            ref={canvasRef}
-            className={styles.minimap}
-            width={200}
-            height={140}
-            onClick={() => setMapExpanded(true)}
-            title="Expand constellation"
-          />
-          <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
-        </div>
-
-        <Divider vertical />
-
-        {/* Center: Navigation */}
-        <div className={styles.panelCenter}>
-          <div className={styles.navRow}>
+      <div className={styles.hud} style={hudContainerStyle}>
+        {collapsed ? (
+          <div className={styles.collapsedBar}>
             <Button
-              appearance="outline"
               size="small"
-              icon={<MapRegular />}
-              onClick={() => setMapExpanded(true)}
-            >
-              MAP
-            </Button>
-            <Button
               appearance="subtle"
-              size="small"
-              icon={<ChevronLeftRegular />}
-              onClick={goPrev}
-              disabled={!currentNode}
-              title="Previous node (←)"
+              icon={expandIcon}
+              onClick={() => handleCollapse(false)}
+              title="Expand"
             />
-            {currentNode ? (
-              <div className={styles.currentNode}>
-                {currentNode.emoji && isFluentIconName(currentNode.emoji) ? (
-                  (() => { const Icon = FLUENT_ICONS[currentNode.emoji]; return <Icon style={{ fontSize: 20 }} />; })()
-                ) : (
-                  <span style={{ fontSize: tokens.fontSizeBase500 }}>{currentNode.emoji ?? ''}</span>
-                )}
-                <Body1Strong className={styles.currentTitle}>{currentNode.title}</Body1Strong>
-                <Caption1 style={{ color: tokens.colorNeutralForeground3, whiteSpace: 'nowrap' }}>
-                  {currentNode.cluster}
-                </Caption1>
-              </div>
-            ) : (
-              <span className={styles.placeholder}>Click any node to begin reading</span>
+            {!isVertical && (
+              <>
+                <div className={styles.currentNode} style={{ justifyContent: 'center' }}>
+                  {currentNode?.emoji && isFluentIconName(currentNode.emoji) ? (
+                    (() => { const Icon = FLUENT_ICONS[currentNode.emoji]; return <Icon style={{ fontSize: 20 }} />; })()
+                  ) : (
+                    <span style={{ fontSize: tokens.fontSizeBase500 }}>{currentNode?.emoji ?? ''}</span>
+                  )}
+                  <Body1Strong className={styles.currentTitle}>{nodeTitle}</Body1Strong>
+                </div>
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+                  {themeButtons}
+                </div>
+              </>
             )}
-            <Button
-              appearance="subtle"
-              size="small"
-              icon={<ChevronRightRegular />}
-              onClick={goNext}
-              disabled={!currentNode}
-              title="Next node (→)"
-            />
           </div>
+        ) : (
+          <div className={styles.expandedContent} style={{ flexDirection: contentDirection }}>
+            <Button
+              className={styles.collapseBtn}
+              style={collapseBtnStyle}
+              size="small"
+              appearance="subtle"
+              icon={collapseIcon}
+              onClick={() => handleCollapse(true)}
+              title="Collapse"
+            />
 
-          {currentNode && (
-          <div className={styles.navRow} style={{ alignItems: 'flex-start' }}>
-            <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Related
-            </Caption2>
-            <div className={styles.relatedStrip}>
-              {relatedNodes.length > 0 ? (
-                relatedNodes.map(n => (
-                  <a
-                    key={n.id}
-                    href={`#/node/${encodeURIComponent(n.id)}`}
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                  >
-                    <Card
-                      appearance="subtle"
-                      size="small"
-                      className={styles.relatedCard}
+            {/* Minimap panel */}
+            <div className={styles.panelLeft} style={isVertical ? { width: 'auto' } : undefined}>
+              <canvas
+                ref={canvasRef}
+                className={styles.minimap}
+                width={200}
+                height={140}
+                onClick={() => setMapExpanded(true)}
+                title="Expand constellation"
+              />
+              <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
+            </div>
+
+            <Divider vertical={!isVertical} />
+
+            {/* Center: Navigation */}
+            <div className={styles.panelCenter} style={isVertical ? { overflowY: 'auto' } : undefined}>
+              <div className={styles.navRow}>
+                <Button
+                  appearance="outline"
+                  size="small"
+                  icon={<MapRegular />}
+                  onClick={() => setMapExpanded(true)}
+                >
+                  MAP
+                </Button>
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<ChevronLeftRegular />}
+                  onClick={goPrev}
+                  disabled={!currentNode}
+                  title="Previous node (←)"
+                />
+                {currentNode ? (
+                  <div className={styles.currentNode}>
+                    {currentNode.emoji && isFluentIconName(currentNode.emoji) ? (
+                      (() => { const Icon = FLUENT_ICONS[currentNode.emoji]; return <Icon style={{ fontSize: 20 }} />; })()
+                    ) : (
+                      <span style={{ fontSize: tokens.fontSizeBase500 }}>{currentNode.emoji ?? ''}</span>
+                    )}
+                    <Body1Strong className={styles.currentTitle}>{currentNode.title}</Body1Strong>
+                    <Caption1 style={{ color: tokens.colorNeutralForeground3, whiteSpace: 'nowrap' }}>
+                      {currentNode.cluster}
+                    </Caption1>
+                  </div>
+                ) : (
+                  <span className={styles.placeholder}>Click any node to begin reading</span>
+                )}
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<ChevronRightRegular />}
+                  onClick={goNext}
+                  disabled={!currentNode}
+                  title="Next node (→)"
+                />
+              </div>
+
+              {currentNode && (
+              <div className={styles.relatedStrip}>
+                <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0, lineHeight: '32px' }}>
+                  Related
+                </Caption2>
+                {relatedNodes.length > 0 ? (
+                  relatedNodes.map(n => (
+                    <a
+                      key={n.id}
+                      href={`#/node/${encodeURIComponent(n.id)}`}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
                     >
-                      <NodeVisual
-                        node={n}
-                        mode={config.visuals.mode}
-                        surface="hud-thumb"
-                        source={config.source}
-                      />
-                      <Caption1 className={styles.relatedTitle}>{n.title}</Caption1>
-                    </Card>
-                  </a>
-                ))
-              ) : (
-                <span className={styles.placeholder} style={{ fontSize: tokens.fontSizeBase200 }}>No related nodes</span>
+                      <Card
+                        appearance="subtle"
+                        size="small"
+                        className={styles.relatedCard}
+                      >
+                        <NodeVisual
+                          node={n}
+                          mode={config.visuals.mode}
+                          surface="hud-thumb"
+                          source={config.source}
+                        />
+                        <Caption1 className={styles.relatedTitle}>{n.title}</Caption1>
+                      </Card>
+                    </a>
+                  ))
+                ) : (
+                  <span className={styles.placeholder} style={{ fontSize: tokens.fontSizeBase200 }}>No related nodes</span>
+                )}
+              </div>
+              )}
+            </div>
+
+            <Divider vertical={!isVertical} />
+
+            {/* Right: Reading Tools */}
+            <div className={styles.panelRight} style={isVertical ? { width: 'auto' } : undefined}>
+              <div className={styles.toolRow}>
+                <Caption2 className={styles.toolLabel}>Theme</Caption2>
+                {themeButtons}
+              </div>
+
+              <div className={styles.toolRow}>
+                <Caption2 className={styles.toolLabel}>Dock</Caption2>
+                <div className={styles.dockBtnGroup}>
+                  <Button
+                    appearance={dock === 'bottom' ? 'primary' : 'subtle'}
+                    size="small"
+                    icon={<ArrowDownRegular />}
+                    onClick={() => handleDockChange('bottom')}
+                    title="Dock bottom"
+                  />
+                  <Button
+                    appearance={dock === 'left' ? 'primary' : 'subtle'}
+                    size="small"
+                    icon={<ArrowLeftRegular />}
+                    onClick={() => handleDockChange('left')}
+                    title="Dock left"
+                  />
+                  <Button
+                    appearance={dock === 'right' ? 'primary' : 'subtle'}
+                    size="small"
+                    icon={<ArrowRightRegular />}
+                    onClick={() => handleDockChange('right')}
+                    title="Dock right"
+                  />
+                  <Button
+                    appearance={dock === 'top' ? 'primary' : 'subtle'}
+                    size="small"
+                    icon={<ArrowUpRegular />}
+                    onClick={() => handleDockChange('top')}
+                    title="Dock top"
+                  />
+                </div>
+              </div>
+
+              {currentNode && (
+              <>
+              <div className={styles.toolRow}>
+                <Caption2 className={styles.toolLabel}>Aa</Caption2>
+                <Slider
+                  className={styles.slider}
+                  min={0}
+                  max={4}
+                  step={1}
+                  value={fontSize}
+                  onChange={(_e, data) => setFontSize(data.value)}
+                  title={`Font size: ${FONT_SIZES[fontSize]}rem`}
+                />
+              </div>
+
+              <div className={styles.toolRow}>
+                <Caption2 className={styles.toolLabel}>Width</Caption2>
+                <Slider
+                  className={styles.slider}
+                  min={0}
+                  max={4}
+                  step={1}
+                  value={colWidth}
+                  onChange={(_e, data) => setColWidth(data.value)}
+                  title={`Column width: ${COL_WIDTHS[colWidth]}px`}
+                />
+              </div>
+              </>
               )}
             </div>
           </div>
-          )}
-        </div>
-
-        <Divider vertical />
-
-        {/* Right: Reading Tools */}
-        <div className={styles.panelRight}>
-          <div className={styles.toolRow}>
-            <Caption2 className={styles.toolLabel}>Theme</Caption2>
-            <Button
-              appearance={theme === 'dark' ? 'primary' : 'subtle'}
-              size="small"
-              icon={<WeatherMoonRegular />}
-              onClick={() => onThemeChange('dark')}
-              title="Dark"
-            />
-            <Button
-              appearance={theme === 'light' ? 'primary' : 'subtle'}
-              size="small"
-              icon={<WeatherSunnyRegular />}
-              onClick={() => onThemeChange('light')}
-              title="Light"
-            />
-            <Button
-              appearance={theme === 'sepia' ? 'primary' : 'subtle'}
-              size="small"
-              icon={<BookRegular />}
-              onClick={() => onThemeChange('sepia')}
-              title="Sepia"
-            />
-          </div>
-
-          {currentNode && (
-          <>
-          <div className={styles.toolRow}>
-            <Caption2 className={styles.toolLabel}>Aa</Caption2>
-            <Slider
-              className={styles.slider}
-              min={0}
-              max={4}
-              step={1}
-              value={fontSize}
-              onChange={(_e, data) => setFontSize(data.value)}
-              title={`Font size: ${FONT_SIZES[fontSize]}rem`}
-            />
-          </div>
-
-          <div className={styles.toolRow}>
-            <Caption2 className={styles.toolLabel}>Width</Caption2>
-            <Slider
-              className={styles.slider}
-              min={0}
-              max={4}
-              step={1}
-              value={colWidth}
-              onChange={(_e, data) => setColWidth(data.value)}
-              title={`Column width: ${COL_WIDTHS[colWidth]}px`}
-            />
-          </div>
-          </>
-          )}
-        </div>
+        )}
       </div>
     </>
   );

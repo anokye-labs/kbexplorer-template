@@ -77,7 +77,7 @@ const useStyles = makeStyles({
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
     gap: tokens.spacingHorizontalL,
     '@media (max-width: 768px)': {
       gridTemplateColumns: '1fr',
