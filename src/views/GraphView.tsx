@@ -118,8 +118,8 @@ export default function GraphView({ graph, config }: GraphViewProps) {
             opacity: 1,
             ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
             shape: nodeShape,
-            label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
-            font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 12 },
+            label: n.title.length > 25 ? n.title.substring(0, 22) + '...' : n.title,
+            font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 11, vadjust: 45 },
           };
         });
         ds.update(updates);
@@ -137,11 +137,12 @@ export default function GraphView({ graph, config }: GraphViewProps) {
           opacity: inCluster ? 1 : 0.15,
           ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
           shape: nodeShape,
-          label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
+          label: n.title.length > 25 ? n.title.substring(0, 22) + '...' : n.title,
           font: {
             color: inCluster ? LABEL_COLOR : 'rgba(214,214,214,0.15)',
             face: FONT_FAMILY,
-            size: 12,
+            size: 11,
+            vadjust: 45,
           },
         };
       });
@@ -158,7 +159,7 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       const size = Math.min(24 + deg * 3, 40);
       const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
       const visConfig = getVisNodeConfig(n, config.visuals.mode, config.source, color, size);
-      const truncatedLabel = n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title;
+      const truncatedLabel = n.title.length > 25 ? n.title.substring(0, 22) + '...' : n.title;
       const fullTitle = `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`;
       const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
 
@@ -166,7 +167,7 @@ export default function GraphView({ graph, config }: GraphViewProps) {
         id: n.id,
         label: truncatedLabel,
         title: fullTitle,
-        font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 12, strokeWidth: 3, strokeColor: LABEL_STROKE_COLOR },
+        font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 11, strokeWidth: 3, strokeColor: LABEL_STROKE_COLOR, multi: 'md' as const, vadjust: 45 },
         ...visConfig,
         shape: nodeShape,
       };
@@ -189,19 +190,22 @@ export default function GraphView({ graph, config }: GraphViewProps) {
     const network = new Network(containerRef.current, { nodes, edges }, {
       nodes: {
         scaling: {
-          label: { enabled: true, min: 8, max: 14 },
+          label: { enabled: true, min: 8, max: 14, drawThreshold: 5 },
+        },
+        font: {
+          vadjust: 45, // push label below the node shape
         },
       },
       physics: {
         solver: 'forceAtlas2Based',
         forceAtlas2Based: {
-          gravitationalConstant: -120,
-          centralGravity: 0.008,
-          springLength: 180,
-          springConstant: 0.04,
+          gravitationalConstant: -160,
+          centralGravity: 0.005,
+          springLength: 250,
+          springConstant: 0.03,
           damping: 0.4,
         },
-        stabilization: { iterations: 250 },
+        stabilization: { iterations: 300 },
       },
       interaction: {
         hover: true,
