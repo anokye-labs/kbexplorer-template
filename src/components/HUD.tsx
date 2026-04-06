@@ -101,7 +101,7 @@ const useStyles= makeStyles({
     overflow: 'hidden',
   },
   panelLeft: {
-    width: '232px',
+    width: 'auto',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -118,7 +118,7 @@ const useStyles= makeStyles({
     gap: tokens.spacingVerticalS,
   },
   panelRight: {
-    width: '240px',
+    width: 'auto',
     display: 'flex',
     flexDirection: 'column',
     padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
@@ -204,7 +204,7 @@ const useStyles= makeStyles({
     position: 'fixed',
     inset: '0',
     zIndex: 300,
-    backgroundColor: tokens.colorBackgroundOverlay,
+    backgroundColor: 'rgba(0,0,0,0.85)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -224,16 +224,17 @@ const useStyles= makeStyles({
     animationTimingFunction: 'cubic-bezier(0.33, 1, 0.68, 1)',
   },
   overlayInner: {
-    width: '96vw',
-    height: '94vh',
-    maxWidth: '1600px',
+    width: '100vw',
+    height: '100vh',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: tokens.colorNeutralBackground1,
+    backgroundColor: '#1f1f1f',
+    color: '#e0e0e0',
     border: `1px solid ${tokens.colorNeutralStroke2}`,
-    borderRadius: tokens.borderRadiusXLarge,
     overflow: 'hidden',
     boxShadow: tokens.shadow64,
+    padding: '20px',
+    boxSizing: 'border-box',
     animationName: {
       from: {
         opacity: 0,
@@ -508,6 +509,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
           size: 11,
           strokeWidth: 3,
           strokeColor: theme === 'dark' ? LABEL_STROKE_COLOR : '#ffffff',
+          vadjust: 45,
         },
         ...visConfig,
         shape: nodeShape,
@@ -535,9 +537,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       physics: {
         solver: 'forceAtlas2Based',
         forceAtlas2Based: {
-          gravitationalConstant: -60,
-          centralGravity: 0.015,
-          springLength: 100,
+          gravitationalConstant: -160,
+          centralGravity: 0.005,
+          springLength: 250,
           springConstant: 0.08,
           damping: 0.4,
         },
@@ -565,6 +567,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
 
     if (currentNodeId) {
       net.once('stabilized', () => {
+        net.fit({ animation: false });
         net.selectNodes([currentNodeId]);
         net.focus(currentNodeId, { scale: 1.0, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
       });

@@ -118,6 +118,7 @@ const useStyles = makeStyles({
   navFooter: {
     marginTop: 'auto',
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    backgroundColor: 'transparent',
     display: 'flex',
   },
   navLink: {
@@ -254,7 +255,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
                     className={styles.connectionCard}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >
-                    <Card size="small" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: tokens.spacingHorizontalS, width: '100%' }}>
+                    <Card appearance="filled-alternative" size="small" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: tokens.spacingHorizontalS, width: '100%' }}>
                       <NodeVisual
                         node={cn}
                         mode={mode}
