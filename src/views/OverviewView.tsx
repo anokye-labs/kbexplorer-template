@@ -8,9 +8,11 @@ import {
   CardHeader,
   Badge,
   CounterBadge,
+  Button,
   makeStyles,
   tokens,
 } from '@fluentui/react-components';
+import { GlobeRegular } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 
@@ -126,6 +128,17 @@ export function OverviewView({ graph, config }: OverviewViewProps) {
       <Caption1 className={classes.stats} as="p">
         {graph.nodes.length} nodes · {graph.edges.length} edges · {graph.clusters.length} clusters
       </Caption1>
+
+      <div style={{ marginBottom: tokens.spacingVerticalXXL }}>
+        <Button
+          appearance="outline"
+          icon={<GlobeRegular />}
+          as="a"
+          href="#/graph"
+        >
+          View constellation
+        </Button>
+      </div>
 
       {groups.map(({ cluster, nodes }) => (
         <section key={cluster.id} className={classes.cluster}>
