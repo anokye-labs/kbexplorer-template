@@ -14,7 +14,16 @@ import {
   ChevronRightRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
-import { NodeVisual } from '../components/NodeVisual';
+import { NodeVisual, FLUENT_ICONS, isFluentIconName } from '../components/NodeVisual';
+
+function renderNodeIcon(emoji: string | undefined) {
+  if (!emoji) return null;
+  if (isFluentIconName(emoji)) {
+    const Icon = FLUENT_ICONS[emoji];
+    return <Icon style={{ fontSize: 16 }} />;
+  }
+  return <span>{emoji}</span>;
+}
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -42,6 +51,7 @@ const useStyles = makeStyles({
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
+    backgroundColor: tokens.colorNeutralBackground2,
   },
   backLink: {
     padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalXL}`,
@@ -86,8 +96,8 @@ const useStyles = makeStyles({
     marginBottom: tokens.spacingVerticalM,
   },
   connectionsList: {
-    display: 'flex',
-    flexDirection: 'column',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
     gap: tokens.spacingVerticalS,
   },
   connectionCard: {
@@ -116,10 +126,15 @@ const useStyles = makeStyles({
     flexShrink: 0,
   },
   navFooter: {
-    marginTop: 'auto',
+    marginTop: tokens.spacingVerticalXXL,
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     backgroundColor: 'transparent',
     display: 'flex',
+    maxWidth: 'var(--prose-max-width, 75%)',
+    width: '100%',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    padding: `0 ${tokens.spacingHorizontalXL}`,
   },
   navLink: {
     flex: 1,
@@ -306,7 +321,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
           style={{ flex: 1, justifyContent: 'flex-start' }}
         >
           <span className={styles.navTitle}>
-            {prev?.emoji && <span>{prev.emoji}</span>}
+            {renderNodeIcon(prev?.emoji)}
             {prev?.title ?? '—'}
           </span>
         </Button>
@@ -321,7 +336,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
           style={{ flex: 1, justifyContent: 'flex-end' }}
         >
           <span className={styles.navTitle}>
-            {next?.emoji && <span>{next.emoji}</span>}
+            {renderNodeIcon(next?.emoji)}
             {next?.title ?? '—'}
           </span>
         </Button>

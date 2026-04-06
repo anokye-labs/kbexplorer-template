@@ -149,20 +149,12 @@
 
 /* ── Responsive layout ───────────────────────────────── */
 @media (min-width: 1025px) {
-  .kb-reading-body {
-    flex-direction: row;
-  }
-
   .kb-prose {
     flex: 1;
     min-width: 0;
   }
 
   .kb-connections {
-    width: 280px;
-    position: sticky;
-    top: 2rem;
-    align-self: flex-start;
     background: transparent;
   }
 }
