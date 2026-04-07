@@ -267,7 +267,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const [fontSize, setFontSize] = useState(() => readPersisted('kbe-font-size', 1));
   const [colWidth, setColWidth] = useState(() => readPersisted('kbe-col-width', 2));
   const [mapExpanded, setMapExpanded] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(() => readPersisted('kbe-sidebar-w', 480));
+  const [sidebarWidth, setSidebarWidth] = useState(() => readPersisted('kbe-sidebar-w', 25));
   const resizeRef = useRef<{ startX: number; startW: number } | null>(null);
 
   const [collapsed, setCollapsed] = useState(() => {
@@ -298,7 +298,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       const delta = dock === 'left'
         ? ev.clientX - resizeRef.current.startX
         : resizeRef.current.startX - ev.clientX;
-      const newW = Math.max(280, Math.min(800, resizeRef.current.startW + delta));
+      const deltaVw = delta / window.innerWidth * 100;
+      const newW = Math.max(15, Math.min(50, resizeRef.current.startW + deltaVw));
       setSidebarWidth(newW);
     };
     const onUp = () => {
@@ -338,7 +339,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   // Publish sidebar width as CSS variable for content padding
   useEffect(() => {
     const isV = dock === 'left' || dock === 'right';
-    document.documentElement.style.setProperty('--kbe-sidebar-width', isV && !collapsed ? `${sidebarWidth}px` : '0px');
+    document.documentElement.style.setProperty('--kbe-sidebar-width', isV && !collapsed ? `${sidebarWidth}vw` : '0px');
     try { localStorage.setItem('kbe-sidebar-w', String(sidebarWidth)); } catch { /* */ }
   }, [sidebarWidth, dock, collapsed]);
 
@@ -510,11 +511,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
-      width: collapsed ? 40 : sidebarWidth,
+      width: collapsed ? 40 : `${sidebarWidth}vw`,
       borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     } : {
       top: 0, right: 0, bottom: 0,
-      width: collapsed ? 40 : sidebarWidth,
+      width: collapsed ? 40 : `${sidebarWidth}vw`,
       borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
     }),
   };
