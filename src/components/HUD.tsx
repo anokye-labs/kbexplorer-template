@@ -115,6 +115,7 @@ const useStyles= makeStyles({
     padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
     gap: tokens.spacingVerticalXS,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   panelRight: {
     display: 'flex',
@@ -162,6 +163,7 @@ const useStyles= makeStyles({
     minHeight: 0,
     alignItems: 'flex-start',
     alignContent: 'flex-start',
+    justifyContent: 'center',
   },
   relatedCard: {
     display: 'flex',
