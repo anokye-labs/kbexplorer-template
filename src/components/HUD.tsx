@@ -5,7 +5,6 @@ import {
   makeStyles,
   tokens,
   Button,
-  Divider,
   Slider,
   Card,
   Badge,
@@ -101,12 +100,11 @@ const useStyles= makeStyles({
     overflow: 'hidden',
   },
   panelLeft: {
-    width: 'auto',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
+    padding: tokens.spacingVerticalXS,
     flexShrink: 0,
   },
   panelCenter: {
@@ -114,21 +112,21 @@ const useStyles= makeStyles({
     minWidth: 0,
     display: 'flex',
     flexDirection: 'column',
-    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
-    gap: tokens.spacingVerticalS,
+    padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
+    gap: tokens.spacingVerticalXS,
+    justifyContent: 'center',
   },
   panelRight: {
-    width: 'auto',
     display: 'flex',
     flexDirection: 'column',
-    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
+    padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
     flexShrink: 0,
-    gap: tokens.spacingVerticalSNudge,
+    gap: tokens.spacingVerticalXXS,
     justifyContent: 'center',
   },
   minimap: {
-    width: '140px',
-    height: '100px',
+    width: '120px',
+    height: '80px',
     cursor: 'pointer',
     borderRadius: tokens.borderRadiusMedium,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -422,7 +420,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     const highlightColor = theme === 'dark' ? HIGHLIGHT_COLOR_DARK : HIGHLIGHT_COLOR_LIGHT;
 
     const dpr = window.devicePixelRatio || 1;
-    const W = 140, H = 100;
+    const W = 120, H = 80;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     ctx.scale(dpr, dpr);
@@ -606,11 +604,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     transition: isVertical ? 'width 0.3s ease-out' : 'height 0.3s ease-out',
     ...(dock === 'bottom' ? {
       bottom: 0, left: 0, right: 0,
-      height: collapsed ? 40 : 128,
+      height: collapsed ? 40 : 148,
       borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     } : dock === 'top' ? {
       top: 0, left: 0, right: 0,
-      height: collapsed ? 40 : 128,
+      height: collapsed ? 40 : 148,
       borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
@@ -749,15 +747,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               <canvas
                 ref={canvasRef}
                 className={styles.minimap}
-                width={140}
-                height={100}
+                width={120}
+                height={80}
                 onClick={() => setMapExpanded(true)}
                 title="Expand constellation"
               />
               <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
             </div>
-
-            <Divider vertical={!isVertical} />
 
             {/* Center: Navigation */}
             <div className={styles.panelCenter} style={isVertical ? { overflowY: 'auto' } : undefined}>
@@ -836,8 +832,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               </div>
               )}
             </div>
-
-            <Divider vertical={!isVertical} />
 
             {/* Right: Reading Tools */}
             <div className={styles.panelRight} style={isVertical ? { width: 'auto' } : undefined}>

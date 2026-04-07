@@ -29,7 +29,6 @@ function findCluster(config: KBConfig, clusters: Cluster[], clusterId: string) {
 
 const useStyles = makeStyles({
   root: {
-    minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: tokens.colorNeutralBackground2,

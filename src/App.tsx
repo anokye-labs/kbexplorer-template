@@ -74,7 +74,7 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
 
   const { graph, config } = state;
 
-  const paddingSize = hudCollapsed ? 40 : (hudDock === 'left' || hudDock === 'right' ? 240 : 144);
+  const paddingSize = hudCollapsed ? 40 : (hudDock === 'left' || hudDock === 'right' ? 240 : 156);
   const paddingStyle = isGraph ? {} : (
     hudDock === 'top' ? { paddingTop: paddingSize }
     : hudDock === 'left' ? { paddingLeft: paddingSize }
@@ -110,7 +110,7 @@ function App() {
   const [themeMode, fluentTheme, setThemeMode] = useTheme();
 
   return (
-    <FluentProvider theme={fluentTheme} style={{ height: '100%' }}>
+    <FluentProvider theme={fluentTheme} style={{ minHeight: '100vh' }}>
       <HashRouter>
         <Explorer themeMode={themeMode} setThemeMode={setThemeMode} />
       </HashRouter>
