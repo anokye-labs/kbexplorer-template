@@ -19,9 +19,9 @@ const ICON_PATHS: Record<string, string> = {
   BranchFork: 'M7.5 3a2.5 2.5 0 0 1 .5 4.95v1.55c0 .83.67 1.5 1.5 1.5h1c1.66 0 3 1.34 3 3v.55a2.5 2.5 0 1 1-1 0V14c0-1.1-.9-2-2-2h-1A2.5 2.5 0 0 1 7 9.5V7.95A2.5 2.5 0 0 1 7.5 3Z',
 };
 
-type NodeShapeType = 'circle' | 'roundedSquare' | 'roundedRect';
+export type NodeShapeType = 'circle' | 'roundedSquare' | 'roundedRect';
 
-const ICON_NODE_SHAPE: Record<string, NodeShapeType> = {
+export const ICON_NODE_SHAPE: Record<string, NodeShapeType> = {
   Sparkle: 'circle',
   Flag: 'circle',
   Lightbulb: 'circle',

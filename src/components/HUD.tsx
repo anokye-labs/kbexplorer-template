@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Network } from 'vis-network/standalone';
-import { DataSet } from 'vis-data';
 import {
   makeStyles,
   tokens,
@@ -29,8 +27,8 @@ import {
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
-import { getVisNodeConfig } from './NodeVisual';
-import { getNodeDegrees } from '../engine/graph';
+import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
+import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
 
 export type DockPosition = 'bottom' | 'left' | 'right' | 'top';
 
@@ -47,28 +45,8 @@ interface HUDProps {
 const FONT_SIZES = [0.92, 1.0, 1.08, 1.18, 1.3];
 const COL_WIDTHS = ['50%', '65%', '75%', '85%', '100%'];
 
-// Fluent 2 dark-theme hex values for vis-network / canvas
-const LABEL_COLOR = '#d6d6d6';
-const LABEL_STROKE_COLOR = '#1f1f1f';
-const EDGE_COLOR = '#383838';
-const EDGE_HOVER_COLOR = '#5c5c5c';
 const HIGHLIGHT_COLOR_DARK = '#479ef5';  // colorBrandForeground1
 const HIGHLIGHT_COLOR_LIGHT = '#0f6cbd';
-const FONT_FAMILY = `'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif`;
-
-const ICON_SHAPE_MAP: Record<string, string> = {
-  Sparkle: 'star',
-  Flag: 'star',
-  Wrench: 'hexagon',
-  Bug: 'triangleDown',
-  Lightbulb: 'diamond',
-  Document: 'square',
-  QuestionCircle: 'diamond',
-  Pin: 'dot',
-  Folder: 'square',
-  Merge: 'triangle',
-  BranchFork: 'triangle',
-};
 
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -301,7 +279,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const styles = useStyles();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const overlayNetworkRef = useRef<Network | null>(null);
 
   const [fontSize, setFontSize] = useState(() => readPersisted('kbe-font-size', 1));
   const [colWidth, setColWidth] = useState(() => readPersisted('kbe-col-width', 2));
@@ -354,66 +331,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const minimapPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   useEffect(() => {
-    const tempDiv = document.createElement('div');
-    tempDiv.style.cssText = 'position:absolute;left:-9999px;width:400px;height:280px;';
-    document.body.appendChild(tempDiv);
-
-    const degrees = getNodeDegrees(graph);
-    const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
-
-    const nodeData = graph.nodes.map(n => {
-      const deg = degrees.get(n.id) ?? 0;
-      const size = Math.min(10 + deg * 3, 30);
-      const color = clusterColorMap.get(n.cluster) ?? '#888'; // data fallback, intentionally not a theme token
-      return {
-        id: n.id,
-        label: '',
-        size,
-        color: { background: color + '88', border: color },
-        borderWidth: 1,
-      };
-    });
-
-    const edgeData = graph.edges.map((e, i) => ({
-      id: `e${i}`,
-      from: e.from,
-      to: e.to,
-    }));
-
-    const nodes = new DataSet(nodeData);
-    const edges = new DataSet(edgeData);
-
-    const net = new Network(tempDiv, { nodes, edges }, {
-      physics: {
-        solver: 'forceAtlas2Based',
-        forceAtlas2Based: {
-          gravitationalConstant: -40,
-          centralGravity: 0.02,
-          springLength: 60,
-          springConstant: 0.08,
-          damping: 0.5,
-        },
-        stabilization: { iterations: 200 },
-      },
-      interaction: { dragNodes: false, zoomView: false, dragView: false },
-    });
-
-    net.once('stabilized', () => {
-      const positions = net.getPositions();
-      const posMap = new Map<string, { x: number; y: number }>();
-      for (const [id, pos] of Object.entries(positions)) {
-        posMap.set(id, pos as { x: number; y: number });
-      }
+    const cleanup = computeGraphPositions(graph, (posMap) => {
       minimapPositionsRef.current = posMap;
-      net.destroy();
-      document.body.removeChild(tempDiv);
       drawMinimap();
     });
-
-    return () => {
-      try { net.destroy(); } catch { /* already destroyed */ }
-      try { document.body.removeChild(tempDiv); } catch { /* already removed */ }
-    };
+    return cleanup;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph]);
 
@@ -470,12 +392,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
 
     // Draw nodes with shape-matched outlines
     const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
-    const shapeMap: Record<string, 'circle' | 'roundedSquare' | 'roundedRect'> = {
-      Sparkle: 'circle', Flag: 'circle', Lightbulb: 'circle', QuestionCircle: 'circle',
-      Pin: 'circle', Merge: 'circle', BranchFork: 'circle',
-      Wrench: 'roundedSquare', Bug: 'roundedSquare',
-      Document: 'roundedRect', Folder: 'roundedRect',
-    };
 
     for (const node of graph.nodes) {
       const pos = posMap.get(node.id);
@@ -484,7 +400,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       const isCurrent = node.id === currentNodeId;
       const color = clusterColorMap.get(node.cluster) ?? '#888';
       const r = isCurrent ? 5 : 3.5;
-      const shape = (node.emoji && shapeMap[node.emoji]) || 'circle';
+      const shape = (node.emoji && ICON_NODE_SHAPE[node.emoji]) || 'circle';
 
       ctx.beginPath();
       if (shape === 'circle') {
@@ -531,101 +447,21 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   useEffect(() => {
     if (!mapExpanded || !overlayRef.current) return;
 
-    const degrees = getNodeDegrees(graph);
-    const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
-
-    const nodeData = graph.nodes.map(n => {
-      const deg = degrees.get(n.id) ?? 0;
-      const size = Math.min(18 + deg * 4, 45);
-      const color = clusterColorMap.get(n.cluster) ?? '#9A8A78'; // data fallback, intentionally not a theme token
-      const visConfig = getVisNodeConfig(n, config.visuals.mode, config.source, color, size);
-      const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
-      return {
-        id: n.id,
-        label: n.title.length > 40 ? n.title.substring(0, 37) + '...' : n.title,
-        title: `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
-        font: {
-          color: theme === 'dark' ? LABEL_COLOR : '#242424',
-          face: FONT_FAMILY,
-          size: 11,
-          strokeWidth: 3,
-          strokeColor: theme === 'dark' ? LABEL_STROKE_COLOR : '#ffffff',
-          vadjust: 45,
-        },
-        ...visConfig,
-        shape: nodeShape,
-      };
-    });
-
-    const edgeData = graph.edges.map((e, i) => ({
-      id: `e${i}`,
-      from: e.from,
-      to: e.to,
-      title: e.description,
-      color: {
-        color: theme === 'dark' ? EDGE_COLOR : '#c0c0c0',
-        hover: theme === 'dark' ? EDGE_HOVER_COLOR : '#808080',
-        highlight: theme === 'dark' ? EDGE_HOVER_COLOR : '#808080',
-      },
-      width: 1,
-      dashes: [3, 5],
-    }));
-
-    const nodes = new DataSet(nodeData);
-    const edges = new DataSet(edgeData);
-
-    const net = new Network(overlayRef.current, { nodes, edges }, {
-      physics: {
-        solver: 'forceAtlas2Based',
-        forceAtlas2Based: {
-          gravitationalConstant: -160,
-          centralGravity: 0.005,
-          springLength: 250,
-          springConstant: 0.08,
-          damping: 0.4,
-        },
-        stabilization: { iterations: 200 },
-      },
-      interaction: {
-        hover: true,
-        tooltipDelay: 200,
-        navigationButtons: false,
-        keyboard: false,
-        dragView: true,
-        zoomView: true,
-      },
-      edges: {
-        smooth: { enabled: true, type: 'continuous', roundness: 0.5 },
-      },
-    });
-
-    net.on('click', (params: { nodes: string[] }) => {
-      if (params.nodes.length > 0) {
+    const { network } = createGraphNetwork({
+      container: overlayRef.current,
+      graph,
+      isDark: true,
+      onNodeClick: (id) => {
         setMapExpanded(false);
-        window.location.hash = `/node/${encodeURIComponent(params.nodes[0])}`;
-      }
+        window.location.hash = `/node/${encodeURIComponent(id)}`;
+      },
+      focusNodeId: currentNodeId,
+      fitOnStabilize: !currentNodeId,
     });
 
-    if (currentNodeId) {
-      net.once('stabilized', () => {
-        net.fit({ animation: false });
-        net.selectNodes([currentNodeId]);
-        net.focus(currentNodeId, { scale: 1.0, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
-      });
-    } else {
-      net.once('stabilized', () => {
-        net.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
-      });
-    }
-
-    overlayNetworkRef.current = net;
-
-    return () => {
-      net.destroy();
-      overlayNetworkRef.current = null;
-    };
+    return () => { network.destroy(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapExpanded, graph, config, theme]);
+  }, [mapExpanded, graph, config]);
 
   const navigateTo = useCallback((hash: string) => {
     window.location.hash = hash;
