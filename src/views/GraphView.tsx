@@ -12,22 +12,8 @@ import {
 } from '@fluentui/react-components';
 import { ArrowLeftRegular } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig } from '../types';
-import { getVisNodeConfig } from '../components/NodeVisual';
 import { getNodeDegrees } from '../engine/graph';
-
-const ICON_SHAPE_MAP: Record<string, string> = {
-  Sparkle: 'star',
-  Flag: 'star',
-  Wrench: 'hexagon',
-  Bug: 'triangleDown',
-  Lightbulb: 'diamond',
-  Document: 'square',
-  QuestionCircle: 'diamond',
-  Pin: 'dot',
-  Folder: 'square',
-  Merge: 'triangle',
-  BranchFork: 'triangle',
-};
+import { createNodeRenderer } from '../engine/nodeRenderer';
 
 interface GraphViewProps {
   graph: KBGraph;
@@ -35,11 +21,8 @@ interface GraphViewProps {
 }
 
 // Fluent 2 dark-theme hex values for vis-network (not React components)
-const LABEL_COLOR = '#d6d6d6';       // colorNeutralForeground2
-const LABEL_STROKE_COLOR = '#1f1f1f'; // colorNeutralBackground1
 const EDGE_COLOR = '#505050';         // brighter for visibility on dark bg
 const EDGE_HOVER_COLOR = '#5c5c5c';   // colorNeutralStroke1Hover
-const FONT_FAMILY = `'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif`;
 
 const useStyles = makeStyles({
   container: {
@@ -110,16 +93,16 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       if (!next) {
         const updates = graph.nodes.map(n => {
           const deg = degrees.get(n.id) ?? 0;
-          const size = Math.min(24 + deg * 3, 40);
+          const size = Math.min(44 + deg * 4, 64);
           const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
-          const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
+          const lbl = n.title.length > 25 ? n.title.substring(0, 22) + '...' : n.title;
           return {
             id: n.id,
             opacity: 1,
-            ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
-            shape: nodeShape,
-            label: n.title.length > 25 ? n.title.substring(0, 22) + '...' : n.title,
-            font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 11, vadjust: 45 },
+            shape: 'custom',
+            ctxRenderer: createNodeRenderer(n.emoji, color, size, true, lbl),
+            size: size / 2,
+            label: '',
           };
         });
         ds.update(updates);
@@ -129,47 +112,42 @@ export default function GraphView({ graph, config }: GraphViewProps) {
       const updates = graph.nodes.map(n => {
         const inCluster = n.cluster === next;
         const deg = degrees.get(n.id) ?? 0;
-        const size = Math.min(24 + deg * 3, 40);
+        const size = Math.min(44 + deg * 4, 64);
         const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
-        const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
+        const lbl = n.title.length > 25 ? n.title.substring(0, 22) + '...' : n.title;
         return {
           id: n.id,
           opacity: inCluster ? 1 : 0.15,
-          ...getVisNodeConfig(n, config.visuals.mode, config.source, color, size),
-          shape: nodeShape,
-          label: n.title.length > 25 ? n.title.substring(0, 22) + '...' : n.title,
-          font: {
-            color: inCluster ? LABEL_COLOR : 'rgba(214,214,214,0.15)',
-            face: FONT_FAMILY,
-            size: 11,
-            vadjust: 45,
-          },
+          shape: 'custom',
+          ctxRenderer: createNodeRenderer(n.emoji, color, size, true, inCluster ? lbl : undefined),
+          size: size / 2,
+          label: '',
         };
       });
       ds.update(updates);
     },
-    [activeCluster, graph, config, degrees, clusterColorMap],
+    [activeCluster, graph, degrees, clusterColorMap],
   );
 
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const isDark = true;
+
     const nodeData = graph.nodes.map(n => {
       const deg = degrees.get(n.id) ?? 0;
-      const size = Math.min(24 + deg * 3, 40);
+      const size = Math.min(44 + deg * 4, 64);
       const color = clusterColorMap.get(n.cluster) ?? '#9A8A78';
-      const visConfig = getVisNodeConfig(n, config.visuals.mode, config.source, color, size);
       const truncatedLabel = n.title.length > 25 ? n.title.substring(0, 22) + '...' : n.title;
       const fullTitle = `${n.title}\n${deg} connection${deg === 1 ? '' : 's'}`;
-      const nodeShape = n.emoji && ICON_SHAPE_MAP[n.emoji] ? ICON_SHAPE_MAP[n.emoji] : 'dot';
 
       return {
         id: n.id,
-        label: truncatedLabel,
+        label: '',
         title: fullTitle,
-        font: { color: LABEL_COLOR, face: FONT_FAMILY, size: 11, strokeWidth: 3, strokeColor: LABEL_STROKE_COLOR, multi: 'md' as const, vadjust: 45 },
-        ...visConfig,
-        shape: nodeShape,
+        shape: 'custom',
+        ctxRenderer: createNodeRenderer(n.emoji, color, size, isDark, truncatedLabel),
+        size: size / 2,
       };
     });
 
