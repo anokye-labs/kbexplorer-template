@@ -8,6 +8,21 @@ import type { SourceConfig } from '../types';
 
 const CACHE_PREFIX = 'kbe:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_VERSION = 2; // bump to invalidate all cached data
+
+// Clear stale cache from older versions
+try {
+  const storedVersion = localStorage.getItem('kbe:version');
+  if (storedVersion !== String(CACHE_VERSION)) {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(CACHE_PREFIX)) keysToRemove.push(k);
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('kbe:version', String(CACHE_VERSION));
+  }
+} catch { /* localStorage unavailable */ }
 
 interface CacheEntry<T> {
   data: T;
