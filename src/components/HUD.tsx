@@ -458,7 +458,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     }
   }, [graph, currentNodeId, theme, dock]);
 
-  useEffect(() => { requestAnimationFrame(() => drawMinimap()); }, [drawMinimap]);
+  useEffect(() => { const t = setTimeout(() => drawMinimap(), 50); return () => clearTimeout(t); }, [drawMinimap]);
 
   // Expanded map overlay (vis-network)
   useEffect(() => {
