@@ -424,9 +424,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       ctx.lineWidth = isCurrent ? 1.5 : 0.8;
       ctx.stroke();
     }
-  }, [graph, currentNodeId, theme]);
+  }, [graph, currentNodeId, theme, dock]);
 
-  useEffect(() => { drawMinimap(); }, [drawMinimap]);
+  useEffect(() => { requestAnimationFrame(() => drawMinimap()); }, [drawMinimap]);
 
   // Expanded map overlay (vis-network)
   useEffect(() => {
