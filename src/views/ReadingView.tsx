@@ -135,7 +135,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
         <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
           No node with id &quot;{nodeId}&quot; exists in this knowledge base.
         </Caption1>
-        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
+        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/overview">
           Back to overview
         </Button>
       </div>
@@ -157,7 +157,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
 
       {/* Back link */}
       <div className={styles.backLink}>
-        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
+        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/overview">
           Back to overview
         </Button>
       </div>

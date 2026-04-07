@@ -6,8 +6,7 @@ import { nextTheme, type ThemeMode } from './useTheme';
  * Global keyboard shortcuts.
  *
  * t        → cycle theme
- * /        → overview (#/)
- * g        → graph (#/graph)
+ * /        → overview (#/overview)
  * Escape   → back to overview
  * ←/→      → prev/next node (reading view)
  */
@@ -31,10 +30,10 @@ export function useKeyboardNav(
         }
         case '/':
           e.preventDefault();
-          window.location.hash = '#/';
+          window.location.hash = '#/overview';
           break;
         case 'Escape':
-          window.location.hash = '#/';
+          window.location.hash = '#/overview';
           break;
         case 'ArrowLeft':
         case 'ArrowRight': {
