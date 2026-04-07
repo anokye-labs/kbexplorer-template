@@ -344,15 +344,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   }, [sidebarWidth, dock, collapsed]);
 
   // Minimap layout positions via hidden vis-network
-  const minimapPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+  const [minimapPositions, setMinimapPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
 
   useEffect(() => {
     const cleanup = computeGraphPositions(graph, (posMap) => {
-      minimapPositionsRef.current = posMap;
-      drawMinimap();
+      setMinimapPositions(posMap);
     });
     return cleanup;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph]);
 
   const drawMinimap = useCallback(() => {
@@ -360,7 +358,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const posMap = minimapPositionsRef.current;
+    const posMap = minimapPositions;
     if (posMap.size === 0) return;
 
     const edgeColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.12)';
@@ -456,7 +454,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       ctx.lineWidth = isCurrent ? 1.5 : 0.8;
       ctx.stroke();
     }
-  }, [graph, currentNodeId, theme, dock]);
+  }, [graph, currentNodeId, theme, dock, minimapPositions]);
 
   useEffect(() => { const t = setTimeout(() => drawMinimap(), 50); return () => clearTimeout(t); }, [drawMinimap]);
 
