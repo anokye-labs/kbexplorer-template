@@ -200,13 +200,13 @@ export function computeGraphPositions(
     physics: {
       solver: 'forceAtlas2Based',
       forceAtlas2Based: {
-        gravitationalConstant: -40,
-        centralGravity: 0.02,
-        springLength: 60,
-        springConstant: 0.08,
-        damping: 0.5,
+        gravitationalConstant: -160,
+        centralGravity: 0.005,
+        springLength: 250,
+        springConstant: 0.03,
+        damping: 0.4,
       },
-      stabilization: { iterations: 200 },
+      stabilization: { iterations: 300 },
     },
     interaction: { dragNodes: false, zoomView: false, dragView: false },
   });
