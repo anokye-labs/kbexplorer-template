@@ -40,6 +40,7 @@ export interface BuildVisNodeOptions {
   labelMaxLength?: number;
   opacity?: number;
   showLabel?: boolean;
+  flagDisconnected?: boolean;
 }
 
 /** Build a single vis-network node config using the custom renderer. */
@@ -58,13 +59,14 @@ export function buildVisNode(
   const label = showLabel
     ? (node.title.length > maxLen ? node.title.substring(0, maxLen - 3) + '...' : node.title)
     : undefined;
+  const disconnected = options.flagDisconnected && deg === 0;
 
   const result: Record<string, unknown> = {
     id: node.id,
     label: '',
-    title: `${node.title}\n${deg} connection${deg === 1 ? '' : 's'}`,
+    title: `${node.title}\n${deg} connection${deg === 1 ? '' : 's'}${disconnected ? '\n⚠ Disconnected node' : ''}`,
     shape: 'custom',
-    ctxRenderer: createNodeRenderer(node.emoji, color, size, options.isDark, label),
+    ctxRenderer: createNodeRenderer(node.emoji, color, size, options.isDark, label, disconnected),
     size: size / 2,
   };
 
@@ -95,7 +97,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
 
   const nodeData = graph.nodes.map(n =>
-    buildVisNode(n, { degrees, clusterColorMap, isDark, nodeSizeRange, nodeSizeStep, labelMaxLength }),
+    buildVisNode(n, { degrees, clusterColorMap, isDark, nodeSizeRange, nodeSizeStep, labelMaxLength, flagDisconnected: true }),
   );
 
   const edgeData = graph.edges.map((e, i) => ({

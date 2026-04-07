@@ -69,7 +69,8 @@ export function createNodeRenderer(
   nodeSize: number,
   isDark: boolean,
   label?: string,
-) {
+  disconnected?: boolean,
+){
   const shapeType: NodeShapeType = (iconName && ICON_NODE_SHAPE[iconName]) || 'circle';
   const iconColor = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)';
   const iconImg = iconName ? getIconImage(iconName, iconColor) : null;
@@ -120,6 +121,23 @@ export function createNodeRenderer(
     if (iconImg && iconImg.complete) {
       const iconSize = s * 0.55;
       ctx.drawImage(iconImg, x - iconSize / 2, y - iconSize / 2, iconSize, iconSize);
+    }
+
+    // Disconnected warning: small red dot with × at top-right
+    if (disconnected) {
+      const r = 7;
+      const dx = (shapeType === 'roundedRect' ? s * 0.6 : s / 2) - 2;
+      const wx = x + dx;
+      const wy = y - s / 2 + 2;
+      ctx.beginPath();
+      ctx.arc(wx, wy, r, 0, Math.PI * 2);
+      ctx.fillStyle = '#d13438';
+      ctx.fill();
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fff';
+      ctx.fillText('!', wx, wy + 0.5);
     }
 
     // Draw label below shape

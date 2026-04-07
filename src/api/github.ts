@@ -139,7 +139,9 @@ export async function fetchFile(source: SourceConfig, path: string): Promise<str
     `/repos/${source.owner}/${source.repo}/contents/${path}?ref=${branch}`
   );
 
-  const decoded = atob(data.content);
+  const binary = atob(data.content);
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  const decoded = new TextDecoder().decode(bytes);
   cacheSet(cacheKey, decoded, data.sha);
   return decoded;
 }
