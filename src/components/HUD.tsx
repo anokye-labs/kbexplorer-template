@@ -267,6 +267,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const [fontSize, setFontSize] = useState(() => readPersisted('kbe-font-size', 1));
   const [colWidth, setColWidth] = useState(() => readPersisted('kbe-col-width', 2));
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(() => readPersisted('kbe-sidebar-w', 480));
+  const resizeRef = useRef<{ startX: number; startW: number } | null>(null);
 
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
@@ -286,6 +288,28 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     try { localStorage.setItem('kbe-hud-dock', value); } catch { /* ignore */ }
     onDockChange?.(value);
   }, [onDockChange]);
+
+  // Sidebar resize drag
+  const handleResizeStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    resizeRef.current = { startX: e.clientX, startW: sidebarWidth };
+    const onMove = (ev: PointerEvent) => {
+      if (!resizeRef.current) return;
+      const delta = dock === 'left'
+        ? ev.clientX - resizeRef.current.startX
+        : resizeRef.current.startX - ev.clientX;
+      const newW = Math.max(280, Math.min(800, resizeRef.current.startW + delta));
+      setSidebarWidth(newW);
+    };
+    const onUp = () => {
+      resizeRef.current = null;
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      try { localStorage.setItem('kbe-sidebar-w', String(sidebarWidth)); } catch { /* */ }
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  }, [dock, sidebarWidth]);
 
   const currentNode = currentNodeId
     ? graph.nodes.find(n => n.id === currentNodeId) ?? null
@@ -310,6 +334,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     document.documentElement.style.setProperty('--prose-max-width', COL_WIDTHS[colWidth]);
     localStorage.setItem('kbe-col-width', String(colWidth));
   }, [colWidth]);
+
+  // Publish sidebar width as CSS variable for content padding
+  useEffect(() => {
+    const isV = dock === 'left' || dock === 'right';
+    document.documentElement.style.setProperty('--kbe-sidebar-width', isV && !collapsed ? `${sidebarWidth}px` : '0px');
+    try { localStorage.setItem('kbe-sidebar-w', String(sidebarWidth)); } catch { /* */ }
+  }, [sidebarWidth, dock, collapsed]);
 
   // Minimap layout positions via hidden vis-network
   const minimapPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
@@ -479,11 +510,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
-      width: collapsed ? 40 : 340,
+      width: collapsed ? 40 : sidebarWidth,
       borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     } : {
       top: 0, right: 0, bottom: 0,
-      width: collapsed ? 40 : 340,
+      width: collapsed ? 40 : sidebarWidth,
       borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
     }),
   };
@@ -597,6 +628,19 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             {isVertical ? (
               /* ── Sidebar layout (left/right dock) ── */
               <>
+                {/* Resize handle */}
+                <div
+                  onPointerDown={handleResizeStart}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    [dock === 'left' ? 'right' : 'left']: 0,
+                    width: 5,
+                    height: '100%',
+                    cursor: 'col-resize',
+                    zIndex: 10,
+                  }}
+                />
                 {/* Large map */}
                 <div style={{ padding: 8, paddingTop: 36, flexShrink: 0 }}>
                   <div style={{ position: 'relative', borderRadius: tokens.borderRadiusMedium, border: `1px solid ${tokens.colorNeutralStroke2}`, overflow: 'hidden' }}>

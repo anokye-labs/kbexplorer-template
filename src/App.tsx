@@ -58,10 +58,11 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
 
   const { graph, config } = state;
 
-  const paddingSize = hudCollapsed ? 40 : (hudDock === 'left' || hudDock === 'right' ? 340 : 156);
-  const paddingStyle = hudDock === 'top' ? { paddingTop: paddingSize }
-    : hudDock === 'left' ? { paddingLeft: paddingSize }
-    : hudDock === 'right' ? { paddingRight: paddingSize }
+  const sidebarW = (() => { try { const v = localStorage.getItem('kbe-sidebar-w'); return v ? Number(v) : 480; } catch { return 480; } })();
+  const paddingSize = hudCollapsed ? 40 : (hudDock === 'left' || hudDock === 'right' ? sidebarW : 156);
+  const paddingStyle: React.CSSProperties = hudDock === 'top' ? { paddingTop: paddingSize }
+    : hudDock === 'left' ? { paddingLeft: `var(--kbe-sidebar-width, ${paddingSize}px)` }
+    : hudDock === 'right' ? { paddingRight: `var(--kbe-sidebar-width, ${paddingSize}px)` }
     : { paddingBottom: paddingSize };
 
   return (
