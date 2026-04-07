@@ -70,6 +70,13 @@ const ICON_SHAPE_MAP: Record<string, string> = {
   BranchFork: 'triangle',
 };
 
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function readPersisted(key: string, fallback: number): number {
   try {
     const v = localStorage.getItem(key);
@@ -461,23 +468,60 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       }
     }
 
-    // Draw nodes
+    // Draw nodes with shape-matched outlines
     const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
+    const shapeMap: Record<string, 'circle' | 'roundedSquare' | 'roundedRect'> = {
+      Sparkle: 'circle', Flag: 'circle', Lightbulb: 'circle', QuestionCircle: 'circle',
+      Pin: 'circle', Merge: 'circle', BranchFork: 'circle',
+      Wrench: 'roundedSquare', Bug: 'roundedSquare',
+      Document: 'roundedRect', Folder: 'roundedRect',
+    };
+
     for (const node of graph.nodes) {
       const pos = posMap.get(node.id);
       if (!pos) continue;
       const [cx, cy] = toCanvas(pos.x, pos.y);
       const isCurrent = node.id === currentNodeId;
-      const color = clusterColorMap.get(node.cluster) ?? '#888'; // data fallback, intentionally not a theme token
+      const color = clusterColorMap.get(node.cluster) ?? '#888';
+      const r = isCurrent ? 5 : 3.5;
+      const shape = (node.emoji && shapeMap[node.emoji]) || 'circle';
+
       ctx.beginPath();
-      ctx.arc(cx, cy, isCurrent ? 4 : 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = isCurrent ? highlightColor : color;
-      ctx.fill();
-      if (isCurrent) {
-        ctx.strokeStyle = highlightColor;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+      if (shape === 'circle') {
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      } else if (shape === 'roundedSquare') {
+        const cr = r * 0.3;
+        ctx.moveTo(cx - r + cr, cy - r);
+        ctx.lineTo(cx + r - cr, cy - r);
+        ctx.quadraticCurveTo(cx + r, cy - r, cx + r, cy - r + cr);
+        ctx.lineTo(cx + r, cy + r - cr);
+        ctx.quadraticCurveTo(cx + r, cy + r, cx + r - cr, cy + r);
+        ctx.lineTo(cx - r + cr, cy + r);
+        ctx.quadraticCurveTo(cx - r, cy + r, cx - r, cy + r - cr);
+        ctx.lineTo(cx - r, cy - r + cr);
+        ctx.quadraticCurveTo(cx - r, cy - r, cx - r + cr, cy - r);
+        ctx.closePath();
+      } else {
+        // roundedRect — wider
+        const hw = r * 1.3;
+        const cr = r * 0.3;
+        ctx.moveTo(cx - hw + cr, cy - r);
+        ctx.lineTo(cx + hw - cr, cy - r);
+        ctx.quadraticCurveTo(cx + hw, cy - r, cx + hw, cy - r + cr);
+        ctx.lineTo(cx + hw, cy + r - cr);
+        ctx.quadraticCurveTo(cx + hw, cy + r, cx + hw - cr, cy + r);
+        ctx.lineTo(cx - hw + cr, cy + r);
+        ctx.quadraticCurveTo(cx - hw, cy + r, cx - hw, cy + r - cr);
+        ctx.lineTo(cx - hw, cy - r + cr);
+        ctx.quadraticCurveTo(cx - hw, cy - r, cx - hw + cr, cy - r);
+        ctx.closePath();
       }
+
+      ctx.fillStyle = isCurrent ? highlightColor : hexToRgba(color, 0.6);
+      ctx.fill();
+      ctx.strokeStyle = isCurrent ? highlightColor : hexToRgba(color, 0.9);
+      ctx.lineWidth = isCurrent ? 1.5 : 0.8;
+      ctx.stroke();
     }
   }, [graph, currentNodeId, theme]);
 
