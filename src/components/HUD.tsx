@@ -261,14 +261,21 @@ const useStyles= makeStyles({
 
 export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
   const styles = useStyles();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasElRef = useRef<HTMLCanvasElement | null>(null);
+  const [canvasMountKey, setCanvasMountKey] = useState(0);
+  const canvasRef = useCallback((el: HTMLCanvasElement | null) => {
+    canvasElRef.current = el;
+    if (el) setCanvasMountKey(k => k + 1); // trigger redraw
+  }, []);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const [fontSize, setFontSize] = useState(() => readPersisted('kbe-font-size', 1));
   const [colWidth, setColWidth] = useState(() => readPersisted('kbe-col-width', 2));
   const [mapExpanded, setMapExpanded] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(() => readPersisted('kbe-sidebar-w', 25));
+  const [mapSplit, setMapSplit] = useState(() => readPersisted('kbe-map-split', 50));
   const resizeRef = useRef<{ startX: number; startW: number } | null>(null);
+  const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
 
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
@@ -312,6 +319,28 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     document.addEventListener('pointerup', onUp);
   }, [dock, sidebarWidth]);
 
+  // Vertical split resize (map vs connections)
+  const handleSplitResizeStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    splitResizeRef.current = { startY: e.clientY, startPct: mapSplit };
+    const sidebar = (e.target as HTMLElement).closest('[class]')?.parentElement;
+    const sidebarH = sidebar?.clientHeight ?? window.innerHeight;
+    const onMove = (ev: PointerEvent) => {
+      if (!splitResizeRef.current) return;
+      const deltaPct = ((ev.clientY - splitResizeRef.current.startY) / sidebarH) * 100;
+      const newPct = Math.max(20, Math.min(80, splitResizeRef.current.startPct + deltaPct));
+      setMapSplit(newPct);
+    };
+    const onUp = () => {
+      splitResizeRef.current = null;
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      try { localStorage.setItem('kbe-map-split', String(mapSplit)); } catch { /* */ }
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  }, [mapSplit]);
+
   const currentNode = currentNodeId
     ? graph.nodes.find(n => n.id === currentNodeId) ?? null
     : null;
@@ -343,6 +372,10 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     try { localStorage.setItem('kbe-sidebar-w', String(sidebarWidth)); } catch { /* */ }
   }, [sidebarWidth, dock, collapsed]);
 
+  useEffect(() => {
+    try { localStorage.setItem('kbe-map-split', String(mapSplit)); } catch { /* */ }
+  }, [mapSplit]);
+
   // Minimap layout positions via hidden vis-network
   const [minimapPositions, setMinimapPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
 
@@ -354,7 +387,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   }, [graph]);
 
   const drawMinimap = useCallback(() => {
-    const canvas = canvasRef.current;
+    const canvas = canvasElRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -454,7 +487,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       ctx.lineWidth = isCurrent ? 1.5 : 0.8;
       ctx.stroke();
     }
-  }, [graph, currentNodeId, theme, dock, minimapPositions]);
+  }, [graph, currentNodeId, theme, dock, minimapPositions, canvasMountKey]);
 
   useEffect(() => { const t = setTimeout(() => drawMinimap(), 50); return () => clearTimeout(t); }, [drawMinimap]);
 
@@ -625,19 +658,32 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             />
 
             {/* Minimap — always mounted, one canvas element */}
-            <div style={isVertical
-              ? { padding: 8, paddingTop: 36, flexShrink: 0 }
-              : { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: tokens.spacingVerticalXS, flexShrink: 0 }
-            }>
-              {isVertical ? (
-                <div style={{ position: 'relative', borderRadius: tokens.borderRadiusMedium, border: `1px solid ${tokens.colorNeutralStroke2}`, overflow: 'hidden' }}>
+            {isVertical ? (
+              <>
+                {/* Sidebar width resize handle */}
+                <div
+                  onPointerDown={handleResizeStart}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    [dock === 'left' ? 'right' : 'left']: 0,
+                    width: 5,
+                    height: '100%',
+                    cursor: 'col-resize',
+                    zIndex: 10,
+                  }}
+                />
+
+                {/* Graph map — flex-sized by mapSplit */}
+                <div style={{ flex: `0 0 ${mapSplit}%`, minHeight: '20%', position: 'relative', overflow: 'hidden', paddingTop: 36 }}>
                   <canvas
                     ref={canvasRef}
-                    style={{ width: '100%', height: 220, cursor: 'pointer', display: 'block' }}
+                    style={{ width: '100%', height: '100%', cursor: 'pointer', display: 'block' }}
                     onClick={() => setMapExpanded(true)}
                     title="Expand constellation"
                   />
-                  <div style={{ position: 'absolute', top: 6, left: 6, fontSize: 11, lineHeight: '18px', opacity: 0.85 }}>
+                  {/* Legend overlay */}
+                  <div style={{ position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px', opacity: 0.85 }}>
                     {graph.clusters.map(c => (
                       <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
@@ -646,39 +692,20 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     ))}
                   </div>
                 </div>
-              ) : (
-                <>
-                  <canvas
-                    ref={canvasRef}
-                    className={styles.minimap}
-                    onClick={() => setMapExpanded(true)}
-                    title="Expand constellation"
-                  />
-                  <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
-                </>
-              )}
-            </div>
 
-            {/* Resize handle (sidebar only) */}
-            {isVertical && (
-              <div
-                onPointerDown={handleResizeStart}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  [dock === 'left' ? 'right' : 'left']: 0,
-                  width: 5,
-                  height: '100%',
-                  cursor: 'col-resize',
-                  zIndex: 10,
-                }}
-              />
-            )}
+                {/* Split resize handle */}
+                <div
+                  onPointerDown={handleSplitResizeStart}
+                  style={{
+                    flexShrink: 0,
+                    height: 5,
+                    cursor: 'row-resize',
+                    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+                  }}
+                />
 
-            {isVertical ? (
-              /* ── Sidebar: connections + compact tools ── */
-              <>
-                <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${tokens.spacingHorizontalS}` }}>
+                {/* Connections panel */}
+                <div style={{ flex: 1, minHeight: '10%', overflowY: 'auto', padding: `0 ${tokens.spacingHorizontalS}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: `${tokens.spacingVerticalS} 0` }}>
                     <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
                       Connections
@@ -736,6 +763,16 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             ) : (
               /* ── Horizontal layout (top/bottom dock) ── */
               <>
+              {/* Minimap panel */}
+              <div className={styles.panelLeft}>
+                <canvas
+                  ref={canvasRef}
+                  className={styles.minimap}
+                  onClick={() => setMapExpanded(true)}
+                  title="Expand constellation"
+                />
+                <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
+              </div>
 
               {/* Center: Navigation */}
               <div className={styles.panelCenter}>

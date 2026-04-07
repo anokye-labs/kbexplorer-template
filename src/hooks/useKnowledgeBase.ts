@@ -39,7 +39,14 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
         const graph = buildGraph(nodes, clusters);
 
         if (!cancelled) {
-          setState({ status: 'ready', graph, config });
+          if (nodes.length === 0) {
+            setState({
+              status: 'error',
+              error: 'No content loaded. The GitHub API may be rate-limited — try again in a minute, or check your network.',
+            });
+          } else {
+            setState({ status: 'ready', graph, config });
+          }
         }
       } catch (err) {
         if (!cancelled) {

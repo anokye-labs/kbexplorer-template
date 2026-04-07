@@ -61,9 +61,12 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
         <Routes>
           <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
           <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} />} />
-          <Route path="/" element={
-            <Navigate to={`/node/${encodeURIComponent(getHubNodeId(graph) ?? graph.nodes[0]?.id ?? '')}`} replace />
-          } />
+          <Route path="/" element={(() => {
+            const hubId = getHubNodeId(graph) ?? graph.nodes[0]?.id;
+            return hubId
+              ? <Navigate to={`/node/${encodeURIComponent(hubId)}`} replace />
+              : <OverviewView graph={graph} config={config} />;
+          })()} />
         </Routes>
       </div>
       <HUD
