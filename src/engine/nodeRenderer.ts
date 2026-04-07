@@ -75,6 +75,7 @@ export function createNodeRenderer(
   const iconImg = iconName ? getIconImage(iconName, iconColor) : null;
   const labelColor = isDark ? '#d6d6d6' : '#242424';
   const labelStroke = isDark ? '#1f1f1f' : '#ffffff';
+  const bgFill = isDark ? '#1f1f1f' : '#ffffff';
 
   return function ctxRenderer({ ctx, x, y, state }: CtxRendererArgs) {
     const s = nodeSize;
@@ -97,6 +98,10 @@ export function createNodeRenderer(
       const w = s * 1.2;
       roundRect(ctx, x - w / 2, y - s / 2, w, s, s * 0.22);
     }
+    // Opaque base so edges don't show through
+    ctx.fillStyle = bgFill;
+    ctx.fill();
+    // Colored overlay
     ctx.fillStyle = fillColor;
     ctx.fill();
     ctx.strokeStyle = borderColor;
