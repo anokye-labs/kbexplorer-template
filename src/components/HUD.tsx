@@ -212,8 +212,8 @@ const useStyles= makeStyles({
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#1f1f1f',
-    color: '#e0e0e0',
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
     overflow: 'hidden',
     boxShadow: tokens.shadow64,
     borderRadius: tokens.borderRadiusXLarge,
@@ -434,7 +434,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     const { network } = createGraphNetwork({
       container: overlayRef.current,
       graph,
-      isDark: true,
+      isDark: theme === 'dark',
       onNodeClick: (id) => {
         setMapExpanded(false);
         window.location.hash = `/node/${encodeURIComponent(id)}`;

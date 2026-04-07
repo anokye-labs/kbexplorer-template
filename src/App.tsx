@@ -7,7 +7,6 @@ import { useKeyboardNav } from './hooks/useKeyboardNav';
 import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
 import { ReadingView } from './views/ReadingView';
-import GraphView from './views/GraphView';
 import { OverviewView } from './views/OverviewView';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ErrorScreen } from './components/ErrorScreen';
@@ -37,25 +36,9 @@ function useCurrentNodeId(): string | null {
   return nodeId;
 }
 
-function useIsGraphRoute(): boolean {
-  const [isGraph, setIsGraph] = useState(false);
-
-  useEffect(() => {
-    function update() {
-      setIsGraph(window.location.hash === '#/graph');
-    }
-    update();
-    window.addEventListener('hashchange', update);
-    return () => window.removeEventListener('hashchange', update);
-  }, []);
-
-  return isGraph;
-}
-
 function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
-  const isGraph = useIsGraphRoute();
 
   const [hudCollapsed, setHudCollapsed] = useState(() => {
     try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
@@ -75,24 +58,20 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
   const { graph, config } = state;
 
   const paddingSize = hudCollapsed ? 40 : (hudDock === 'left' || hudDock === 'right' ? 240 : 156);
-  const paddingStyle = isGraph ? {} : (
-    hudDock === 'top' ? { paddingTop: paddingSize }
+  const paddingStyle = hudDock === 'top' ? { paddingTop: paddingSize }
     : hudDock === 'left' ? { paddingLeft: paddingSize }
     : hudDock === 'right' ? { paddingRight: paddingSize }
-    : { paddingBottom: paddingSize }
-  );
+    : { paddingBottom: paddingSize };
 
   return (
     <>
       <div style={paddingStyle}>
         <Routes>
           <Route path="/" element={<OverviewView graph={graph} config={config} />} />
-          <Route path="/graph" element={<GraphView graph={graph} config={config} />} />
           <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} />} />
         </Routes>
       </div>
-      {!isGraph && (
-        <HUD
+      <HUD
           graph={graph}
           config={config}
           currentNodeId={currentNodeId}
@@ -101,7 +80,6 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
           onCollapsedChange={setHudCollapsed}
           onDockChange={setHudDock}
         />
-      )}
     </>
   );
 }

@@ -33,9 +33,6 @@ export function useKeyboardNav(
           e.preventDefault();
           window.location.hash = '#/';
           break;
-        case 'g':
-          window.location.hash = '#/graph';
-          break;
         case 'Escape':
           window.location.hash = '#/';
           break;
