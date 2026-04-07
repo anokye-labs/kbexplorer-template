@@ -127,8 +127,8 @@ const useStyles= makeStyles({
     justifyContent: 'center',
   },
   minimap: {
-    width: '200px',
-    height: '140px',
+    width: '140px',
+    height: '100px',
     cursor: 'pointer',
     borderRadius: tokens.borderRadiusMedium,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -422,7 +422,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     const highlightColor = theme === 'dark' ? HIGHLIGHT_COLOR_DARK : HIGHLIGHT_COLOR_LIGHT;
 
     const dpr = window.devicePixelRatio || 1;
-    const W = 200, H = 140;
+    const W = 140, H = 100;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     ctx.scale(dpr, dpr);
@@ -606,19 +606,19 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     transition: isVertical ? 'width 0.3s ease-out' : 'height 0.3s ease-out',
     ...(dock === 'bottom' ? {
       bottom: 0, left: 0, right: 0,
-      height: collapsed ? 40 : 168,
+      height: collapsed ? 40 : 128,
       borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     } : dock === 'top' ? {
       top: 0, left: 0, right: 0,
-      height: collapsed ? 40 : 168,
+      height: collapsed ? 40 : 128,
       borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
-      width: collapsed ? 40 : 280,
+      width: collapsed ? 40 : 240,
       borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     } : {
       top: 0, right: 0, bottom: 0,
-      width: collapsed ? 40 : 280,
+      width: collapsed ? 40 : 240,
       borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
     }),
   };
@@ -749,8 +749,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               <canvas
                 ref={canvasRef}
                 className={styles.minimap}
-                width={200}
-                height={140}
+                width={140}
+                height={100}
                 onClick={() => setMapExpanded(true)}
                 title="Expand constellation"
               />

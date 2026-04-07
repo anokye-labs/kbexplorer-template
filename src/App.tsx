@@ -74,7 +74,7 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
 
   const { graph, config } = state;
 
-  const paddingSize = hudCollapsed ? 40 : (hudDock === 'left' || hudDock === 'right' ? 280 : 184);
+  const paddingSize = hudCollapsed ? 40 : (hudDock === 'left' || hudDock === 'right' ? 240 : 144);
   const paddingStyle = isGraph ? {} : (
     hudDock === 'top' ? { paddingTop: paddingSize }
     : hudDock === 'left' ? { paddingLeft: paddingSize }

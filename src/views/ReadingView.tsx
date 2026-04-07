@@ -8,20 +8,9 @@ import {
 } from '@fluentui/react-components';
 import {
   ArrowLeftRegular,
-  ChevronLeftRegular,
-  ChevronRightRegular,
 } from '@fluentui/react-icons';
-import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
-import { NodeVisual, FLUENT_ICONS, isFluentIconName } from '../components/NodeVisual';
-
-function renderNodeIcon(emoji: string | undefined) {
-  if (!emoji) return null;
-  if (isFluentIconName(emoji)) {
-    const Icon = FLUENT_ICONS[emoji];
-    return <Icon style={{ fontSize: 16 }} />;
-  }
-  return <span>{emoji}</span>;
-}
+import type { KBGraph, KBConfig, Cluster } from '../types';
+import { NodeVisual } from '../components/NodeVisual';
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -36,12 +25,6 @@ function findCluster(config: KBConfig, clusters: Cluster[], clusterId: string) {
     name: meta?.name ?? cluster?.name ?? clusterId,
     color: meta?.color ?? cluster?.color ?? '#888',
   };
-}
-
-function getClusterNodes(nodes: KBNode[], clusterId: string): KBNode[] {
-  return nodes
-    .filter(n => n.cluster === clusterId)
-    .sort((a, b) => a.id.localeCompare(b.id));
 }
 
 const useStyles = makeStyles({
@@ -123,39 +106,6 @@ const useStyles = makeStyles({
     marginLeft: 'auto',
     flexShrink: 0,
   },
-  navFooter: {
-    marginTop: tokens.spacingVerticalXXL,
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-    backgroundColor: 'transparent',
-    display: 'flex',
-    maxWidth: 'var(--prose-max-width, 75%)',
-    width: '100%',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    padding: `0 ${tokens.spacingHorizontalXL}`,
-  },
-  navLink: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingHorizontalXXS,
-    textDecoration: 'none',
-    color: 'inherit',
-  },
-  navLinkNext: {
-    textAlign: 'right',
-    alignItems: 'flex-end',
-    borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
-  },
-  navLinkDisabled: {
-    pointerEvents: 'none',
-    opacity: 0.3,
-  },
-  navTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: tokens.spacingHorizontalXS,
-  },
   notFound: {
     display: 'flex',
     flexDirection: 'column',
@@ -197,12 +147,6 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   const source = config.source;
   const cluster = findCluster(config, graph.clusters, node.cluster);
 
-  // Prev/next within cluster
-  const clusterNodes = getClusterNodes(graph.nodes, node.cluster);
-  const idx = clusterNodes.findIndex(n => n.id === nodeId);
-  const prev = idx > 0 ? clusterNodes[idx - 1] : null;
-  const next = idx < clusterNodes.length - 1 ? clusterNodes[idx + 1] : null;
-
   const showHero = mode === 'heroes' && !!node.image;
 
   return (
@@ -242,39 +186,6 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
           dangerouslySetInnerHTML={{ __html: node.content }}
         />
       </div>
-
-      {/* Prev / Next */}
-      <nav className={styles.navFooter}>
-        <Button
-          appearance="subtle"
-          icon={<ChevronLeftRegular />}
-          as="a"
-          href={prev ? `#/node/${encodeURIComponent(prev.id)}` : undefined}
-          className={`${styles.navLink} ${!prev ? styles.navLinkDisabled : ''}`}
-          aria-disabled={!prev}
-          style={{ flex: 1, justifyContent: 'flex-start' }}
-        >
-          <span className={styles.navTitle}>
-            {renderNodeIcon(prev?.emoji)}
-            {prev?.title ?? '—'}
-          </span>
-        </Button>
-        <Button
-          appearance="subtle"
-          icon={<ChevronRightRegular />}
-          iconPosition="after"
-          as="a"
-          href={next ? `#/node/${encodeURIComponent(next.id)}` : undefined}
-          className={`${styles.navLink} ${styles.navLinkNext} ${!next ? styles.navLinkDisabled : ''}`}
-          aria-disabled={!next}
-          style={{ flex: 1, justifyContent: 'flex-end' }}
-        >
-          <span className={styles.navTitle}>
-            {renderNodeIcon(next?.emoji)}
-            {next?.title ?? '—'}
-          </span>
-        </Button>
-      </nav>
     </div>
   );
 }
