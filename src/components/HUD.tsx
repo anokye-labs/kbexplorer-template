@@ -206,8 +206,9 @@ const useStyles= makeStyles({
     animationTimingFunction: 'cubic-bezier(0.33, 1, 0.68, 1)',
   },
   overlayInner: {
-    width: '100vw',
-    height: '100vh',
+    width: '90vw',
+    height: '85vh',
+    maxWidth: '1400px',
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
@@ -215,6 +216,7 @@ const useStyles= makeStyles({
     color: '#e0e0e0',
     overflow: 'hidden',
     boxShadow: tokens.shadow64,
+    borderRadius: tokens.borderRadiusXLarge,
     animationName: {
       from: {
         opacity: 0,
@@ -532,7 +534,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         <div className={styles.overlay} onClick={(e) => { if (e.target === e.currentTarget) setMapExpanded(false); }}>
           <div className={styles.overlayInner}>
             <div ref={overlayRef} className={styles.overlayGraph} />
-            {/* Floating close button — top right */}
             <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 10 }}>
               <Button
                 appearance="subtle"
@@ -541,11 +542,10 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 aria-label="Close"
               />
             </div>
-            {/* Floating legend — bottom left, matching GraphView */}
-            <Card size="small" style={{ position: 'absolute', bottom: 20, left: 20, zIndex: 10, maxHeight: '300px', overflowY: 'auto' }}>
+            <Card size="small" style={{ position: 'absolute', bottom: 16, left: 16, zIndex: 10 }}>
               <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
               {graph.clusters.map(c => (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px' }}>
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 12px' }}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
                   <Caption1>{c.name}</Caption1>
                 </div>
