@@ -5,7 +5,7 @@ import {
   Button,
   Slider,
   Card,
-  Badge,
+  CardHeader,
   Body1Strong,
   Caption1,
   Caption2,
@@ -208,15 +208,13 @@ const useStyles= makeStyles({
   overlayInner: {
     width: '100vw',
     height: '100vh',
+    position: 'relative',
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: '#1f1f1f',
     color: '#e0e0e0',
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
     overflow: 'hidden',
     boxShadow: tokens.shadow64,
-    padding: '20px',
-    boxSizing: 'border-box',
     animationName: {
       from: {
         opacity: 0,
@@ -229,22 +227,6 @@ const useStyles= makeStyles({
     },
     animationDuration: '0.4s',
     animationTimingFunction: 'cubic-bezier(0.33, 1, 0.68, 1)',
-  },
-  overlayHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '12px 20px',
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    flexShrink: 0,
-  },
-  overlayLegend: {
-    display: 'flex',
-    gap: tokens.spacingHorizontalL,
-    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalXL}`,
-    flexWrap: 'wrap',
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    flexShrink: 0,
   },
   overlayGraph: {
     flex: 1,
@@ -549,8 +531,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       {mapExpanded && (
         <div className={styles.overlay} onClick={(e) => { if (e.target === e.currentTarget) setMapExpanded(false); }}>
           <div className={styles.overlayInner}>
-            <div className={styles.overlayHeader}>
-              <Body1Strong>Constellation</Body1Strong>
+            <div ref={overlayRef} className={styles.overlayGraph} />
+            {/* Floating close button — top right */}
+            <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 10 }}>
               <Button
                 appearance="subtle"
                 icon={<DismissRegular />}
@@ -558,30 +541,16 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 aria-label="Close"
               />
             </div>
-            <div className={styles.overlayLegend}>
+            {/* Floating legend — bottom left, matching GraphView */}
+            <Card size="small" style={{ position: 'absolute', bottom: 20, left: 20, zIndex: 10, maxHeight: '300px', overflowY: 'auto' }}>
+              <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
               {graph.clusters.map(c => (
-                <Badge
-                  key={c.id}
-                  appearance="outline"
-                  color="informative"
-                  size="small"
-                  icon={
-                    <span
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        background: c.color,
-                        display: 'inline-block',
-                      }}
-                    />
-                  }
-                >
-                  {c.name}
-                </Badge>
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
+                  <Caption1>{c.name}</Caption1>
+                </div>
               ))}
-            </div>
-            <div ref={overlayRef} className={styles.overlayGraph} />
+            </Card>
           </div>
         </div>
       )}
