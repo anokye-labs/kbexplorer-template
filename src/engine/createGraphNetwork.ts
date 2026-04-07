@@ -134,6 +134,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       tooltipDelay: 200,
       navigationButtons: false,
       keyboard: false,
+      dragView: false, // We implement bounded panning ourselves
     },
     edges: {
       smooth: { enabled: true, type: 'continuous', roundness: 0.5 },
@@ -148,22 +149,107 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     });
   }
 
-  if (focusNodeId || fitOnStabilize) {
-    network.once('stabilized', () => {
-      if (focusNodeId && nodes.get(focusNodeId)) {
-        network.fit({ animation: false });
-        network.selectNodes([focusNodeId]);
-        network.focus(focusNodeId, {
-          scale: 1.0,
-          animation: { duration: 400, easingFunction: 'easeInOutQuad' },
-        });
-      } else if (fitOnStabilize) {
-        network.fit({
+  network.once('stabilized', () => {
+    // Compute bounding box of all nodes for pan clamping
+    const allPositions = network.getPositions();
+    const posArray = Object.values(allPositions) as { x: number; y: number }[];
+    if (posArray.length === 0) return;
+
+    const pad = 120; // padding around the graph bounds
+    let bMinX = Infinity, bMinY = Infinity, bMaxX = -Infinity, bMaxY = -Infinity;
+    for (const p of posArray) {
+      if (p.x < bMinX) bMinX = p.x;
+      if (p.x > bMaxX) bMaxX = p.x;
+      if (p.y < bMinY) bMinY = p.y;
+      if (p.y > bMaxY) bMaxY = p.y;
+    }
+    bMinX -= pad; bMinY -= pad; bMaxX += pad; bMaxY += pad;
+
+    const bCenterX = (bMinX + bMaxX) / 2;
+    const bCenterY = (bMinY + bMaxY) / 2;
+    const bW = bMaxX - bMinX;
+    const bH = bMaxY - bMinY;
+
+    /** Clamp a graph-space position to the pan bounds at the given scale. */
+    const clamp = (gx: number, gy: number, scale: number) => {
+      const halfViewW = container.clientWidth / scale / 2;
+      const halfViewH = container.clientHeight / scale / 2;
+      const cx = bW <= halfViewW * 2
+        ? bCenterX
+        : Math.max(bMinX + halfViewW, Math.min(bMaxX - halfViewW, gx));
+      const cy = bH <= halfViewH * 2
+        ? bCenterY
+        : Math.max(bMinY + halfViewH, Math.min(bMaxY - halfViewH, gy));
+      return { x: cx, y: cy };
+    };
+
+    // --- Custom bounded panning (replaces dragView) ---
+    let isPanning = false;
+    let panStartScreenX = 0;
+    let panStartScreenY = 0;
+    let panStartViewX = 0;
+    let panStartViewY = 0;
+
+    const canvas = container.querySelector('canvas') as HTMLCanvasElement | null;
+    if (canvas) {
+      canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+        // Only pan on primary button + empty area (not on nodes)
+        if (e.button !== 0) return;
+        const nodeAt = network.getNodeAt({ x: e.offsetX, y: e.offsetY });
+        if (nodeAt) return; // let vis-network handle node dragging
+        isPanning = true;
+        panStartScreenX = e.clientX;
+        panStartScreenY = e.clientY;
+        const vp = network.getViewPosition();
+        panStartViewX = vp.x;
+        panStartViewY = vp.y;
+        canvas.setPointerCapture(e.pointerId);
+      });
+
+      canvas.addEventListener('pointermove', (e: PointerEvent) => {
+        if (!isPanning) return;
+        const scale = network.getScale();
+        const dx = (e.clientX - panStartScreenX) / scale;
+        const dy = (e.clientY - panStartScreenY) / scale;
+        const target = clamp(panStartViewX - dx, panStartViewY - dy, scale);
+        network.moveTo({ position: target, animation: false });
+      });
+
+      const endPan = () => { isPanning = false; };
+      canvas.addEventListener('pointerup', endPan);
+      canvas.addEventListener('pointercancel', endPan);
+    }
+
+    // Clamp on zoom (scroll wheel)
+    network.on('zoom', () => {
+      const { x, y } = network.getViewPosition();
+      const scale = network.getScale();
+      const clamped = clamp(x, y, scale);
+      if (Math.abs(clamped.x - x) > 0.5 || Math.abs(clamped.y - y) > 0.5) {
+        network.moveTo({ position: clamped, animation: false });
+      }
+    });
+
+    // Initial view: focus on node (clamped) or fit all
+    if (focusNodeId && nodes.get(focusNodeId)) {
+      network.fit({ animation: false });
+      network.selectNodes([focusNodeId]);
+      const pos = allPositions[focusNodeId] as { x: number; y: number } | undefined;
+      if (pos) {
+        const scale = 1.0;
+        const target = clamp(pos.x, pos.y, scale);
+        network.moveTo({
+          position: target,
+          scale,
           animation: { duration: 400, easingFunction: 'easeInOutQuad' },
         });
       }
-    });
-  }
+    } else if (fitOnStabilize) {
+      network.fit({
+        animation: { duration: 400, easingFunction: 'easeInOutQuad' },
+      });
+    }
+  });
 
   return { network, nodes, edges };
 }
