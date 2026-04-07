@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { HashRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { FluentProvider } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme } from './hooks/useTheme';
@@ -22,19 +22,9 @@ function ReadingRoute({ graph, config }: { graph: import('./types').KBGraph; con
 }
 
 function useCurrentNodeId(): string | null {
-  const [nodeId, setNodeId] = useState<string | null>(null);
-
-  useEffect(() => {
-    function update() {
-      const match = window.location.hash.match(/#\/node\/(.+)/);
-      setNodeId(match ? decodeURIComponent(match[1]) : null);
-    }
-    update();
-    window.addEventListener('hashchange', update);
-    return () => window.removeEventListener('hashchange', update);
-  }, []);
-
-  return nodeId;
+  const location = useLocation();
+  const match = location.pathname.match(/^\/node\/(.+)/);
+  return match ? decodeURIComponent(match[1]) : null;
 }
 
 function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void }) {
