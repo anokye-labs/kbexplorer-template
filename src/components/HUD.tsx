@@ -335,7 +335,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     const highlightColor = theme === 'dark' ? HIGHLIGHT_COLOR_DARK : HIGHLIGHT_COLOR_LIGHT;
 
     const dpr = window.devicePixelRatio || 1;
-    const W = 120, H = 80;
+    const W = canvas.clientWidth || 120;
+    const H = canvas.clientHeight || 80;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     ctx.scale(dpr, dpr);
@@ -478,11 +479,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
-      width: collapsed ? 40 : 240,
+      width: collapsed ? 40 : 340,
       borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     } : {
       top: 0, right: 0, bottom: 0,
-      width: collapsed ? 40 : 240,
+      width: collapsed ? 40 : 340,
       borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
     }),
   };
@@ -593,21 +594,106 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               title="Collapse"
             />
 
-            {/* Minimap panel */}
-            <div className={styles.panelLeft} style={isVertical ? { width: 'auto' } : undefined}>
-              <canvas
-                ref={canvasRef}
-                className={styles.minimap}
-                width={120}
-                height={80}
-                onClick={() => setMapExpanded(true)}
-                title="Expand constellation"
-              />
-              <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
-            </div>
+            {isVertical ? (
+              /* ── Sidebar layout (left/right dock) ── */
+              <>
+                {/* Large map */}
+                <div style={{ padding: 8, paddingTop: 36, flexShrink: 0 }}>
+                  <div style={{ position: 'relative', borderRadius: tokens.borderRadiusMedium, border: `1px solid ${tokens.colorNeutralStroke2}`, overflow: 'hidden' }}>
+                    <canvas
+                      ref={canvasRef}
+                      width={320}
+                      height={220}
+                      style={{ width: '100%', height: 220, cursor: 'pointer', display: 'block' }}
+                      onClick={() => setMapExpanded(true)}
+                      title="Expand constellation"
+                    />
+                    {/* Legend overlay */}
+                    <div style={{ position: 'absolute', top: 6, left: 6, fontSize: 11, lineHeight: '18px', opacity: 0.85 }}>
+                      {graph.clusters.map(c => (
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
+                          <span style={{ color: tokens.colorNeutralForeground3 }}>{c.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
-            {/* Center: Navigation */}
-            <div className={styles.panelCenter} style={isVertical ? { overflowY: 'auto' } : undefined}>
+                {/* Connections */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${tokens.spacingHorizontalS}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: `${tokens.spacingVerticalS} 0` }}>
+                    <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+                      Connections
+                    </Caption2>
+                    <Caption2 style={{ color: tokens.colorNeutralForeground3 }}>{relatedNodes.length}</Caption2>
+                  </div>
+                  {currentNode && relatedNodes.length > 0 ? (
+                    relatedNodes.map(n => {
+                      const clusterObj = graph.clusters.find(c => c.id === n.cluster);
+                      return (
+                        <a
+                          key={n.id}
+                          href={`#/node/${encodeURIComponent(n.id)}`}
+                          style={{ textDecoration: 'none', color: 'inherit', display: 'block', marginBottom: 2 }}
+                        >
+                          <Card
+                            appearance="subtle"
+                            size="small"
+                            style={{ padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}` }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <NodeVisual node={n} mode={config.visuals.mode} surface="hud-thumb" source={config.source} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <Body1Strong style={{ display: 'block', fontSize: 13, lineHeight: '18px' }} className={styles.relatedTitle}>{n.title}</Body1Strong>
+                                {n.rawContent && (
+                                  <Caption2 style={{ color: tokens.colorNeutralForeground3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                    {n.rawContent.replace(/[#*`>\-[\]]/g, '').trim().substring(0, 120)}
+                                  </Caption2>
+                                )}
+                              </div>
+                              {clusterObj && (
+                                <span style={{ width: 3, height: 28, borderRadius: 2, background: clusterObj.color, flexShrink: 0 }} />
+                              )}
+                            </div>
+                          </Card>
+                        </a>
+                      );
+                    })
+                  ) : currentNode ? (
+                    <span className={styles.placeholder}>No connections</span>
+                  ) : (
+                    <span className={styles.placeholder}>Select a node to see connections</span>
+                  )}
+                </div>
+
+                {/* Compact tools strip */}
+                <div style={{ flexShrink: 0, padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`, display: 'flex', alignItems: 'center', gap: 6, borderTop: `1px solid ${tokens.colorNeutralStroke2}` }}>
+                  {themeButtons}
+                  <span style={{ flex: 1 }} />
+                  <Button appearance={dock === 'left' ? 'primary' : 'subtle'} size="small" icon={<ArrowLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" />
+                  <Button appearance={dock === 'right' ? 'primary' : 'subtle'} size="small" icon={<ArrowRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
+                  <Button appearance="subtle" size="small" icon={<ArrowDownRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
+                </div>
+              </>
+            ) : (
+              /* ── Horizontal layout (top/bottom dock) ── */
+              <>
+              {/* Minimap panel */}
+              <div className={styles.panelLeft}>
+                <canvas
+                  ref={canvasRef}
+                  className={styles.minimap}
+                  width={120}
+                  height={80}
+                  onClick={() => setMapExpanded(true)}
+                  title="Expand constellation"
+                />
+                <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
+              </div>
+
+              {/* Center: Navigation */}
+              <div className={styles.panelCenter}>
               <div className={styles.navRow}>
                 <Button
                   appearance="outline"
@@ -685,7 +771,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             </div>
 
             {/* Right: Reading Tools */}
-            <div className={styles.panelRight} style={isVertical ? { width: 'auto' } : undefined}>
+            <div className={styles.panelRight}>
               <div className={styles.toolRow}>
                 <Caption2 className={styles.toolLabel}>Theme</Caption2>
                 {themeButtons}
@@ -702,14 +788,14 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     title="Dock bottom"
                   />
                   <Button
-                    appearance={dock === 'left' ? 'primary' : 'subtle'}
+                    appearance="subtle"
                     size="small"
                     icon={<ArrowLeftRegular />}
                     onClick={() => handleDockChange('left')}
                     title="Dock left"
                   />
                   <Button
-                    appearance={dock === 'right' ? 'primary' : 'subtle'}
+                    appearance="subtle"
                     size="small"
                     icon={<ArrowRightRegular />}
                     onClick={() => handleDockChange('right')}
@@ -755,6 +841,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               </>
               )}
             </div>
+              </>
+            )}
           </div>
         )}
       </div>
