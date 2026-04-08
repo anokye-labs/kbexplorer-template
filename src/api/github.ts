@@ -139,8 +139,8 @@ export interface GHFileContent {
 
 /** Resolve an image path to a URL — local mode uses Vite dev server, remote uses GitHub. */
 export function resolveImageUrl(source: SourceConfig, path: string): string {
-  if (import.meta.env.VITE_KB_LOCAL === 'true') {
-    return `${import.meta.env.BASE_URL}${path}`;
+  if (import.meta.env.VITE_KB_LOCAL === 'true' || import.meta.env.DEV) {
+    return `${import.meta.env.BASE_URL || '/'}${path}`;
   }
   const branch = source.branch ?? 'main';
   return `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${branch}/${path}`;

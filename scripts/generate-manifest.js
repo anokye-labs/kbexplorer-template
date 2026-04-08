@@ -185,7 +185,7 @@ function isGhAvailable() {
  * Fetch issues via gh CLI.
  * @returns {Array}
  */
-export function fetchLocalIssues() {
+export function fetchLocalIssues(cwd = hostRoot) {
   if (!isGhAvailable()) {
     console.warn('[generate-manifest] gh CLI not found — skipping issues');
     return [];
@@ -193,7 +193,7 @@ export function fetchLocalIssues() {
   try {
     const json = execSync(
       'gh issue list --json number,title,body,state,labels,assignees,url,createdAt,updatedAt --state all --limit 200',
-      { cwd: hostRoot, encoding: 'utf-8', timeout: 30000 },
+      { cwd, encoding: 'utf-8', timeout: 30000 },
     );
     const issues = JSON.parse(json);
     // Map to GHIssue-compatible shape
@@ -223,7 +223,7 @@ export function fetchLocalIssues() {
  * Fetch pull requests via gh CLI.
  * @returns {Array}
  */
-export function fetchLocalPullRequests() {
+export function fetchLocalPullRequests(cwd = hostRoot) {
   if (!isGhAvailable()) {
     console.warn('[generate-manifest] gh CLI not found — skipping PRs');
     return [];
@@ -231,7 +231,7 @@ export function fetchLocalPullRequests() {
   try {
     const json = execSync(
       'gh pr list --json number,title,body,state,labels,url,createdAt,updatedAt --state all --limit 200',
-      { cwd: hostRoot, encoding: 'utf-8', timeout: 30000 },
+      { cwd, encoding: 'utf-8', timeout: 30000 },
     );
     const prs = JSON.parse(json);
     return prs.map((pr) => ({
@@ -257,11 +257,11 @@ export function fetchLocalPullRequests() {
  * Fetch recent commits via git log.
  * @returns {Array}
  */
-export function fetchLocalCommits() {
+export function fetchLocalCommits(cwd = hostRoot) {
   try {
     const log = execSync(
       'git log --pretty=format:"%H|||%s|||%an|||%aI" -50',
-      { cwd: hostRoot, encoding: 'utf-8', timeout: 10000 },
+      { cwd, encoding: 'utf-8', timeout: 10000 },
     );
     if (!log.trim()) return [];
     return log.trim().split('\n').map((line) => {
@@ -296,9 +296,9 @@ export function generateManifest(root = hostRoot) {
     authoredContent: readAuthoredContent(contentDir, contentPath),
     tree: walkFileSystem(root),
     readme: readReadme(root),
-    issues: fetchLocalIssues(),
-    pullRequests: fetchLocalPullRequests(),
-    commits: fetchLocalCommits(),
+    issues: fetchLocalIssues(root),
+    pullRequests: fetchLocalPullRequests(root),
+    commits: fetchLocalCommits(root),
     generatedAt: new Date().toISOString(),
   };
 

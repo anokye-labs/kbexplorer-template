@@ -64,17 +64,14 @@ async function loadManifest(): Promise<RepoManifest | null> {
 
 // ── Mode Detection ─────────────────────────────────────────
 
-/** Check if local mode is active. */
+/** Check if local mode is active (requires explicit VITE_KB_LOCAL=true). */
 export function isLocalMode(): boolean {
-  if (import.meta.env.VITE_KB_LOCAL === 'true') return true;
-  return false;
+  return import.meta.env.VITE_KB_LOCAL === 'true';
 }
 
-/** Async check — tries to load manifest to detect local mode. */
+/** Async check — same as isLocalMode but async for hook compatibility. */
 export async function detectLocalMode(): Promise<boolean> {
-  if (import.meta.env.VITE_KB_LOCAL === 'true') return true;
-  const manifest = await loadManifest();
-  return manifest !== null;
+  return isLocalMode();
 }
 
 // ── Local Config ───────────────────────────────────────────
@@ -167,6 +164,21 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
     });
   }
 
+  // Auto-link issues → directories (before splitting so connections stay on the original nodes)
+  const dirNames = dirNodes.map(d => d.title.replace(/\/$/, ''));
+  for (const node of issueNodes) {
+    for (let i = 0; i < dirNames.length; i++) {
+      const dir = dirNames[i];
+      if (node.rawContent && (
+        node.rawContent.includes(`${dir}/`) ||
+        node.rawContent.includes(`\`${dir}\``) ||
+        node.rawContent.toLowerCase().includes(dir.toLowerCase())
+      )) {
+        node.connections.push({ to: dirNodes[i].id, description: `References ${dir}/` });
+      }
+    }
+  }
+
   // Split issues with 2+ headings into parent + section nodes
   const expandedIssues: KBNode[] = [];
   for (const node of issueNodes) {
@@ -181,21 +193,6 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
     }
   }
   nodes.push(...expandedIssues);
-
-  // Auto-link issues → directories
-  const dirNames = dirNodes.map(d => d.title.replace(/\/$/, ''));
-  for (const node of issueNodes) {
-    for (let i = 0; i < dirNames.length; i++) {
-      const dir = dirNames[i];
-      if (node.rawContent && (
-        node.rawContent.includes(`${dir}/`) ||
-        node.rawContent.includes(`\`${dir}\``) ||
-        node.rawContent.toLowerCase().includes(dir.toLowerCase())
-      )) {
-        node.connections.push({ to: dirNodes[i].id, description: `References ${dir}/` });
-      }
-    }
-  }
 
   // Pull requests as nodes
   for (const pr of manifest.pullRequests) {

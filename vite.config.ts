@@ -7,6 +7,7 @@ function manifestPlugin(): Plugin {
   return {
     name: 'kbexplorer-manifest',
     buildStart() {
+      if (process.env.VITE_KB_LOCAL !== 'true') return;
       try {
         execSync('node scripts/generate-manifest.js', { stdio: 'inherit' });
       } catch (err) {
