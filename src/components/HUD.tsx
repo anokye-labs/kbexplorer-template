@@ -572,6 +572,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     } catch { /* node might not exist */ }
   }, [currentNodeId]);
 
+  // Active clusters: only those with 2+ nodes (avoids legend drift)
+  const activeClusters = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const n of graph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
+    return graph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
+  }, [graph]);
+
   const navigateTo = useCallback((hash: string) => {
     window.location.hash = hash;
   }, []);
@@ -668,7 +675,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             </div>
             <Card size="small" style={{ position: 'absolute', bottom: 16, left: 16, zIndex: 10 }}>
               <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
-              {graph.clusters.map(c => (
+              {activeClusters.map(c => (
                 <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 12px' }}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
                   <Caption1>{c.name}</Caption1>
@@ -742,7 +749,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   />
                   {/* Legend overlay */}
                   <div style={{ position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px', opacity: 0.85, pointerEvents: 'none' }}>
-                    {graph.clusters.map(c => (
+                    {activeClusters.map(c => (
                       <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
                         <span style={{ color: tokens.colorNeutralForeground3 }}>{c.name}</span>
