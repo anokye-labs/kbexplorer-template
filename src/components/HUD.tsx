@@ -785,7 +785,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                             style={{ padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}` }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <NodeVisual node={n} mode={config.visuals.mode} surface="hud-thumb" source={config.source} />
+                              <NodeVisual node={n} mode={config.visuals.mode} surface="hud-thumb" source={config.source} clusterColor={clusterObj?.color} />
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <Body1Strong style={{ display: 'block', fontSize: 13, lineHeight: '18px' }} className={styles.relatedTitle}>{n.title}</Body1Strong>
                                 {n.rawContent && (
@@ -908,6 +908,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                           mode={config.visuals.mode}
                           surface="hud-thumb"
                           source={config.source}
+                          clusterColor={graph.clusters.find(c => c.id === n.cluster)?.color}
                         />
                         <Caption1 className={styles.relatedTitle}>{n.title}</Caption1>
                       </Card>

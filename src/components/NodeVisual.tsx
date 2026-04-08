@@ -41,6 +41,7 @@ interface NodeVisualProps {
   surface: 'card' | 'header' | 'hero' | 'hud-thumb' | 'hud-bg' | 'edge-preview' | 'connection';
   source: SourceConfig;
   className?: string;
+  clusterColor?: string;
 }
 
 const SURFACE_SIZES: Record<NodeVisualProps['surface'], { width: number; height: number }> = {
@@ -73,7 +74,7 @@ function resolveNodeImage(
   return null;
 }
 
-export function NodeVisual({ node, mode, surface, source, className }: NodeVisualProps) {
+export function NodeVisual({ node, mode, surface, source, className, clusterColor }: NodeVisualProps) {
   const imageUrl = resolveNodeImage(node, mode, source);
   const size = SURFACE_SIZES[surface];
 
@@ -127,7 +128,7 @@ export function NodeVisual({ node, mode, surface, source, className }: NodeVisua
           role="img"
           aria-label={node.title}
         >
-          <Icon style={{ fontSize: size.width || 24 }} />
+          <Icon style={{ fontSize: size.width || 24, color: clusterColor }} />
         </span>
       );
     }
@@ -160,7 +161,7 @@ export function NodeVisual({ node, mode, surface, source, className }: NodeVisua
         role="img"
         aria-label={node.title}
       >
-        <Icon style={{ fontSize: size.width || 24 }} />
+        <Icon style={{ fontSize: size.width || 24, color: clusterColor }} />
       </span>
     );
   }

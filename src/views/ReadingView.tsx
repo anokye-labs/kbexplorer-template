@@ -174,10 +174,10 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
       <header className={`${styles.header} ${showHero ? styles.headerHero : ''}`}>
         <div className={styles.headerVisual}>
           {!showHero && (mode === 'sprites' && node.sprite) && (
-            <NodeVisual node={node} mode={mode} surface="header" source={source} />
+            <NodeVisual node={node} mode={mode} surface="header" source={source} clusterColor={cluster.color} />
           )}
           {!showHero && mode === 'emoji' && node.emoji && (
-            <NodeVisual node={node} mode="emoji" surface="header" source={source} />
+            <NodeVisual node={node} mode="emoji" surface="header" source={source} clusterColor={cluster.color} />
           )}
         </div>
         <div className={styles.clusterBadge}>
@@ -205,7 +205,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
                   <a key={child.id} href={`#/node/${encodeURIComponent(child.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Card appearance="subtle" size="small" style={{ marginBottom: 4 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
-                        <NodeVisual node={child} mode={config.visuals.mode} surface="hud-thumb" source={config.source} />
+                        <NodeVisual node={child} mode={config.visuals.mode} surface="hud-thumb" source={config.source} clusterColor={childCluster.color} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <Body1Strong style={{ display: 'block' }}>{child.title}</Body1Strong>
                           {child.rawContent && (
