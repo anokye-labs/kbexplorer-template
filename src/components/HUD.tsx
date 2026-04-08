@@ -792,12 +792,22 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 </div>
 
                 {/* Compact tools strip */}
-                <div style={{ flexShrink: 0, padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`, display: 'flex', alignItems: 'center', gap: 6, borderTop: `1px solid ${tokens.colorNeutralStroke2}` }}>
-                  {themeButtons}
-                  <span style={{ flex: 1 }} />
-                  <Button appearance={dock === 'left' ? 'primary' : 'subtle'} size="small" icon={<ArrowLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" />
-                  <Button appearance={dock === 'right' ? 'primary' : 'subtle'} size="small" icon={<ArrowRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
-                  <Button appearance="subtle" size="small" icon={<ArrowDownRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
+                <div style={{ flexShrink: 0, padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`, display: 'flex', flexDirection: 'column', gap: 4, borderTop: `1px solid ${tokens.colorNeutralStroke2}` }}>
+                  {currentNode && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Caption2 style={{ width: 32, flexShrink: 0 }}>Aa</Caption2>
+                      <Slider className={styles.slider} min={0} max={4} step={1} value={fontSize} onChange={(_e, data) => setFontSize(data.value)} title={`Font size: ${FONT_SIZES[fontSize]}rem`} />
+                      <Caption2 style={{ width: 38, flexShrink: 0 }}>Width</Caption2>
+                      <Slider className={styles.slider} min={0} max={4} step={1} value={colWidth} onChange={(_e, data) => setColWidth(data.value)} title={`Column width: ${COL_WIDTHS[colWidth]}`} />
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {themeButtons}
+                    <span style={{ flex: 1 }} />
+                    <Button appearance={dock === 'left' ? 'primary' : 'subtle'} size="small" icon={<ArrowLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" />
+                    <Button appearance={dock === 'right' ? 'primary' : 'subtle'} size="small" icon={<ArrowRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
+                    <Button appearance="subtle" size="small" icon={<ArrowDownRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
+                  </div>
                 </div>
               </>
             ) : (
