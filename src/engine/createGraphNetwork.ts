@@ -45,6 +45,9 @@ export interface BuildVisNodeOptions {
   flagDisconnected?: boolean;
 }
 
+/** Important node IDs that get a size boost. */
+const KEY_NODE_IDS = new Set(['readme', 'repo-root', 'overview', 'wiki-getting-started', 'wiki-deep-dive']);
+
 /** Build a single vis-network node config using the custom renderer. */
 export function buildVisNode(
   node: { id: string; title: string; cluster: string; emoji?: string },
@@ -55,7 +58,9 @@ export function buildVisNode(
   const maxLen = options.labelMaxLength ?? 25;
 
   const deg = options.degrees.get(node.id) ?? 0;
-  const size = Math.min(minSize + deg * step, maxSize);
+  const isKey = KEY_NODE_IDS.has(node.id);
+  const baseSize = isKey ? minSize * 1.5 : minSize;
+  const size = Math.min(baseSize + deg * step, isKey ? maxSize * 1.4 : maxSize);
   const color = options.clusterColorMap.get(node.cluster) ?? '#9A8A78';
   const showLabel = options.showLabel ?? true;
   const label = showLabel

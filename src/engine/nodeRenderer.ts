@@ -31,8 +31,8 @@ export const ICON_NODE_SHAPE: Record<string, NodeShapeType> = {
   BranchFork: 'circle',
   Wrench: 'roundedSquare',
   Bug: 'roundedSquare',
+  Folder: 'roundedSquare',
   Document: 'roundedRect',
-  Folder: 'roundedRect',
 };
 
 // Pre-rendered icon images cache
