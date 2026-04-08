@@ -268,6 +268,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     if (el) setCanvasMountKey(k => k + 1); // trigger redraw
   }, []);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const sidebarGraphRef = useRef<HTMLDivElement>(null);
 
   const [fontSize, setFontSize] = useState(() => readPersisted('kbe-font-size', 1));
   const [colWidth, setColWidth] = useState(() => readPersisted('kbe-col-width', 2));
@@ -511,6 +512,48 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapExpanded, graph, config]);
 
+  // Sidebar live graph (left/right dock)
+  const isVertical = dock === 'left' || dock === 'right';
+  const sidebarNetworkRef = useRef<import('vis-network/standalone').Network | null>(null);
+  useEffect(() => {
+    if (!isVertical || collapsed || !sidebarGraphRef.current) return;
+
+    const timer = setTimeout(() => {
+      if (!sidebarGraphRef.current) return;
+      // Destroy previous if any
+      if (sidebarNetworkRef.current) {
+        try { sidebarNetworkRef.current.destroy(); } catch { /* */ }
+      }
+      const { network } = createGraphNetwork({
+        container: sidebarGraphRef.current,
+        graph,
+        isDark: theme === 'dark',
+        onNodeClick: (id) => {
+          window.location.hash = `/node/${encodeURIComponent(id)}`;
+        },
+        focusNodeId: currentNodeId,
+        fitOnStabilize: !currentNodeId,
+        nodeSizeRange: [28, 44],
+        nodeSizeStep: 3,
+        labelMaxLength: 18,
+        edgeWidth: 1,
+      });
+      network.once('stabilized', () => {
+        network.setOptions({ physics: { enabled: false } });
+      });
+      sidebarNetworkRef.current = network;
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (sidebarNetworkRef.current) {
+        try { sidebarNetworkRef.current.destroy(); } catch { /* */ }
+        sidebarNetworkRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVertical, collapsed, graph, theme]);
+
   const navigateTo = useCallback((hash: string) => {
     window.location.hash = hash;
   }, []);
@@ -527,7 +570,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     navigateTo(`#/node/${encodeURIComponent(graph.nodes[next].id)}`);
   };
 
-  const isVertical = dock === 'left' || dock === 'right';
   const contentDirection: 'column' | 'row' = isVertical ? 'column' : 'row';
 
   const hudContainerStyle: React.CSSProperties = {
@@ -674,16 +716,14 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   }}
                 />
 
-                {/* Graph map — flex-sized by mapSplit */}
+                {/* Live constellation graph */}
                 <div style={{ flex: `0 0 ${mapSplit}%`, minHeight: '20%', position: 'relative', overflow: 'hidden', paddingTop: 36 }}>
-                  <canvas
-                    ref={canvasRef}
-                    style={{ width: '100%', height: '100%', cursor: 'pointer', display: 'block' }}
-                    onClick={() => setMapExpanded(true)}
-                    title="Expand constellation"
+                  <div
+                    ref={sidebarGraphRef}
+                    style={{ width: '100%', height: '100%' }}
                   />
                   {/* Legend overlay */}
-                  <div style={{ position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px', opacity: 0.85 }}>
+                  <div style={{ position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px', opacity: 0.85, pointerEvents: 'none' }}>
                     {graph.clusters.map(c => (
                       <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
