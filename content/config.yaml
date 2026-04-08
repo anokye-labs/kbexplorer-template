@@ -1,0 +1,48 @@
+title: "kbexplorer"
+subtitle: "Interactive Knowledge Base Explorer"
+author: "Anokye Labs"
+date: "2026"
+
+source:
+  owner: anokye-labs
+  repo: kbexplorer
+  path: content
+  branch: main
+
+clusters:
+  engine:
+    name: Engine
+    color: "#4A9CC8"
+  ui:
+    name: Interface
+    color: "#8CB050"
+  visual:
+    name: Visual System
+    color: "#E8A838"
+  data:
+    name: Data Layer
+    color: "#C07840"
+  infra:
+    name: Infrastructure
+    color: "#5A98A8"
+  design:
+    name: Design Decisions
+    color: "#A86FDF"
+
+visuals:
+  mode: emoji
+  fallback: emoji
+
+theme:
+  default: dark
+
+graph:
+  physics: true
+  layout: force-atlas-2
+
+features:
+  hud: true
+  minimap: true
+  readingTools: true
+  keyboardNav: true
+  sparkAnimation: false
