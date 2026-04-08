@@ -268,12 +268,12 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         network.moveTo({
           position: target,
           scale,
-          animation: { duration: 400, easingFunction: 'easeInOutQuad' },
+          animation: { duration: 50, easingFunction: 'easeInOutQuad' },
         });
       }
     } else if (fitOnStabilize) {
       network.fit({
-        animation: { duration: 400, easingFunction: 'easeInOutQuad' },
+        animation: { duration: 50, easingFunction: 'easeInOutQuad' },
       });
     }
   });
