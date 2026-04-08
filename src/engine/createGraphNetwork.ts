@@ -154,14 +154,14 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         springConstant: 0.03,
         damping: 0.4,
       },
-      stabilization: { iterations: 300 },
+      stabilization: { enabled: true, iterations: 300, updateInterval: 300 },
     },
     interaction: {
       hover: true,
       tooltipDelay: 200,
       navigationButtons: false,
       keyboard: false,
-      dragView: false, // We implement bounded panning ourselves
+      dragView: false,
     },
     edges: {
       smooth: { enabled: true, type: 'continuous', roundness: 0.5 },
