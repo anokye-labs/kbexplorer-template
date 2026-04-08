@@ -23,6 +23,8 @@ export interface GraphNetworkOptions {
   labelMaxLength?: number;
   edgeWidth?: number;
   edgeDashes?: boolean | number[];
+  /** When set, this node + its neighbors render at full opacity; others fade. */
+  emphasizeNodeId?: string | null;
 }
 
 export interface GraphNetworkResult {
@@ -91,14 +93,35 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     labelMaxLength = 25,
     edgeWidth = 2,
     edgeDashes = false,
+    emphasizeNodeId,
   } = options;
 
   const degrees = getNodeDegrees(graph);
   const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
 
-  const nodeData = graph.nodes.map(n =>
-    buildVisNode(n, { degrees, clusterColorMap, isDark, nodeSizeRange, nodeSizeStep, labelMaxLength, flagDisconnected: true }),
-  );
+  // Build set of emphasized node IDs (current + direct neighbors)
+  const emphasizedIds = new Set<string>();
+  if (emphasizeNodeId) {
+    emphasizedIds.add(emphasizeNodeId);
+    for (const edge of graph.edges) {
+      if (edge.from === emphasizeNodeId) emphasizedIds.add(edge.to);
+      if (edge.to === emphasizeNodeId) emphasizedIds.add(edge.from);
+    }
+  }
+
+  const nodeData = graph.nodes.map(n => {
+    const faded = emphasizeNodeId && !emphasizedIds.has(n.id);
+    const sizeRange: [number, number] = faded
+      ? [nodeSizeRange[0] * 0.6, nodeSizeRange[1] * 0.6]
+      : nodeSizeRange;
+    return buildVisNode(n, {
+      degrees, clusterColorMap, isDark,
+      nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
+      flagDisconnected: true,
+      opacity: faded ? 0.3 : undefined,
+      showLabel: !faded,
+    });
+  });
 
   const edgeData = graph.edges.map((e, i) => ({
     id: `e${i}`,

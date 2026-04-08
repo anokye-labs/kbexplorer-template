@@ -8,7 +8,7 @@ import type { SourceConfig } from '../types';
 
 const CACHE_PREFIX = 'kbe:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const CACHE_VERSION = 2; // bump to invalidate all cached data
+const CACHE_VERSION = 3; // bump to invalidate all cached data
 
 // Clear stale cache from older versions
 try {
@@ -213,6 +213,31 @@ export async function fetchPullRequests(source: SourceConfig): Promise<GHIssue[]
 
   const { data } = await ghFetch<GHIssue[]>(
     `/repos/${source.owner}/${source.repo}/pulls?state=all&per_page=100`
+  );
+
+  cacheSet(cacheKey, data);
+  return data;
+}
+
+export interface GHCommit {
+  sha: string;
+  commit: {
+    message: string;
+    author: { name: string; date: string };
+  };
+  html_url: string;
+  files?: Array<{ filename: string; status: string }>;
+}
+
+/** Fetch recent commits from the repo. */
+export async function fetchCommits(source: SourceConfig, count = 30): Promise<GHCommit[]> {
+  const cacheKey = `commits:${source.owner}/${source.repo}`;
+  const cached = cacheGet<GHCommit[]>(cacheKey);
+  if (cached) return cached.data;
+
+  const branch = source.branch ?? 'main';
+  const { data } = await ghFetch<GHCommit[]>(
+    `/repos/${source.owner}/${source.repo}/commits?sha=${branch}&per_page=${count}`
   );
 
   cacheSet(cacheKey, data);

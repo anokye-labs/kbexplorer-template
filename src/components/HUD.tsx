@@ -533,6 +533,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         },
         focusNodeId: currentNodeId,
         fitOnStabilize: !currentNodeId,
+        emphasizeNodeId: currentNodeId,
         nodeSizeRange: [28, 44],
         nodeSizeStep: 3,
         labelMaxLength: 18,
@@ -552,7 +553,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVertical, collapsed, graph, theme]);
+  }, [isVertical, collapsed, graph, theme, currentNodeId]);
 
   const navigateTo = useCallback((hash: string) => {
     window.location.hash = hash;

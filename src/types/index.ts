@@ -11,6 +11,7 @@ export interface KBNode {
   image?: string; // path relative to repo root (heroes mode)
   sprite?: string; // path relative to repo root (sprites mode)
   parent?: string; // parent node id (for hierarchy)
+  nodeType?: 'parent' | 'section'; // parent has children, section is a child
   connections: Connection[];
   /** Source of this node: authored markdown or GitHub artifact */
   source: NodeSource;
@@ -60,8 +61,10 @@ export type NodeSource =
   | { type: 'authored'; file: string }
   | { type: 'issue'; number: number; state: string; labels: string[] }
   | { type: 'pull_request'; number: number; state: string }
+  | { type: 'commit'; sha: string }
   | { type: 'file'; path: string }
-  | { type: 'readme' };
+  | { type: 'readme' }
+  | { type: 'section'; parentSource: NodeSource };
 
 /** Full knowledge base configuration (from config.yaml). */
 export interface KBConfig {
@@ -131,6 +134,8 @@ export const DEFAULT_CONFIG: KBConfig = {
     epic: { name: 'Epic', color: '#E8A838' },
     code: { name: 'Code', color: '#9A8A78' },
     docs: { name: 'Documentation', color: '#D4A050' },
+    'pull-request': { name: 'Pull Request', color: '#A86FDF' },
+    commits: { name: 'Commits', color: '#5A98A8' },
   },
   visuals: {
     mode: 'emoji',
