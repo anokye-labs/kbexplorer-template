@@ -6,8 +6,6 @@ import { nextTheme, type ThemeMode } from './useTheme';
  * Global keyboard shortcuts.
  *
  * t        → cycle theme
- * /        → overview (#/overview)
- * Escape   → back to overview
  * ←/→      → prev/next node (reading view)
  */
 export function useKeyboardNav(
@@ -22,19 +20,11 @@ export function useKeyboardNav(
 
       switch (e.key) {
         case 't': {
-          // Read current theme from localStorage since we no longer use body classes
           const stored = localStorage.getItem('kbe-theme') as ThemeMode | null;
           const current: ThemeMode = stored === 'light' ? 'light' : 'dark';
           setTheme(nextTheme(current));
           break;
         }
-        case '/':
-          e.preventDefault();
-          window.location.hash = '#/overview';
-          break;
-        case 'Escape':
-          window.location.hash = '#/overview';
-          break;
         case 'ArrowLeft':
         case 'ArrowRight': {
           if (!graph) break;
