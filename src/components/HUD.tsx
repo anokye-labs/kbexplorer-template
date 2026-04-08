@@ -515,16 +515,18 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   // Sidebar live graph (left/right dock)
   const isVertical = dock === 'left' || dock === 'right';
   const sidebarNetworkRef = useRef<import('vis-network/standalone').Network | null>(null);
+  const sidebarNodesRef = useRef<import('vis-data').DataSet<Record<string, unknown>> | null>(null);
+
+  // Create the network once (on dock/graph/theme change)
   useEffect(() => {
     if (!isVertical || collapsed || !sidebarGraphRef.current) return;
 
     const timer = setTimeout(() => {
       if (!sidebarGraphRef.current) return;
-      // Destroy previous if any
       if (sidebarNetworkRef.current) {
         try { sidebarNetworkRef.current.destroy(); } catch { /* */ }
       }
-      const { network } = createGraphNetwork({
+      const { network, nodes: visNodes } = createGraphNetwork({
         container: sidebarGraphRef.current,
         graph,
         isDark: theme === 'dark',
@@ -543,6 +545,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         network.setOptions({ physics: { enabled: false } });
       });
       sidebarNetworkRef.current = network;
+      sidebarNodesRef.current = visNodes;
     }, 100);
 
     return () => {
@@ -550,10 +553,24 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       if (sidebarNetworkRef.current) {
         try { sidebarNetworkRef.current.destroy(); } catch { /* */ }
         sidebarNetworkRef.current = null;
+        sidebarNodesRef.current = null;
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVertical, collapsed, graph, theme, currentNodeId]);
+  }, [isVertical, collapsed, graph, theme]);
+
+  // Update selection + focus when currentNodeId changes (no rebuild)
+  useEffect(() => {
+    const net = sidebarNetworkRef.current;
+    if (!net || !currentNodeId) return;
+    try {
+      net.selectNodes([currentNodeId]);
+      net.focus(currentNodeId, {
+        scale: net.getScale(),
+        animation: { duration: 50, easingFunction: 'easeInOutQuad' },
+      });
+    } catch { /* node might not exist */ }
+  }, [currentNodeId]);
 
   const navigateTo = useCallback((hash: string) => {
     window.location.hash = hash;
