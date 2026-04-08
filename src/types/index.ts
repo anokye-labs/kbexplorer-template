@@ -118,17 +118,27 @@ export interface KBConfig {
   };
 }
 
+/** Resolve the default source config from Vite env vars or fallback to hardcoded defaults. */
+function resolveDefaultSource(): SourceConfig {
+  const owner = import.meta.env.VITE_KB_OWNER;
+  const repo = import.meta.env.VITE_KB_REPO;
+  if (owner && repo) {
+    return {
+      owner,
+      repo,
+      branch: import.meta.env.VITE_KB_BRANCH ?? 'main',
+      path: import.meta.env.VITE_KB_PATH || undefined,
+    };
+  }
+  return { owner: 'anokye-labs', repo: 'kbexplorer', path: 'content', branch: 'main' };
+}
+
 /** Default configuration for repo-aware mode. */
 export const DEFAULT_CONFIG: KBConfig = {
-  title: 'kbexplorer',
+  title: import.meta.env.VITE_KB_TITLE ?? 'kbexplorer',
   subtitle: 'Interactive Knowledge Base Explorer',
   author: 'Anokye Labs',
-  source: {
-    owner: 'anokye-labs',
-    repo: 'kbexplorer',
-    path: 'content',
-    branch: 'main',
-  },
+  source: resolveDefaultSource(),
   clusters: {
     feature: { name: 'Feature', color: '#4A9CC8' },
     task: { name: 'Task', color: '#8CB050' },

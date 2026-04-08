@@ -206,6 +206,73 @@ Clusters group nodes by topic. Define them in `config.yaml` with a display name 
 
 Connections create explicit edges between nodes. In repo-aware mode, connections are inferred from issue cross-references and PR links. In authored mode, declare them in frontmatter.
 
+## Using in Another Repo
+
+kbexplorer can be embedded in any GitHub repository as a git submodule. An interactive setup wizard configures everything automatically.
+
+### Quick Start (with Copilot CLI)
+
+If you have the Copilot CLI with the kbexplorer skill installed, run:
+
+```
+/kb-init
+```
+
+This adds the submodule, runs the setup wizard, and starts the explorer.
+
+### Manual Setup
+
+```bash
+# 1. Add the submodule
+git submodule add https://github.com/anokye-labs/kbexplorer.git .kbexplorer
+
+# 2. Run the interactive init wizard
+node .kbexplorer/scripts/init.js
+
+# 3. Start exploring
+npm run kb:dev
+```
+
+The init wizard will ask about content mode, title, visual style, theme, and features. It creates:
+
+| File | Purpose |
+|------|---------|
+| `.env.kbexplorer` | Source config env vars (gitignored) |
+| `content/config.yaml` | Full kbexplorer configuration |
+| `package.json` | Adds `kb:dev`, `kb:build`, `kb:install` scripts |
+
+### Available Commands
+
+After setup, these npm scripts are available in your host repo:
+
+```bash
+npm run kb:dev      # Start dev server with hot reload
+npm run kb:build    # Production build to dist/kb/
+npm run kb:install  # Reinstall kbexplorer dependencies
+```
+
+### Updating kbexplorer
+
+```bash
+cd .kbexplorer
+git pull origin main
+cd ..
+git add .kbexplorer
+git commit -m "Update kbexplorer submodule"
+```
+
+### Cloning a Repo with kbexplorer
+
+When cloning a repo that has kbexplorer as a submodule:
+
+```bash
+git clone --recurse-submodules <repo-url>
+# or after cloning:
+git submodule update --init --recursive
+```
+
+Then run `npm run kb:install` to install kbexplorer's dependencies.
+
 ## Deployment
 
 kbexplorer deploys to **Azure Static Web Apps** via GitHub Actions.
