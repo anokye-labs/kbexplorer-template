@@ -148,13 +148,13 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     physics: {
       solver: 'forceAtlas2Based',
       forceAtlas2Based: {
-        gravitationalConstant: -160,
-        centralGravity: 0.005,
-        springLength: 250,
-        springConstant: 0.03,
-        damping: 0.4,
+        gravitationalConstant: -120,
+        centralGravity: 0.01,
+        springLength: 200,
+        springConstant: 0.04,
+        damping: 0.6,
       },
-      stabilization: { enabled: true, iterations: 300, updateInterval: 25 },
+      stabilization: { enabled: true, iterations: 150, updateInterval: 150 },
     },
     interaction: {
       hover: true,
@@ -313,13 +313,13 @@ export function computeGraphPositions(
     physics: {
       solver: 'forceAtlas2Based',
       forceAtlas2Based: {
-        gravitationalConstant: -160,
-        centralGravity: 0.005,
-        springLength: 250,
-        springConstant: 0.03,
-        damping: 0.4,
+        gravitationalConstant: -120,
+        centralGravity: 0.01,
+        springLength: 200,
+        springConstant: 0.04,
+        damping: 0.6,
       },
-      stabilization: { iterations: 300 },
+      stabilization: { iterations: 150 },
     },
     interaction: { dragNodes: false, zoomView: false, dragView: false },
   });
