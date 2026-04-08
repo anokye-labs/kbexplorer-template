@@ -6,4 +6,9 @@ export {
   loadRepoContent,
   extractClusters,
   loadConfig,
+  parseMarkdownFile,
+  issueToNode,
+  treeToNodes,
+  extractIssueRefs,
+  splitIntoSections,
 } from './parser';
