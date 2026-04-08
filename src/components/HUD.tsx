@@ -19,6 +19,7 @@ import {
   ArrowUpRegular,
   ArrowLeftRegular,
   ArrowRightRegular,
+  ArrowExpandRegular,
   DismissRegular,
   MapRegular,
   WeatherMoonRegular,
@@ -747,8 +748,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     ref={sidebarGraphRef}
                     style={{ width: '100%', height: '100%' }}
                   />
-                  {/* Legend overlay */}
-                  <div style={{ position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px', opacity: 0.85, pointerEvents: 'none' }}>
+                  {/* Legend overlay with background */}
+                  <div style={{
+                    position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px',
+                    background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium,
+                    border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '6px 8px',
+                    opacity: 0.9, pointerEvents: 'none',
+                  }}>
                     {activeClusters.map(c => (
                       <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
@@ -756,6 +762,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                       </div>
                     ))}
                   </div>
+                  {/* Expand to full-screen overlay */}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<ArrowExpandRegular />}
+                    onClick={() => setMapExpanded(true)}
+                    title="Expand constellation"
+                    style={{ position: 'absolute', top: 42, right: 8, zIndex: 5 }}
+                  />
                 </div>
 
                 {/* Split resize handle */}
