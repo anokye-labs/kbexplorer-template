@@ -40,6 +40,7 @@ export interface KBEdge {
   from: string;
   to: string;
   description: string;
+  weight?: number; // higher = stronger/closer (default 1)
 }
 
 /** Visual identity mode. */

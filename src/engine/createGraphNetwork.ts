@@ -123,6 +123,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     });
   });
 
+  const baseSpringLength = 250;
   const edgeData = graph.edges.map((e, i) => ({
     id: `e${i}`,
     from: e.from,
@@ -131,6 +132,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     color: { color: EDGE_COLOR, hover: EDGE_HOVER_COLOR, highlight: EDGE_HOVER_COLOR },
     width: edgeWidth,
     dashes: edgeDashes,
+    length: e.weight ? baseSpringLength / e.weight : baseSpringLength,
   }));
 
   const nodes = new DataSet(nodeData);
