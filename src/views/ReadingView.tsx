@@ -5,6 +5,8 @@ import {
   Title1,
   Badge,
   Caption1,
+  Card,
+  Body1Strong,
 } from '@fluentui/react-components';
 import {
   ArrowLeftRegular,
@@ -115,6 +117,12 @@ const useStyles = makeStyles({
     textAlign: 'center',
     padding: tokens.spacingHorizontalXXL,
   },
+  childNodes: {
+    marginTop: tokens.spacingVerticalL,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXS,
+  },
   // responsive — desktop sidebar
   '@media (min-width: 1025px)': {
     body: {
@@ -184,6 +192,37 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
           className="kb-prose"
           dangerouslySetInnerHTML={{ __html: node.content }}
         />
+
+        {/* Child nodes (subfolders, sections) */}
+        {(() => {
+          const children = graph.nodes.filter(n => n.parent === node.id);
+          if (children.length === 0) return null;
+          return (
+            <div className={styles.childNodes}>
+              {children.map(child => {
+                const childCluster = findCluster(config, graph.clusters, child.cluster);
+                return (
+                  <a key={child.id} href={`#/node/${encodeURIComponent(child.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Card appearance="subtle" size="small" style={{ marginBottom: 4 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
+                        <NodeVisual node={child} mode={config.visuals.mode} surface="hud-thumb" source={config.source} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <Body1Strong style={{ display: 'block' }}>{child.title}</Body1Strong>
+                          {child.rawContent && (
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                              {child.rawContent.replace(/[#*`>\-[\]]/g, '').trim().substring(0, 100)}
+                            </Caption1>
+                          )}
+                        </div>
+                        <span style={{ width: 3, height: 24, borderRadius: 2, background: childCluster.color, flexShrink: 0 }} />
+                      </div>
+                    </Card>
+                  </a>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
