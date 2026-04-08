@@ -8,6 +8,8 @@ connections:
     description: "used by"
   - to: visual-system
     description: "part of"
+  - to: file-src/engine/nodeRenderer.ts
+    description: "implemented in"
 ---
 
 # Custom Node Renderer

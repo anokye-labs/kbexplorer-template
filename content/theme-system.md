@@ -10,6 +10,8 @@ connections:
     description: "toggled from"
   - to: node-renderer
     description: "affects rendering"
+  - to: file-src/hooks/useTheme.ts
+    description: "implemented in"
 ---
 
 # Theme System

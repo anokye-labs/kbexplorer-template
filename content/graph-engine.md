@@ -10,6 +10,10 @@ connections:
     description: "renders via"
   - to: hud
     description: "displayed in"
+  - to: file-src/engine/graph.ts
+    description: "implemented in"
+  - to: file-src/engine/createGraphNetwork.ts
+    description: "network factory"
 ---
 
 # Graph Engine

@@ -8,6 +8,8 @@ connections:
     description: "caches responses for"
   - to: content-pipeline
     description: "invalidates when pipeline changes"
+  - to: file-src/api/github.ts
+    description: "implemented in"
 ---
 
 # Cache & Versioning

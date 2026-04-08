@@ -8,7 +8,7 @@ import type { SourceConfig } from '../types';
 
 const CACHE_PREFIX = 'kbe:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const CACHE_VERSION = 8; // bump to invalidate all cached data
+const CACHE_VERSION = 9; // bump to invalidate all cached data
 
 // Clear stale cache from older versions
 try {

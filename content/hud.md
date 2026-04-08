@@ -12,6 +12,8 @@ connections:
     description: "themed by"
   - to: overview
     description: "primary navigation for"
+  - to: file-src/components/HUD.tsx
+    description: "implemented in"
 ---
 
 # HUD — Heads-Up Display

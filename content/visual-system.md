@@ -10,6 +10,8 @@ connections:
     description: "colors from"
   - to: hud
     description: "appears in"
+  - to: file-src/components/NodeVisual.tsx
+    description: "implemented in"
 ---
 
 # Visual Identity System

@@ -8,6 +8,8 @@ connections:
     description: "supplies data to"
   - to: cache-system
     description: "cached by"
+  - to: file-src/api/github.ts
+    description: "implemented in"
 ---
 
 # GitHub API Client

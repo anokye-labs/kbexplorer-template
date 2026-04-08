@@ -126,6 +126,7 @@ export const DEFAULT_CONFIG: KBConfig = {
   source: {
     owner: 'anokye-labs',
     repo: 'kbexplorer',
+    path: 'content',
     branch: 'main',
   },
   clusters: {

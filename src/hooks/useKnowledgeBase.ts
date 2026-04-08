@@ -30,10 +30,18 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
         const source = sourceOverride ?? DEFAULT_CONFIG.source;
         const config = await loadConfig(source);
 
-        // Load content based on mode
-        const nodes = config.source.path
-          ? await loadAuthoredContent(source, config.source.path)
-          : await loadRepoContent(source);
+        // Load content — blend both modes when authored content exists alongside repo
+        let nodes = await loadRepoContent(source);
+
+        // If there's a content path, also load authored content and merge
+        if (config.source.path) {
+          try {
+            const authored = await loadAuthoredContent(source, config.source.path);
+            nodes = [...nodes, ...authored];
+          } catch {
+            // Authored content dir may not exist — that's fine, repo-aware still works
+          }
+        }
 
         const clusters = extractClusters(nodes, config);
         const graph = buildGraph(nodes, clusters);

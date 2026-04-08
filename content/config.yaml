@@ -28,6 +28,9 @@ clusters:
   design:
     name: Design Decisions
     color: "#A86FDF"
+  guide:
+    name: Guide
+    color: "#39FF14"
 
 visuals:
   mode: emoji
