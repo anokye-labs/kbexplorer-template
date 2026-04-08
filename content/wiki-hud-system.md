@@ -1,15 +1,15 @@
 ---
-id: wiki-hud-system
+id: "wiki-hud-system"
 title: "HUD System"
-emoji: "Pin"
+emoji: "📖"
 cluster: guide
-parent: wiki-deep-dive
+parent: "wiki-deep-dive"
 connections:
-  - to: hud
+  - to: "hud"
     description: "architecture doc"
-  - to: file-src/components/HUD.tsx
-    description: "source code"
 ---
+
+
 
 # HUD System
 

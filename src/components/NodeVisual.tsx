@@ -15,9 +15,70 @@ import {
   MergeRegular,
   BranchForkRegular,
   FlagRegular,
+  BuildingRegular,
+  CubeRegular,
+  LayerRegular,
+  StackRegular,
+  DatabaseRegular,
+  ServerRegular,
+  StorageRegular,
+  GlobeRegular,
+  CloudRegular,
+  PlugConnectedRegular,
+  LinkRegular,
+  WindowRegular,
+  GridRegular,
+  AppsRegular,
+  LockClosedRegular,
+  ShieldRegular,
+  KeyRegular,
+  SettingsRegular,
+  BeakerRegular,
+  FlashRegular,
+  RocketRegular,
+  BookRegular,
+  NotebookRegular,
+  LibraryRegular,
+  CodeRegular,
+  ScriptRegular,
+  BranchRegular,
+  FlowRegular,
+  DiagramRegular,
+  PaintBrushRegular,
+  ColorRegular,
+  EyeRegular,
+  ImageRegular,
+  NavigationRegular,
+  MapRegular,
+  HistoryRegular,
+  ClockRegular,
+  AlertRegular,
+  WarningRegular,
+  InfoRegular,
+  SearchRegular,
+  FilterRegular,
+  ClipboardRegular,
+  TargetRegular,
+  HomeRegular,
+  OrganizationRegular,
+  BoardRegular,
+  StarRegular,
+  TagRegular,
+  TableRegular,
+  ChartMultipleRegular,
+  CommentRegular,
+  PeopleRegular,
+  PersonRegular,
+  DesktopRegular,
+  KeyboardRegular,
+  SaveRegular,
+  EngineRegular,
+  DeveloperBoardRegular,
+  PuzzlePieceRegular,
 } from '@fluentui/react-icons';
 
 export const FLUENT_ICONS: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
+  // Core (original set)
   Sparkle: SparkleRegular,
   Wrench: WrenchRegular,
   Bug: BugRegular,
@@ -29,6 +90,100 @@ export const FLUENT_ICONS: Record<string, React.ComponentType<{ style?: React.CS
   Merge: MergeRegular,
   BranchFork: BranchForkRegular,
   Flag: FlagRegular,
+
+  // Architecture
+  Building: BuildingRegular,
+  Cube: CubeRegular,
+  Layer: LayerRegular,
+  Stack: StackRegular,
+  Organization: OrganizationRegular,
+  Diagram: DiagramRegular,
+  PuzzlePiece: PuzzlePieceRegular,
+
+  // Data
+  Database: DatabaseRegular,
+  Server: ServerRegular,
+  Storage: StorageRegular,
+  Table: TableRegular,
+  ChartMultiple: ChartMultipleRegular,
+
+  // API / Network
+  PlugConnected: PlugConnectedRegular,
+  Globe: GlobeRegular,
+  Cloud: CloudRegular,
+  Link: LinkRegular,
+
+  // UI / Components
+  Window: WindowRegular,
+  Grid: GridRegular,
+  Apps: AppsRegular,
+  Board: BoardRegular,
+  Navigation: NavigationRegular,
+  Desktop: DesktopRegular,
+  Keyboard: KeyboardRegular,
+
+  // Security
+  LockClosed: LockClosedRegular,
+  Shield: ShieldRegular,
+  Key: KeyRegular,
+
+  // Config / Build / Infra
+  Settings: SettingsRegular,
+  Engine: EngineRegular,
+  DeveloperBoard: DeveloperBoardRegular,
+  Home: HomeRegular,
+  Save: SaveRegular,
+
+  // Testing
+  Beaker: BeakerRegular,
+
+  // Engine / Core
+  Flash: FlashRegular,
+  Rocket: RocketRegular,
+
+  // Documentation
+  Book: BookRegular,
+  Notebook: NotebookRegular,
+  Library: LibraryRegular,
+
+  // Code / CLI
+  Code: CodeRegular,
+  Script: ScriptRegular,
+  Branch: BranchRegular,
+
+  // Graph / Flow
+  Flow: FlowRegular,
+
+  // Visual / Theme
+  PaintBrush: PaintBrushRegular,
+  Color: ColorRegular,
+  Eye: EyeRegular,
+  Image: ImageRegular,
+
+  // Navigation / Maps
+  Map: MapRegular,
+
+  // Time / History
+  History: HistoryRegular,
+  Clock: ClockRegular,
+
+  // Status
+  Alert: AlertRegular,
+  Warning: WarningRegular,
+  Info: InfoRegular,
+  Search: SearchRegular,
+  Filter: FilterRegular,
+
+  // Tasks
+  Clipboard: ClipboardRegular,
+  Target: TargetRegular,
+  Star: StarRegular,
+  Tag: TagRegular,
+
+  // People
+  Comment: CommentRegular,
+  People: PeopleRegular,
+  Person: PersonRegular,
 };
 
 export function isFluentIconName(value: string): boolean {

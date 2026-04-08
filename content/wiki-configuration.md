@@ -1,15 +1,19 @@
 ---
-id: wiki-configuration
+id: "wiki-configuration"
 title: "Configuration Reference"
-emoji: "Wrench"
+emoji: "📖"
 cluster: guide
-parent: wiki-getting-started
+parent: "wiki-getting-started"
 connections:
-  - to: theme-system
+  - to: "theme-system"
     description: "theme config"
-  - to: visual-system
+  - to: "visual-system"
     description: "visual config"
+  - to: "type-system"
+    description: "KBConfig interface"
 ---
+
+
 
 # Configuration Reference
 

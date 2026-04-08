@@ -1,16 +1,15 @@
 ---
-id: cache-system
+id: "cache-system"
 title: "Cache & Versioning"
-emoji: "Wrench"
+emoji: "⚙️"
 cluster: infra
 connections:
-  - to: github-api
+  - to: "github-api"
     description: "caches responses for"
-  - to: content-pipeline
+  - to: "content-pipeline"
     description: "invalidates when pipeline changes"
-  - to: file-src/api/github.ts
-    description: "implemented in"
 ---
+
 
 # Cache & Versioning
 

@@ -1,15 +1,19 @@
 ---
-id: wiki-content-modes
+id: "wiki-content-modes"
 title: "Content Modes"
-emoji: "Document"
+emoji: "📖"
 cluster: guide
-parent: wiki-getting-started
+parent: "wiki-getting-started"
 connections:
-  - to: content-pipeline
+  - to: "content-pipeline"
     description: "parsed by"
-  - to: github-api
+  - to: "github-api"
     description: "fetched via"
+  - to: "local-loader"
+    description: "local mode via"
 ---
+
+
 
 # Content Modes
 

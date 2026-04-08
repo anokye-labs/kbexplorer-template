@@ -1,16 +1,21 @@
 ---
-id: github-api
+id: "github-api"
 title: "GitHub API Client"
-emoji: "BranchFork"
+emoji: "🔌"
 cluster: data
 connections:
-  - to: content-pipeline
+  - to: "content-pipeline"
     description: "supplies data to"
-  - to: cache-system
+  - to: "cache-system"
     description: "cached by"
-  - to: file-src/api/github.ts
-    description: "implemented in"
+  - to: "visual-system"
+    description: "resolveImageUrl used by"
+  - to: "local-loader"
+    description: "types imported by"
+  - to: "type-system"
+    description: "imports SourceConfig from"
 ---
+
 
 # GitHub API Client
 

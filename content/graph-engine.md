@@ -1,20 +1,27 @@
 ---
-id: graph-engine
+id: "graph-engine"
 title: "Graph Engine"
-emoji: "Sparkle"
+emoji: "⚡"
 cluster: engine
 connections:
-  - to: content-pipeline
+  - to: "content-pipeline"
     description: "receives nodes from"
-  - to: node-renderer
+  - to: "node-renderer"
     description: "renders via"
-  - to: hud
+  - to: "hud"
     description: "displayed in"
-  - to: file-src/engine/graph.ts
-    description: "implemented in"
-  - to: file-src/engine/createGraphNetwork.ts
-    description: "network factory"
+  - to: "graph-network"
+    description: "factory delegates to"
+  - to: "kb-loader"
+    description: "called by"
+  - to: "local-loader"
+    description: "called by"
+  - to: "type-system"
+    description: "imports types from"
+  - to: "app-shell"
+    description: "getHubNodeId used by"
 ---
+
 
 # Graph Engine
 

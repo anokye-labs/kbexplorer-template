@@ -1,19 +1,19 @@
 ---
-id: wiki-visual-system
+id: "wiki-visual-system"
 title: "Visual System"
-emoji: "Lightbulb"
+emoji: "📖"
 cluster: guide
-parent: wiki-deep-dive
+parent: "wiki-deep-dive"
 connections:
-  - to: visual-system
+  - to: "visual-system"
     description: "architecture doc"
-  - to: node-renderer
+  - to: "node-renderer"
     description: "architecture doc"
-  - to: dir-src/components
-    description: "source code"
-  - to: dir-src/engine
-    description: "renderer source"
+  - to: "style-system"
+    description: "CSS reference"
 ---
+
+
 
 # Visual System
 

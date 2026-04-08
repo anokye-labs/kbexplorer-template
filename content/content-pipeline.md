@@ -1,18 +1,25 @@
 ---
-id: content-pipeline
+id: "content-pipeline"
 title: "Content Pipeline"
-emoji: "Document"
+emoji: "💾"
 cluster: data
 connections:
-  - to: graph-engine
+  - to: "graph-engine"
     description: "produces nodes for"
-  - to: github-api
+  - to: "github-api"
     description: "fetches from"
-  - to: overview
+  - to: "overview"
     description: "core module of"
-  - to: file-src/engine/parser.ts
-    description: "implemented in"
+  - to: "local-loader"
+    description: "functions reused by"
+  - to: "kb-loader"
+    description: "orchestrated by"
+  - to: "type-system"
+    description: "imports types from"
+  - to: "test-suite"
+    description: "tested by"
 ---
+
 
 # Content Pipeline
 

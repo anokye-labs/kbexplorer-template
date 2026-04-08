@@ -1,18 +1,21 @@
 ---
-id: theme-system
+id: "theme-system"
 title: "Theme System"
-emoji: "Lightbulb"
+emoji: "🎨"
 cluster: ui
 connections:
-  - to: visual-system
+  - to: "visual-system"
     description: "colors"
-  - to: hud
+  - to: "hud"
     description: "toggled from"
-  - to: node-renderer
+  - to: "node-renderer"
     description: "affects rendering"
-  - to: file-src/hooks/useTheme.ts
-    description: "implemented in"
+  - to: "app-shell"
+    description: "useTheme called by"
+  - to: "keyboard-nav"
+    description: "nextTheme imported by"
 ---
+
 
 # Theme System
 

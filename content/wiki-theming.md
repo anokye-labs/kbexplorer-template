@@ -1,15 +1,15 @@
 ---
-id: wiki-theming
+id: "wiki-theming"
 title: "Theme System"
-emoji: "Lightbulb"
+emoji: "📖"
 cluster: guide
-parent: wiki-deep-dive
+parent: "wiki-deep-dive"
 connections:
-  - to: theme-system
+  - to: "theme-system"
     description: "architecture doc"
-  - to: file-src/hooks/useTheme.ts
-    description: "source code"
 ---
+
+
 
 # Theme System
 

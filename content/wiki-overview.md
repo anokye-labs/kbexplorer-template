@@ -1,15 +1,15 @@
 ---
-id: wiki-overview
+id: "wiki-overview"
 title: "What is kbexplorer?"
-emoji: "Sparkle"
+emoji: "📖"
 cluster: guide
-parent: wiki-getting-started
+parent: "wiki-getting-started"
 connections:
-  - to: overview
+  - to: "overview"
     description: "architecture overview"
-  - to: readme
-    description: "project README"
 ---
+
+
 
 # What is kbexplorer?
 

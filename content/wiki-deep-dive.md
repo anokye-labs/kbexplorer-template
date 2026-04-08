@@ -1,22 +1,24 @@
 ---
-id: wiki-deep-dive
+id: "wiki-deep-dive"
 title: "Architecture Deep Dive"
-emoji: "Sparkle"
+emoji: "📖"
 cluster: guide
 connections:
-  - to: overview
+  - to: "overview"
     description: "explores"
-  - to: wiki-data-pipeline
+  - to: "wiki-data-pipeline"
     description: "covers"
-  - to: wiki-visual-system
+  - to: "wiki-visual-system"
     description: "covers"
-  - to: wiki-hud-system
+  - to: "wiki-hud-system"
     description: "covers"
-  - to: wiki-theming
+  - to: "wiki-theming"
     description: "covers"
-  - to: wiki-infrastructure
+  - to: "wiki-infrastructure"
     description: "covers"
 ---
+
+
 
 # Architecture Deep Dive
 

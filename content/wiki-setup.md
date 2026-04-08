@@ -1,15 +1,21 @@
 ---
-id: wiki-setup
+id: "wiki-setup"
 title: "Installation & Development"
-emoji: "Wrench"
+emoji: "📖"
 cluster: guide
-parent: wiki-getting-started
+parent: "wiki-getting-started"
 connections:
-  - to: cache-system
+  - to: "cache-system"
     description: "uses caching from"
-  - to: file-vite.config.ts
+  - to: "vite-config"
     description: "configured by"
+  - to: "build-scripts"
+    description: "launched via"
+  - to: "init-script"
+    description: "setup via"
 ---
+
+
 
 # Installation & Development
 

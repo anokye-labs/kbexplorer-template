@@ -40,25 +40,53 @@ script converts it into kbexplorer content:
 | Section topic | frontmatter `emoji` | Inferred from topic keywords |
 | Node `prompt` | Content generation hint | Passed to kb-writer as instructions |
 
-## Emoji Mapping
+## Icon Mapping
 
-Emojis are assigned based on topic keywords in the title and cluster:
+Icons are assigned using Fluent UI system icon names (not emoji). These map to
+registered components in kbexplorer's `FLUENT_ICONS` registry (`src/components/NodeVisual.tsx`):
 
-| Topic Type | Emoji | Keywords |
-|-----------|-------|----------|
-| Architecture/Overview | 🏗️ | architecture, overview |
-| Data/Database/State | 💾 | data, database, state |
-| API/Network | 🔌 | api, network, http |
-| UI/Components | 🎨 | ui, component, view, frontend, theme |
-| Auth/Security | 🔐 | auth, security |
-| Config/Build/Deploy | ⚙️ | config, build, deploy, infra |
-| Testing | 🧪 | test, testing |
-| Engine/Core Logic | ⚡ | engine, core, logic, performance |
-| Documentation | 📖 | docs, guide, documentation |
-| CLI/Tools | 🔧 | cli, tool, script |
-| Graph/Network | 🕸️ | graph |
-| Caching | 📦 | cache |
-| Default | 📄 | (no match) |
+| Topic Type | Icon Name | Keywords |
+|-----------|-----------|----------|
+| Architecture/Overview | `Building` | architecture, overview |
+| System/Organization | `Organization` | system, hub, organization |
+| Data/Database | `Database` | data, database |
+| State/Storage | `Storage` | state, storage, cache |
+| API/HTTP | `PlugConnected` | api, http |
+| Network/External | `Globe` | network, globe |
+| Server | `Server` | server |
+| UI/Views | `Window` | ui, view, window |
+| Components | `PuzzlePiece` | component |
+| Frontend/Desktop | `Desktop` | frontend, desktop |
+| Auth | `LockClosed` | auth |
+| Security | `Shield` | security, shield |
+| Config/Settings | `Settings` | config, infra, settings |
+| Build/Engine | `Engine` | build, engine |
+| Deploy | `Rocket` | deploy |
+| Testing | `Beaker` | test, testing |
+| Core Logic/Perf | `Flash` | core, logic, performance |
+| Documentation | `Book` | docs, guide, documentation |
+| Wiki | `Notebook` | wiki |
+| Code/Types | `Code` | cli, type, code |
+| Scripts | `Script` | script |
+| Tools | `Wrench` | tool |
+| Graph/Flow | `Flow` | graph, flow |
+| Diagrams | `Diagram` | diagram |
+| Visual/Style | `PaintBrush` | visual, style, design |
+| Theme/Color | `Color` | theme, color |
+| Navigation | `Navigation` | navigation |
+| Keyboard | `Keyboard` | keyboard |
+| Layout/Grid | `Grid` | layout, grid |
+| History/Time | `History` | history |
+| Issues | `Flag` | issue, epic, flag |
+| Tasks | `Clipboard` | task, manifest |
+| Bugs | `Bug` | bug |
+| Features | `Sparkle` | feature |
+| Enhancements | `Lightbulb` | enhancement |
+| Errors | `Alert` | error, alert |
+| Loading/Time | `Clock` | loading, clock |
+| Search | `Search` | search |
+| Branches | `Branch` | branch |
+| Files (default) | `Document` | (no match) |
 
 ## Connection Derivation Rules
 

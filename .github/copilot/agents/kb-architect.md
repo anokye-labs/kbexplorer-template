@@ -93,24 +93,50 @@ Output a JSON catalogue where each entry maps to a kbexplorer node:
 }
 ```
 
-### Emoji Assignment
+### Icon Assignment
 
-Assign emoji based on the actual role of each component:
+Assign Fluent UI icon names (not emoji) based on the actual role of each component.
+These map to registered icons in kbexplorer's `FLUENT_ICONS` registry:
 
-| Topic Type | Emoji |
-|-----------|-------|
-| Architecture/Overview | 🏗️ |
-| Data/Database/State | 💾 |
-| API/Network/HTTP | 🔌 |
-| UI/Components/Views | 🎨 |
-| Auth/Security | 🔐 |
-| Config/Build/Deploy | ⚙️ |
-| Testing | 🧪 |
-| Engine/Core Logic | ⚡ |
-| Documentation/Guide | 📖 |
-| CLI/Tools/Scripts | 🔧 |
-| Graph/Network Viz | 🕸️ |
-| Visual/Rendering | 🎭 |
+| Topic Type | Icon Name |
+|-----------|-----------|
+| Architecture/Overview | `Building` |
+| System/Organization | `Organization` |
+| Data/Database | `Database` |
+| State/Storage | `Storage` |
+| API/HTTP | `PlugConnected` |
+| Network/External | `Globe` |
+| Server | `Server` |
+| UI/Views | `Window` |
+| Components | `PuzzlePiece` |
+| Frontend/Desktop | `Desktop` |
+| Auth | `LockClosed` |
+| Security | `Shield` |
+| Config/Settings | `Settings` |
+| Build/Engine | `Engine` |
+| Deploy | `Rocket` |
+| Testing | `Beaker` |
+| Core Logic/Performance | `Flash` |
+| Documentation/Guide | `Book` |
+| Wiki | `Notebook` |
+| Code/Types | `Code` |
+| Scripts | `Script` |
+| CLI/Tools | `Wrench` |
+| Graph/Flow | `Flow` |
+| Diagrams | `Diagram` |
+| Visual/Style | `PaintBrush` |
+| Theme/Color | `Color` |
+| Navigation | `Navigation` |
+| Keyboard | `Keyboard` |
+| Layout/Grid | `Grid` |
+| History | `History` |
+| Issues/Flags | `Flag` |
+| Tasks | `Clipboard` |
+| Bugs | `Bug` |
+| Features | `Sparkle` |
+| Enhancements | `Lightbulb` |
+| Files/Folders | `Folder` |
+| Default (unknown) | `Document` |
 
 ## Constraints
 

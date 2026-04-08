@@ -1,16 +1,17 @@
 ---
-id: design-decisions
+id: "design-decisions"
 title: "Design Decisions"
-emoji: "Flag"
+emoji: "🏗️"
 cluster: design
 connections:
-  - to: overview
+  - to: "overview"
     description: "informs architecture of"
-  - to: graph-engine
+  - to: "graph-engine"
     description: "shaped"
-  - to: hud
+  - to: "hud"
     description: "drove layout of"
 ---
+
 
 # Design Decisions
 
