@@ -1,7 +1,7 @@
 ---
 id: "wiki-deep-dive"
 title: "Architecture Deep Dive"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 connections:
   - to: "overview"

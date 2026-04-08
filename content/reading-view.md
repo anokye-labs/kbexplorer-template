@@ -1,7 +1,7 @@
 ---
 id: "reading-view"
 title: "Reading View"
-emoji: "🎨"
+emoji: "Color"
 cluster: ui
 connections:
   - to: "visual-system"

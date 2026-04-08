@@ -1,7 +1,7 @@
 ---
 id: "wiki-overview"
 title: "What is kbexplorer?"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 parent: "wiki-getting-started"
 connections:

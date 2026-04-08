@@ -1,7 +1,7 @@
 ---
 id: "overview"
 title: "kbexplorer Architecture"
-emoji: "🏗️"
+emoji: "Building"
 cluster: engine
 connections:
   - to: "graph-engine"

@@ -1,7 +1,7 @@
 ---
 id: "app-shell"
 title: "Application Shell"
-emoji: "🏗️"
+emoji: "Building"
 cluster: ui
 connections:
   - to: "kb-loader"

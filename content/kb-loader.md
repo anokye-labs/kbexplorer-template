@@ -1,7 +1,7 @@
 ---
 id: "kb-loader"
 title: "Knowledge Base Loader"
-emoji: "💾"
+emoji: "Database"
 cluster: data
 connections:
   - to: "content-pipeline"

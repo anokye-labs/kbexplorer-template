@@ -1,7 +1,7 @@
 ---
 id: "github-api"
 title: "GitHub API Client"
-emoji: "🔌"
+emoji: "PlugConnected"
 cluster: data
 connections:
   - to: "content-pipeline"

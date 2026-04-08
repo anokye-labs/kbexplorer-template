@@ -1,7 +1,7 @@
 ---
 id: "design-decisions"
 title: "Design Decisions"
-emoji: "🏗️"
+emoji: "Building"
 cluster: design
 connections:
   - to: "overview"

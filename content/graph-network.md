@@ -1,7 +1,7 @@
 ---
 id: "graph-network"
 title: "Graph Network Factory"
-emoji: "🕸️"
+emoji: "Flow"
 cluster: engine
 connections:
   - to: "node-renderer"

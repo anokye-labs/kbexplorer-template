@@ -1,7 +1,7 @@
 ---
 id: "content-pipeline"
 title: "Content Pipeline"
-emoji: "💾"
+emoji: "Database"
 cluster: data
 connections:
   - to: "graph-engine"

@@ -1,7 +1,7 @@
 ---
 id: "hud"
 title: "HUD — Heads-Up Display"
-emoji: "🎨"
+emoji: "Color"
 cluster: ui
 connections:
   - to: "graph-engine"

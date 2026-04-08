@@ -1,7 +1,7 @@
 ---
 id: "wiki-data-pipeline"
 title: "Data Pipeline"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 parent: "wiki-deep-dive"
 connections:

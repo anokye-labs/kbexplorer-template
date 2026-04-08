@@ -1,7 +1,7 @@
 ---
 id: "test-suite"
 title: "Test Suite"
-emoji: "🧪"
+emoji: "Beaker"
 cluster: infra
 connections:
   - to: "content-pipeline"

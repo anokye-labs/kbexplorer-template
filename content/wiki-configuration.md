@@ -1,7 +1,7 @@
 ---
 id: "wiki-configuration"
 title: "Configuration Reference"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 parent: "wiki-getting-started"
 connections:

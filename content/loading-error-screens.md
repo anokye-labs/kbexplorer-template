@@ -1,7 +1,7 @@
 ---
 id: "loading-error-screens"
 title: "Loading & Error Screens"
-emoji: "🎨"
+emoji: "Color"
 cluster: ui
 connections:
   - to: "app-shell"

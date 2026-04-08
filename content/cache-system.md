@@ -1,7 +1,7 @@
 ---
 id: "cache-system"
 title: "Cache & Versioning"
-emoji: "⚙️"
+emoji: "Settings"
 cluster: infra
 connections:
   - to: "github-api"

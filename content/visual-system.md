@@ -1,7 +1,7 @@
 ---
 id: "visual-system"
 title: "Visual Identity System"
-emoji: "🎭"
+emoji: "PaintBrush"
 cluster: visual
 connections:
   - to: "node-renderer"

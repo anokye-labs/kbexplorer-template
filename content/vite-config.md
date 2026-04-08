@@ -1,7 +1,7 @@
 ---
 id: "vite-config"
 title: "Vite Configuration"
-emoji: "⚙️"
+emoji: "Settings"
 cluster: infra
 connections:
   - to: "manifest-generator"

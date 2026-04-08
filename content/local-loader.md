@@ -1,7 +1,7 @@
 ---
 id: "local-loader"
 title: "Local Mode Loader"
-emoji: "💾"
+emoji: "Database"
 cluster: data
 connections:
   - to: "content-pipeline"

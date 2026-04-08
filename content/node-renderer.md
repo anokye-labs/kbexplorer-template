@@ -1,7 +1,7 @@
 ---
 id: "node-renderer"
 title: "Custom Node Renderer"
-emoji: "🎭"
+emoji: "PaintBrush"
 cluster: visual
 connections:
   - to: "graph-engine"

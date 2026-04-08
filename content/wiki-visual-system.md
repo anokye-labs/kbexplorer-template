@@ -1,7 +1,7 @@
 ---
 id: "wiki-visual-system"
 title: "Visual System"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 parent: "wiki-deep-dive"
 connections:

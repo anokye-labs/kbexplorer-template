@@ -1,7 +1,7 @@
 ---
 id: "init-script"
 title: "Interactive Init Script"
-emoji: "🔧"
+emoji: "Wrench"
 cluster: infra
 connections:
   - to: "build-scripts"

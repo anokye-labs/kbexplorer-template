@@ -1,7 +1,7 @@
 ---
 id: "wiki-getting-started"
 title: "Getting Started"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 connections:
   - to: "overview"

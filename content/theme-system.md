@@ -1,7 +1,7 @@
 ---
 id: "theme-system"
 title: "Theme System"
-emoji: "🎨"
+emoji: "Color"
 cluster: ui
 connections:
   - to: "visual-system"

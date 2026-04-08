@@ -1,7 +1,7 @@
 ---
 id: "wiki-infrastructure"
 title: "Infrastructure & Conventions"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 parent: "wiki-deep-dive"
 connections:

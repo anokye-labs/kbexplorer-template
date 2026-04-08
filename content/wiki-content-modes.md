@@ -1,7 +1,7 @@
 ---
 id: "wiki-content-modes"
 title: "Content Modes"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 parent: "wiki-getting-started"
 connections:

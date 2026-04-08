@@ -1,7 +1,7 @@
 ---
 id: "wiki-setup"
 title: "Installation & Development"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 parent: "wiki-getting-started"
 connections:

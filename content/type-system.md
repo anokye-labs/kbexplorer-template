@@ -1,7 +1,7 @@
 ---
 id: "type-system"
 title: "Core Type Definitions"
-emoji: "🏗️"
+emoji: "Building"
 cluster: engine
 connections:
   - to: "graph-engine"

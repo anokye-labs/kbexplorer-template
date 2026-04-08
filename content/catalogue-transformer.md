@@ -1,7 +1,7 @@
 ---
 id: "catalogue-transformer"
 title: "Catalogue Transformer"
-emoji: "🔧"
+emoji: "Wrench"
 cluster: infra
 connections:
   - to: "content-pipeline"

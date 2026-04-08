@@ -1,7 +1,7 @@
 ---
 id: "overview-view"
 title: "Overview View"
-emoji: "🎨"
+emoji: "Color"
 cluster: ui
 connections:
   - to: "visual-system"

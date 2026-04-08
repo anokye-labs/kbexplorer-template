@@ -1,7 +1,7 @@
 ---
 id: "graph-engine"
 title: "Graph Engine"
-emoji: "⚡"
+emoji: "Flash"
 cluster: engine
 connections:
   - to: "content-pipeline"

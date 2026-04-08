@@ -1,7 +1,7 @@
 ---
 id: "style-system"
 title: "CSS Style System"
-emoji: "🎭"
+emoji: "PaintBrush"
 cluster: visual
 connections:
   - to: "reading-view"

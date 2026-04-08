@@ -1,7 +1,7 @@
 ---
 id: "build-scripts"
 title: "Build & Dev Scripts"
-emoji: "🔧"
+emoji: "Wrench"
 cluster: infra
 connections:
   - to: "vite-config"

@@ -1,7 +1,7 @@
 ---
 id: "keyboard-nav"
 title: "Keyboard Navigation"
-emoji: "🎨"
+emoji: "Color"
 cluster: ui
 connections:
   - to: "theme-system"

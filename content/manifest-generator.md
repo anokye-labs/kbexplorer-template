@@ -1,7 +1,7 @@
 ---
 id: "manifest-generator"
 title: "Manifest Generator"
-emoji: "🔧"
+emoji: "Wrench"
 cluster: infra
 connections:
   - to: "local-loader"

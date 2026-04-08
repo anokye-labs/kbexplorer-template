@@ -1,7 +1,7 @@
 ---
 id: "wiki-theming"
 title: "Theme System"
-emoji: "📖"
+emoji: "Book"
 cluster: guide
 parent: "wiki-deep-dive"
 connections:
