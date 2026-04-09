@@ -1,8 +1,10 @@
-# kbexplorer
+# kbexplorer-template
 
 Interactive Knowledge Base Explorer — turn any GitHub repository into a navigable knowledge graph.
 
-[![Deploy to Azure Static Web Apps](https://github.com/anokye-labs/kbexplorer/actions/workflows/azure-static-web-apps.yml/badge.svg)](https://github.com/anokye-labs/kbexplorer/actions/workflows/azure-static-web-apps.yml)
+[![Deploy to GitHub Pages](https://github.com/anokye-labs/kbexplorer-template/actions/workflows/github-pages.yml/badge.svg)](https://github.com/anokye-labs/kbexplorer-template/actions/workflows/github-pages.yml)
+
+**Live demo:** [anokye-labs.github.io/kbexplorer](https://anokye-labs.github.io/kbexplorer/)
 
 ---
 
@@ -77,8 +79,8 @@ A `fallback` mode activates when the primary mode's asset is missing for a given
 ### Install and run
 
 ```bash
-git clone https://github.com/anokye-labs/kbexplorer.git
-cd kbexplorer
+git clone https://github.com/anokye-labs/kbexplorer-template.git
+cd kbexplorer-template
 npm install
 npm run dev
 ```
@@ -208,70 +210,34 @@ Connections create explicit edges between nodes. In repo-aware mode, connections
 
 ## Using in Another Repo
 
-kbexplorer can be embedded in any GitHub repository as a git submodule. An interactive setup wizard configures everything automatically.
-
-### Quick Start (with Copilot CLI)
-
-If you have the Copilot CLI with the kbexplorer skill installed, run:
-
-```
-/kb-init
-```
-
-This adds the submodule, runs the setup wizard, and starts the explorer.
-
-### Manual Setup
+Install the CLI tool and run init:
 
 ```bash
-# 1. Add the submodule
-git submodule add https://github.com/anokye-labs/kbexplorer.git .kbexplorer
-
-# 2. Run the interactive init wizard
-node .kbexplorer/scripts/init.js
-
-# 3. Start exploring
-npm run kb:dev
+npx @anokye-labs/kbexplorer init
 ```
 
-The init wizard will ask about content mode, title, visual style, theme, and features. It creates:
+This adds `.kbexplorer/` as a submodule, installs agents and skills to `.github/agents/` and `.github/skills/`, runs an interactive config wizard, and sets up npm scripts.
 
-| File | Purpose |
-|------|---------|
-| `.env.kbexplorer` | Source config env vars (gitignored) |
-| `content/config.yaml` | Full kbexplorer configuration |
-| `package.json` | Adds `kb:dev`, `kb:build`, `kb:install` scripts |
-
-### Available Commands
-
-After setup, these npm scripts are available in your host repo:
+### CLI Commands
 
 ```bash
-npm run kb:dev      # Start dev server with hot reload
-npm run kb:build    # Production build to dist/kb/
-npm run kb:install  # Reinstall kbexplorer dependencies
+npx @anokye-labs/kbexplorer init        # Setup: submodule + agents + skills + config
+npx @anokye-labs/kbexplorer generate    # Generate content from code analysis
+npx @anokye-labs/kbexplorer dev         # Start dev server (local mode)
+npx @anokye-labs/kbexplorer build       # Production build
+npx @anokye-labs/kbexplorer manifest    # Regenerate repo manifest
+npx @anokye-labs/kbexplorer update      # Pull latest template + refresh agents/skills
 ```
 
-### Updating kbexplorer
+Or install locally: `npm install -D @anokye-labs/kbexplorer`
+
+### Updating
 
 ```bash
-cd .kbexplorer
-git pull origin main
-cd ..
-git add .kbexplorer
-git commit -m "Update kbexplorer submodule"
+npx @anokye-labs/kbexplorer update
 ```
 
-### Cloning a Repo with kbexplorer
-
-When cloning a repo that has kbexplorer as a submodule:
-
-```bash
-git clone --recurse-submodules <repo-url>
-# or after cloning:
-git submodule update --init --recursive
-```
-
-Then run `npm run kb:install` to install kbexplorer's dependencies.
+For more details, see the [CLI documentation](https://github.com/anokye-labs/kbexplorer-cli).
 
 ## Deployment
 
