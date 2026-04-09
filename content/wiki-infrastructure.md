@@ -1,15 +1,23 @@
 ---
-id: wiki-infrastructure
+id: "wiki-infrastructure"
 title: "Infrastructure & Conventions"
-emoji: "Wrench"
+emoji: "Book"
 cluster: guide
-parent: wiki-deep-dive
+parent: "wiki-deep-dive"
 connections:
-  - to: cache-system
+  - to: "cache-system"
     description: "architecture doc"
-  - to: design-decisions
+  - to: "design-decisions"
     description: "architecture doc"
+  - to: "build-scripts"
+    description: "documents"
+  - to: "manifest-generator"
+    description: "documents"
+  - to: "vite-config"
+    description: "documents"
 ---
+
+
 
 # Infrastructure & Conventions
 

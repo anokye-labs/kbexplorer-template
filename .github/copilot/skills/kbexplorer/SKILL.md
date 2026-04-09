@@ -164,9 +164,41 @@ Inform the user that automated validation requires playwright-cli:
 - **Config not loading**: Ensure `content/config.yaml` exists in the target repo
   at the expected path.
 
+## Content Generation
+
+kbexplorer can auto-generate rich knowledge base content from any repository
+using its built-in agents (adapted from Deep Wiki, MIT license).
+
+### Quick Start
+
+Run `/kb:generate` to analyze the current repo and produce a full knowledge graph.
+
+### Agents
+
+| Agent | Purpose |
+|-------|---------|
+| **kb-architect** | Scans repo → structured JSON catalogue with clusters and connections |
+| **kb-writer** | Generates rich content pages with citations, Mermaid diagrams |
+| **kb-researcher** | Deep investigation with evidence-first analysis |
+
+### Pipeline
+
+```
+/kb:generate → kb-architect → catalogue → transform-catalogue.js → kb-writer → content/
+```
+
+The transform script converts the catalogue into kbexplorer-native frontmatter
+(id, title, emoji, cluster, parent, connections). The kb-writer agent then fills
+in each page with deep, evidence-based content.
+
+See `references/content-generation.md` for the full format specification,
+emoji mapping, and connection derivation rules.
+
 ## Additional Resources
 
 ### Reference Files
 
 - **`references/configuration.md`** — Complete config.yaml schema with all options,
   defaults, and examples.
+- **`references/content-generation.md`** — Content generation pipeline, frontmatter
+  format, catalogue-to-node mapping, and emoji assignments.

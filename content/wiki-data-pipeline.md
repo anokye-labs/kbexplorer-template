@@ -1,21 +1,21 @@
 ---
-id: wiki-data-pipeline
+id: "wiki-data-pipeline"
 title: "Data Pipeline"
-emoji: "Document"
+emoji: "Book"
 cluster: guide
-parent: wiki-deep-dive
+parent: "wiki-deep-dive"
 connections:
-  - to: content-pipeline
+  - to: "content-pipeline"
     description: "architecture doc"
-  - to: github-api
+  - to: "github-api"
     description: "architecture doc"
-  - to: graph-engine
+  - to: "graph-engine"
     description: "architecture doc"
-  - to: dir-src/engine
-    description: "source code"
-  - to: dir-src/api
-    description: "source code"
+  - to: "local-loader"
+    description: "documents"
 ---
+
+
 
 # Data Pipeline
 

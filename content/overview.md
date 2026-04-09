@@ -1,20 +1,27 @@
 ---
-id: overview
+id: "overview"
 title: "kbexplorer Architecture"
-emoji: "Sparkle"
+emoji: "Building"
 cluster: engine
 connections:
-  - to: graph-engine
+  - to: "graph-engine"
     description: "core module"
-  - to: content-pipeline
+  - to: "content-pipeline"
     description: "feeds data to"
-  - to: hud
+  - to: "hud"
     description: "primary interface"
-  - to: visual-system
+  - to: "visual-system"
     description: "renders via"
-  - to: theme-system
+  - to: "theme-system"
     description: "themed by"
+  - to: "app-shell"
+    description: "mounted by"
+  - to: "type-system"
+    description: "defined by"
+  - to: "kb-loader"
+    description: "loaded via"
 ---
+
 
 # kbexplorer
 

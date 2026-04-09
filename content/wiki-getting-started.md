@@ -1,20 +1,22 @@
 ---
-id: wiki-getting-started
+id: "wiki-getting-started"
 title: "Getting Started"
-emoji: "Flag"
+emoji: "Book"
 cluster: guide
 connections:
-  - to: overview
+  - to: "overview"
     description: "introduces"
-  - to: wiki-overview
+  - to: "wiki-overview"
     description: "starts with"
-  - to: wiki-setup
+  - to: "wiki-setup"
     description: "then"
-  - to: wiki-content-modes
+  - to: "wiki-content-modes"
     description: "explains"
-  - to: wiki-configuration
+  - to: "wiki-configuration"
     description: "configures via"
 ---
+
+
 
 # Getting Started
 

@@ -8,6 +8,7 @@ import {
   extractClusters,
   buildGraph,
 } from '../engine';
+import { detectLocalMode, loadLocalKnowledgeBase } from '../engine/local-loader';
 
 export type LoadingState =
   | { status: 'loading' }
@@ -15,8 +16,9 @@ export type LoadingState =
   | { status: 'error'; error: string };
 
 /**
- * Hook that loads the knowledge base from GitHub at runtime.
- * Fetches config, content (repo-aware or authored), computes graph.
+ * Hook that loads the knowledge base.
+ * In local mode: imports pre-built manifest (zero API calls).
+ * In remote mode: fetches from GitHub API at runtime.
  */
 export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
   const [state, setState] = useState<LoadingState>({ status: 'loading' });
@@ -27,19 +29,36 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
     async function load() {
       setState({ status: 'loading' });
       try {
+        const local = await detectLocalMode();
+
+        if (local) {
+          // Local mode — use pre-built manifest, zero API calls
+          const { graph, config } = await loadLocalKnowledgeBase();
+          if (!cancelled) {
+            if (graph.nodes.length === 0) {
+              setState({
+                status: 'error',
+                error: 'No content found in local manifest. Run `npm run prebuild` to regenerate.',
+              });
+            } else {
+              setState({ status: 'ready', graph, config });
+            }
+          }
+          return;
+        }
+
+        // Remote mode — existing API-based loading
         const source = sourceOverride ?? DEFAULT_CONFIG.source;
         const config = await loadConfig(source);
 
-        // Load content — blend both modes when authored content exists alongside repo
         let nodes = await loadRepoContent(source);
 
-        // If there's a content path, also load authored content and merge
         if (config.source.path) {
           try {
             const authored = await loadAuthoredContent(source, config.source.path);
             nodes = [...nodes, ...authored];
           } catch {
-            // Authored content dir may not exist — that's fine, repo-aware still works
+            // Authored content dir may not exist
           }
         }
 

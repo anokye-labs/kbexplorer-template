@@ -1,18 +1,25 @@
 ---
-id: visual-system
+id: "visual-system"
 title: "Visual Identity System"
-emoji: "Lightbulb"
+emoji: "PaintBrush"
 cluster: visual
 connections:
-  - to: node-renderer
+  - to: "node-renderer"
     description: "canvas rendering"
-  - to: theme-system
+  - to: "theme-system"
     description: "colors from"
-  - to: hud
+  - to: "hud"
     description: "appears in"
-  - to: file-src/components/NodeVisual.tsx
-    description: "implemented in"
+  - to: "reading-view"
+    description: "NodeVisual used by"
+  - to: "overview-view"
+    description: "NodeVisual used by"
+  - to: "github-api"
+    description: "imports resolveImageUrl"
+  - to: "style-system"
+    description: "CSS classes from"
 ---
+
 
 # Visual Identity System
 

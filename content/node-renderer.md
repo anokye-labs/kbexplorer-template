@@ -1,16 +1,19 @@
 ---
-id: node-renderer
+id: "node-renderer"
 title: "Custom Node Renderer"
-emoji: "Sparkle"
+emoji: "PaintBrush"
 cluster: visual
 connections:
-  - to: graph-engine
+  - to: "graph-engine"
     description: "used by"
-  - to: visual-system
+  - to: "visual-system"
     description: "part of"
-  - to: file-src/engine/nodeRenderer.ts
-    description: "implemented in"
+  - to: "graph-network"
+    description: "createNodeRenderer called by"
+  - to: "hud"
+    description: "ICON_NODE_SHAPE imported by"
 ---
+
 
 # Custom Node Renderer
 

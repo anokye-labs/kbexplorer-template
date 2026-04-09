@@ -1,20 +1,27 @@
 ---
-id: hud
+id: "hud"
 title: "HUD — Heads-Up Display"
-emoji: "Pin"
+emoji: "Color"
 cluster: ui
 connections:
-  - to: graph-engine
+  - to: "graph-engine"
     description: "renders graph from"
-  - to: node-renderer
+  - to: "node-renderer"
     description: "uses for constellation"
-  - to: theme-system
+  - to: "theme-system"
     description: "themed by"
-  - to: overview
+  - to: "overview"
     description: "primary navigation for"
-  - to: file-src/components/HUD.tsx
-    description: "implemented in"
+  - to: "visual-system"
+    description: "imports NodeVisual from"
+  - to: "graph-network"
+    description: "imports createGraphNetwork and computeGraphPositions"
+  - to: "app-shell"
+    description: "mounted by"
+  - to: "style-system"
+    description: "responsive CSS from"
 ---
+
 
 # HUD — Heads-Up Display
 
