@@ -18,8 +18,6 @@ connections:
     description: "generalizes content modes described in"
   - to: "overview-view"
     description: "adds display mode rendering to"
-  - to: "reading-view"
-    description: "adds code/tree/table display to"
   - to: "manifest-generator"
     description: "adds nodemap.yaml reading to"
   - to: "issue-41"
@@ -111,7 +109,7 @@ nodes:
 
 ### Display Modes
 
-How a node's content is presented in the reading view:
+How a node's content is presented in the [reading view](reading-view):
 
 | Display | Rendering |
 |---------|-----------|

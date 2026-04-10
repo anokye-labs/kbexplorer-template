@@ -10,8 +10,7 @@ connections:
     description: "starts with"
   - to: "wiki-setup"
     description: "then"
-  - to: "wiki-content-modes"
-    description: "explains"
+
   - to: "wiki-configuration"
     description: "configures via"
 ---
@@ -20,7 +19,7 @@ connections:
 
 # Getting Started
 
-This guide walks you through setting up kbexplorer, understanding its content modes, and configuring it for your repository.
+This guide walks you through setting up kbexplorer, understanding its [content modes](wiki-content-modes), and configuring it for your repository.
 
 ## Quick Start
 

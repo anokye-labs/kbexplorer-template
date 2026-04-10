@@ -8,10 +8,8 @@ connections:
     description: "canvas rendering"
   - to: "theme-system"
     description: "colors from"
-  - to: "hud"
-    description: "appears in"
-  - to: "reading-view"
-    description: "NodeVisual used by"
+
+
   - to: "overview-view"
     description: "NodeVisual used by"
   - to: "github-api"
@@ -23,7 +21,7 @@ connections:
 
 # Visual Identity System
 
-The visual system (`src/components/NodeVisual.tsx`) renders node icons across all UI surfaces — reading view headers, connection cards, HUD thumbnails, and child node lists.
+The visual system (`src/components/NodeVisual.tsx`) renders node icons across all UI surfaces — [reading view](reading-view) headers, connection cards, [HUD — Heads-Up Display](hud) thumbnails, and child node lists.
 
 ## Cluster-Colored Icons
 

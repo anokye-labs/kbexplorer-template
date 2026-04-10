@@ -4,14 +4,12 @@ title: "Local Mode Loader"
 emoji: "Database"
 cluster: data
 connections:
-  - to: "content-pipeline"
-    description: "reuses parseMarkdownFile, issueToNode, treeToNodes, splitIntoSections"
+
   - to: "graph-engine"
     description: "calls buildGraph, extractClusters"
   - to: "github-api"
     description: "imports GHIssue, GHTreeItem types"
-  - to: "manifest-generator"
-    description: "consumes output of"
+
   - to: "kb-loader"
     description: "called by"
   - to: "type-system"
@@ -20,7 +18,7 @@ connections:
 
 # Local Mode Loader
 
-The local loader exists to enable zero-API-call operation. Instead of fetching issues, PRs, and file trees from GitHub at runtime, it reads everything from a pre-built `repo-manifest.json` file that the manifest generator produces at build time. This eliminates rate-limit concerns, allows fully offline usage, and dramatically accelerates load times — while reusing the exact same parser functions as the API path to guarantee consistent output.
+The local loader exists to enable zero-API-call operation. Instead of fetching issues, PRs, and file trees from GitHub at runtime, it reads everything from a pre-built `repo-manifest.json` file that the [manifest generator](manifest-generator) produces at build time. This eliminates rate-limit concerns, allows fully offline usage, and dramatically accelerates load times — while reusing the exact same parser functions as the API path to guarantee consistent output.
 
 ## At a Glance
 
@@ -60,7 +58,7 @@ flowchart TD
 
 <!-- Sources: src/engine/local-loader.ts:68-70, src/engine/local-loader.ts:242-253 -->
 
-## Manifest Content Pipeline
+## Manifest [Content Pipeline](content-pipeline)
 
 ```mermaid
 flowchart LR

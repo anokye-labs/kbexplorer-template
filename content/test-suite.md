@@ -3,16 +3,12 @@ id: "test-suite"
 title: "Test Suite"
 emoji: "Beaker"
 cluster: infra
-connections:
-  - to: "content-pipeline"
-    description: "tests parser functions"
-  - to: "manifest-generator"
-    description: "tests manifest functions"
+connections: []
 ---
 
 # Test Suite
 
-The test suite exists to guard the two most critical code paths in kbexplorer: the content pipeline (which parses markdown, issues, and file trees into `KBNode` arrays) and the manifest generator (which snapshots a repository into JSON). These are the foundational data transformations — if they break, the entire knowledge graph renders incorrectly or not at all.
+The test suite exists to guard the two most critical code paths in kbexplorer: the [content pipeline](content-pipeline) (which parses markdown, issues, and file trees into `KBNode` arrays) and the [manifest generator](manifest-generator) (which snapshots a repository into JSON). These are the foundational data transformations — if they break, the entire knowledge graph renders incorrectly or not at all.
 
 ## At a Glance
 

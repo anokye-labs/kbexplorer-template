@@ -4,14 +4,12 @@ title: "HUD System"
 emoji: "Book"
 cluster: guide
 parent: "wiki-deep-dive"
-connections:
-  - to: "hud"
-    description: "architecture doc"
+connections: []
 ---
 
 
 
-# HUD System
+# [HUD — Heads-Up Display](hud) System
 
 The HUD (Heads-Up Display) is the persistent control surface visible across all reading views. It adapts its layout based on dock position.
 

@@ -10,16 +10,13 @@ connections:
     description: "validates mappings produced by"
   - to: "graph-engine"
     description: "analyzes output of"
-  - to: "content-pipeline"
-    description: "audits connections from"
+
   - to: "manifest-generator"
     description: "reads manifest produced by"
-  - to: "spec-views"
-    description: "ensures views have meaningful data from"
+
   - to: "spec-multi-layer-identity"
     description: "helps identify where identity mapping is needed by"
-  - to: "issue-46"
-    description: "tracked by"
+
 ---
 
 # Link Assessment — Graph Health Analysis
@@ -65,13 +62,13 @@ Edges: 219 total
   - pr-15 (no connections)
 
 ✗ Broken references (1):
-  - spec-views → issue-46 (node does not exist)
+  - [Views, Expansion, and External Providers](spec-views) → [issue 46](issue-46) (node does not exist)
 
 ⚠ Weak clusters (1):
   - "guide" cluster: 11 nodes, 0 cross-cluster edges
 
 ⚠ Missing cross-references (5):
-  - content-pipeline.md mentions "github.ts" but no connection to github-api
+  - [Content Pipeline](content-pipeline).md mentions "github.ts" but no connection to github-api
   - spec-graph-store.md mentions "SQLite" but no connection to cache-system
   ...
 

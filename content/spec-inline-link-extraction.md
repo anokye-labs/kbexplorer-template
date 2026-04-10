@@ -16,10 +16,8 @@ connections:
     description: "redefines what 'missing reference' means for"
   - to: "spec-multi-layer-identity"
     description: "inline links create cross-identity edges for"
-  - to: "content-pipeline"
-    description: "fundamentally changes edge derivation in"
-  - to: "graph-engine"
-    description: "feeds auto-extracted edges into"
+
+
   - to: "type-system"
     description: "adds edge source location to types in"
   - to: "reading-view"

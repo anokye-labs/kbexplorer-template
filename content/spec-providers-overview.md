@@ -22,13 +22,11 @@ connections:
     description: "replaces manifest approach in"
   - to: "type-system"
     description: "extends KBNode/KBGraph types defined in"
-  - to: "overview"
-    description: "redefines architecture documented in"
   - to: "issue-40"
     description: "tracked by"
 ---
 ---
-# Graph Provider System — Overview
+# Graph Provider System — [kbexplorer Architecture](overview)
 
 The graph provider system evolves kbexplorer's data pipeline from a monolithic
 manifest into a layered, extensible architecture where **providers** contribute

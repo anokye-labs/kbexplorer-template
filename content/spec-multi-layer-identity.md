@@ -12,8 +12,7 @@ connections:
     description: "builds on file→node mapping from"
   - to: "spec-graph-store"
     description: "requires identity tracking in"
-  - to: "graph-engine"
-    description: "changes how nodes merge in"
+
   - to: "type-system"
     description: "extends KBNode with identity fields in"
   - to: "content-pipeline"
@@ -92,7 +91,7 @@ The node map (spec-node-mapping) is where identities are declared:
 nodes:
   - id: graph-engine
     file: src/engine/graph.ts    # ← this creates the identity link
-    title: "Graph Engine"
+    title: "[Graph Engine](graph-engine)"
     cluster: engine
 ```
 

@@ -7,10 +7,8 @@ parent: "wiki-deep-dive"
 connections:
   - to: "content-pipeline"
     description: "architecture doc"
-  - to: "github-api"
-    description: "architecture doc"
-  - to: "graph-engine"
-    description: "architecture doc"
+
+
   - to: "local-loader"
     description: "documents"
 ---
@@ -24,9 +22,9 @@ The data pipeline transforms raw GitHub API responses into an interactive knowle
 ## Flow
 
 1. **`useKnowledgeBase`** hook triggers on mount
-2. **GitHub API client** (`src/api/github.ts`) fetches issues, file tree, README — with localStorage caching and rate limit handling
+2. **[GitHub API client](github-api)** (`src/api/github.ts`) fetches issues, file tree, README — with localStorage caching and rate limit handling
 3. **Content parser** (`src/engine/parser.ts`) normalizes into `KBNode[]` — assigns icons, clusters, cross-references, parent/child relationships
-4. **Graph engine** (`src/engine/graph.ts`) computes edges (explicit connections + containment), rescues orphans, builds related-node maps
+4. **[Graph engine](graph-engine)** (`src/engine/graph.ts`) computes edges (explicit connections + containment), rescues orphans, builds related-node maps
 5. **Views** render the computed `KBGraph`
 
 ## Blended Loading

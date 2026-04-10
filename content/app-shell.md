@@ -12,8 +12,7 @@ connections:
     description: "calls useKeyboardNav"
   - to: "graph-engine"
     description: "calls getHubNodeId"
-  - to: "hud"
-    description: "mounts HUD component"
+
   - to: "reading-view"
     description: "routes to ReadingView"
   - to: "loading-error-screens"
@@ -31,7 +30,7 @@ The application shell exists to provide a single, stable entry point that boots 
 | Component | Responsibility | Key File | Source |
 |-----------|---------------|----------|--------|
 | `App` | Fluent theme provider + HashRouter host | `src/App.tsx` | [src/App.tsx:82](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L82) |
-| `Explorer` | Orchestrate loading, keyboard nav, HUD, routing | `src/App.tsx` | [src/App.tsx:28](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L28) |
+| `Explorer` | Orchestrate loading, keyboard nav, [HUD — Heads-Up Display](hud), routing | `src/App.tsx` | [src/App.tsx:28](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L28) |
 | `ReadingRoute` | Extract `id` param and render ReadingView | `src/App.tsx` | [src/App.tsx:17](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L17) |
 | `useCurrentNodeId` | Parse hash URL for current node | `src/App.tsx` | [src/App.tsx:22](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L22) |
 | `createRoot` | React 19 root mount | `src/main.tsx` | [src/main.tsx:6](https://github.com/anokye-labs/kbexplorer/blob/main/src/main.tsx#L6) |

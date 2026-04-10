@@ -8,8 +8,7 @@ connections:
     description: "core module"
   - to: "content-pipeline"
     description: "feeds data to"
-  - to: "hud"
-    description: "primary interface"
+
   - to: "visual-system"
     description: "renders via"
   - to: "theme-system"
@@ -25,7 +24,7 @@ connections:
 
 # kbexplorer
 
-**kbexplorer** is a React + TypeScript application that turns any GitHub repository into an interactive, explorable knowledge graph. It fetches content from the GitHub API at runtime — issues, README, file tree — and presents it as a constellation of interconnected nodes navigable through a reading view, a force-directed network, and a persistent sidebar HUD.
+**kbexplorer** is a React + TypeScript application that turns any GitHub repository into an interactive, explorable knowledge graph. It fetches content from the GitHub API at runtime — issues, README, file tree — and presents it as a constellation of interconnected nodes navigable through a reading view, a force-directed network, and a persistent sidebar [HUD — Heads-Up Display](hud).
 
 ## Inspirations
 

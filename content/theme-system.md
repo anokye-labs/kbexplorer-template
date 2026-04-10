@@ -6,8 +6,7 @@ cluster: ui
 connections:
   - to: "visual-system"
     description: "colors"
-  - to: "hud"
-    description: "toggled from"
+
   - to: "node-renderer"
     description: "affects rendering"
   - to: "app-shell"
@@ -33,7 +32,7 @@ The `useTheme` hook (`src/hooks/useTheme.ts`) returns `[ThemeMode, FluentTheme, 
 
 ## Toggle
 
-The HUD tools strip has three buttons: moon (WeatherMoonRegular), sun (WeatherSunnyRegular), and book (BookRegular) icons. The `t` keyboard shortcut cycles through all three. Preference persists in localStorage as `kbe-theme`.
+The [HUD — Heads-Up Display](hud) tools strip has three buttons: moon (WeatherMoonRegular), sun (WeatherSunnyRegular), and book (BookRegular) icons. The `t` keyboard shortcut cycles through all three. Preference persists in localStorage as `kbe-theme`.
 
 ## Fallback Background
 

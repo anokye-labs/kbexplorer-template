@@ -4,12 +4,10 @@ title: "Design Decisions"
 emoji: "Building"
 cluster: design
 connections:
-  - to: "overview"
-    description: "informs architecture of"
+
   - to: "graph-engine"
     description: "shaped"
-  - to: "hud"
-    description: "drove layout of"
+
 ---
 
 
@@ -29,9 +27,9 @@ All layout dimensions use viewport units (`vw`, `vh`), percentages, or Fluent to
 
 The README is always the landing page and the conceptual center of the graph. `getHubNodeId()` explicitly prefers the `readme` node over the highest-degree node (which would be `repo-root` due to file containment edges).
 
-## No Separate Overview Page
+## No Separate [kbexplorer Architecture](overview) Page
 
-The original card grid overview was removed. The README reading view serves as the entry point — all navigation flows from there via the HUD connections or the constellation graph.
+The original card grid overview was removed. The README reading view serves as the entry point — all navigation flows from there via the [HUD — Heads-Up Display](hud) connections or the constellation graph.
 
 ## Containment Edges Are Strong
 

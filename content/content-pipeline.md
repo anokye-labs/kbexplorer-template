@@ -4,8 +4,7 @@ title: "Content Pipeline"
 emoji: "Database"
 cluster: data
 connections:
-  - to: "graph-engine"
-    description: "produces nodes for"
+
   - to: "github-api"
     description: "fetches from"
   - to: "overview"
@@ -23,7 +22,7 @@ connections:
 
 # Content Pipeline
 
-The content pipeline (`src/engine/parser.ts`) converts raw GitHub API data into `KBNode[]` — the universal node format consumed by the graph engine.
+The content pipeline (`src/engine/parser.ts`) converts raw GitHub API data into `KBNode[]` — the universal node format consumed by the [graph engine](graph-engine).
 
 ## Repo-Aware Mode (Default)
 

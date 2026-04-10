@@ -4,14 +4,12 @@ title: "Theme System"
 emoji: "Book"
 cluster: guide
 parent: "wiki-deep-dive"
-connections:
-  - to: "theme-system"
-    description: "architecture doc"
+connections: []
 ---
 
 
 
-# Theme System
+# [Theme System](theme-system)
 
 kbexplorer supports three themes via Fluent 2's FluentProvider.
 

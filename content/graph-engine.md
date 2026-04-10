@@ -8,8 +8,7 @@ connections:
     description: "receives nodes from"
   - to: "node-renderer"
     description: "renders via"
-  - to: "hud"
-    description: "displayed in"
+
   - to: "graph-network"
     description: "factory delegates to"
   - to: "kb-loader"
@@ -50,4 +49,4 @@ Weight maps to vis-network spring length: `baseSpringLength / weight`. Higher we
 
 ## Related Nodes
 
-For each node, the engine computes up to 8 related nodes — its direct neighbors sorted by degree (most-connected first). These populate the HUD's connections panel.
+For each node, the engine computes up to 8 related nodes — its direct neighbors sorted by degree (most-connected first). These populate the [HUD — Heads-Up Display](hud)'s connections panel.

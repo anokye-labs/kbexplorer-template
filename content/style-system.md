@@ -8,8 +8,7 @@ connections:
     description: "prose styles for"
   - to: "visual-system"
     description: "visual identity CSS for"
-  - to: "hud"
-    description: "responsive overrides for"
+
   - to: "theme-system"
     description: "uses CSS custom properties from Fluent tokens"
 ---
@@ -55,7 +54,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    HUD["HUD sliders"] -->|"set via JS"| Props["CSS custom properties"]
+    [HUD — Heads-Up Display](hud)["HUD sliders"] -->|"set via JS"| Props["CSS custom properties"]
     Props --> PFS["--prose-font-size\n(default: 14px)"]
     Props --> PMW["--prose-max-width\n(default: 75%)"]
     PFS --> Prose[".kb-prose\nfont-size"]

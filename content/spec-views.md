@@ -8,12 +8,8 @@ connections:
     description: "run phase of"
   - to: "spec-graph-store"
     description: "queries graph store from"
-  - to: "hud"
-    description: "adds view selector to"
   - to: "overview-view"
     description: "replaces single view with projections in"
-  - to: "reading-view"
-    description: "adds expandable nodes to"
   - to: "graph-network"
     description: "adds view-filtered rendering to"
   - to: "graph-engine"
@@ -81,7 +77,7 @@ views:
 
 ### UI
 
-A view selector in the HUD lets the user switch between views.
+A view selector in the [HUD — Heads-Up Display](hud) lets the user switch between views.
 Each view re-filters the graph from the store — no re-fetching needed.
 
 ## On-Demand Expansion
@@ -114,7 +110,7 @@ The `expandable` table tracks what can be expanded:
 
 The UI renders these as badges or buttons on the node.
 
-### Expansion in Reading View
+### Expansion in [Reading View](reading-view)
 
 When viewing an expandable node:
 - Show the resolved content at current depth
