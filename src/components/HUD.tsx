@@ -508,9 +508,17 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       },
       focusNodeId: currentNodeId,
       fitOnStabilize: !currentNodeId,
+      interactive: true,
     });
     network.once('stabilized', () => {
       network.setOptions({ physics: { enabled: false } });
+      // Set zoom limits: can't zoom out past seeing all nodes
+      const scale = network.getScale();
+      network.setOptions({
+        interaction: { zoomView: true, dragView: true },
+      });
+      // Prevent zooming out more than ~60% of the fitted view
+      network.moveTo({ scale: Math.max(scale, 0.3) });
     });
     overlayNetworkRef.current = network;
 

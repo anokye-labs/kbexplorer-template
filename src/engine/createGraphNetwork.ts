@@ -25,6 +25,8 @@ export interface GraphNetworkOptions {
   edgeDashes?: boolean | number[];
   /** When set, this node + its neighbors render at full opacity; others fade. */
   emphasizeNodeId?: string | null;
+  /** Enable drag-to-pan and scroll-to-zoom (default: false) */
+  interactive?: boolean;
 }
 
 export interface GraphNetworkResult {
@@ -99,6 +101,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     edgeWidth = 2,
     edgeDashes = false,
     emphasizeNodeId,
+    interactive = false,
   } = options;
 
   const degrees = getNodeDegrees(graph);
@@ -166,7 +169,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       tooltipDelay: 200,
       navigationButtons: false,
       keyboard: false,
-      dragView: false,
+      dragView: interactive,
+      zoomView: interactive,
+      zoomSpeed: 0.3,
     },
     edges: {
       smooth: { enabled: true, type: 'continuous', roundness: 0.5 },
