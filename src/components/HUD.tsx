@@ -598,7 +598,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     try {
       net.selectNodes([currentNodeId]);
       net.focus(currentNodeId, {
-        scale: 2.3,
+        scale: 1.2,
         animation: { duration: 300, easingFunction: 'easeInOutQuad' },
       });
     } catch { /* node might not exist */ }
@@ -846,7 +846,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                       if (!net) return;
                       if (currentNodeId) {
                         try {
-                          net.focus(currentNodeId, { scale: 2.3, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                          net.focus(currentNodeId, { scale: 1.2, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
                           return;
                         } catch { /* node not found, fall through to fit */ }
                       }
