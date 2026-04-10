@@ -208,9 +208,8 @@ const useStyles= makeStyles({
     animationTimingFunction: 'cubic-bezier(0.33, 1, 0.68, 1)',
   },
   overlayInner: {
-    width: '90vw',
-    height: '85vh',
-    maxWidth: '1400px',
+    width: '95vw',
+    height: '92vh',
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
@@ -707,6 +706,31 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 </div>
               ))}
             </Card>
+            {/* Zoom slider */}
+            <div style={{
+              position: 'absolute', bottom: 16, right: 16, zIndex: 10,
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: tokens.colorNeutralBackground1,
+              borderRadius: tokens.borderRadiusMedium,
+              border: `1px solid ${tokens.colorNeutralStroke2}`,
+              padding: '6px 12px',
+              opacity: 0.9,
+            }}>
+              <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Zoom</Caption1>
+              <Slider
+                min={20}
+                max={300}
+                step={10}
+                value={Math.round((overlayNetworkRef.current?.getScale() ?? 1) * 100)}
+                onChange={(_e, data) => {
+                  overlayNetworkRef.current?.moveTo({
+                    scale: data.value / 100,
+                    animation: { duration: 150, easingFunction: 'easeInOutQuad' },
+                  });
+                }}
+                style={{ width: 120 }}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -806,6 +830,32 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     title="Expand constellation"
                     style={{ position: 'absolute', top: 42, right: 8, zIndex: 5 }}
                   />
+                  {/* Zoom slider */}
+                  <div style={{
+                    position: 'absolute', bottom: 8, left: 8, right: 8, zIndex: 5,
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: tokens.colorNeutralBackground1,
+                    borderRadius: tokens.borderRadiusMedium,
+                    padding: '2px 8px',
+                    opacity: 0.85,
+                  }}>
+                    <Caption2 style={{ color: tokens.colorNeutralForeground3, fontSize: 10 }}>−</Caption2>
+                    <Slider
+                      size="small"
+                      min={20}
+                      max={300}
+                      step={10}
+                      value={Math.round((sidebarNetworkRef.current?.getScale() ?? 1.8) * 100)}
+                      onChange={(_e, data) => {
+                        sidebarNetworkRef.current?.moveTo({
+                          scale: data.value / 100,
+                          animation: { duration: 150, easingFunction: 'easeInOutQuad' },
+                        });
+                      }}
+                      style={{ flex: 1 }}
+                    />
+                    <Caption2 style={{ color: tokens.colorNeutralForeground3, fontSize: 10 }}>+</Caption2>
+                  </div>
                 </div>
 
                 {/* Split resize handle */}
