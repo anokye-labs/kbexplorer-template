@@ -513,7 +513,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       interactive: true,
     });
     network.once('stabilized', () => {
-      network.setOptions({ physics: { enabled: false } });
       const scale = network.getScale();
       network.setOptions({
         interaction: { zoomView: true, dragView: true },
@@ -565,7 +564,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         edgeWidth: 1,
       });
       network.once('stabilized', () => {
-        network.setOptions({ physics: { enabled: false } });
         setSidebarZoom(Math.round(network.getScale() * 100));
       });
       network.on('zoom', () => {

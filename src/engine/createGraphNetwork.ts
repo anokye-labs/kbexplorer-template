@@ -206,6 +206,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       });
     }
     edges.update(edgeUpdates);
+
+    // DataSet updates can re-trigger physics — kill it immediately
+    network.setOptions({ physics: { enabled: false } });
   };
 
   const network = new Network(container, { nodes, edges }, {
@@ -249,6 +252,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   }
 
   network.once('stabilized', () => {
+    // Kill physics immediately — no more drifting
+    network.setOptions({ physics: { enabled: false } });
+
     // Compute bounding box of all nodes for pan clamping
     const allPositions = network.getPositions();
     const posArray = Object.values(allPositions) as { x: number; y: number }[];
