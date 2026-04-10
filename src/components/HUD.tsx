@@ -276,6 +276,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const [mapExpanded, setMapExpanded] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(() => readPersisted('kbe-sidebar-w', 25));
   const [mapSplit, setMapSplit] = useState(() => readPersisted('kbe-map-split', 50));
+  const [sidebarZoom, setSidebarZoom] = useState(180);
+  const [overlayZoom, setOverlayZoom] = useState(100);
   const resizeRef = useRef<{ startX: number; startW: number } | null>(null);
   const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
 
@@ -512,13 +514,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     });
     network.once('stabilized', () => {
       network.setOptions({ physics: { enabled: false } });
-      // Set zoom limits: can't zoom out past seeing all nodes
       const scale = network.getScale();
       network.setOptions({
         interaction: { zoomView: true, dragView: true },
       });
-      // Prevent zooming out more than ~60% of the fitted view
       network.moveTo({ scale: Math.max(scale, 0.3) });
+      setOverlayZoom(Math.round(network.getScale() * 100));
+    });
+    network.on('zoom', () => {
+      setOverlayZoom(Math.round(network.getScale() * 100));
     });
     overlayNetworkRef.current = network;
     overlayEmphasisRef.current = overlaySetEmphasis;
@@ -562,6 +566,10 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       });
       network.once('stabilized', () => {
         network.setOptions({ physics: { enabled: false } });
+        setSidebarZoom(Math.round(network.getScale() * 100));
+      });
+      network.on('zoom', () => {
+        setSidebarZoom(Math.round(network.getScale() * 100));
       });
       sidebarNetworkRef.current = network;
       sidebarNodesRef.current = visNodes;
@@ -696,7 +704,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 appearance="subtle"
                 icon={<MyLocationRegular />}
                 onClick={() => {
-                  overlayNetworkRef.current?.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' }, maxZoomLevel: 1.5 });
+                  const net = overlayNetworkRef.current;
+                  if (!net) return;
+                  if (currentNodeId) {
+                    try {
+                      net.focus(currentNodeId, { scale: 2.0, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                      return;
+                    } catch { /* node not found, fall through to fit */ }
+                  }
+                  net.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' }, maxZoomLevel: 1.5 });
                 }}
                 aria-label="Re-center"
                 title="Re-center graph"
@@ -732,8 +748,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 min={20}
                 max={300}
                 step={10}
-                value={Math.round((overlayNetworkRef.current?.getScale() ?? 1) * 100)}
+                value={overlayZoom}
                 onChange={(_e, data) => {
+                  setOverlayZoom(data.value);
                   overlayNetworkRef.current?.moveTo({
                     scale: data.value / 100,
                     animation: { duration: 150, easingFunction: 'easeInOutQuad' },
@@ -827,7 +844,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     size="small"
                     icon={<MyLocationRegular />}
                     onClick={() => {
-                      sidebarNetworkRef.current?.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' }, maxZoomLevel: 1.5 });
+                      const net = sidebarNetworkRef.current;
+                      if (!net) return;
+                      if (currentNodeId) {
+                        try {
+                          net.focus(currentNodeId, { scale: 2.3, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                          return;
+                        } catch { /* node not found, fall through to fit */ }
+                      }
+                      net.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' }, maxZoomLevel: 1.5 });
                     }}
                     title="Re-center graph"
                     style={{ position: 'absolute', top: 42, right: 36, zIndex: 5 }}
@@ -856,8 +881,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                       min={20}
                       max={300}
                       step={10}
-                      value={Math.round((sidebarNetworkRef.current?.getScale() ?? 1.8) * 100)}
+                      value={sidebarZoom}
                       onChange={(_e, data) => {
+                        setSidebarZoom(data.value);
                         sidebarNetworkRef.current?.moveTo({
                           scale: data.value / 100,
                           animation: { duration: 150, easingFunction: 'easeInOutQuad' },
