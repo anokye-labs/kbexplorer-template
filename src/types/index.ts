@@ -45,6 +45,27 @@ export const EDGE_TYPE_WEIGHTS: Record<EdgeType, number> = {
   related: 0.3,
 };
 
+/** Visual style for each edge type */
+export interface EdgeTypeStyle {
+  color: string;
+  dashes: boolean | number[];
+  width: number;
+  label: string;
+}
+
+export const EDGE_TYPE_STYLES: Record<EdgeType, EdgeTypeStyle> = {
+  contains:         { color: '#6e7681', dashes: false,      width: 2,   label: 'Contains' },
+  derived_from:     { color: '#da8b45', dashes: false,      width: 1.5, label: 'Derived from' },
+  imports:          { color: '#8b5cf6', dashes: false,      width: 1.5, label: 'Imports' },
+  references:       { color: '#58a6ff', dashes: false,      width: 1,   label: 'References' },
+  frontmatter:      { color: '#7ee787', dashes: [6, 4],     width: 1,   label: 'Frontmatter' },
+  cross_references: { color: '#f778ba', dashes: false,      width: 1,   label: 'Cross-ref' },
+  modifies:         { color: '#d29922', dashes: [4, 4],     width: 1,   label: 'Modifies' },
+  closes:           { color: '#3fb950', dashes: false,      width: 1.5, label: 'Closes' },
+  mentions:         { color: '#8b949e', dashes: [2, 4],     width: 0.8, label: 'Mentions' },
+  related:          { color: '#484f58', dashes: [3, 3],     width: 0.8, label: 'Related' },
+};
+
 export interface Connection {
   to: string;
   type?: EdgeType;

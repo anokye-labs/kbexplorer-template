@@ -6,7 +6,8 @@ import { Network } from 'vis-network/standalone';
 import { DataSet } from 'vis-data';
 import { createNodeRenderer } from './nodeRenderer';
 import { getNodeDegrees } from './graph';
-import type { KBGraph } from '../types';
+import type { KBGraph, EdgeType } from '../types';
+import { EDGE_TYPE_STYLES } from '../types';
 
 const EDGE_COLOR = '#505050';
 const EDGE_HOVER_COLOR = '#5c5c5c';
@@ -100,8 +101,6 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     nodeSizeRange = [44, 64],
     nodeSizeStep = 4,
     labelMaxLength = 25,
-    edgeWidth = 2,
-    edgeDashes = false,
     emphasizeNodeId,
     interactive = false,
   } = options;
@@ -135,23 +134,26 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
 
   const EDGE_FADED_COLOR = 'rgba(80,80,80,0.08)';
 
+  /** Resolve the visual style for an edge type */
+  const edgeStyle = (type: EdgeType | undefined) => EDGE_TYPE_STYLES[type ?? 'related'] ?? EDGE_TYPE_STYLES.related;
+
   const baseSpringLength = 250;
   const edgeData = graph.edges.map((e, i) => {
+    const style = edgeStyle(e.type);
     const faded = emphasizeNodeId && !emphasizedIds.has(e.from) && !emphasizedIds.has(e.to);
-    // An edge touching the neighborhood is "near" — only fully bright if both ends are in the set
     const nearFaded = emphasizeNodeId && !(emphasizedIds.has(e.from) && emphasizedIds.has(e.to));
     return {
       id: `e${i}`,
       from: e.from,
       to: e.to,
-      title: e.description,
+      title: `${style.label}: ${e.description}`,
       color: {
-        color: faded ? EDGE_FADED_COLOR : nearFaded ? 'rgba(80,80,80,0.25)' : EDGE_COLOR,
-        hover: EDGE_HOVER_COLOR,
-        highlight: EDGE_HOVER_COLOR,
+        color: faded ? EDGE_FADED_COLOR : nearFaded ? 'rgba(80,80,80,0.25)' : style.color,
+        hover: style.color,
+        highlight: style.color,
       },
-      width: faded ? 0.5 : edgeWidth,
-      dashes: edgeDashes,
+      width: faded ? 0.5 : style.width,
+      dashes: faded ? false : style.dashes,
       length: e.weight ? baseSpringLength / e.weight : baseSpringLength,
     };
   });
@@ -160,7 +162,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const edges = new DataSet(edgeData);
 
   // Build an edge lookup for fast emphasis updates
-  const edgesByIndex = graph.edges.map((e, i) => ({ id: `e${i}`, from: e.from, to: e.to }));
+  const edgesByIndex = graph.edges.map((e, i) => ({ id: `e${i}`, from: e.from, to: e.to, type: e.type }));
 
   /** Dynamically update neighborhood emphasis without rebuilding the network. */
   const setEmphasis = (nodeId: string | null) => {
@@ -193,16 +195,18 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     // Update edges
     const edgeUpdates: Record<string, unknown>[] = [];
     for (const ei of edgesByIndex) {
+      const style = edgeStyle(ei.type);
       const bothIn = newEmphasized.has(ei.from) && newEmphasized.has(ei.to);
       const neitherIn = nodeId && !newEmphasized.has(ei.from) && !newEmphasized.has(ei.to);
       edgeUpdates.push({
         id: ei.id,
         color: {
-          color: neitherIn ? EDGE_FADED_COLOR : !bothIn && nodeId ? 'rgba(80,80,80,0.25)' : EDGE_COLOR,
-          hover: EDGE_HOVER_COLOR,
-          highlight: EDGE_HOVER_COLOR,
+          color: neitherIn ? EDGE_FADED_COLOR : !bothIn && nodeId ? 'rgba(80,80,80,0.25)' : style.color,
+          hover: style.color,
+          highlight: style.color,
         },
-        width: neitherIn ? 0.5 : edgeWidth,
+        width: neitherIn ? 0.5 : style.width,
+        dashes: neitherIn ? false : style.dashes,
       });
     }
     edges.update(edgeUpdates);

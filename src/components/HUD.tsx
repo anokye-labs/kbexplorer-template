@@ -28,6 +28,8 @@ import {
   BookRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
+import { EDGE_TYPE_STYLES } from '../types';
+import type { EdgeType } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
 import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
@@ -561,7 +563,6 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         nodeSizeRange: [28, 44],
         nodeSizeStep: 3,
         labelMaxLength: 18,
-        edgeWidth: 1,
       });
       network.once('stabilized', () => {
         setSidebarZoom(Math.round(network.getScale() * 100));
@@ -609,6 +610,16 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     const counts = new Map<string, number>();
     for (const n of graph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
     return graph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
+  }, [graph]);
+
+  // Active edge types present in the graph
+  const activeEdgeTypes = React.useMemo(() => {
+    const types = new Set<EdgeType>();
+    for (const e of graph.edges) if (e.type) types.add(e.type);
+    return Array.from(types).sort((a, b) => {
+      const order: EdgeType[] = ['contains', 'derived_from', 'imports', 'references', 'cross_references', 'frontmatter', 'closes', 'modifies', 'mentions', 'related'];
+      return order.indexOf(a) - order.indexOf(b);
+    });
   }, [graph]);
 
   const navigateTo = useCallback((hash: string) => {
@@ -730,6 +741,24 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   <Caption1>{c.name}</Caption1>
                 </div>
               ))}
+              {activeEdgeTypes.length > 0 && (
+                <>
+                  <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 12px' }} />
+                  {activeEdgeTypes.map(t => {
+                    const s = EDGE_TYPE_STYLES[t];
+                    return (
+                      <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 12px' }}>
+                        <svg width={18} height={8} style={{ flexShrink: 0 }}>
+                          <line x1={0} y1={4} x2={18} y2={4}
+                            stroke={s.color} strokeWidth={Math.max(s.width, 1.2)}
+                            strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
+                        </svg>
+                        <Caption1>{s.label}</Caption1>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </Card>
             {/* Zoom slider */}
             <div style={{
@@ -835,6 +864,24 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                         <span style={{ color: tokens.colorNeutralForeground3 }}>{c.name}</span>
                       </div>
                     ))}
+                    {activeEdgeTypes.length > 0 && (
+                      <>
+                        <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
+                        {activeEdgeTypes.map(t => {
+                          const s = EDGE_TYPE_STYLES[t];
+                          return (
+                            <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                              <svg width={14} height={7} style={{ flexShrink: 0 }}>
+                                <line x1={0} y1={3.5} x2={14} y2={3.5}
+                                  stroke={s.color} strokeWidth={Math.max(s.width, 1)}
+                                  strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
+                              </svg>
+                              <span style={{ color: tokens.colorNeutralForeground3 }}>{s.label}</span>
+                            </div>
+                          );
+                        })}
+                      </>
+                    )}
                   </div>
                   {/* Re-center the graph */}
                   <Button
