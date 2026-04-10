@@ -135,6 +135,37 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   const styles = useStyles();
   const node = graph.nodes.find(n => n.id === nodeId);
 
+  // Build set of valid node IDs for linkification
+  const nodeIds = new Set(graph.nodes.map(n => n.id));
+
+  /** Post-process HTML to make file paths and node references clickable */
+  function linkifyContent(html: string): string {
+    // 1. Convert <code>src/path/file.ts</code> to clickable links when matching file node exists
+    let result = html.replace(
+      /<code>((?:src|scripts|content|public)\/[\w./-]+\.\w+)<\/code>/g,
+      (_match, filePath: string) => {
+        const fileNodeId = `file-${filePath}`;
+        if (nodeIds.has(fileNodeId)) {
+          return `<a href="#/node/${encodeURIComponent(fileNodeId)}" class="kb-file-link"><code>${filePath}</code></a>`;
+        }
+        return `<code>${filePath}</code>`;
+      }
+    );
+
+    // 2. Convert markdown-generated <a href="node-id"> to hash-based graph navigation
+    result = result.replace(
+      /<a href="([^"#/][^"]*)">/g,
+      (_match, target: string) => {
+        if (nodeIds.has(target)) {
+          return `<a href="#/node/${encodeURIComponent(target)}">`;
+        }
+        return `<a href="${target}">`;
+      }
+    );
+
+    return result;
+  }
+
   if (!node) {
     return (
       <div className={styles.notFound}>
@@ -190,7 +221,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
       <div className={`${styles.body} kb-reading-body`}>
         <div
           className="kb-prose"
-          dangerouslySetInnerHTML={{ __html: node.content }}
+          dangerouslySetInnerHTML={{ __html: linkifyContent(node.content) }}
         />
 
         {/* Child nodes (subfolders, sections) */}

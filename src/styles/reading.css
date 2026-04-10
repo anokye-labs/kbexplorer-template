@@ -116,6 +116,20 @@
   color: var(--colorBrandForegroundLinkHover);
 }
 
+.kb-prose a.kb-file-link {
+  text-decoration: none;
+}
+
+.kb-prose a.kb-file-link code {
+  border-bottom: 1px dashed var(--colorBrandForegroundLink);
+  cursor: pointer;
+}
+
+.kb-prose a.kb-file-link:hover code {
+  border-bottom-style: solid;
+  color: var(--colorBrandForegroundLinkHover);
+}
+
 .kb-prose hr {
   margin: 2rem 0;
   border: none;
