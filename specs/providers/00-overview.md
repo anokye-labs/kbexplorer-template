@@ -1,3 +1,16 @@
+---
+id: "spec-providers-overview"
+title: "Graph Provider System — Overview"
+emoji: "Organization"
+cluster: design
+connections:
+  - to: "spec-node-mapping"
+    description: "defines"
+  - to: "spec-graph-store"
+    description: "defines"
+  - to: "spec-views"
+    description: "defines"
+---
 # Graph Provider System — Overview
 
 The graph provider system evolves kbexplorer's data pipeline from a monolithic

@@ -1,3 +1,14 @@
+---
+id: "spec-views"
+title: "Views, Expansion, and External Providers"
+emoji: "Eye"
+cluster: design
+connections:
+  - to: "spec-providers-overview"
+    description: "part of"
+  - to: "spec-graph-store"
+    description: "queries"
+---
 # Views, On-Demand Expansion, and External Providers
 
 ## Graph Views

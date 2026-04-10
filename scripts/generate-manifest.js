@@ -53,6 +53,7 @@ const isSubmodule = hostRoot !== kbRoot;
 const SKIP_DIRS = new Set([
   'node_modules', '.git', 'dist', '.kbexplorer', '.astro',
   '.playwright-cli', '.vscode', '.idea', 'coverage',
+  'fluentui-system-icons',
 ]);
 const SKIP_FILES = new Set([
   'package-lock.json', '.DS_Store', 'Thumbs.db',
@@ -293,7 +294,10 @@ export function generateManifest(root = hostRoot) {
 
   const manifest = {
     configRaw: readConfig(root, contentPath),
-    authoredContent: readAuthoredContent(contentDir, contentPath),
+    authoredContent: {
+      ...readAuthoredContent(contentDir, contentPath),
+      ...readAuthoredContent(resolve(root, 'specs'), 'specs'),
+    },
     tree: walkFileSystem(root),
     readme: readReadme(root),
     issues: fetchLocalIssues(root),

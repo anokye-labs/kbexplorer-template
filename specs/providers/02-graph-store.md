@@ -1,3 +1,16 @@
+---
+id: "spec-graph-store"
+title: "Graph Store + Provider Interface"
+emoji: "Database"
+cluster: design
+connections:
+  - to: "spec-providers-overview"
+    description: "part of"
+  - to: "spec-node-mapping"
+    description: "consumes"
+  - to: "spec-views"
+    description: "enables"
+---
 # Graph Store + Provider Interface
 
 ## Problem

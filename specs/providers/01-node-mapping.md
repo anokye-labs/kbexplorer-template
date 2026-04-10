@@ -1,3 +1,14 @@
+---
+id: "spec-node-mapping"
+title: "Node Mapping — How Files Become Nodes"
+emoji: "Diagram"
+cluster: design
+connections:
+  - to: "spec-providers-overview"
+    description: "part of"
+  - to: "spec-graph-store"
+    description: "feeds into"
+---
 # Node Mapping — How Files Become Nodes
 
 ## Problem
