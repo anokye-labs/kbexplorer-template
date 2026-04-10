@@ -497,7 +497,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   useEffect(() => {
     if (!mapExpanded || !overlayRef.current) return;
 
-    const { network } = createGraphNetwork({
+    const { network, setEmphasis: overlaySetEmphasis } = createGraphNetwork({
       container: overlayRef.current,
       graph,
       isDark: theme === 'dark',
@@ -507,6 +507,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       },
       focusNodeId: currentNodeId,
       fitOnStabilize: !currentNodeId,
+      emphasizeNodeId: currentNodeId,
       interactive: true,
     });
     network.once('stabilized', () => {
@@ -520,8 +521,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       network.moveTo({ scale: Math.max(scale, 0.3) });
     });
     overlayNetworkRef.current = network;
+    overlayEmphasisRef.current = overlaySetEmphasis;
 
-    return () => { network.destroy(); overlayNetworkRef.current = null; };
+    return () => { network.destroy(); overlayNetworkRef.current = null; overlayEmphasisRef.current = null; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapExpanded, graph, config]);
 
@@ -530,6 +532,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const sidebarNetworkRef = useRef<import('vis-network/standalone').Network | null>(null);
   const overlayNetworkRef = useRef<import('vis-network/standalone').Network | null>(null);
   const sidebarNodesRef = useRef<import('vis-data').DataSet<Record<string, unknown>> | null>(null);
+  const sidebarEmphasisRef = useRef<((nodeId: string | null) => void) | null>(null);
+  const overlayEmphasisRef = useRef<((nodeId: string | null) => void) | null>(null);
 
   // Create the network once (on dock/graph/theme change)
   useEffect(() => {
@@ -540,7 +544,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       if (sidebarNetworkRef.current) {
         try { sidebarNetworkRef.current.destroy(); } catch { /* */ }
       }
-      const { network, nodes: visNodes } = createGraphNetwork({
+      const { network, nodes: visNodes, setEmphasis } = createGraphNetwork({
         container: sidebarGraphRef.current,
         graph,
         isDark: theme === 'dark',
@@ -561,6 +565,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       });
       sidebarNetworkRef.current = network;
       sidebarNodesRef.current = visNodes;
+      sidebarEmphasisRef.current = setEmphasis;
     }, 100);
 
     return () => {
@@ -569,20 +574,26 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         try { sidebarNetworkRef.current.destroy(); } catch { /* */ }
         sidebarNetworkRef.current = null;
         sidebarNodesRef.current = null;
+        sidebarEmphasisRef.current = null;
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVertical, collapsed, graph, theme]);
 
-  // Update selection + focus when currentNodeId changes (no rebuild)
+  // Update selection + focus + neighborhood emphasis when currentNodeId changes (no rebuild)
   useEffect(() => {
     const net = sidebarNetworkRef.current;
-    if (!net || !currentNodeId) return;
+    if (!net) return;
+
+    // Update neighborhood emphasis dynamically
+    sidebarEmphasisRef.current?.(currentNodeId);
+
+    if (!currentNodeId) return;
     try {
       net.selectNodes([currentNodeId]);
       net.focus(currentNodeId, {
         scale: net.getScale(),
-        animation: { duration: 50, easingFunction: 'easeInOutQuad' },
+        animation: { duration: 300, easingFunction: 'easeInOutQuad' },
       });
     } catch { /* node might not exist */ }
   }, [currentNodeId]);

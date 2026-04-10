@@ -33,6 +33,8 @@ export interface GraphNetworkResult {
   network: Network;
   nodes: DataSet<Record<string, unknown>>;
   edges: DataSet<Record<string, unknown>>;
+  /** Dynamically update which node (and its neighborhood) is emphasized. Pass null to reset. */
+  setEmphasis: (nodeId: string | null) => void;
 }
 
 export interface BuildVisNodeOptions {
@@ -126,25 +128,85 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       degrees, clusterColorMap, isDark,
       nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
       flagDisconnected: true,
-      opacity: faded ? 0.3 : undefined,
+      opacity: faded ? 0.15 : undefined,
       showLabel: !faded,
     });
   });
 
+  const EDGE_FADED_COLOR = 'rgba(80,80,80,0.08)';
+
   const baseSpringLength = 250;
-  const edgeData = graph.edges.map((e, i) => ({
-    id: `e${i}`,
-    from: e.from,
-    to: e.to,
-    title: e.description,
-    color: { color: EDGE_COLOR, hover: EDGE_HOVER_COLOR, highlight: EDGE_HOVER_COLOR },
-    width: edgeWidth,
-    dashes: edgeDashes,
-    length: e.weight ? baseSpringLength / e.weight : baseSpringLength,
-  }));
+  const edgeData = graph.edges.map((e, i) => {
+    const faded = emphasizeNodeId && !emphasizedIds.has(e.from) && !emphasizedIds.has(e.to);
+    // An edge touching the neighborhood is "near" — only fully bright if both ends are in the set
+    const nearFaded = emphasizeNodeId && !(emphasizedIds.has(e.from) && emphasizedIds.has(e.to));
+    return {
+      id: `e${i}`,
+      from: e.from,
+      to: e.to,
+      title: e.description,
+      color: {
+        color: faded ? EDGE_FADED_COLOR : nearFaded ? 'rgba(80,80,80,0.25)' : EDGE_COLOR,
+        hover: EDGE_HOVER_COLOR,
+        highlight: EDGE_HOVER_COLOR,
+      },
+      width: faded ? 0.5 : edgeWidth,
+      dashes: edgeDashes,
+      length: e.weight ? baseSpringLength / e.weight : baseSpringLength,
+    };
+  });
 
   const nodes = new DataSet(nodeData);
   const edges = new DataSet(edgeData);
+
+  // Build an edge lookup for fast emphasis updates
+  const edgesByIndex = graph.edges.map((e, i) => ({ id: `e${i}`, from: e.from, to: e.to }));
+
+  /** Dynamically update neighborhood emphasis without rebuilding the network. */
+  const setEmphasis = (nodeId: string | null) => {
+    const newEmphasized = new Set<string>();
+    if (nodeId) {
+      newEmphasized.add(nodeId);
+      for (const edge of graph.edges) {
+        if (edge.from === nodeId) newEmphasized.add(edge.to);
+        if (edge.to === nodeId) newEmphasized.add(edge.from);
+      }
+    }
+
+    // Update nodes
+    const nodeUpdates: Record<string, unknown>[] = [];
+    for (const n of graph.nodes) {
+      const faded = nodeId && !newEmphasized.has(n.id);
+      const sizeRange: [number, number] = faded
+        ? [nodeSizeRange[0] * 0.6, nodeSizeRange[1] * 0.6]
+        : nodeSizeRange;
+      nodeUpdates.push(buildVisNode(n, {
+        degrees, clusterColorMap, isDark,
+        nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
+        flagDisconnected: true,
+        opacity: faded ? 0.15 : undefined,
+        showLabel: !faded,
+      }));
+    }
+    nodes.update(nodeUpdates);
+
+    // Update edges
+    const edgeUpdates: Record<string, unknown>[] = [];
+    for (const ei of edgesByIndex) {
+      const bothIn = newEmphasized.has(ei.from) && newEmphasized.has(ei.to);
+      const neitherIn = nodeId && !newEmphasized.has(ei.from) && !newEmphasized.has(ei.to);
+      edgeUpdates.push({
+        id: ei.id,
+        color: {
+          color: neitherIn ? EDGE_FADED_COLOR : !bothIn && nodeId ? 'rgba(80,80,80,0.25)' : EDGE_COLOR,
+          hover: EDGE_HOVER_COLOR,
+          highlight: EDGE_HOVER_COLOR,
+        },
+        width: neitherIn ? 0.5 : edgeWidth,
+      });
+    }
+    edges.update(edgeUpdates);
+  };
 
   const network = new Network(container, { nodes, edges }, {
     nodes: {
@@ -289,7 +351,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     }
   });
 
-  return { network, nodes, edges };
+  return { network, nodes, edges, setEmphasis };
 }
 
 /**
