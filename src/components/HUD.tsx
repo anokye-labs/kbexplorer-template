@@ -598,7 +598,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     try {
       net.selectNodes([currentNodeId]);
       net.focus(currentNodeId, {
-        scale: 1.2,
+        scale: 1.0,
         animation: { duration: 300, easingFunction: 'easeInOutQuad' },
       });
     } catch { /* node might not exist */ }
@@ -706,7 +706,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   if (!net) return;
                   if (currentNodeId) {
                     try {
-                      net.focus(currentNodeId, { scale: 2.0, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                      net.focus(currentNodeId, { scale: 1.0, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
                       return;
                     } catch { /* node not found, fall through to fit */ }
                   }
@@ -744,7 +744,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Zoom</Caption1>
               <Slider
                 min={20}
-                max={300}
+                max={200}
                 step={10}
                 value={overlayZoom}
                 onChange={(_e, data) => {
@@ -846,7 +846,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                       if (!net) return;
                       if (currentNodeId) {
                         try {
-                          net.focus(currentNodeId, { scale: 1.2, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                          net.focus(currentNodeId, { scale: 1.0, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
                           return;
                         } catch { /* node not found, fall through to fit */ }
                       }
@@ -877,7 +877,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     <Slider
                       size="small"
                       min={20}
-                      max={300}
+                      max={200}
                       step={10}
                       value={sidebarZoom}
                       onChange={(_e, data) => {
