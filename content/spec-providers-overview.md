@@ -5,11 +5,28 @@ emoji: "Organization"
 cluster: design
 connections:
   - to: "spec-node-mapping"
-    description: "defines"
+    description: "defines crawl phase"
   - to: "spec-graph-store"
-    description: "defines"
+    description: "defines walk phase"
   - to: "spec-views"
-    description: "defines"
+    description: "defines run phase"
+  - to: "content-pipeline"
+    description: "replaces monolithic loading in"
+  - to: "graph-engine"
+    description: "restructures how nodes feed into"
+  - to: "kb-loader"
+    description: "evolves loading strategy of"
+  - to: "local-loader"
+    description: "extends local mode in"
+  - to: "manifest-generator"
+    description: "replaces manifest approach in"
+  - to: "type-system"
+    description: "extends KBNode/KBGraph types defined in"
+  - to: "overview"
+    description: "redefines architecture documented in"
+  - to: "issue-40"
+    description: "tracked by"
+---
 ---
 # Graph Provider System — Overview
 

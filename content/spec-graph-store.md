@@ -5,11 +5,28 @@ emoji: "Database"
 cluster: design
 connections:
   - to: "spec-providers-overview"
-    description: "part of"
+    description: "walk phase of"
   - to: "spec-node-mapping"
-    description: "consumes"
+    description: "persists nodes from"
   - to: "spec-views"
-    description: "enables"
+    description: "enables view projections in"
+  - to: "local-loader"
+    description: "replaces manifest loading in"
+  - to: "cache-system"
+    description: "supersedes localStorage caching in"
+  - to: "manifest-generator"
+    description: "replaces manifest file with SQLite in"
+  - to: "type-system"
+    description: "extends GraphNode/GraphEdge types in"
+  - to: "graph-engine"
+    description: "wraps graph building with cache layer around"
+  - to: "github-api"
+    description: "moves API calls into GitHub provider from"
+  - to: "content-pipeline"
+    description: "refactors into providers the logic in"
+  - to: "issue-42"
+    description: "tracked by"
+---
 ---
 # Graph Store + Provider Interface
 

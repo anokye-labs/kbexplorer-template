@@ -294,10 +294,7 @@ export function generateManifest(root = hostRoot) {
 
   const manifest = {
     configRaw: readConfig(root, contentPath),
-    authoredContent: {
-      ...readAuthoredContent(contentDir, contentPath),
-      ...readAuthoredContent(resolve(root, 'specs'), 'specs'),
-    },
+    authoredContent: readAuthoredContent(contentDir, contentPath),
     tree: walkFileSystem(root),
     readme: readReadme(root),
     issues: fetchLocalIssues(root),

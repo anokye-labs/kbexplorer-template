@@ -5,9 +5,26 @@ emoji: "Diagram"
 cluster: design
 connections:
   - to: "spec-providers-overview"
-    description: "part of"
+    description: "crawl phase of"
   - to: "spec-graph-store"
-    description: "feeds into"
+    description: "feeds mapped nodes into"
+  - to: "content-pipeline"
+    description: "extends file→node logic in"
+  - to: "graph-engine"
+    description: "changes how nodes are produced for"
+  - to: "type-system"
+    description: "adds display mode to KBNode in"
+  - to: "wiki-content-modes"
+    description: "generalizes content modes described in"
+  - to: "overview-view"
+    description: "adds display mode rendering to"
+  - to: "reading-view"
+    description: "adds code/tree/table display to"
+  - to: "manifest-generator"
+    description: "adds nodemap.yaml reading to"
+  - to: "issue-41"
+    description: "tracked by"
+---
 ---
 # Node Mapping — How Files Become Nodes
 

@@ -5,9 +5,28 @@ emoji: "Eye"
 cluster: design
 connections:
   - to: "spec-providers-overview"
-    description: "part of"
+    description: "run phase of"
   - to: "spec-graph-store"
-    description: "queries"
+    description: "queries graph store from"
+  - to: "hud"
+    description: "adds view selector to"
+  - to: "overview-view"
+    description: "replaces single view with projections in"
+  - to: "reading-view"
+    description: "adds expandable nodes to"
+  - to: "graph-network"
+    description: "adds view-filtered rendering to"
+  - to: "graph-engine"
+    description: "adds view projection layer above"
+  - to: "github-api"
+    description: "moves into GitHub provider from"
+  - to: "issue-43"
+    description: "GitHub provider tracked by"
+  - to: "issue-44"
+    description: "views tracked by"
+  - to: "issue-45"
+    description: "external providers tracked by"
+---
 ---
 # Views, On-Demand Expansion, and External Providers
 
