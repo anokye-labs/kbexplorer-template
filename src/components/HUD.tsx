@@ -551,6 +551,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         focusNodeId: currentNodeId,
         fitOnStabilize: !currentNodeId,
         emphasizeNodeId: currentNodeId,
+        interactive: true,
         nodeSizeRange: [28, 44],
         nodeSizeStep: 3,
         labelMaxLength: 18,

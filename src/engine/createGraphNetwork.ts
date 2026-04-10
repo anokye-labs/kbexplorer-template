@@ -273,7 +273,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       network.selectNodes([focusNodeId]);
       const pos = allPositions[focusNodeId] as { x: number; y: number } | undefined;
       if (pos) {
-        const scale = 1.0;
+        const scale = interactive ? 1.8 : 1.0;
         const target = clamp(pos.x, pos.y, scale);
         network.moveTo({
           position: target,
@@ -284,6 +284,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     } else if (fitOnStabilize) {
       network.fit({
         animation: { duration: 50, easingFunction: 'easeInOutQuad' },
+        maxZoomLevel: 2.0,
       });
     }
   });
