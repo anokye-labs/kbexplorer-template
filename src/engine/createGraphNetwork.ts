@@ -227,7 +227,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         springConstant: 0.04,
         damping: 0.6,
       },
-      stabilization: { enabled: true, iterations: 150, updateInterval: 150 },
+      stabilization: { enabled: true, iterations: 500, updateInterval: 100 },
     },
     interaction: {
       hover: true,
@@ -250,6 +250,11 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       }
     });
   }
+
+  // Belt-and-suspenders: also kill physics on iteration done
+  network.on('stabilizationIterationsDone', () => {
+    network.setOptions({ physics: { enabled: false } });
+  });
 
   network.once('stabilized', () => {
     // Kill physics immediately — no more drifting
