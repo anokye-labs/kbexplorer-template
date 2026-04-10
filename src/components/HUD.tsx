@@ -22,6 +22,7 @@ import {
   ArrowExpandRegular,
   DismissRegular,
   MapRegular,
+  MyLocationRegular,
   WeatherMoonRegular,
   WeatherSunnyRegular,
   BookRegular,
@@ -666,7 +667,17 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         <div className={styles.overlay} onClick={(e) => { if (e.target === e.currentTarget) setMapExpanded(false); }}>
           <div className={styles.overlayInner}>
             <div ref={overlayRef} className={styles.overlayGraph} />
-            <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 10 }}>
+            <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 10, display: 'flex', gap: 4 }}>
+              <Button
+                appearance="subtle"
+                icon={<MyLocationRegular />}
+                onClick={() => {
+                  const net = sidebarNetworkRef.current;
+                  if (net) net.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                }}
+                aria-label="Re-center"
+                title="Re-center graph"
+              />
               <Button
                 appearance="subtle"
                 icon={<DismissRegular />}
@@ -762,6 +773,17 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                       </div>
                     ))}
                   </div>
+                  {/* Re-center the graph */}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<MyLocationRegular />}
+                    onClick={() => {
+                      sidebarNetworkRef.current?.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                    }}
+                    title="Re-center graph"
+                    style={{ position: 'absolute', top: 42, right: 36, zIndex: 5 }}
+                  />
                   {/* Expand to full-screen overlay */}
                   <Button
                     appearance="subtle"
