@@ -17,9 +17,40 @@ export interface KBNode {
   source: NodeSource;
 }
 
+export type EdgeType =
+  | 'contains'
+  | 'derived_from'
+  | 'imports'
+  | 'references'
+  | 'frontmatter'
+  | 'mentions'
+  | 'cross_references'
+  | 'modifies'
+  | 'closes'
+  | 'related';
+
+export type EdgeSource = 'inline' | 'frontmatter' | 'inferred';
+
+/** Default weights per edge type — higher = tighter layout clustering */
+export const EDGE_TYPE_WEIGHTS: Record<EdgeType, number> = {
+  contains: 5.0,
+  derived_from: 3.0,
+  imports: 2.0,
+  references: 2.0,
+  frontmatter: 1.5,
+  cross_references: 1.5,
+  modifies: 1.0,
+  closes: 2.0,
+  mentions: 0.5,
+  related: 0.3,
+};
+
 export interface Connection {
   to: string;
+  type?: EdgeType;
   description: string;
+  source?: EdgeSource;
+  weight?: number;
 }
 
 export interface Cluster {
@@ -39,8 +70,10 @@ export interface KBGraph {
 export interface KBEdge {
   from: string;
   to: string;
+  type: EdgeType;
   description: string;
-  weight?: number; // higher = stronger/closer (default 1)
+  source: EdgeSource;
+  weight: number;
 }
 
 /** Visual identity mode. */
