@@ -120,7 +120,7 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
 
   // Tree
   const tree = manifest.tree as GHTreeItem[];
-  const dirNodes = treeToNodes(tree, source.repo, source.path ? [source.path.split('/')[0]] : []);
+  const dirNodes = treeToNodes(tree, source.repo);
 
   nodes.push(...issueNodes);
   nodes.push(...dirNodes);
