@@ -598,7 +598,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     try {
       net.selectNodes([currentNodeId]);
       net.focus(currentNodeId, {
-        scale: net.getScale(),
+        scale: 2.3,
         animation: { duration: 300, easingFunction: 'easeInOutQuad' },
       });
     } catch { /* node might not exist */ }
