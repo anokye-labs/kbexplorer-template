@@ -509,14 +509,19 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       focusNodeId: currentNodeId,
       fitOnStabilize: !currentNodeId,
     });
+    network.once('stabilized', () => {
+      network.setOptions({ physics: { enabled: false } });
+    });
+    overlayNetworkRef.current = network;
 
-    return () => { network.destroy(); };
+    return () => { network.destroy(); overlayNetworkRef.current = null; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapExpanded, graph, config]);
 
   // Sidebar live graph (left/right dock)
   const isVertical = dock === 'left' || dock === 'right';
   const sidebarNetworkRef = useRef<import('vis-network/standalone').Network | null>(null);
+  const overlayNetworkRef = useRef<import('vis-network/standalone').Network | null>(null);
   const sidebarNodesRef = useRef<import('vis-data').DataSet<Record<string, unknown>> | null>(null);
 
   // Create the network once (on dock/graph/theme change)
@@ -672,8 +677,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 appearance="subtle"
                 icon={<MyLocationRegular />}
                 onClick={() => {
-                  const net = sidebarNetworkRef.current;
-                  if (net) net.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                  overlayNetworkRef.current?.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' }, maxZoomLevel: 1.5 });
                 }}
                 aria-label="Re-center"
                 title="Re-center graph"
@@ -779,7 +783,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     size="small"
                     icon={<MyLocationRegular />}
                     onClick={() => {
-                      sidebarNetworkRef.current?.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                      sidebarNetworkRef.current?.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' }, maxZoomLevel: 1.5 });
                     }}
                     title="Re-center graph"
                     style={{ position: 'absolute', top: 42, right: 36, zIndex: 5 }}
