@@ -54,16 +54,16 @@ export interface EdgeTypeStyle {
 }
 
 export const EDGE_TYPE_STYLES: Record<EdgeType, EdgeTypeStyle> = {
-  contains:         { color: '#6e7681', dashes: false,      width: 2,   label: 'Contains' },
-  derived_from:     { color: '#da8b45', dashes: false,      width: 1.5, label: 'Derived from' },
-  imports:          { color: '#8b5cf6', dashes: false,      width: 1.5, label: 'Imports' },
-  references:       { color: '#58a6ff', dashes: false,      width: 1,   label: 'References' },
-  frontmatter:      { color: '#7ee787', dashes: [6, 4],     width: 1,   label: 'Frontmatter' },
-  cross_references: { color: '#f778ba', dashes: false,      width: 1,   label: 'Cross-ref' },
-  modifies:         { color: '#d29922', dashes: [4, 4],     width: 1,   label: 'Modifies' },
-  closes:           { color: '#3fb950', dashes: false,      width: 1.5, label: 'Closes' },
-  mentions:         { color: '#8b949e', dashes: [2, 4],     width: 0.8, label: 'Mentions' },
-  related:          { color: '#484f58', dashes: [3, 3],     width: 0.8, label: 'Related' },
+  contains:         { color: '#a0adb8', dashes: false,      width: 2,   label: 'Contains' },
+  derived_from:     { color: '#e8a854', dashes: false,      width: 2,   label: 'Derived from' },
+  imports:          { color: '#a78bfa', dashes: false,      width: 1.5, label: 'Imports' },
+  references:       { color: '#79c0ff', dashes: false,      width: 1.5, label: 'References' },
+  frontmatter:      { color: '#7ee787', dashes: [6, 4],     width: 1.5, label: 'Frontmatter' },
+  cross_references: { color: '#f9a8d4', dashes: false,      width: 1.5, label: 'Cross-ref' },
+  modifies:         { color: '#e3b341', dashes: [4, 4],     width: 1.5, label: 'Modifies' },
+  closes:           { color: '#56d364', dashes: false,      width: 2,   label: 'Closes' },
+  mentions:         { color: '#b1bac4', dashes: [3, 4],     width: 1.2, label: 'Mentions' },
+  related:          { color: '#8b949e', dashes: [3, 3],     width: 1.2, label: 'Related' },
 };
 
 export type NodeLayer = 'file' | 'content' | 'work';
