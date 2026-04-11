@@ -27,9 +27,8 @@ import {
   WeatherSunnyRegular,
   BookRegular,
 } from '@fluentui/react-icons';
-import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
-import { EDGE_TYPE_STYLES } from '../types';
-import type { EdgeType } from '../types';
+import type { KBGraph, KBConfig, KBNode, Theme, EdgeType, NodeLayer } from '../types';
+import { EDGE_TYPE_STYLES, NODE_LAYER_META, getNodeLayer } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
 import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
@@ -280,6 +279,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const [mapSplit, setMapSplit] = useState(() => readPersisted('kbe-map-split', 50));
   const [sidebarZoom, setSidebarZoom] = useState(180);
   const [overlayZoom, setOverlayZoom] = useState(100);
+  const [activeLayers, setActiveLayers] = useState<Set<NodeLayer>>(() => {
+    try {
+      const stored = localStorage.getItem('kbe-layers');
+      if (stored) return new Set(JSON.parse(stored) as NodeLayer[]);
+    } catch { /* ignore */ }
+    return new Set<NodeLayer>(['file', 'content', 'work']);
+  });
   const resizeRef = useRef<{ startX: number; startW: number } | null>(null);
   const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
 
@@ -347,15 +353,44 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     document.addEventListener('pointerup', onUp);
   }, [mapSplit]);
 
+  const toggleLayer = useCallback((layer: NodeLayer) => {
+    setActiveLayers(prev => {
+      const next = new Set(prev);
+      if (next.has(layer)) { if (next.size > 1) next.delete(layer); } // keep at least one
+      else next.add(layer);
+      try { localStorage.setItem('kbe-layers', JSON.stringify([...next])); } catch { /* */ }
+      return next;
+    });
+  }, []);
+
+  // Filter graph to only active layers
+  const filteredGraph = React.useMemo<KBGraph>(() => {
+    if (activeLayers.size === 3) return graph; // all layers on — no filter needed
+    const visibleIds = new Set<string>();
+    const nodes = graph.nodes.filter(n => {
+      const layer = getNodeLayer(n);
+      if (activeLayers.has(layer)) { visibleIds.add(n.id); return true; }
+      return false;
+    });
+    const edges = graph.edges.filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
+    // Recompute related for filtered graph
+    const related: Record<string, string[]> = {};
+    for (const id of visibleIds) {
+      const r = (graph.related[id] ?? []).filter(rid => visibleIds.has(rid));
+      if (r.length > 0) related[id] = r;
+    }
+    return { nodes, edges, clusters: graph.clusters, related };
+  }, [graph, activeLayers]);
+
   const currentNode = currentNodeId
-    ? graph.nodes.find(n => n.id === currentNodeId) ?? null
+    ? filteredGraph.nodes.find(n => n.id === currentNodeId) ?? graph.nodes.find(n => n.id === currentNodeId) ?? null
     : null;
 
   const currentIdx = currentNode
-    ? graph.nodes.findIndex(n => n.id === currentNodeId)
+    ? filteredGraph.nodes.findIndex(n => n.id === currentNodeId)
     : -1;
 
-  const relatedIds = currentNodeId ? (graph.related[currentNodeId] ?? []) : [];
+  const relatedIds = currentNodeId ? (filteredGraph.related[currentNodeId] ?? graph.related[currentNodeId] ?? []) : [];
   const relatedNodes = relatedIds
     .map(id => graph.nodes.find(n => n.id === id))
     .filter((n): n is KBNode => n != null);
@@ -386,11 +421,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const [minimapPositions, setMinimapPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
 
   useEffect(() => {
-    const cleanup = computeGraphPositions(graph, (posMap) => {
+    const cleanup = computeGraphPositions(filteredGraph, (posMap) => {
       setMinimapPositions(posMap);
     });
     return cleanup;
-  }, [graph]);
+  }, [filteredGraph]);
 
   const drawMinimap = useCallback(() => {
     const canvas = canvasElRef.current;
@@ -431,7 +466,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     // Draw edges
     ctx.strokeStyle = edgeColor;
     ctx.lineWidth = 0.5;
-    for (const edge of graph.edges) {
+    for (const edge of filteredGraph.edges) {
       const from = posMap.get(edge.from);
       const to = posMap.get(edge.to);
       if (from && to) {
@@ -445,9 +480,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     }
 
     // Draw nodes with shape-matched outlines
-    const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
+    const clusterColorMap = new Map(filteredGraph.clusters.map(c => [c.id, c.color]));
 
-    for (const node of graph.nodes) {
+    for (const node of filteredGraph.nodes) {
       const pos = posMap.get(node.id);
       if (!pos) continue;
       const [cx, cy] = toCanvas(pos.x, pos.y);
@@ -493,7 +528,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       ctx.lineWidth = isCurrent ? 1.5 : 0.8;
       ctx.stroke();
     }
-  }, [graph, currentNodeId, theme, dock, minimapPositions, canvasMountKey]);
+  }, [filteredGraph, currentNodeId, theme, dock, minimapPositions, canvasMountKey]);
 
   useEffect(() => { const t = setTimeout(() => drawMinimap(), 50); return () => clearTimeout(t); }, [drawMinimap]);
 
@@ -503,7 +538,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
 
     const { network, setEmphasis: overlaySetEmphasis } = createGraphNetwork({
       container: overlayRef.current,
-      graph,
+      graph: filteredGraph,
       isDark: theme === 'dark',
       onNodeClick: (id) => {
         setMapExpanded(false);
@@ -530,7 +565,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
 
     return () => { network.destroy(); overlayNetworkRef.current = null; overlayEmphasisRef.current = null; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapExpanded, graph, config]);
+  }, [mapExpanded, filteredGraph, config]);
 
   // Sidebar live graph (left/right dock)
   const isVertical = dock === 'left' || dock === 'right';
@@ -551,8 +586,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       }
       const { network, nodes: visNodes, setEmphasis } = createGraphNetwork({
         container: sidebarGraphRef.current,
-        graph,
-        isDark: theme === 'dark',
+        graph: filteredGraph,        isDark: theme === 'dark',
         onNodeClick: (id) => {
           window.location.hash = `/node/${encodeURIComponent(id)}`;
         },
@@ -585,7 +619,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVertical, collapsed, graph, theme]);
+  }, [isVertical, collapsed, filteredGraph, theme]);
 
   // Update selection + focus + neighborhood emphasis when currentNodeId changes (no rebuild)
   useEffect(() => {
@@ -608,19 +642,19 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   // Active clusters: only those with 2+ nodes (avoids legend drift)
   const activeClusters = React.useMemo(() => {
     const counts = new Map<string, number>();
-    for (const n of graph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
-    return graph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
-  }, [graph]);
+    for (const n of filteredGraph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
+    return filteredGraph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
+  }, [filteredGraph]);
 
   // Active edge types present in the graph
   const activeEdgeTypes = React.useMemo(() => {
     const types = new Set<EdgeType>();
-    for (const e of graph.edges) if (e.type) types.add(e.type);
+    for (const e of filteredGraph.edges) if (e.type) types.add(e.type);
     return Array.from(types).sort((a, b) => {
       const order: EdgeType[] = ['contains', 'derived_from', 'imports', 'references', 'cross_references', 'frontmatter', 'closes', 'modifies', 'mentions', 'related'];
       return order.indexOf(a) - order.indexOf(b);
     });
-  }, [graph]);
+  }, [filteredGraph]);
 
   const navigateTo = useCallback((hash: string) => {
     window.location.hash = hash;
@@ -851,6 +885,34 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     ref={sidebarGraphRef}
                     style={{ width: '100%', height: '100%' }}
                   />
+                  {/* Layer toggles */}
+                  <div style={{
+                    position: 'absolute', top: 6, left: 8, right: 68, zIndex: 6,
+                    display: 'flex', gap: 4, flexWrap: 'wrap',
+                  }}>
+                    {(Object.entries(NODE_LAYER_META) as [NodeLayer, { label: string; color: string }][]).map(([layer, meta]) => {
+                      const active = activeLayers.has(layer);
+                      return (
+                        <button
+                          key={layer}
+                          onClick={() => toggleLayer(layer)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 4,
+                            padding: '2px 8px', fontSize: 10, fontWeight: 500,
+                            border: `1px solid ${active ? meta.color : tokens.colorNeutralStroke2}`,
+                            borderRadius: 12, cursor: 'pointer',
+                            background: active ? meta.color + '22' : 'transparent',
+                            color: active ? meta.color : tokens.colorNeutralForeground3,
+                            opacity: active ? 1 : 0.5,
+                          }}
+                          title={`${active ? 'Hide' : 'Show'} ${meta.label.toLowerCase()} layer`}
+                        >
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.color, opacity: active ? 1 : 0.3 }} />
+                          {meta.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                   {/* Legend overlay with background */}
                   <div style={{
                     position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px',

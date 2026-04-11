@@ -66,6 +66,23 @@ export const EDGE_TYPE_STYLES: Record<EdgeType, EdgeTypeStyle> = {
   related:          { color: '#484f58', dashes: [3, 3],     width: 0.8, label: 'Related' },
 };
 
+export type NodeLayer = 'file' | 'content' | 'work';
+
+export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string }> = {
+  file:    { label: 'Files',   color: '#9A8A78' },
+  content: { label: 'Content', color: '#58a6ff' },
+  work:    { label: 'Work',    color: '#d29922' },
+};
+
+/** Classify a node into a graph layer based on its source. */
+export function getNodeLayer(node: KBNode): NodeLayer {
+  const t = node.source.type;
+  if (t === 'authored' || t === 'readme') return 'content';
+  if (t === 'section') return 'content';
+  if (t === 'issue' || t === 'pull_request' || t === 'commit') return 'work';
+  return 'file';
+}
+
 export interface Connection {
   to: string;
   type?: EdgeType;
