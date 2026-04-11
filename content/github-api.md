@@ -3,23 +3,13 @@ id: "github-api"
 title: "GitHub API Client"
 emoji: "PlugConnected"
 cluster: data
-connections:
-  - to: "content-pipeline"
-    description: "supplies data to"
-  - to: "cache-system"
-    description: "cached by"
-  - to: "visual-system"
-    description: "resolveImageUrl used by"
-  - to: "local-loader"
-    description: "types imported by"
-  - to: "type-system"
-    description: "imports SourceConfig from"
+connections: []
 ---
 
 
 # GitHub API Client
 
-The API client (`src/api/github.ts`) handles all communication with GitHub's REST API, including caching, rate limit handling, and error recovery.
+The API client (`src/api/github.ts`) handles all communication with GitHub's REST API, supplying raw data to the [content pipeline](content-pipeline). It uses `SourceConfig` from the [type system](type-system) for endpoint configuration, and its type definitions are also imported by the [local loader](local-loader). The module also exports `resolveImageUrl`, used by the [visual system](visual-system) to resolve repository-relative image paths.
 
 ## Endpoints Used
 
@@ -29,7 +19,7 @@ The API client (`src/api/github.ts`) handles all communication with GitHub's RES
 
 ## Caching
 
-All responses are cached in `localStorage` with a 5-minute TTL under the `kbe:` prefix. A `CACHE_VERSION` constant in the module header auto-invalidates all cached data when bumped — this prevents stale data from poisoning renders after breaking changes to the parsing logic.
+All responses are cached via the [cache system](cache-system) in `localStorage` with a 5-minute TTL under the `kbe:` prefix. A `CACHE_VERSION` constant in the module header auto-invalidates all cached data when bumped — this prevents stale data from poisoning renders after breaking changes to the parsing logic.
 
 ## Rate Limit Handling
 

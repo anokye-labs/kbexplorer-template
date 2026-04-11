@@ -3,22 +3,12 @@ id: "kb-loader"
 title: "Knowledge Base Loader"
 emoji: "Database"
 cluster: data
-connections:
-  - to: "content-pipeline"
-    description: "calls loadConfig, loadRepoContent, loadAuthoredContent, extractClusters"
-  - to: "graph-engine"
-    description: "calls buildGraph"
-  - to: "local-loader"
-    description: "calls detectLocalMode, loadLocalKnowledgeBase"
-  - to: "app-shell"
-    description: "called by Explorer component"
-  - to: "type-system"
-    description: "imports KBGraph, KBConfig, SourceConfig"
+connections: []
 ---
 
 # Knowledge Base Loader
 
-The `useKnowledgeBase` hook is the single point of truth for data loading in kbexplorer. Every React component that needs the knowledge graph receives it from this hook — it encapsulates the entire fetch → parse → build pipeline behind a three-state discriminated union (`loading | ready | error`), so the rest of the UI only needs to pattern-match on status.
+The `useKnowledgeBase` hook, invoked by the [application shell](app-shell)'s `Explorer` component, is the single point of truth for data loading in kbexplorer. It imports `KBGraph`, `KBConfig`, and `SourceConfig` from the [type system](type-system) and encapsulates the entire fetch → parse → build pipeline behind a three-state discriminated union (`loading | ready | error`), so every React component that needs the knowledge graph only needs to pattern-match on status.
 
 ## At a Glance
 
@@ -93,7 +83,7 @@ The discriminated union at [src/hooks/useKnowledgeBase.ts:12-15](https://github.
 
 ## Remote Mode Pipeline
 
-When not in local mode, the hook runs a five-step pipeline at [src/hooks/useKnowledgeBase.ts:30-47](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKnowledgeBase.ts#L30):
+When not in local mode (which delegates to the [local loader](local-loader) via `detectLocalMode` and `loadLocalKnowledgeBase`), the hook runs a five-step pipeline through the [content pipeline](content-pipeline) and [graph engine](graph-engine) at [src/hooks/useKnowledgeBase.ts:30-47](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKnowledgeBase.ts#L30):
 
 1. **`loadConfig(source)`** — fetch and parse `config.yaml` from the repo
 2. **`loadRepoContent(source)`** — fetch issues, tree, README via GitHub API

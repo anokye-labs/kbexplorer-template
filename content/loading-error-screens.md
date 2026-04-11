@@ -3,16 +3,12 @@ id: "loading-error-screens"
 title: "Loading & Error Screens"
 emoji: "Color"
 cluster: ui
-connections:
-  - to: "app-shell"
-    description: "rendered by Explorer"
-  - to: "github-api"
-    description: "displays rate limit errors from"
+connections: []
 ---
 
 # Loading & Error Screens
 
-These screens exist because the knowledge base requires async data fetching before anything useful can render. Users need clear feedback during the loading period and actionable guidance when things go wrong — especially GitHub API rate limiting, the single most common failure mode.
+Rendered by the [app shell](app-shell)'s Explorer component, these screens provide feedback during async data fetching and actionable guidance when things go wrong — especially [GitHub API](github-api) rate limiting, the single most common failure mode.
 
 ## At a Glance
 

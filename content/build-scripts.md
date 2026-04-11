@@ -3,18 +3,12 @@ id: "build-scripts"
 title: "Build & Dev Scripts"
 emoji: "Wrench"
 cluster: infra
-connections:
-  - to: "vite-config"
-    description: "launches vite with"
-  - to: "manifest-generator"
-    description: "prebuild runs"
-  - to: "init-script"
-    description: "configured by"
+connections: []
 ---
 
 # Build & Dev Scripts
 
-These scripts exist because kbexplorer can run either standalone or as a git submodule inside another repository. The build and dev launchers detect which mode they're in and configure Vite accordingly — setting the correct `envDir` (so `.env.kbexplorer` is found in the host repo) and `outDir` (so built assets land in the right place). Without them, submodule users would need manual CLI flags on every invocation.
+These scripts exist because kbexplorer can run either standalone or as a git submodule inside another repository. The build and dev launchers detect which mode they're in and configure [Vite](vite-config) accordingly — setting the correct `envDir` (so `.env.kbexplorer` is found in the host repo) and `outDir` (so built assets land in the right place). The [init script](init-script) generates these npm commands during setup; without them, submodule users would need manual CLI flags on every invocation.
 
 ## At a Glance
 
@@ -88,4 +82,4 @@ The dev server launcher at [scripts/dev.js:1-27](https://github.com/anokye-labs/
 | Spawn Vite | 20-25 | `npx vite --open` with pass-through args |
 | Exit propagation | 27 | Forwards exit code |
 
-Both scripts use `spawn` with `shell: true` and `stdio: 'inherit'` so Vite output streams directly to the terminal. Pass-through args via `process.argv.slice(2)` allow callers to append flags like `--port 3001` or `--mode production`.
+Both scripts use `spawn` with `shell: true` and `stdio: 'inherit'` so Vite output streams directly to the terminal. In local mode, the prebuild step runs the [manifest generator](manifest-generator) to snapshot repository data before bundling. Pass-through args via `process.argv.slice(2)` allow callers to append flags like `--port 3001` or `--mode production`.

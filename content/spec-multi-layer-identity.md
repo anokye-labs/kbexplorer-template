@@ -3,28 +3,7 @@ id: "spec-multi-layer-identity"
 title: "Multi-Layer Node Identity"
 emoji: "Layer"
 cluster: design
-connections:
-  - to: "spec-providers-overview"
-    description: "extends provider model defined in"
-  - to: "spec-views"
-    description: "critical for view projections in"
-  - to: "spec-node-mapping"
-    description: "builds on file→node mapping from"
-  - to: "spec-graph-store"
-    description: "requires identity tracking in"
-
-  - to: "type-system"
-    description: "extends KBNode with identity fields in"
-  - to: "content-pipeline"
-    description: "reconciles authored vs file nodes in"
-  - to: "overview-view"
-    description: "view decides which representation to show in"
-  - to: "reading-view"
-    description: "view decides which representation to show in"
-  - to: "spec-link-assessment"
-    description: "identity mapping surfaces in"
-  - to: "issue-47"
-    description: "tracked by"
+connections: []
 ---
 
 # Multi-Layer Node Identity
@@ -38,10 +17,11 @@ unrelated nodes:
 - The authored content `graph-engine` documents the same module
 - Git commits that touch `graph.ts` reference it by path
 
-These are three separate nodes with no explicit relationship. They live in
-different clusters, have different connections, and don't know about each other.
+These are three separate nodes with no explicit relationship. The [content pipeline](content-pipeline)
+treats them as distinct entries — they live in different clusters, have different
+connections, and don't know about each other.
 
-When we add graph views (spec-views), a user switching from "Code Structure"
+When we add [graph views](spec-views), a user switching from "Code Structure"
 to "Documentation" view should see the same entity — not lose context because
 the node ID changed.
 
@@ -53,14 +33,14 @@ merged view — that's a decision the projection system makes per view.
 
 This means:
 
-1. **Nodes can share an identity** across providers
+1. **Nodes can share an identity** across [providers](spec-providers-overview)
 2. **Each provider contributes its own representation** (content, metadata, connections)
 3. **The view decides which representation to display** for a given identity
 4. **Connections to any representation are connections to the identity**
 
 ## Solution: Identity URNs
 
-Each node has an optional `identity` field — a canonical URN that links
+Each node has an optional `identity` field in the [type system](type-system) — a canonical URN that links
 representations across providers:
 
 ```typescript
@@ -84,7 +64,7 @@ interface GraphNode {
 
 ### How Identity Mapping Works
 
-The node map (spec-node-mapping) is where identities are declared:
+The [node map](spec-node-mapping) is where identities are declared:
 
 ```yaml
 # nodemap.yaml
@@ -102,7 +82,7 @@ When `file: src/engine/graph.ts` is specified, the system creates identity
 
 ### View Projection with Identity
 
-When a view renders, it resolves identities:
+When the [overview view](overview-view) or [reading view](reading-view) renders, it resolves identities:
 
 ```
 Code Structure view:
@@ -130,7 +110,7 @@ The graph store resolves this:
 
 ### Impact on Graph Store Schema
 
-The `nodes` table gets an `identity` column:
+The [graph store](spec-graph-store)'s `nodes` table gets an `identity` column:
 
 ```sql
 ALTER TABLE nodes ADD COLUMN identity TEXT;
@@ -142,7 +122,7 @@ groups them and chooses which to display.
 
 ### Impact on Link Assessment
 
-The link assessment tool (spec-link-assessment) should:
+The [link assessment](spec-link-assessment) tool should:
 - Detect when a file node and a content node clearly refer to the same entity
   but have no identity link (e.g., `graph-engine` content mentions
   `src/engine/graph.ts` repeatedly)
@@ -158,3 +138,5 @@ The link assessment tool (spec-link-assessment) should:
    they automatically merge via identity
 4. **No duplication** — the graph doesn't show `graph.ts` AND `graph-engine` as
    separate nodes in the full view
+
+Tracked by [#47](issue-47).

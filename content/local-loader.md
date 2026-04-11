@@ -3,22 +3,12 @@ id: "local-loader"
 title: "Local Mode Loader"
 emoji: "Database"
 cluster: data
-connections:
-
-  - to: "graph-engine"
-    description: "calls buildGraph, extractClusters"
-  - to: "github-api"
-    description: "imports GHIssue, GHTreeItem types"
-
-  - to: "kb-loader"
-    description: "called by"
-  - to: "type-system"
-    description: "imports KBNode, KBConfig, KBGraph"
+connections: []
 ---
 
 # Local Mode Loader
 
-The local loader exists to enable zero-API-call operation. Instead of fetching issues, PRs, and file trees from GitHub at runtime, it reads everything from a pre-built `repo-manifest.json` file that the [manifest generator](manifest-generator) produces at build time. This eliminates rate-limit concerns, allows fully offline usage, and dramatically accelerates load times — while reusing the exact same parser functions as the API path to guarantee consistent output.
+The local loader exists to enable zero-API-call operation. Instead of fetching issues, PRs, and file trees from GitHub at runtime, it reads everything from a pre-built `repo-manifest.json` file that the [manifest generator](manifest-generator) produces at build time. This eliminates rate-limit concerns, allows fully offline usage, and dramatically accelerates load times — while reusing the exact same parser functions as the [API path](github-api) to guarantee consistent [`KBGraph`](type-system) output. The [knowledge base loader](kb-loader) routes here when local mode is active.
 
 ## At a Glance
 
@@ -124,3 +114,5 @@ The `loadManifest()` function at [src/engine/local-loader.ts:52-63](https://gith
 5. **Section split** → issues with 2+ headings are expanded into parent + section nodes via `splitIntoSections()` (lines 183-195)
 6. **PRs** → each pull request becomes a node in the `pull-request` cluster with `extractIssueRefs` connections (lines 198-215)
 7. **Commits** → grouped into a single "Recent Commits" node with a markdown list of the last 30 commits (lines 218-235)
+
+All extracted nodes then pass through the [graph engine](graph-engine)'s `extractClusters` and `buildGraph` to produce the final graph.

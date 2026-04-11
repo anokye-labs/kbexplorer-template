@@ -3,16 +3,7 @@ id: "theme-system"
 title: "Theme System"
 emoji: "Color"
 cluster: ui
-connections:
-  - to: "visual-system"
-    description: "colors"
-
-  - to: "node-renderer"
-    description: "affects rendering"
-  - to: "app-shell"
-    description: "useTheme called by"
-  - to: "keyboard-nav"
-    description: "nextTheme imported by"
+connections: []
 ---
 
 
@@ -22,7 +13,7 @@ kbexplorer supports three themes via Fluent 2's `FluentProvider`: **dark**, **li
 
 ## Implementation
 
-The `useTheme` hook (`src/hooks/useTheme.ts`) returns `[ThemeMode, FluentTheme, setMode]`. A single `FluentProvider` instance at the app root receives the active theme — all components inherit colors, typography, and spacing automatically.
+The `useTheme` hook (`src/hooks/useTheme.ts`) returns `[ThemeMode, FluentTheme, setMode]`. The [app shell](app-shell) calls `useTheme` and passes the active Fluent theme to a single `FluentProvider` at the root — all components, including the [visual system](visual-system), inherit colors, typography, and spacing automatically.
 
 ## Themes
 
@@ -30,9 +21,11 @@ The `useTheme` hook (`src/hooks/useTheme.ts`) returns `[ThemeMode, FluentTheme, 
 - **Light** — `webLightTheme` from @fluentui/react-components
 - **Sepia** — custom theme built with `createLightTheme()` using a 16-shade warm amber `BrandVariants` ramp (from `#1C1308` to `#FCF7F0`), with overrides for neutral background, card, and stroke tokens
 
+The active theme also determines opaque background fills in the [node renderer](node-renderer), preventing edge bleed-through on the graph canvas.
+
 ## Toggle
 
-The [HUD — Heads-Up Display](hud) tools strip has three buttons: moon (WeatherMoonRegular), sun (WeatherSunnyRegular), and book (BookRegular) icons. The `t` keyboard shortcut cycles through all three. Preference persists in localStorage as `kbe-theme`.
+The [HUD — Heads-Up Display](hud) tools strip has three buttons: moon (WeatherMoonRegular), sun (WeatherSunnyRegular), and book (BookRegular) icons. The `t` [keyboard shortcut](keyboard-nav) cycles through all three. Preference persists in localStorage as `kbe-theme`.
 
 ## Fallback Background
 

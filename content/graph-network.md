@@ -3,20 +3,12 @@ id: "graph-network"
 title: "Graph Network Factory"
 emoji: "Flow"
 cluster: engine
-connections:
-  - to: "node-renderer"
-    description: "calls createNodeRenderer"
-  - to: "graph-engine"
-    description: "calls getNodeDegrees"
-  - to: "hud"
-    description: "used by HUD for sidebar and overlay graphs"
-  - to: "type-system"
-    description: "imports KBGraph"
+connections: []
 ---
 
 # Graph Network Factory
 
-The graph network factory is the bridge between kbexplorer's abstract `KBGraph` data model and the concrete vis-network rendering engine. It exists because raw vis-network requires extensive boilerplate — node sizing, colour mapping, physics tuning, pan/zoom clamping, custom canvas rendering — and this factory encapsulates all of it behind two clean functions: `createGraphNetwork` (interactive) and `computeGraphPositions` (headless layout computation).
+The graph network factory is the bridge between kbexplorer's abstract [`KBGraph`](type-system) data model and the concrete vis-network rendering engine. It exists because raw vis-network requires extensive boilerplate — node sizing, colour mapping, physics tuning, pan/zoom clamping, custom canvas rendering — and this factory encapsulates all of it behind two clean functions: `createGraphNetwork` (interactive) and `computeGraphPositions` (headless layout computation).
 
 ## At a Glance
 
@@ -75,7 +67,7 @@ flowchart LR
 
 ## buildVisNode
 
-The `buildVisNode` function at [src/engine/createGraphNetwork.ts:52-85](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L52) maps each `KBNode` to a vis-network node config:
+The `buildVisNode` function at [src/engine/createGraphNetwork.ts:52-85](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L52) maps each `KBNode` to a vis-network node config, using degree counts from the [graph engine](graph-engine):
 
 | Property | Logic |
 |----------|-------|
@@ -83,7 +75,7 @@ The `buildVisNode` function at [src/engine/createGraphNetwork.ts:52-85](https://
 | **Key node boost** | Nodes in `KEY_NODE_IDS` (`readme`, `overview`, etc.) get 1.5× base and 1.4× max |
 | **Colour** | Looked up from `clusterColorMap` |
 | **Label** | Title truncated to `labelMaxLength` (default 25), hidden when faded |
-| **Shape** | Always `'custom'` — delegates to `createNodeRenderer` for canvas drawing |
+| **Shape** | Always `'custom'` — delegates to [`createNodeRenderer`](node-renderer) for canvas drawing |
 | **Disconnected badge** | Nodes with 0 connections get a `⚠ Disconnected node` tooltip |
 
 ## Physics Configuration
@@ -117,4 +109,4 @@ On every `zoom` event at [src/engine/createGraphNetwork.ts:256-263](https://gith
 
 ## computeGraphPositions
 
-The `computeGraphPositions` function at [src/engine/createGraphNetwork.ts:294-354](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L294) creates a hidden off-screen vis-network (400×280px, positioned at `left: -9999px`) purely for layout computation. Once stabilized, it extracts node positions into a `Map<string, {x, y}>`, calls the `onComplete` callback, then destroys itself. Returns a cleanup function for React effect teardown.
+The [HUD](hud) uses `computeGraphPositions` for its minimap layout. The function at [src/engine/createGraphNetwork.ts:294-354](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L294) creates a hidden off-screen vis-network (400×280px, positioned at `left: -9999px`) purely for layout computation. Once stabilized, it extracts node positions into a `Map<string, {x, y}>`, calls the `onComplete` callback, then destroys itself. Returns a cleanup function for React effect teardown.

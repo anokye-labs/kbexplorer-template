@@ -3,23 +3,14 @@ id: "wiki-getting-started"
 title: "Getting Started"
 emoji: "Book"
 cluster: guide
-connections:
-  - to: "overview"
-    description: "introduces"
-  - to: "wiki-overview"
-    description: "starts with"
-  - to: "wiki-setup"
-    description: "then"
-
-  - to: "wiki-configuration"
-    description: "configures via"
+connections: []
 ---
 
 
 
 # Getting Started
 
-This guide walks you through setting up kbexplorer, understanding its [content modes](wiki-content-modes), and configuring it for your repository.
+This guide walks you through setting up kbexplorer, understanding its [content modes](wiki-content-modes), and [configuring](wiki-configuration) it for your repository. Start with [What is kbexplorer?](wiki-overview) for the conceptual foundation, or jump to [Installation & Development](wiki-setup) to get running immediately. For a bird's-eye view of the codebase, see the [architecture overview](overview).
 
 ## Quick Start
 

@@ -3,27 +3,12 @@ id: "app-shell"
 title: "Application Shell"
 emoji: "Building"
 cluster: ui
-connections:
-  - to: "kb-loader"
-    description: "calls useKnowledgeBase"
-  - to: "theme-system"
-    description: "calls useTheme"
-  - to: "keyboard-nav"
-    description: "calls useKeyboardNav"
-  - to: "graph-engine"
-    description: "calls getHubNodeId"
-
-  - to: "reading-view"
-    description: "routes to ReadingView"
-  - to: "loading-error-screens"
-    description: "renders LoadingScreen/ErrorScreen"
-  - to: "overview"
-    description: "root of architecture"
+connections: []
 ---
 
 # Application Shell
 
-The application shell exists to provide a single, stable entry point that boots the Fluent 2 design system, initialises routing, loads the knowledge graph, and coordinates every top-level UI subsystem. Without this orchestration layer every feature would need its own copy of theme wiring, route handling, and loading-state management.
+The application shell sits at the root of the [kbexplorer architecture](overview), providing a single, stable entry point that boots the Fluent 2 design system, initialises routing, loads the knowledge graph, and coordinates every top-level UI subsystem. Without this orchestration layer every feature would need its own copy of theme wiring, route handling, and loading-state management.
 
 ## At a Glance
 
@@ -94,7 +79,7 @@ flowchart LR
 
 ## FluentProvider Wrapping
 
-The `App` component initialises the Fluent 2 design system by calling [`useTheme`](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L83) to obtain a `themeMode`, a Fluent `Theme` token set, and a setter. The entire component tree is wrapped in `<FluentProvider theme={fluentTheme}>` at [src/App.tsx:86](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L86) so that every child has access to Fluent's CSS-in-JS tokens.
+The `App` component initialises the Fluent 2 design system by calling the [theme system](theme-system)'s [`useTheme`](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L83) hook to obtain a `themeMode`, a Fluent `Theme` token set, and a setter. The entire component tree is wrapped in `<FluentProvider theme={fluentTheme}>` at [src/App.tsx:86](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L86) so that every child has access to Fluent's CSS-in-JS tokens.
 
 ## Routing
 
@@ -102,15 +87,15 @@ A `HashRouter` is used (not `BrowserRouter`) because the app is deployed as a st
 
 | Route | Behaviour |
 |-------|-----------|
-| `/node/:id` | Renders `ReadingRoute`, which extracts `id` via `useParams` and passes it to `ReadingView` |
-| `*` (catch-all) | Redirects to the hub node via `getHubNodeId(graph)`, falling back to the first node in the graph |
+| `/node/:id` | Renders `ReadingRoute`, which extracts `id` via `useParams` and passes it to the [reading view](reading-view) |
+| `*` (catch-all) | Redirects to the hub node via the [graph engine](graph-engine)'s `getHubNodeId(graph)`, falling back to the first node in the graph |
 
 ## Explorer Orchestration
 
 The `Explorer` component at [src/App.tsx:28](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L28) is the heart of the shell. It:
 
-1. **Loads data** — calls `useKnowledgeBase()` and renders `LoadingScreen` or `ErrorScreen` based on status ([src/App.tsx:44-45](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L44))
-2. **Enables keyboard shortcuts** — passes the graph to `useKeyboardNav` ([src/App.tsx:39-42](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L39))
+1. **Loads data** — calls the [KB loader](kb-loader)'s `useKnowledgeBase()` and renders [loading/error screens](loading-error-screens) based on status ([src/App.tsx:44-45](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L44))
+2. **Enables keyboard shortcuts** — passes the graph to [keyboard navigation](keyboard-nav)'s `useKeyboardNav` ([src/App.tsx:39-42](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L39))
 3. **Mounts HUD** — renders the HUD component with graph, config, current node, and theme callbacks ([src/App.tsx:69-77](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L69))
 
 ## Persisted HUD State

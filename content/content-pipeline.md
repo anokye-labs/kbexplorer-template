@@ -3,26 +3,13 @@ id: "content-pipeline"
 title: "Content Pipeline"
 emoji: "Database"
 cluster: data
-connections:
-
-  - to: "github-api"
-    description: "fetches from"
-  - to: "overview"
-    description: "core module of"
-  - to: "local-loader"
-    description: "functions reused by"
-  - to: "kb-loader"
-    description: "orchestrated by"
-  - to: "type-system"
-    description: "imports types from"
-  - to: "test-suite"
-    description: "tested by"
+connections: []
 ---
 
 
 # Content Pipeline
 
-The content pipeline (`src/engine/parser.ts`) converts raw GitHub API data into `KBNode[]` — the universal node format consumed by the [graph engine](graph-engine).
+The content pipeline (`src/engine/parser.ts`) fetches raw data from the [GitHub API client](github-api) and converts it into `KBNode[]` — typed by the [type system](type-system) — the universal node format consumed by the [graph engine](graph-engine). As a core module of the [kbexplorer architecture](overview), it is orchestrated by the [KB loader](kb-loader) and its parsing functions are reused by the [local loader](local-loader).
 
 ## Repo-Aware Mode (Default)
 
@@ -42,3 +29,5 @@ When `source.path` points to a directory of markdown files, each file's YAML fro
 ## UTF-8 Handling
 
 GitHub's Contents API returns base64-encoded content. The pipeline decodes with `TextDecoder` (not `atob`) to correctly handle multi-byte UTF-8 characters like em dashes.
+
+The content pipeline's parsing logic is verified by the [test suite](test-suite).

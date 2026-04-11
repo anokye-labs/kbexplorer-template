@@ -3,18 +3,12 @@ id: "keyboard-nav"
 title: "Keyboard Navigation"
 emoji: "Color"
 cluster: ui
-connections:
-  - to: "theme-system"
-    description: "imports nextTheme"
-  - to: "app-shell"
-    description: "called by Explorer"
-  - to: "type-system"
-    description: "imports KBGraph, Theme"
+connections: []
 ---
 
 # Keyboard Navigation
 
-Keyboard navigation exists so power users can browse the knowledge base without touching a mouse. It keeps the interaction model simple — just three keys — while respecting editable elements to avoid conflicts with text input.
+Called by the [app shell](app-shell)'s Explorer component, keyboard navigation lets power users browse the knowledge base without touching a mouse. It keeps the interaction model simple — just three keys — while respecting editable elements to avoid conflicts with text input.
 
 ## At a Glance
 
@@ -27,7 +21,7 @@ Keyboard navigation exists so power users can browse the knowledge base without 
 
 | Key | Action | Source |
 |-----|--------|--------|
-| `t` | Cycle theme: dark → light → sepia → dark | [src/hooks/useKeyboardNav.ts:22-26](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L22) |
+| `t` | Cycle [theme](theme-system): dark → light → sepia → dark | [src/hooks/useKeyboardNav.ts:22-26](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L22) |
 | `←` (ArrowLeft) | Navigate to previous node | [src/hooks/useKeyboardNav.ts:28-41](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L28) |
 | `→` (ArrowRight) | Navigate to next node | [src/hooks/useKeyboardNav.ts:28-41](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L28) |
 
@@ -90,4 +84,4 @@ Node cycling at [src/hooks/useKeyboardNav.ts:28-41](https://github.com/anokye-la
 
 ## Cleanup
 
-The `useEffect` returns a cleanup function at [src/hooks/useKeyboardNav.ts:47](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L47) that removes the event listener, ensuring no dangling handlers survive component unmount. The effect depends on `[graph, setTheme]` so the handler is rebuilt if either changes.
+The `useEffect` returns a cleanup function at [src/hooks/useKeyboardNav.ts:47](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L47) that removes the event listener, ensuring no dangling handlers survive component unmount. The effect depends on the [`KBGraph`](type-system) and `setTheme` callback so the handler is rebuilt if either changes.

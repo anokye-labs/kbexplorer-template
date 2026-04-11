@@ -3,26 +3,12 @@ id: "type-system"
 title: "Core Type Definitions"
 emoji: "Building"
 cluster: engine
-connections:
-  - to: "graph-engine"
-    description: "types consumed by"
-  - to: "content-pipeline"
-    description: "types consumed by"
-  - to: "github-api"
-    description: "SourceConfig consumed by"
-  - to: "hud"
-    description: "types consumed by"
-  - to: "app-shell"
-    description: "types consumed by"
-  - to: "reading-view"
-    description: "types consumed by"
-  - to: "overview-view"
-    description: "types consumed by"
+connections: []
 ---
 
 # Core Type Definitions
 
-The type system exists to provide a single source of truth for every data shape in kbexplorer. By centralising types in `src/types/index.ts`, every module — from the engine to the UI — operates against the same contracts, eliminating the class of bugs that come from shape mismatches between data producers and consumers.
+The type system exists to provide a single source of truth for every data shape in kbexplorer. By centralising types in `src/types/index.ts`, every module operates against the same contracts — the [graph engine](graph-engine) and [content pipeline](content-pipeline) consume `KBNode` and `KBGraph`, the [GitHub API client](github-api) uses `SourceConfig`, and UI components like the [HUD](hud), [application shell](app-shell), [reading view](reading-view), and [overview view](overview-view) all import from this single source — eliminating the class of bugs that come from shape mismatches between data producers and consumers.
 
 ## At a Glance
 

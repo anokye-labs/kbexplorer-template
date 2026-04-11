@@ -3,29 +3,17 @@ id: "visual-system"
 title: "Visual Identity System"
 emoji: "PaintBrush"
 cluster: visual
-connections:
-  - to: "node-renderer"
-    description: "canvas rendering"
-  - to: "theme-system"
-    description: "colors from"
-
-
-  - to: "overview-view"
-    description: "NodeVisual used by"
-  - to: "github-api"
-    description: "imports resolveImageUrl"
-  - to: "style-system"
-    description: "CSS classes from"
+connections: []
 ---
 
 
 # Visual Identity System
 
-The visual system (`src/components/NodeVisual.tsx`) renders node icons across all UI surfaces — [reading view](reading-view) headers, connection cards, [HUD — Heads-Up Display](hud) thumbnails, and child node lists.
+The visual system (`src/components/NodeVisual.tsx`) renders node icons across all UI surfaces — [reading view](reading-view) headers, connection cards, [HUD](hud) thumbnails, the [overview view](overview-view), and child node lists. It imports `resolveImageUrl` from the [GitHub API client](github-api) for repository-relative image paths and applies CSS classes from the [style system](style-system). The [node renderer](node-renderer) consumes these visuals for canvas-level graph drawing.
 
 ## Cluster-Colored Icons
 
-Every Fluent icon renders in its cluster color via the `clusterColor` prop. This matches the colored enclosures in the constellation graph — a feature icon is the same blue whether you see it in the sidebar, the reading view header, or as a graph node.
+Every Fluent icon renders in its cluster color via the `clusterColor` prop, with colour coordination from the [theme system](theme-system). This matches the colored enclosures in the constellation graph — a feature icon is the same blue whether you see it in the sidebar, the reading view header, or as a graph node.
 
 ## Icon Map
 

@@ -3,28 +3,15 @@ id: "overview"
 title: "kbexplorer Architecture"
 emoji: "Building"
 cluster: engine
-connections:
-  - to: "graph-engine"
-    description: "core module"
-  - to: "content-pipeline"
-    description: "feeds data to"
-
-  - to: "visual-system"
-    description: "renders via"
-  - to: "theme-system"
-    description: "themed by"
-  - to: "app-shell"
-    description: "mounted by"
-  - to: "type-system"
-    description: "defined by"
-  - to: "kb-loader"
-    description: "loaded via"
+connections: []
 ---
 
 
 # kbexplorer
 
 **kbexplorer** is a React + TypeScript application that turns any GitHub repository into an interactive, explorable knowledge graph. It fetches content from the GitHub API at runtime — issues, README, file tree — and presents it as a constellation of interconnected nodes navigable through a reading view, a force-directed network, and a persistent sidebar [HUD — Heads-Up Display](hud).
+
+At startup the [application shell](app-shell) boots the UI while the [KB loader](kb-loader) fetches content. The [content pipeline](content-pipeline) transforms raw API responses into typed nodes — shapes defined by the [type system](type-system) — and feeds them to the [graph engine](graph-engine). The [visual system](visual-system) renders node icons across every surface, themed by the [theme system](theme-system).
 
 ## Inspirations
 

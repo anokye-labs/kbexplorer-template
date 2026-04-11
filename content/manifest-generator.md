@@ -3,18 +3,12 @@ id: "manifest-generator"
 title: "Manifest Generator"
 emoji: "Wrench"
 cluster: infra
-connections:
-  - to: "local-loader"
-    description: "output consumed by"
-  - to: "vite-config"
-    description: "triggered by manifest plugin"
-  - to: "test-suite"
-    description: "tested by"
+connections: []
 ---
 
 # Manifest Generator
 
-The manifest generator exists to snapshot the host repository into a single JSON file at build time, so the local-mode loader can produce the exact same knowledge graph as the API path — but without any runtime GitHub API calls. This is critical for offline usage, CI/CD preview deployments, and avoiding rate-limit issues during development.
+The manifest generator exists to snapshot the host repository into a single JSON file at build time, so the [local-mode loader](local-loader) can produce the exact same knowledge graph as the API path — but without any runtime GitHub API calls. This is critical for offline usage, CI/CD preview deployments, and avoiding rate-limit issues during development.
 
 ## At a Glance
 
@@ -117,8 +111,8 @@ Issues and PRs are fetched via the `gh` CLI (if available) with a 30-second time
 | `fetchLocalPullRequests` | `gh pr list --json ... --state all` | 200 | [line 226](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L226) |
 | `fetchLocalCommits` | `git log --pretty=format:"%H\|\|\|%s\|\|\|%an\|\|\|%aI" -50` | 50 | [line 260](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L260) |
 
-All three are best-effort — failures are logged as warnings and return empty arrays, so the manifest still generates even without `gh` CLI or in repos without remotes.
+All three are best-effort — failures are logged as warnings and return empty arrays, so the manifest still generates even without `gh` CLI or in repos without remotes. This resilience is verified by the [test suite](test-suite).
 
 ## Output
 
-The assembled manifest is written to `src/generated/repo-manifest.json` at [scripts/generate-manifest.js:305-306](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L305) and includes a `generatedAt` ISO timestamp. A summary of entry counts is logged to stdout.
+The assembled manifest is written to `src/generated/repo-manifest.json` at [scripts/generate-manifest.js:305-306](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L305), where the [Vite build](vite-config) includes it in the bundle. A summary of entry counts is logged to stdout.

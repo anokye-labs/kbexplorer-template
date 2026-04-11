@@ -3,28 +3,13 @@ id: "graph-engine"
 title: "Graph Engine"
 emoji: "Flash"
 cluster: engine
-connections:
-  - to: "content-pipeline"
-    description: "receives nodes from"
-  - to: "node-renderer"
-    description: "renders via"
-
-  - to: "graph-network"
-    description: "factory delegates to"
-  - to: "kb-loader"
-    description: "called by"
-  - to: "local-loader"
-    description: "called by"
-  - to: "type-system"
-    description: "imports types from"
-  - to: "app-shell"
-    description: "getHubNodeId used by"
+connections: []
 ---
 
 
 # Graph Engine
 
-The graph engine (`src/engine/graph.ts`) transforms a flat list of `KBNode[]` into a computed `KBGraph` with edges, clusters, related nodes, and degree maps.
+The graph engine (`src/engine/graph.ts`) receives a flat list of `KBNode[]` from the [content pipeline](content-pipeline) and transforms them into a computed `KBGraph` with edges, clusters, related nodes, and degree maps. All data shapes are imported from the [type system](type-system), and the engine is called by the [KB loader](kb-loader) and [local loader](local-loader) during startup.
 
 ## Edge Construction
 
@@ -41,12 +26,12 @@ Each edge carries a `weight` field:
 - **1** — normal reference
 - **0.5** — orphan rescue (weak link)
 
-Weight maps to vis-network spring length: `baseSpringLength / weight`. Higher weight = shorter spring = closer nodes.
+Weight maps to vis-network spring length via the [graph network](graph-network) factory: `baseSpringLength / weight`. Higher weight = shorter spring = closer nodes.
 
 ## Hub Detection
 
-`getHubNodeId()` prefers the `readme` node if it exists, otherwise falls to the highest-degree node. This ensures README is always the homepage.
+`getHubNodeId()` prefers the `readme` node if it exists, otherwise falls to the highest-degree node. This ensures README is always the homepage. The [application shell](app-shell) calls this function to determine the initial route.
 
 ## Related Nodes
 
-For each node, the engine computes up to 8 related nodes — its direct neighbors sorted by degree (most-connected first). These populate the [HUD — Heads-Up Display](hud)'s connections panel.
+For each node, the engine computes up to 8 related nodes — its direct neighbors sorted by degree (most-connected first). These populate the [HUD](hud)'s connections panel, rendered via the [node renderer](node-renderer).

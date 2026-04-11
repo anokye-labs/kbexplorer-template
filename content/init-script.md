@@ -3,11 +3,7 @@ id: "init-script"
 title: "Interactive Init Script"
 emoji: "Wrench"
 cluster: infra
-connections:
-  - to: "build-scripts"
-    description: "configures npm scripts for"
-  - to: "vite-config"
-    description: "generates env vars consumed by"
+connections: []
 ---
 
 # Interactive Init Script
@@ -122,11 +118,11 @@ At [scripts/init.js:93-105](https://github.com/anokye-labs/kbexplorer/blob/main/
 
 ## writeEnvFile
 
-Generates `.env.kbexplorer` at [scripts/init.js:107-121](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/init.js#L107) with `VITE_KB_OWNER`, `VITE_KB_REPO`, `VITE_KB_BRANCH`, `VITE_KB_TITLE`, and optionally `VITE_KB_PATH`.
+Generates `.env.kbexplorer` (consumed by the [Vite configuration](vite-config)) at [scripts/init.js:107-121](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/init.js#L107) with `VITE_KB_OWNER`, `VITE_KB_REPO`, `VITE_KB_BRANCH`, `VITE_KB_TITLE`, and optionally `VITE_KB_PATH`.
 
 ## addNpmScripts
 
-At [scripts/init.js:183-212](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/init.js#L183), injects scripts into the host's `package.json`:
+At [scripts/init.js:183-212](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/init.js#L183), injects scripts into the host's `package.json`, wiring up the [build scripts](build-scripts):
 
 | Mode | `kb:dev` | `kb:build` |
 |------|----------|------------|

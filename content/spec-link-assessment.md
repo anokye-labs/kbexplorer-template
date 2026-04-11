@@ -3,19 +3,7 @@ id: "spec-link-assessment"
 title: "Link Assessment — Graph Health Analysis"
 emoji: "Search"
 cluster: design
-connections:
-  - to: "spec-providers-overview"
-    description: "quality assurance for"
-  - to: "spec-node-mapping"
-    description: "validates mappings produced by"
-  - to: "graph-engine"
-    description: "analyzes output of"
-
-  - to: "manifest-generator"
-    description: "reads manifest produced by"
-
-  - to: "spec-multi-layer-identity"
-    description: "helps identify where identity mapping is needed by"
+connections: []
 
 ---
 
@@ -23,7 +11,7 @@ connections:
 
 ## Problem
 
-As the graph grows across providers and content, connection quality degrades
+As the graph grows across [providers](spec-providers-overview) and content, connection quality degrades
 silently. Authored content nodes may reference nodes that don't exist. Source
 files mentioned in documentation may not have corresponding edges. Entire
 clusters may be internally connected but isolated from the rest of the graph.
@@ -91,11 +79,11 @@ With `--fix` flag, the tool offers to:
 
 ### How It Works
 
-The assessment reads from the manifest (or graph store when that exists).
-It builds the full node + edge graph, then runs each analysis pass:
+The assessment reads from the [manifest](manifest-generator) (or graph store when that exists).
+It builds the full graph using the [graph engine](graph-engine), then runs each analysis pass:
 
 1. **Orphan detection**: nodes with degree 0 in the adjacency list
-2. **Broken reference scan**: connections where `to` ID isn't in the node map
+2. **Broken reference scan**: connections where `to` ID isn't in the [node map](spec-node-mapping)
 3. **Cluster isolation**: for each cluster, count edges that cross cluster boundaries
 4. **Content scanning**: regex scan of `rawContent` for file paths (`src/...`), node IDs, and issue refs (`#N`), then check if corresponding edges exist
 5. **Coverage check**: compare file tree nodes against content nodes
@@ -108,3 +96,7 @@ category maps to a provider:
 - Broken references → cross-provider edge validation
 - Coverage gaps → files provider vs authored provider comparison
 - Stale connections → provider_state.last_run timestamps
+
+Coverage gaps can also indicate where [multi-layer identity](spec-multi-layer-identity) mapping is
+needed — the same entity exists as both file and content nodes but lacks an
+identity link.

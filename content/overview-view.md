@@ -3,16 +3,12 @@ id: "overview-view"
 title: "Overview View"
 emoji: "Color"
 cluster: ui
-connections:
-  - to: "visual-system"
-    description: "renders NodeVisual"
-  - to: "type-system"
-    description: "imports KBGraph, KBConfig, KBNode, Cluster"
+connections: []
 ---
 
 # Overview View
 
-The Overview View exists to give users a bird's-eye snapshot of the entire knowledge base before they dive into individual nodes. It groups every node by cluster, shows aggregate statistics, and provides one-click navigation into any node — acting as a table of contents for the graph.
+The Overview View exists to give users a bird's-eye snapshot of the entire knowledge base before they dive into individual nodes. Working with the [`KBGraph` and `KBConfig`](type-system) data structures, it groups every node by cluster, renders each with a [`NodeVisual`](visual-system) identity, shows aggregate statistics, and provides one-click navigation into any node — acting as a table of contents for the graph.
 
 ## At a Glance
 

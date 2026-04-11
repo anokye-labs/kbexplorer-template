@@ -4,13 +4,7 @@ title: "Configuration Reference"
 emoji: "Book"
 cluster: guide
 parent: "wiki-getting-started"
-connections:
-  - to: "theme-system"
-    description: "theme config"
-  - to: "visual-system"
-    description: "visual config"
-  - to: "type-system"
-    description: "KBConfig interface"
+connections: []
 ---
 
 
@@ -53,12 +47,16 @@ visuals:
   fallback: emoji
 ```
 
+See [visual system](visual-system) for rendering details on each mode.
+
 ## Theme
 
 ```yaml
 theme:
   default: dark          # dark | light | sepia
 ```
+
+The [theme system](theme-system) handles persistence and cycling between these modes.
 
 ## Features
 
@@ -72,4 +70,4 @@ features:
 
 ## Default Config
 
-The full default configuration is defined in `src/types/index.ts` as `DEFAULT_CONFIG`. It targets the kbexplorer repo itself with the `content/` path for blended mode.
+The full default configuration is defined in the [type system](type-system)'s `DEFAULT_CONFIG` constant in `src/types/index.ts`. It targets the kbexplorer repo itself with the `content/` path for blended mode.

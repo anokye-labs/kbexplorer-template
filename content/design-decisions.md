@@ -3,11 +3,7 @@ id: "design-decisions"
 title: "Design Decisions"
 emoji: "Building"
 cluster: design
-connections:
-
-  - to: "graph-engine"
-    description: "shaped"
-
+connections: []
 ---
 
 
@@ -33,7 +29,7 @@ The original card grid overview was removed. The README reading view serves as t
 
 ## Containment Edges Are Strong
 
-Parent→child edges (folders containing subfolders/files) carry weight 3 (3× normal), making them render as shorter springs in the force layout. This keeps hierarchical structures visually clustered.
+Parent→child edges (folders containing subfolders/files) carry weight 3 (3× normal) in the [graph engine](graph-engine), making them render as shorter springs in the force layout. This keeps hierarchical structures visually clustered.
 
 ## Verify Before Declaring Done
 

@@ -3,34 +3,16 @@ id: "spec-providers-overview"
 title: "Graph Provider System — Overview"
 emoji: "Organization"
 cluster: design
-connections:
-  - to: "spec-node-mapping"
-    description: "defines crawl phase"
-  - to: "spec-graph-store"
-    description: "defines walk phase"
-  - to: "spec-views"
-    description: "defines run phase"
-  - to: "content-pipeline"
-    description: "replaces monolithic loading in"
-  - to: "graph-engine"
-    description: "restructures how nodes feed into"
-  - to: "kb-loader"
-    description: "evolves loading strategy of"
-  - to: "local-loader"
-    description: "extends local mode in"
-  - to: "manifest-generator"
-    description: "replaces manifest approach in"
-  - to: "type-system"
-    description: "extends KBNode/KBGraph types defined in"
-  - to: "issue-40"
-    description: "tracked by"
+connections: []
 ---
 ---
 # Graph Provider System — [kbexplorer Architecture](overview)
 
 The graph provider system evolves kbexplorer's data pipeline from a monolithic
-manifest into a layered, extensible architecture where **providers** contribute
-nodes and edges to a unified graph with configurable depth.
+[manifest](manifest-generator) into a layered, extensible architecture where **providers** contribute
+nodes and edges to a unified graph with configurable depth. It replaces the
+monolithic loading in the [content pipeline](content-pipeline) and restructures how nodes feed
+into the [graph engine](graph-engine).
 
 ## Design Principles
 
@@ -80,27 +62,30 @@ The codebase already does file→node projection in several ways:
 2. **No depth control** — everything resolves fully or not at all
 3. **No expansion** — can't click to load more
 4. **No graph filtering** — can't show "just files" or "just issues"
-5. **No provider metadata** — `NodeSource` is a union type, not extensible
+5. **No provider metadata** — `NodeSource` is a union type in the [type system](type-system), not extensible
 
 ## Evolution Path
 
-### Crawl: Node Mapping + Provider Metadata
+### Crawl: [Node Mapping](spec-node-mapping) + Provider Metadata
 
 **Goal**: Define how files become nodes. Add provider attribution to existing nodes.
 
 See: `specs/providers/01-node-mapping.md`
 
-### Walk: Graph Store + File/Git Providers
+### Walk: [Graph Store](spec-graph-store) + File/Git Providers
 
 **Goal**: SQLite cache. Files and git as proper providers with depth limits.
 
 See: `specs/providers/02-graph-store.md`
 
-### Run: Views + On-Demand Expansion + External Providers
+### Run: [Views](spec-views) + On-Demand Expansion + External Providers
 
 **Goal**: Graph views as projections. Click-to-expand. Plugin providers.
 
 See: `specs/providers/03-views-and-expansion.md`
+
+This system evolves the loading strategy of the [KB loader](kb-loader) and extends
+[local mode](local-loader) with provider-based resolution.
 
 ## Spec Tree
 
@@ -112,3 +97,5 @@ specs/
 │   ├── 02-graph-store.md           ← SQLite cache + provider interface
 │   └── 03-views-and-expansion.md   ← graph views + on-demand + external
 ```
+
+Tracked by [#40](issue-40).

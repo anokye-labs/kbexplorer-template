@@ -4,9 +4,7 @@ title: "What is kbexplorer?"
 emoji: "Book"
 cluster: guide
 parent: "wiki-getting-started"
-connections:
-  - to: "overview"
-    description: "architecture overview"
+connections: []
 ---
 
 
@@ -31,3 +29,5 @@ The project synthesizes patterns from three knowledge explorer prototypes built 
 2. **Read and explore** — prose content with child nodes linked as cards below
 3. **Navigate the constellation** — the sidebar graph shows your position in the knowledge network, click nodes to jump
 4. **See connections** — every node shows its related nodes in the HUD's connections panel
+
+For the full technical architecture, see the [architecture overview](overview).

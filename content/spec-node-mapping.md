@@ -3,28 +3,14 @@ id: "spec-node-mapping"
 title: "Node Mapping — How Files Become Nodes"
 emoji: "Diagram"
 cluster: design
-connections:
-  - to: "spec-providers-overview"
-    description: "crawl phase of"
-  - to: "spec-graph-store"
-    description: "feeds mapped nodes into"
-  - to: "content-pipeline"
-    description: "extends file→node logic in"
-  - to: "graph-engine"
-    description: "changes how nodes are produced for"
-  - to: "type-system"
-    description: "adds display mode to KBNode in"
-  - to: "wiki-content-modes"
-    description: "generalizes content modes described in"
-  - to: "overview-view"
-    description: "adds display mode rendering to"
-  - to: "manifest-generator"
-    description: "adds nodemap.yaml reading to"
-  - to: "issue-41"
-    description: "tracked by"
+connections: []
 ---
 ---
 # Node Mapping — How Files Become Nodes
+
+This is the crawl phase of the [provider system](spec-providers-overview). It
+extends the file→node logic in the [content pipeline](content-pipeline) and
+generalizes the [content modes](wiki-content-modes).
 
 ## Problem
 
@@ -183,16 +169,20 @@ config.yaml                 nodemap.yaml
 
 1. **`parser.ts`**: Add `loadNodeMap()` function that reads `nodemap.yaml`
    and produces `KBNode[]` using the mapping modes
-2. **`KBNode`**: Add `display?: 'prose' | 'code' | 'file-list' | 'tree' | 'table' | 'diagram'`
+2. **`KBNode`**: Add `display?: 'prose' | 'code' | 'file-list' | 'tree' | 'table' | 'diagram'` to the [type system](type-system)
 3. **`ReadingView`**: Render content differently based on `display` mode
 4. **`config.yaml`**: Add optional `nodemap:` section (or standalone file)
+5. **[Manifest generator](manifest-generator)**: Read `nodemap.yaml` and produce mapped nodes
 
 ### What Stays the Same
 
 - Authored `content/*.md` files continue to work
 - `loadRepoContent()` continues to produce issue/tree/README nodes
-- `buildGraph()` is unchanged — it just receives more/different nodes
-- The graph store (future) will consume the same `KBNode[]` output
+- `buildGraph()` is unchanged — it just receives more/different nodes from the [graph engine](graph-engine)
+- The [graph store](spec-graph-store) (future) will consume the same `KBNode[]` output
+
+Display modes add rendering flexibility to the [overview view](overview-view) — each
+node type can present its content in the most natural format.
 
 ## Example: Applying to kbexplorer Itself
 
@@ -238,3 +228,5 @@ nodes:
     cluster: docs
     icon: Book
 ```
+
+Tracked by [#41](issue-41).

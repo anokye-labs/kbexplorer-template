@@ -3,22 +3,14 @@ id: "wiki-deep-dive"
 title: "Architecture Deep Dive"
 emoji: "Book"
 cluster: guide
-connections:
-  - to: "overview"
-    description: "explores"
-
-
-
-
-  - to: "wiki-infrastructure"
-    description: "covers"
+connections: []
 ---
 
 
 
 # Architecture Deep Dive
 
-kbexplorer's architecture has five major subsystems, each covered in detail below.
+kbexplorer's architecture, introduced in the [architecture overview](overview), has five major subsystems, each covered in detail below.
 
 ## [Data Pipeline](wiki-data-pipeline)
 
@@ -36,6 +28,6 @@ The persistent Heads-Up Display adapts between a horizontal bar (top/bottom dock
 
 Three themes (dark, light, sepia) via FluentProvider. All components inherit colors automatically. Sepia uses a custom amber brand ramp.
 
-## Infrastructure
+## [Infrastructure](wiki-infrastructure)
 
-Azure Static Web Apps deployment, cache versioning, SPA routing, and development conventions codified in AGENTS.md.
+See the [infrastructure documentation](wiki-infrastructure) for details on Azure Static Web Apps deployment, cache versioning, SPA routing, and development conventions codified in AGENTS.md.

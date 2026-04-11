@@ -3,32 +3,15 @@ id: "spec-typed-edges"
 title: "Typed Directional Edges — Rich Link System"
 emoji: "Flow"
 cluster: design
-connections:
-  - to: "spec-providers-overview"
-    description: "prerequisite for meaningful views in"
-  - to: "spec-views"
-    description: "enables edge filtering in"
-  - to: "spec-inline-link-extraction"
-    description: "classifies edges produced by"
-  - to: "spec-node-mapping"
-    description: "edge types vary by mapping mode in"
-  - to: "graph-engine"
-    description: "changes edge building in"
-  - to: "type-system"
-    description: "extends Connection/KBEdge types in"
-  - to: "hud"
-    description: "adds edge type filter controls to"
-  - to: "graph-network"
-    description: "adds directional rendering and strength-based layout to"
-  - to: "reading-view"
-    description: "groups related nodes by edge type in"
-  - to: "node-renderer"
-    description: "adds edge styling per type to"
-  - to: "issue-49"
-    description: "tracked by"
+connections: []
 ---
 
 # Typed Directional Edges — Rich Link System
+
+Typed edges are a prerequisite for meaningful [graph views](spec-views) in the
+[provider system](spec-providers-overview). They classify edges produced by
+[inline link extraction](spec-inline-link-extraction), and edge types vary by
+[node mapping](spec-node-mapping) mode.
 
 ## Problem
 
@@ -80,9 +63,9 @@ Edges are directional. `from → to` carries semantic meaning:
 - `A --references--> B`: A links to B
 - `A --derived_from--> B`: A was generated from file B
 
-The graph renderer should show direction via arrow heads or edge styling.
-Layout physics should respect direction — `contains` edges pull children
-toward parents.
+The [graph network](graph-network) renders direction via arrow heads and
+strength-based layout. The [node renderer](node-renderer) applies edge styling
+per type using the table above.
 
 ### Strength and Layout
 
@@ -96,6 +79,9 @@ Strength is directional — a `contains` edge pulls the child toward the parent
 more than vice versa.
 
 ## Extended Types
+
+This model extends the `Connection` and `KBEdge` interfaces in the
+[type system](type-system), changing edge building in the [graph engine](graph-engine).
 
 ```typescript
 interface Connection {
@@ -135,7 +121,7 @@ interface KBEdge {
 
 ## Runtime Filtering
 
-The UI provides edge type toggles in the HUD:
+The UI provides edge type toggles in the [HUD](hud):
 
 ```
 Edge Filters:
@@ -190,6 +176,10 @@ When a node is focused:
 - Update `issueToNode`: cross-refs get `type: 'cross_references'`
 - Default weights from the type table above
 
+In the [reading view](reading-view), related nodes are grouped by edge type —
+structural connections (contains, derived_from) are separated from reference
+connections (imports, references) for clarity.
+
 ### Phase 2: Render edge types
 
 - vis-network edge styling per type (color, dash, arrow)
@@ -201,3 +191,5 @@ When a node is focused:
 - Edge type toggles in HUD
 - Node removal when all edges hidden
 - Re-layout on filter change
+
+Tracked by [#49](issue-49).

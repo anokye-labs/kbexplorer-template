@@ -3,20 +3,12 @@ id: "reading-view"
 title: "Reading View"
 emoji: "Color"
 cluster: ui
-connections:
-  - to: "visual-system"
-    description: "renders NodeVisual"
-  - to: "app-shell"
-    description: "routed by"
-  - to: "type-system"
-    description: "imports KBGraph, KBConfig"
-  - to: "style-system"
-    description: "prose CSS from reading.css"
+connections: []
 ---
 
 # Reading View
 
-The Reading View exists because a knowledge graph is only useful if you can *read* the underlying content. While the HUD and graph visualisations show relationships, the Reading View is where users actually consume prose, browse child nodes, and orient themselves within a cluster. It turns the raw `node.content` HTML into a styled, navigable reading experience.
+The Reading View exists because a knowledge graph is only useful if you can *read* the underlying content. While the HUD and graph visualisations show relationships, the Reading View is where users actually consume prose, browse child nodes, and orient themselves within a cluster. Routed by the [app shell](app-shell), it turns the raw `node.content` HTML into a styled, navigable reading experience.
 
 ## At a Glance
 
@@ -86,11 +78,11 @@ flowchart TB
 
 ## Node Lookup and Not-Found Fallback
 
-The component performs a simple linear search through `graph.nodes` at [src/views/ReadingView.tsx:136](https://github.com/anokye-labs/kbexplorer/blob/main/src/views/ReadingView.tsx#L136). When no node matches, a full-viewport not-found screen renders with a 🔍 emoji, an explanatory caption, and a Home button linking back to `#/` ([src/views/ReadingView.tsx:138-151](https://github.com/anokye-labs/kbexplorer/blob/main/src/views/ReadingView.tsx#L138)).
+The component performs a simple linear search through the [`KBGraph`](type-system) nodes array at [src/views/ReadingView.tsx:136](https://github.com/anokye-labs/kbexplorer/blob/main/src/views/ReadingView.tsx#L136). When no node matches, a full-viewport not-found screen renders with a 🔍 emoji, an explanatory caption, and a Home button linking back to `#/` ([src/views/ReadingView.tsx:138-151](https://github.com/anokye-labs/kbexplorer/blob/main/src/views/ReadingView.tsx#L138)).
 
 ## Hero Image Rendering
 
-When the visual mode is `'heroes'` and the node has an `image` property, a full-bleed `NodeVisual` renders in `surface="hero"` mode at [src/views/ReadingView.tsx:162-164](https://github.com/anokye-labs/kbexplorer/blob/main/src/views/ReadingView.tsx#L162). The header shifts upward with a negative margin (`-8rem`) via the `headerHero` class to overlap the hero image.
+When the visual mode is `'heroes'` and the node has an `image` property, a full-bleed [`NodeVisual`](visual-system) renders in `surface="hero"` mode at [src/views/ReadingView.tsx:162-164](https://github.com/anokye-labs/kbexplorer/blob/main/src/views/ReadingView.tsx#L162). The header shifts upward with a negative margin (`-8rem`) via the `headerHero` class to overlap the hero image.
 
 ## Header
 
@@ -104,7 +96,7 @@ The header section at [src/views/ReadingView.tsx:174-187](https://github.com/ano
 
 ## Prose Body
 
-The node's pre-rendered HTML is injected via `dangerouslySetInnerHTML` at [src/views/ReadingView.tsx:192](https://github.com/anokye-labs/kbexplorer/blob/main/src/views/ReadingView.tsx#L192). The wrapper `<div>` carries the `.kb-prose` CSS class which provides the full Fluent 2 typography treatment from `reading.css`.
+The node's pre-rendered HTML is injected via `dangerouslySetInnerHTML` at [src/views/ReadingView.tsx:192](https://github.com/anokye-labs/kbexplorer/blob/main/src/views/ReadingView.tsx#L192). The wrapper `<div>` carries the `.kb-prose` CSS class which provides the full Fluent 2 typography treatment from the [style system](style-system)'s `reading.css`.
 
 ## Child Node Listing
 

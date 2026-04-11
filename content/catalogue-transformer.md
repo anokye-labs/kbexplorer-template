@@ -3,16 +3,12 @@ id: "catalogue-transformer"
 title: "Catalogue Transformer"
 emoji: "Wrench"
 cluster: infra
-connections:
-  - to: "content-pipeline"
-    description: "generates input for"
-  - to: "manifest-generator"
-    description: "output feeds into"
+connections: []
 ---
 
 # Catalogue Transformer
 
-The catalogue transformer exists to bridge the gap between the kb-architect agent (which produces a structured JSON catalogue describing a knowledge base's topology) and kbexplorer's content format (individual `.md` files with YAML frontmatter). It automates the creation of `config.yaml` and per-node skeleton files, allowing an AI agent to design a knowledge base structure and a human or another agent to fill in the content.
+The catalogue transformer exists to bridge the gap between the kb-architect agent (which produces a structured JSON catalogue describing a knowledge base's topology) and kbexplorer's content format (individual `.md` files with YAML frontmatter). It automates the creation of `config.yaml` and per-node skeleton files, generating input for the [content pipeline](content-pipeline). These files are later consumed by the [manifest generator](manifest-generator) for local-mode builds.
 
 ## At a Glance
 

@@ -3,28 +3,15 @@ id: "spec-views"
 title: "Views, Expansion, and External Providers"
 emoji: "Eye"
 cluster: design
-connections:
-  - to: "spec-providers-overview"
-    description: "run phase of"
-  - to: "spec-graph-store"
-    description: "queries graph store from"
-  - to: "overview-view"
-    description: "replaces single view with projections in"
-  - to: "graph-network"
-    description: "adds view-filtered rendering to"
-  - to: "graph-engine"
-    description: "adds view projection layer above"
-  - to: "github-api"
-    description: "moves into GitHub provider from"
-  - to: "issue-43"
-    description: "GitHub provider tracked by"
-  - to: "issue-44"
-    description: "views tracked by"
-  - to: "issue-45"
-    description: "external providers tracked by"
+connections: []
 ---
 ---
 # Views, On-Demand Expansion, and External Providers
+
+This is the run phase of the [provider system](spec-providers-overview). Views
+query the [graph store](spec-graph-store) and add a projection layer above the
+[graph engine](graph-engine), replacing the single [overview view](overview-view)
+with configurable projections.
 
 ## Graph Views
 
@@ -78,7 +65,9 @@ views:
 ### UI
 
 A view selector in the [HUD — Heads-Up Display](hud) lets the user switch between views.
-Each view re-filters the graph from the store — no re-fetching needed.
+Each view re-filters the graph from the store — no re-fetching needed. The
+[graph network](graph-network) adds view-filtered rendering so the canvas
+updates instantly on view switch.
 
 ## On-Demand Expansion
 
@@ -164,3 +153,9 @@ providers:
 - External providers are on-demand only (no pre-resolution by default)
 - They must return `ProviderResult` format
 - They run after all built-in providers
+
+The [GitHub API](github-api) moves into a dedicated GitHub provider as one of
+the first external-style integrations.
+
+Tracked by [#43](issue-43) (GitHub provider), [#44](issue-44) (views),
+[#45](issue-45) (external providers).

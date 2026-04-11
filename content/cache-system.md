@@ -3,11 +3,7 @@ id: "cache-system"
 title: "Cache & Versioning"
 emoji: "Settings"
 cluster: infra
-connections:
-  - to: "github-api"
-    description: "caches responses for"
-  - to: "content-pipeline"
-    description: "invalidates when pipeline changes"
+connections: []
 ---
 
 
@@ -17,13 +13,13 @@ The caching system prevents redundant GitHub API calls and protects against stal
 
 ## How It Works
 
-All API responses are stored in `localStorage` under the `kbe:` prefix with a 5-minute TTL. On each fetch, the client checks for a cached entry — if present and fresh, it's returned without hitting the network.
+All [GitHub API](github-api) responses are stored in `localStorage` under the `kbe:` prefix with a 5-minute TTL. On each fetch, the client checks for a cached entry — if present and fresh, it's returned without hitting the network.
 
 ## Version Invalidation
 
 A `CACHE_VERSION` constant at the top of `src/api/github.ts` acts as a schema version for cached data. On app load, the stored version is compared to the current constant. If they differ, **all** `kbe:` prefixed localStorage keys are cleared.
 
-This is critical because changes to the parsing logic (e.g., adding file nodes, fixing UTF-8 encoding, changing connection algorithms) produce incompatible cached data. Without versioning, users see broken renders that only clear with manual "Clear site data."
+This is critical because changes to the [content pipeline](content-pipeline)'s parsing logic (e.g., adding file nodes, fixing UTF-8 encoding, changing connection algorithms) produce incompatible cached data. Without versioning, users see broken renders that only clear with manual "Clear site data."
 
 ### Rule
 

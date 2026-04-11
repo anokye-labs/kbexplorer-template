@@ -3,27 +3,7 @@ id: "spec-inline-link-extraction"
 title: "Inline Link Extraction — Connections from Content"
 emoji: "Link"
 cluster: design
-connections:
-  - to: "spec-providers-overview"
-    description: "changes how edges are produced in"
-  - to: "spec-node-mapping"
-    description: "interacts with 1-to-N splitting in"
-  - to: "spec-graph-store"
-    description: "populates edges in"
-  - to: "spec-views"
-    description: "provides richer edge data for"
-  - to: "spec-link-assessment"
-    description: "redefines what 'missing reference' means for"
-  - to: "spec-multi-layer-identity"
-    description: "inline links create cross-identity edges for"
-
-
-  - to: "type-system"
-    description: "adds edge source location to types in"
-  - to: "reading-view"
-    description: "inline links become clickable graph navigation in"
-  - to: "issue-48"
-    description: "tracked by"
+connections: []
 ---
 
 # Inline Link Extraction — Connections from Content
@@ -54,6 +34,9 @@ that's already a link — why redeclare it in frontmatter? Worse:
 **Inline links ARE the graph edges.** The system should extract connections
 from content automatically. Frontmatter connections are only for relationships
 that have no inline expression in the body.
+
+This changes how edges are produced in the [provider system](spec-providers-overview)
+and populates edges directly into the [graph store](spec-graph-store).
 
 ## Link Types by File Format
 
@@ -114,7 +97,7 @@ Already implicit in the file tree — `src/engine/graph.ts` is contained by
 
 ## Edge Source: Inline vs Document-Level
 
-Edges have a source type indicating where they came from:
+Edges have a source type — extending the [type system](type-system) — indicating where they came from:
 
 ```typescript
 interface GraphEdge {
@@ -129,6 +112,9 @@ interface GraphEdge {
   };
 }
 ```
+
+Inline links also create cross-identity edges when the same entity has
+representations from multiple providers (see [multi-layer identity](spec-multi-layer-identity)).
 
 | Source | Meaning | When to Use |
 |--------|---------|------------|
@@ -147,8 +133,9 @@ Frontmatter `connections:` becomes **optional and supplementary**:
 - **Frontmatter connections are document-level** — they belong to the node as a
   whole, not to a specific section
 
-Over time, most connections should be inline. Frontmatter connections indicate
-a relationship that the author chose not to express in the prose.
+Over time, most connections should be inline. This also provides richer edge
+data for [graph views](spec-views). Frontmatter connections indicate a
+relationship that the author chose not to express in the prose.
 
 ## Impact on 1-to-N Splitting
 
@@ -168,11 +155,12 @@ Splits into:
 - **Section "Data Flow"**: edge to `content-pipeline` (from line in this section)
 
 This is why inline links are superior — they naturally partition when the
-document is split. Frontmatter connections would all stay on the parent.
+document is split per the [node mapping](spec-node-mapping) rules. Frontmatter connections
+would all stay on the parent.
 
 ## Impact on Link Assessment
 
-The `links` command changes meaning:
+The `links` command ([link assessment](spec-link-assessment)) changes meaning:
 
 - **"Missing cross-reference"** no longer means "body mentions but frontmatter doesn't declare."
   Instead it means "body mentions a concept but doesn't have an actual link to it."
@@ -188,6 +176,9 @@ The `links` command changes meaning:
 In `parser.ts`, after parsing markdown, scan for `[text](target)` and add
 to connections alongside frontmatter connections. Deduplicate.
 
+In the [reading view](reading-view), inline links become clickable graph navigation —
+selecting a link navigates the graph to the target node.
+
 ### Phase 2: Issue Reference Extraction
 
 Already partially exists (`extractIssueRefs`). Formalize as inline edges
@@ -201,3 +192,5 @@ and create `imports` edges.
 ### Phase 4: Location Tracking
 
 Add `location` to edges so they survive 1-to-N splitting correctly.
+
+Tracked by [#48](issue-48).

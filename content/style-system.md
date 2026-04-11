@@ -3,19 +3,12 @@ id: "style-system"
 title: "CSS Style System"
 emoji: "PaintBrush"
 cluster: visual
-connections:
-  - to: "reading-view"
-    description: "prose styles for"
-  - to: "visual-system"
-    description: "visual identity CSS for"
-
-  - to: "theme-system"
-    description: "uses CSS custom properties from Fluent tokens"
+connections: []
 ---
 
 # CSS Style System
 
-The CSS style system exists to bridge the gap between Fluent UI's component-level styling (via `makeStyles` and tokens) and the parts of the app that render raw HTML — particularly the prose body from `dangerouslySetInnerHTML`. These stylesheets ensure that markdown-generated content, hero images, visual thumbnails, and responsive breakpoints all follow Fluent 2 design language without requiring JS-in-CSS for every element.
+The CSS style system exists to bridge the gap between Fluent UI's component-level styling (via `makeStyles` and tokens) and the parts of the app that render raw HTML — particularly the [reading view](reading-view)'s prose body from `dangerouslySetInnerHTML`. These stylesheets ensure that markdown-generated content, hero images, [visual](visual-system) thumbnails, and responsive breakpoints all follow Fluent 2 design language without requiring JS-in-CSS for every element.
 
 ## At a Glance
 
@@ -84,7 +77,7 @@ The `.kb-prose` class at [src/styles/reading.css:3-8](https://github.com/anokye-
 | `a` | `colorBrandForegroundLink` + underline | [line 109](https://github.com/anokye-labs/kbexplorer/blob/main/src/styles/reading.css#L109) |
 | `table` | `colorNeutralStroke2` borders, `colorNeutralBackground3` headers | [line 125](https://github.com/anokye-labs/kbexplorer/blob/main/src/styles/reading.css#L125) |
 
-Font size and max width are controlled via CSS custom properties `--prose-font-size` and `--prose-max-width`, allowing the HUD reading tools to adjust them in real time.
+Font size and max width are controlled via CSS custom properties fed by Fluent tokens from the [theme system](theme-system), allowing the HUD reading tools to adjust them in real time.
 
 ## .kb-hero (visuals.css)
 

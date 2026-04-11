@@ -3,18 +3,12 @@ id: "vite-config"
 title: "Vite Configuration"
 emoji: "Settings"
 cluster: infra
-connections:
-  - to: "manifest-generator"
-    description: "triggers on local build"
-  - to: "build-scripts"
-    description: "launched by"
-  - to: "local-loader"
-    description: "enables via VITE_KB_LOCAL"
+connections: []
 ---
 
 # Vite Configuration
 
-The Vite configuration exists to handle two concerns that go beyond a standard React SPA setup: (1) loading environment variables from a configurable directory (critical for submodule mode where `.env.kbexplorer` lives in the host repo), and (2) supporting a configurable base path for subpath deployments on static hosting services.
+Launched by the [build scripts](build-scripts), the Vite configuration handles two concerns that go beyond a standard React SPA setup: (1) loading environment variables from a configurable directory (critical for submodule mode where `.env.kbexplorer` lives in the host repo), and (2) supporting a configurable base path for subpath deployments on static hosting services.
 
 ## At a Glance
 
@@ -90,4 +84,4 @@ export default defineConfig({
 
 ## Why envDir Matters
 
-Without `envDir`, Vite looks for `.env.kbexplorer` in the project root (the kbexplorer directory). In submodule mode, the init script writes `.env.kbexplorer` to the **host** repo root. The build/dev scripts pass `VITE_ENV_DIR=hostRoot` so Vite discovers the env file correctly. This chain — `init.js` → `.env.kbexplorer` → `build.js` → `VITE_ENV_DIR` → `vite.config.ts` — enables zero-copy env file resolution across the submodule boundary.
+Without `envDir`, Vite looks for `.env.kbexplorer` in the project root (the kbexplorer directory). In submodule mode, the init script writes `.env.kbexplorer` to the **host** repo root. The build/dev scripts pass `VITE_ENV_DIR=hostRoot` so Vite discovers the env file correctly. This chain — `init.js` → `.env.kbexplorer` → `build.js` → `VITE_ENV_DIR` → `vite.config.ts` — enables zero-copy env file resolution across the submodule boundary. In local mode, the build triggers the [manifest generator](manifest-generator) to snapshot repository data. The `VITE_KB_LOCAL` environment variable, loaded through `envDir`, enables the [local loader](local-loader) to bypass API calls entirely.

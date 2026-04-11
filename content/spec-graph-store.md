@@ -3,36 +3,15 @@ id: "spec-graph-store"
 title: "Graph Store + Provider Interface"
 emoji: "Database"
 cluster: design
-connections:
-  - to: "spec-providers-overview"
-    description: "walk phase of"
-  - to: "spec-node-mapping"
-    description: "persists nodes from"
-  - to: "spec-views"
-    description: "enables view projections in"
-  - to: "local-loader"
-    description: "replaces manifest loading in"
-  - to: "cache-system"
-    description: "supersedes localStorage caching in"
-  - to: "manifest-generator"
-    description: "replaces manifest file with SQLite in"
-  - to: "type-system"
-    description: "extends GraphNode/GraphEdge types in"
-  - to: "graph-engine"
-    description: "wraps graph building with cache layer around"
-  - to: "github-api"
-    description: "moves API calls into GitHub provider from"
-  - to: "content-pipeline"
-    description: "refactors into providers the logic in"
-  - to: "issue-42"
-    description: "tracked by"
+connections: []
 ---
 ---
 # Graph Store + Provider Interface
 
 ## Problem
 
-After node mapping (spec 01) gives us flexible file→node projection,
+This is the walk phase of the [provider system](spec-providers-overview).
+After [node mapping](spec-node-mapping) gives us flexible file→node projection,
 we need:
 
 1. A **persistent cache** so nodes don't need to be re-derived every time
@@ -47,6 +26,9 @@ we need:
 
 SQLite database at `.kbexplorer/graph.db` (gitignored). Append-only with
 provider attribution. Each node/edge records who created it and when.
+
+The store extends the `GraphNode` and `GraphEdge` interfaces from the
+[type system](type-system) with provider attribution and persistence.
 
 ```sql
 CREATE TABLE nodes (
@@ -98,6 +80,9 @@ CREATE TABLE expandable (
   PRIMARY KEY (node_id, provider)
 );
 ```
+
+This enables [view projections](spec-views) — filtering and grouping the
+graph by provider, node type, or edge type.
 
 ### Provider Interface
 
@@ -152,7 +137,9 @@ Layer 3: projection (after all others)
 
 ### Storage Notes
 
-**Why SQLite**: Zero install, queryable, file-based, well-understood.
+**Why SQLite**: Zero install, queryable, file-based, well-understood. It
+supersedes the [localStorage cache](cache-system) and replaces the
+[manifest file](manifest-generator) with a queryable store.
 Schema designed so it could migrate to Dolt (versioned SQL) later
 if graph-state diffing becomes valuable. The key Dolt insight is the
 `resolved_at` / `provider_state` tracking — this gives us cache
@@ -164,7 +151,9 @@ Individual nodes have `expires_at` for time-based expiry.
 
 ### Transition Path
 
-The graph store wraps around the existing pipeline:
+The graph store wraps around the existing pipeline, replacing the
+[local loader](local-loader) and adding a cache layer around the
+[graph engine](graph-engine):
 
 ```
 Current:
@@ -177,4 +166,7 @@ With store:
 
 The store is a caching layer. Providers populate it. The UI reads from it.
 The existing `parser.ts` functions become the internals of the files/authored
-providers.
+providers, refactoring the logic currently in the [content pipeline](content-pipeline).
+[GitHub API](github-api) calls move into a dedicated GitHub provider.
+
+Tracked by [#42](issue-42).
