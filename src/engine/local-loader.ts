@@ -155,6 +155,17 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
     }
     readmeConns.push({ to: 'repo-root', description: 'Documents' });
 
+    // Extract inline markdown links from README body: [text](target)
+    const readmeConnectedTo = new Set(readmeConns.map(c => c.to));
+    for (const m of readme.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)) {
+      const target = m[2].trim();
+      if (target.startsWith('http') || target.startsWith('#') || target.startsWith('/')) continue;
+      if (target.match(/\.(png|jpg|jpeg|gif|svg|webp|md)$/i)) continue;
+      if (readmeConnectedTo.has(target)) continue;
+      readmeConns.push({ to: target, description: m[1] });
+      readmeConnectedTo.add(target);
+    }
+
     const html = marked.parse(readme, { async: false }) as string;
     nodes.push({
       id: 'readme', title: 'README', cluster: 'docs',
