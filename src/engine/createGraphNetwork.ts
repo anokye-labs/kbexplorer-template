@@ -48,10 +48,17 @@ export interface BuildVisNodeOptions {
   opacity?: number;
   showLabel?: boolean;
   flagDisconnected?: boolean;
+  keyNodeIds?: Set<string>;
 }
 
-/** Important node IDs that get a size boost. */
-const KEY_NODE_IDS = new Set(['readme', 'repo-root', 'overview', 'wiki-getting-started', 'wiki-deep-dive']);
+/**
+ * Compute important node IDs dynamically — top nodes by degree in the
+ * current graph get a size boost. Works across any layer filter.
+ */
+function computeKeyNodes(degrees: Map<string, number>, count: number = 8): Set<string> {
+  const sorted = [...degrees.entries()].sort((a, b) => b[1] - a[1]);
+  return new Set(sorted.slice(0, count).filter(([, d]) => d >= 2).map(([id]) => id));
+}
 
 /** Build a single vis-network node config using the custom renderer. */
 export function buildVisNode(
@@ -63,7 +70,7 @@ export function buildVisNode(
   const maxLen = options.labelMaxLength ?? 25;
 
   const deg = options.degrees.get(node.id) ?? 0;
-  const isKey = KEY_NODE_IDS.has(node.id);
+  const isKey = options.keyNodeIds?.has(node.id) ?? false;
   const baseSize = isKey ? minSize * 1.5 : minSize;
   const size = Math.min(baseSize + deg * step, isKey ? maxSize * 1.4 : maxSize);
   const color = options.clusterColorMap.get(node.cluster) ?? '#9A8A78';
@@ -107,28 +114,38 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
 
   const degrees = getNodeDegrees(graph);
   const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
+  const keyNodeIds = computeKeyNodes(degrees);
 
   // Build set of emphasized node IDs (current + direct neighbors)
+  // Skip emphasis if the target node isn't in this graph (e.g. layer filtered out)
+  const nodeIdSet = new Set(graph.nodes.map(n => n.id));
+  const effectiveEmphasis = emphasizeNodeId && nodeIdSet.has(emphasizeNodeId) ? emphasizeNodeId : null;
   const emphasizedIds = new Set<string>();
-  if (emphasizeNodeId) {
-    emphasizedIds.add(emphasizeNodeId);
+  if (effectiveEmphasis) {
+    emphasizedIds.add(effectiveEmphasis);
     for (const edge of graph.edges) {
-      if (edge.from === emphasizeNodeId) emphasizedIds.add(edge.to);
-      if (edge.to === emphasizeNodeId) emphasizedIds.add(edge.from);
+      if (edge.from === effectiveEmphasis) emphasizedIds.add(edge.to);
+      if (edge.to === effectiveEmphasis) emphasizedIds.add(edge.from);
     }
   }
 
+  // Soften emphasis for small graphs — show more context when fewer nodes
+  const nodeCount = graph.nodes.length;
+  const fadedOpacity = nodeCount < 30 ? 0.5 : nodeCount < 60 ? 0.3 : 0.15;
+  const fadedSizeScale = nodeCount < 30 ? 0.85 : nodeCount < 60 ? 0.7 : 0.6;
+  const showFadedLabels = nodeCount < 40;
+
   const nodeData = graph.nodes.map(n => {
-    const faded = emphasizeNodeId && !emphasizedIds.has(n.id);
+    const faded = effectiveEmphasis && !emphasizedIds.has(n.id);
     const sizeRange: [number, number] = faded
-      ? [nodeSizeRange[0] * 0.6, nodeSizeRange[1] * 0.6]
+      ? [nodeSizeRange[0] * fadedSizeScale, nodeSizeRange[1] * fadedSizeScale]
       : nodeSizeRange;
     return buildVisNode(n, {
-      degrees, clusterColorMap, isDark,
+      degrees, clusterColorMap, isDark, keyNodeIds,
       nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
       flagDisconnected: true,
-      opacity: faded ? 0.15 : undefined,
-      showLabel: !faded,
+      opacity: faded ? fadedOpacity : undefined,
+      showLabel: faded ? showFadedLabels : true,
     });
   });
 
@@ -140,8 +157,8 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const baseSpringLength = 250;
   const edgeData = graph.edges.map((e, i) => {
     const style = edgeStyle(e.type);
-    const faded = emphasizeNodeId && !emphasizedIds.has(e.from) && !emphasizedIds.has(e.to);
-    const nearFaded = emphasizeNodeId && !(emphasizedIds.has(e.from) && emphasizedIds.has(e.to));
+    const faded = effectiveEmphasis && !emphasizedIds.has(e.from) && !emphasizedIds.has(e.to);
+    const nearFaded = effectiveEmphasis && !(emphasizedIds.has(e.from) && emphasizedIds.has(e.to));
     return {
       id: `e${i}`,
       from: e.from,
@@ -166,28 +183,30 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
 
   /** Dynamically update neighborhood emphasis without rebuilding the network. */
   const setEmphasis = (nodeId: string | null) => {
+    // Skip emphasis if target node isn't in this graph
+    const active = nodeId && nodeIdSet.has(nodeId) ? nodeId : null;
     const newEmphasized = new Set<string>();
-    if (nodeId) {
-      newEmphasized.add(nodeId);
+    if (active) {
+      newEmphasized.add(active);
       for (const edge of graph.edges) {
-        if (edge.from === nodeId) newEmphasized.add(edge.to);
-        if (edge.to === nodeId) newEmphasized.add(edge.from);
+        if (edge.from === active) newEmphasized.add(edge.to);
+        if (edge.to === active) newEmphasized.add(edge.from);
       }
     }
 
     // Update nodes
     const nodeUpdates: Record<string, unknown>[] = [];
     for (const n of graph.nodes) {
-      const faded = nodeId && !newEmphasized.has(n.id);
+      const faded = active && !newEmphasized.has(n.id);
       const sizeRange: [number, number] = faded
-        ? [nodeSizeRange[0] * 0.6, nodeSizeRange[1] * 0.6]
+        ? [nodeSizeRange[0] * fadedSizeScale, nodeSizeRange[1] * fadedSizeScale]
         : nodeSizeRange;
       nodeUpdates.push(buildVisNode(n, {
-        degrees, clusterColorMap, isDark,
+        degrees, clusterColorMap, isDark, keyNodeIds,
         nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
         flagDisconnected: true,
-        opacity: faded ? 0.15 : undefined,
-        showLabel: !faded,
+        opacity: faded ? fadedOpacity : undefined,
+        showLabel: faded ? showFadedLabels : true,
       }));
     }
     nodes.update(nodeUpdates);
@@ -197,11 +216,11 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     for (const ei of edgesByIndex) {
       const style = edgeStyle(ei.type);
       const bothIn = newEmphasized.has(ei.from) && newEmphasized.has(ei.to);
-      const neitherIn = nodeId && !newEmphasized.has(ei.from) && !newEmphasized.has(ei.to);
+      const neitherIn = active && !newEmphasized.has(ei.from) && !newEmphasized.has(ei.to);
       edgeUpdates.push({
         id: ei.id,
         color: {
-          color: neitherIn ? EDGE_FADED_COLOR : !bothIn && nodeId ? 'rgba(80,80,80,0.25)' : style.color,
+          color: neitherIn ? EDGE_FADED_COLOR : !bothIn && active ? 'rgba(80,80,80,0.25)' : style.color,
           hover: style.color,
           highlight: style.color,
         },
