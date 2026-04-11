@@ -545,7 +545,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
         window.location.hash = `/node/${encodeURIComponent(id)}`;
       },
       focusNodeId: currentNodeId,
-      fitOnStabilize: !currentNodeId,
+      fitOnStabilize: !currentNodeId || filteredGraph.nodes.length < 60,
       emphasizeNodeId: currentNodeId,
       interactive: true,
     });
@@ -591,7 +591,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
           window.location.hash = `/node/${encodeURIComponent(id)}`;
         },
         focusNodeId: currentNodeId,
-        fitOnStabilize: !currentNodeId,
+        fitOnStabilize: !currentNodeId || filteredGraph.nodes.length < 60,
         emphasizeNodeId: currentNodeId,
         interactive: true,
         nodeSizeRange: [28, 44],

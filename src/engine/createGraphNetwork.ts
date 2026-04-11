@@ -363,13 +363,21 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       }
     });
 
-    // Initial view: focus on node (clamped) or fit all
-    if (focusNodeId && nodes.get(focusNodeId)) {
+    // Initial view: fit all (when requested) or focus on a specific node
+    if (fitOnStabilize) {
+      network.fit({
+        animation: { duration: 50, easingFunction: 'easeInOutQuad' },
+        maxZoomLevel: 2.0,
+      });
+      if (focusNodeId && nodes.get(focusNodeId)) {
+        network.selectNodes([focusNodeId]);
+      }
+    } else if (focusNodeId && nodes.get(focusNodeId)) {
       network.fit({ animation: false });
       network.selectNodes([focusNodeId]);
       const pos = allPositions[focusNodeId] as { x: number; y: number } | undefined;
       if (pos) {
-        const scale = interactive ? 1.0 : 1.0;
+        const scale = 1.0;
         const target = clamp(pos.x, pos.y, scale);
         network.moveTo({
           position: target,
@@ -377,11 +385,6 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
           animation: { duration: 50, easingFunction: 'easeInOutQuad' },
         });
       }
-    } else if (fitOnStabilize) {
-      network.fit({
-        animation: { duration: 50, easingFunction: 'easeInOutQuad' },
-        maxZoomLevel: 2.0,
-      });
     }
   });
 
