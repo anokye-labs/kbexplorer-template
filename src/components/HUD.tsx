@@ -28,7 +28,7 @@ import {
   BookRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme, EdgeType, NodeLayer } from '../types';
-import { EDGE_TYPE_STYLES, NODE_LAYER_META, getNodeLayer } from '../types';
+import { EDGE_TYPE_STYLES, NODE_LAYER_META, filterGraphToLayer } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
 import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
@@ -279,12 +279,12 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const [mapSplit, setMapSplit] = useState(() => readPersisted('kbe-map-split', 50));
   const [sidebarZoom, setSidebarZoom] = useState(180);
   const [overlayZoom, setOverlayZoom] = useState(100);
-  const [activeLayers, setActiveLayers] = useState<Set<NodeLayer>>(() => {
+  const [activeLayer, setActiveLayer] = useState<NodeLayer | 'all'>(() => {
     try {
-      const stored = localStorage.getItem('kbe-layers');
-      if (stored) return new Set(JSON.parse(stored) as NodeLayer[]);
+      const stored = localStorage.getItem('kbe-layer');
+      if (stored && ['file', 'content', 'work', 'all'].includes(stored)) return stored as NodeLayer | 'all';
     } catch { /* ignore */ }
-    return new Set<NodeLayer>(['file', 'content', 'work']);
+    return 'all';
   });
   const resizeRef = useRef<{ startX: number; startW: number } | null>(null);
   const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
@@ -353,34 +353,16 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     document.addEventListener('pointerup', onUp);
   }, [mapSplit]);
 
-  const toggleLayer = useCallback((layer: NodeLayer) => {
-    setActiveLayers(prev => {
-      const next = new Set(prev);
-      if (next.has(layer)) { if (next.size > 1) next.delete(layer); } // keep at least one
-      else next.add(layer);
-      try { localStorage.setItem('kbe-layers', JSON.stringify([...next])); } catch { /* */ }
-      return next;
-    });
+  const selectLayer = useCallback((layer: NodeLayer | 'all') => {
+    setActiveLayer(layer);
+    try { localStorage.setItem('kbe-layer', layer); } catch { /* */ }
   }, []);
 
-  // Filter graph to only active layers
+  // Filter graph to the active layer view
   const filteredGraph = React.useMemo<KBGraph>(() => {
-    if (activeLayers.size === 3) return graph; // all layers on — no filter needed
-    const visibleIds = new Set<string>();
-    const nodes = graph.nodes.filter(n => {
-      const layer = getNodeLayer(n);
-      if (activeLayers.has(layer)) { visibleIds.add(n.id); return true; }
-      return false;
-    });
-    const edges = graph.edges.filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
-    // Recompute related for filtered graph
-    const related: Record<string, string[]> = {};
-    for (const id of visibleIds) {
-      const r = (graph.related[id] ?? []).filter(rid => visibleIds.has(rid));
-      if (r.length > 0) related[id] = r;
-    }
-    return { nodes, edges, clusters: graph.clusters, related };
-  }, [graph, activeLayers]);
+    if (activeLayer === 'all') return graph;
+    return filterGraphToLayer(graph, activeLayer);
+  }, [graph, activeLayer]);
 
   const currentNode = currentNodeId
     ? filteredGraph.nodes.find(n => n.id === currentNodeId) ?? graph.nodes.find(n => n.id === currentNodeId) ?? null
@@ -767,6 +749,34 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 aria-label="Close"
               />
             </div>
+            {/* Layer view selector in overlay */}
+            <div style={{
+              position: 'absolute', top: 12, left: 12, zIndex: 10,
+              display: 'flex', gap: 4,
+            }}>
+              {([['all', { label: 'All', color: tokens.colorNeutralForeground1 }], ...Object.entries(NODE_LAYER_META)] as [NodeLayer | 'all', { label: string; color: string }][]).map(([layer, meta]) => {
+                const active = activeLayer === layer;
+                return (
+                  <button
+                    key={layer}
+                    onClick={() => selectLayer(layer)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      padding: '4px 12px', fontSize: 12, fontWeight: 500,
+                      border: `1px solid ${active ? meta.color : tokens.colorNeutralStroke2}`,
+                      borderRadius: 14, cursor: 'pointer',
+                      background: active ? (layer === 'all' ? tokens.colorNeutralBackground3 : meta.color + '22') : tokens.colorNeutralBackground1,
+                      color: active ? meta.color : tokens.colorNeutralForeground3,
+                      opacity: active ? 1 : 0.6,
+                    }}
+                    title={`${meta.label} view`}
+                  >
+                    {layer !== 'all' && <span style={{ width: 7, height: 7, borderRadius: '50%', background: meta.color, opacity: active ? 1 : 0.3 }} />}
+                    {meta.label}
+                  </button>
+                );
+              })}
+            </div>
             <Card size="small" style={{ position: 'absolute', bottom: 16, left: 16, zIndex: 10 }}>
               <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
               {activeClusters.map(c => (
@@ -885,29 +895,29 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     ref={sidebarGraphRef}
                     style={{ width: '100%', height: '100%' }}
                   />
-                  {/* Layer toggles */}
+                  {/* Layer view selector */}
                   <div style={{
                     position: 'absolute', top: 6, left: 8, right: 68, zIndex: 6,
-                    display: 'flex', gap: 4, flexWrap: 'wrap',
+                    display: 'flex', gap: 3, flexWrap: 'wrap',
                   }}>
-                    {(Object.entries(NODE_LAYER_META) as [NodeLayer, { label: string; color: string }][]).map(([layer, meta]) => {
-                      const active = activeLayers.has(layer);
+                    {([['all', { label: 'All', color: tokens.colorNeutralForeground1 }], ...Object.entries(NODE_LAYER_META)] as [NodeLayer | 'all', { label: string; color: string }][]).map(([layer, meta]) => {
+                      const active = activeLayer === layer;
                       return (
                         <button
                           key={layer}
-                          onClick={() => toggleLayer(layer)}
+                          onClick={() => selectLayer(layer)}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 4,
                             padding: '2px 8px', fontSize: 10, fontWeight: 500,
                             border: `1px solid ${active ? meta.color : tokens.colorNeutralStroke2}`,
                             borderRadius: 12, cursor: 'pointer',
-                            background: active ? meta.color + '22' : 'transparent',
+                            background: active ? (layer === 'all' ? tokens.colorNeutralBackground3 : meta.color + '22') : 'transparent',
                             color: active ? meta.color : tokens.colorNeutralForeground3,
                             opacity: active ? 1 : 0.5,
                           }}
-                          title={`${active ? 'Hide' : 'Show'} ${meta.label.toLowerCase()} layer`}
+                          title={`${meta.label} view`}
                         >
-                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.color, opacity: active ? 1 : 0.3 }} />
+                          {layer !== 'all' && <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.color, opacity: active ? 1 : 0.3 }} />}
                           {meta.label}
                         </button>
                       );

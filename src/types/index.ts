@@ -83,6 +83,69 @@ export function getNodeLayer(node: KBNode): NodeLayer {
   return 'file';
 }
 
+/** Check if a file node is a redundant content/ tree entry (has an authored counterpart). */
+export function isContentTreeNode(node: KBNode): boolean {
+  if (node.source.type !== 'file') return false;
+  const path = (node.source as { path: string }).path;
+  return path.startsWith('content/') || path === 'content';
+}
+
+/**
+ * Filter graph to a single layer view.
+ * - Files: only file-layer nodes
+ * - Content: authored nodes + referenced file nodes (excluding content/ tree duplicates)
+ * - Work: issues, PRs, commits
+ */
+export function filterGraphToLayer(graph: KBGraph, layer: NodeLayer): KBGraph {
+  if (layer === 'file') {
+    return filterByPredicate(graph, n => getNodeLayer(n) === 'file');
+  }
+
+  if (layer === 'content') {
+    // Start with all content nodes
+    const contentIds = new Set<string>();
+    for (const n of graph.nodes) {
+      if (getNodeLayer(n) === 'content') contentIds.add(n.id);
+    }
+    // Add file nodes referenced by content nodes (but not content/ tree duplicates)
+    const referencedFileIds = new Set<string>();
+    for (const e of graph.edges) {
+      if (contentIds.has(e.from) && !contentIds.has(e.to)) {
+        const target = graph.nodes.find(n => n.id === e.to);
+        if (target && getNodeLayer(target) === 'file' && !isContentTreeNode(target)) {
+          referencedFileIds.add(e.to);
+        }
+      }
+      if (contentIds.has(e.to) && !contentIds.has(e.from)) {
+        const target = graph.nodes.find(n => n.id === e.from);
+        if (target && getNodeLayer(target) === 'file' && !isContentTreeNode(target)) {
+          referencedFileIds.add(e.from);
+        }
+      }
+    }
+    const visibleIds = new Set([...contentIds, ...referencedFileIds]);
+    return filterByPredicate(graph, n => visibleIds.has(n.id));
+  }
+
+  // Work layer: issues, PRs, commits
+  return filterByPredicate(graph, n => getNodeLayer(n) === 'work');
+}
+
+function filterByPredicate(graph: KBGraph, predicate: (n: KBNode) => boolean): KBGraph {
+  const visibleIds = new Set<string>();
+  const nodes = graph.nodes.filter(n => {
+    if (predicate(n)) { visibleIds.add(n.id); return true; }
+    return false;
+  });
+  const edges = graph.edges.filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
+  const related: Record<string, string[]> = {};
+  for (const id of visibleIds) {
+    const r = (graph.related[id] ?? []).filter(rid => visibleIds.has(rid));
+    if (r.length > 0) related[id] = r;
+  }
+  return { nodes, edges, clusters: graph.clusters, related };
+}
+
 export interface Connection {
   to: string;
   type?: EdgeType;
