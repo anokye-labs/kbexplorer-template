@@ -45,7 +45,7 @@ interface HUDProps {
   onDockChange?: (dock: DockPosition) => void;
 }
 
-const FONT_SIZES = [0.92, 1.0, 1.18, 1.4, 1.7, 2.0, 2.6];
+const FONT_SIZES = [0.92, 1.0, 1.1, 1.2, 1.35, 1.5, 1.6];
 const COL_WIDTHS = ['50%', '65%', '75%', '85%', '100%'];
 
 const HIGHLIGHT_COLOR_DARK = '#479ef5';  // colorBrandForeground1

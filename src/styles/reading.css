@@ -3,44 +3,44 @@
 .kb-prose {
   max-width: var(--prose-max-width, 75%);
   font-size: var(--prose-font-size, 14px);
-  line-height: 20px;
+  line-height: 1.5;
   color: var(--colorNeutralForeground1);
 }
 
-/* Headings — Fluent 2 type ramp, semibold */
+/* Headings — scale proportionally with prose font size */
 .kb-prose h1 {
   font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 24px;  /* Title3 */
+  font-size: 1.65em;
   font-weight: 600;
   margin: 2.5rem 0 1rem;
-  line-height: 32px;
+  line-height: 1.3;
   color: var(--colorNeutralForeground1);
 }
 
 .kb-prose h2 {
   font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 20px;  /* Subtitle1 */
+  font-size: 1.35em;
   font-weight: 600;
   margin: 2rem 0 0.75rem;
-  line-height: 26px;
+  line-height: 1.3;
   color: var(--colorNeutralForeground1);
 }
 
 .kb-prose h3 {
   font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 16px;  /* Subtitle2 */
+  font-size: 1.12em;
   font-weight: 600;
   margin: 1.5rem 0 0.5rem;
-  line-height: 22px;
+  line-height: 1.35;
   color: var(--colorNeutralForeground1);
 }
 
 .kb-prose h4 {
   font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 14px;
+  font-size: 1em;
   font-weight: 600;
   margin: 1.5rem 0 0.5rem;
-  line-height: 20px;
+  line-height: 1.4;
   color: var(--colorNeutralForeground1);
 }
 
