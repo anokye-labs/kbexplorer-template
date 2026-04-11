@@ -29,3 +29,7 @@ Open `http://localhost:5173` — by default it explores its own repository, show
 - **Sidebar HUD** — dock it left or right for the full Okoto-style experience: live graph up top, connections below, reading tools at the bottom
 - **Three themes** — dark, light, and sepia, toggled from the HUD or with the `t` key
 - **File tree** — directories and source files are nodes in the graph, connected to their parent folders
+
+## Next Steps
+
+Once you're oriented, continue to the [architecture deep dive](wiki-deep-dive) for a detailed walkthrough of kbexplorer's five major subsystems.

@@ -24,7 +24,7 @@ PRs and commits were previously included but removed — the GitHub API doesn't 
 
 ## Authored Mode
 
-When `source.path` points to a directory of markdown files, each file's YAML frontmatter defines node metadata, connections, and cluster membership explicitly.
+When `source.path` points to a directory of markdown files, each file's YAML frontmatter defines node metadata, connections, and cluster membership explicitly. For AI-generated content, the [catalogue transformer](catalogue-transformer) converts Deep Wiki catalogue output into kbexplorer nodes and config, bootstrapping the authored content directory.
 
 ## UTF-8 Handling
 

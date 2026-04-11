@@ -115,4 +115,4 @@ All three are best-effort — failures are logged as warnings and return empty a
 
 ## Output
 
-The assembled manifest is written to `src/generated/repo-manifest.json` at [scripts/generate-manifest.js:305-306](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L305), where the [Vite build](vite-config) includes it in the bundle. A summary of entry counts is logged to stdout.
+The assembled manifest is written to `src/generated/repo-manifest.json` at [scripts/generate-manifest.js:305-306](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L305), where the [Vite build](vite-config) includes it in the bundle. A summary of entry counts is logged to stdout. The content directory consumed by `readAuthoredContent` is typically scaffolded by the [catalogue transformer](catalogue-transformer).

@@ -13,7 +13,7 @@ The graph engine (`src/engine/graph.ts`) receives a flat list of `KBNode[]` from
 
 ## Edge Construction
 
-Edges come from three sources:
+Edges come from three sources, each assigned a semantic type described in the [typed edges spec](spec-typed-edges):
 
 1. **Explicit connections** — declared in node frontmatter or parsed from `#N` cross-references in issue bodies
 2. **Parent → child containment** — any node with a `parent` field gets a weighted edge (weight 3) to its parent, pulling them close together in the force layout

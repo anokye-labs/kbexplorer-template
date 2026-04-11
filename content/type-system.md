@@ -137,4 +137,4 @@ The `DEFAULT_CONFIG` constant at [src/types/index.ts:137](https://github.com/ano
 
 ## KBEdge Weight
 
-The `weight` field on `KBEdge` at [src/types/index.ts:43](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L43) controls vis-network spring length: `springLength / weight`. A weight of `2` halves the rest length, pulling connected nodes closer. Default is `1`.
+The `weight` field on `KBEdge` at [src/types/index.ts:43](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L43) controls vis-network spring length: `springLength / weight`. A weight of `2` halves the rest length, pulling connected nodes closer. Default is `1`. Edge categorisation is detailed in the [typed edges spec](spec-typed-edges), which extends these interfaces with `type` and `source` discriminators.
