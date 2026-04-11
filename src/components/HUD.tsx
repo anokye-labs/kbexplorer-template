@@ -45,7 +45,7 @@ interface HUDProps {
   onDockChange?: (dock: DockPosition) => void;
 }
 
-const FONT_SIZES = [0.92, 1.0, 1.08, 1.18, 1.3];
+const FONT_SIZES = [0.92, 1.0, 1.18, 1.4, 1.7, 2.0, 2.6];
 const COL_WIDTHS = ['50%', '65%', '75%', '85%', '100%'];
 
 const HIGHLIGHT_COLOR_DARK = '#479ef5';  // colorBrandForeground1
@@ -1075,7 +1075,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   {currentNode && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Caption2 style={{ width: 32, flexShrink: 0 }}>Aa</Caption2>
-                      <Slider className={styles.slider} min={0} max={4} step={1} value={fontSize} onChange={(_e, data) => setFontSize(data.value)} title={`Font size: ${FONT_SIZES[fontSize]}rem`} />
+                      <Slider className={styles.slider} min={0} max={6} step={1} value={fontSize} onChange={(_e, data) => setFontSize(data.value)} title={`Font size: ${FONT_SIZES[fontSize]}rem`} />
                       <Caption2 style={{ width: 38, flexShrink: 0 }}>Width</Caption2>
                       <Slider className={styles.slider} min={0} max={4} step={1} value={colWidth} onChange={(_e, data) => setColWidth(data.value)} title={`Column width: ${COL_WIDTHS[colWidth]}`} />
                     </div>
@@ -1230,7 +1230,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 <Slider
                   className={styles.slider}
                   min={0}
-                  max={4}
+                  max={6}
                   step={1}
                   value={fontSize}
                   onChange={(_e, data) => setFontSize(data.value)}
