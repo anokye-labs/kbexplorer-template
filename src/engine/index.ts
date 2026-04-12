@@ -12,3 +12,8 @@ export {
   extractIssueRefs,
   splitIntoSections,
 } from './parser';
+export {
+  loadNodeMap,
+  extractImportPaths,
+  resolveImportPath,
+} from './nodemap';

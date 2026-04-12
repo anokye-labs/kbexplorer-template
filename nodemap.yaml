@@ -1,0 +1,43 @@
+# nodemap.yaml — Map source files into the knowledge graph
+# Demonstrates the four mapping modes: file, directory, glob+each, files (merge)
+
+nodes:
+  - id: eslint-config
+    title: ESLint Config
+    emoji: ShieldCheckmark
+    cluster: infra
+    display: code
+    file: eslint.config.js
+
+  - id: static-web-app
+    title: Static Web App Config
+    emoji: Cloud
+    cluster: infra
+    display: code
+    file: staticwebapp.config.json
+
+  - id: styles-directory
+    title: Style Sheets
+    emoji: PaintBrush
+    cluster: visual
+    display: tree
+    directory: src/styles
+
+  - id: react-hooks
+    title: React Hooks
+    emoji: LinkMultiple
+    cluster: engine
+    display: code
+    glob: src/hooks/*.ts
+    each: file
+    titleFrom: filename
+
+  - id: tsconfig
+    title: TypeScript Config
+    emoji: DocumentSettings
+    cluster: infra
+    display: code
+    files:
+      - tsconfig.json
+      - tsconfig.app.json
+      - tsconfig.node.json

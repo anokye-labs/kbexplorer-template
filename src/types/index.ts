@@ -1,5 +1,36 @@
 /** Core data types for the kbexplorer knowledge graph. */
 
+export type DisplayMode = 'prose' | 'code' | 'file-list' | 'tree' | 'table' | 'diagram';
+
+/** A single entry in nodemap.yaml */
+export interface NodeMapEntry {
+  id: string;
+  title?: string;
+  emoji?: string;      // Fluent icon name
+  cluster?: string;
+  display?: DisplayMode;
+  connections?: 'imports' | 'references' | Connection[];
+  exclude?: string[];
+
+  // Mapping modes (exactly one must be set)
+  file?: string;           // single file → 1 node
+  files?: string[];        // multiple files → 1 merged node
+  glob?: string;           // glob pattern → N nodes
+  directory?: string;      // directory → 1 tree node
+
+  // Split options (only with file:)
+  split?: 'headings';      // split file at ## headings
+
+  // Glob options
+  each?: 'file';           // each match becomes a node
+  titleFrom?: 'filename' | 'heading';  // how to derive title
+}
+
+/** Parsed nodemap.yaml */
+export interface NodeMap {
+  nodes: NodeMapEntry[];
+}
+
 /** A node in the knowledge graph. */
 export interface KBNode {
   id: string;
@@ -12,6 +43,8 @@ export interface KBNode {
   sprite?: string; // path relative to repo root (sprites mode)
   parent?: string; // parent node id (for hierarchy)
   nodeType?: 'parent' | 'section'; // parent has children, section is a child
+  /** How this node's content should be rendered */
+  display?: DisplayMode;
   connections: Connection[];
   /** Source of this node: authored markdown or GitHub artifact */
   source: NodeSource;

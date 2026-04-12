@@ -17,6 +17,7 @@ import {
   extractIssueRefs,
   splitIntoSections,
 } from '../engine';
+import { loadNodeMap } from './nodemap';
 import type { GHIssue, GHTreeItem } from '../api';
 
 // ── Manifest Types ─────────────────────────────────────────
@@ -42,6 +43,9 @@ interface RepoManifest {
     commit: { message: string; author: { name: string; date: string } };
     html_url: string;
   }>;
+  nodemapRaw?: string | null;
+  nodemapFiles?: Record<string, string>;
+  nodemapDirs?: Record<string, Array<{ path: string; type: 'blob' | 'tree'; size?: number }>>;
   generatedAt: string;
 }
 
@@ -248,6 +252,30 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
   return nodes;
 }
 
+// ── Helpers ────────────────────────────────────────────────
+
+/** Convert a simple glob pattern to a RegExp for matching file paths. */
+function globToRegex(pattern: string): RegExp {
+  let re = '';
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '*' && pattern[i + 1] === '*') {
+      re += '.*';
+      i += 1;
+      if (pattern[i + 1] === '/') i += 1;
+    } else if (c === '*') {
+      re += '[^/]*';
+    } else if (c === '?') {
+      re += '[^/]';
+    } else if ('.+^${}()|[]\\'.includes(c)) {
+      re += '\\' + c;
+    } else {
+      re += c;
+    }
+  }
+  return new RegExp(`^${re}$`);
+}
+
 // ── Full Local Load ────────────────────────────────────────
 
 export async function loadLocalKnowledgeBase(): Promise<{
@@ -255,9 +283,28 @@ export async function loadLocalKnowledgeBase(): Promise<{
   config: KBConfig;
 }> {
   const config = await loadLocalConfig();
+  const manifest = await loadManifest();
   const repoNodes = await loadLocalRepoContent();
   const authoredNodes = await loadLocalAuthoredContent();
-  const nodes = [...repoNodes, ...authoredNodes];
+
+  let nodemapNodes: KBNode[] = [];
+  if (manifest?.nodemapRaw) {
+    try {
+      nodemapNodes = await loadNodeMap(
+        manifest.nodemapRaw,
+        async (path) => manifest.nodemapFiles?.[path] ?? null,
+        async (pattern) => {
+          const regex = globToRegex(pattern);
+          return Object.keys(manifest.nodemapFiles ?? {}).filter(p => regex.test(p));
+        },
+        async (dir) => manifest.nodemapDirs?.[dir] ?? [],
+      );
+    } catch {
+      console.warn('[local-loader] Failed to load nodemap nodes');
+    }
+  }
+
+  const nodes = [...repoNodes, ...authoredNodes, ...nodemapNodes];
   const clusters = extractClusters(nodes, config);
   const graph = buildGraph(nodes, clusters);
   return { graph, config };

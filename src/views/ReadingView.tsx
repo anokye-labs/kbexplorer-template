@@ -11,7 +11,7 @@ import {
 import {
   ArrowLeftRegular,
 } from '@fluentui/react-icons';
-import type { KBGraph, KBConfig, Cluster } from '../types';
+import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 
 interface ReadingViewProps {
@@ -131,6 +131,147 @@ const useStyles = makeStyles({
   },
 });
 
+/* ── Display-mode helper components ─────────────────────────── */
+
+interface TreeEntry {
+  name: string;
+  depth: number;
+  isDir: boolean;
+}
+
+function buildTree(content: string): TreeEntry[] {
+  const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+  const entries: TreeEntry[] = [];
+  const seenDirs = new Set<string>();
+
+  for (const line of lines) {
+    const parts = line.replace(/\\/g, '/').split('/');
+    // Emit implicit parent directories
+    for (let i = 0; i < parts.length - 1; i++) {
+      const dirPath = parts.slice(0, i + 1).join('/');
+      if (!seenDirs.has(dirPath)) {
+        seenDirs.add(dirPath);
+        entries.push({ name: parts[i], depth: i, isDir: true });
+      }
+    }
+    // Leaf — directory if it ends with /
+    const isDir = line.endsWith('/');
+    const leafName = parts[parts.length - 1].replace(/\/$/, '');
+    if (leafName) {
+      entries.push({ name: leafName, depth: parts.length - 1, isDir });
+    }
+  }
+  return entries;
+}
+
+function TreeView({ content }: { content: string }) {
+  const entries = buildTree(content);
+  return (
+    <div className="kb-tree-display">
+      {entries.map((e, i) => (
+        <div key={i} style={{ paddingLeft: `${e.depth * 1.25}em` }}>
+          {e.isDir ? '📁' : '📄'} {e.name}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FileListView({ content }: { content: string }) {
+  const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+  const rows = lines.map(line => {
+    // Support "path  size" format (2+ spaces or tab delimiter)
+    const match = line.match(/^(.+?)(?:\s{2,}|\t)(.+)$/);
+    return match
+      ? { path: match[1].trim(), size: match[2].trim() }
+      : { path: line, size: '' };
+  });
+
+  return (
+    <div className="kb-file-list">
+      <table className="kb-prose" style={{ width: '100%' }}>
+        <thead>
+          <tr>
+            <th>File</th>
+            {rows.some(r => r.size) && <th style={{ textAlign: 'right' }}>Size</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i}>
+              <td><code>{r.path}</code></td>
+              {rows.some(r2 => r2.size) && (
+                <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.size}</td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TableView({ content }: { content: string }) {
+  const lines = content.split('\n').filter(l => l.trim());
+  if (lines.length === 0) return <pre className="kb-code-display"><code>{content}</code></pre>;
+
+  // Detect delimiter: pipes or tabs
+  const isPipe = lines[0].includes('|');
+  const splitRow = (line: string) =>
+    isPipe
+      ? line.split('|').map(c => c.trim()).filter((_, i, a) =>
+          // strip leading/trailing empty cells from |col1|col2| format
+          !(i === 0 && a[0] === '') && !(i === a.length - 1 && a[a.length - 1] === ''))
+      : line.split('\t');
+
+  const isSeparator = (line: string) => /^[\s|:-]+$/.test(line);
+
+  const headerRow = splitRow(lines[0]);
+  const dataStart = lines.length > 1 && isSeparator(lines[1]) ? 2 : 1;
+  const dataRows = lines.slice(dataStart).filter(l => !isSeparator(l)).map(splitRow);
+
+  return (
+    <div className="kb-file-list">
+      <table className="kb-prose" style={{ width: '100%' }}>
+        <thead>
+          <tr>{headerRow.map((h, i) => <th key={i}>{h}</th>)}</tr>
+        </thead>
+        <tbody>
+          {dataRows.map((row, ri) => (
+            <tr key={ri}>
+              {row.map((cell, ci) => <td key={ci}>{cell}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function renderContent(node: KBNode, linkedHtml: string) {
+  switch (node.display) {
+    case 'code':
+      return <pre className="kb-code-display"><code>{node.rawContent}</code></pre>;
+    case 'tree':
+      return <TreeView content={node.rawContent} />;
+    case 'file-list':
+      return <FileListView content={node.rawContent} />;
+    case 'table':
+      return <TableView content={node.rawContent} />;
+    case 'diagram':
+      return (
+        <div>
+          <Caption1 style={{ display: 'block', marginBottom: tokens.spacingVerticalS, color: tokens.colorNeutralForeground3 }}>
+            Diagram rendering coming soon
+          </Caption1>
+          <pre className="kb-code-display"><code>{node.rawContent}</code></pre>
+        </div>
+      );
+    default:
+      return <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />;
+  }
+}
+
 export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   const styles = useStyles();
   const node = graph.nodes.find(n => n.id === nodeId);
@@ -219,10 +360,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
 
       {/* Body: prose + connections */}
       <div className={`${styles.body} kb-reading-body`}>
-        <div
-          className="kb-prose"
-          dangerouslySetInnerHTML={{ __html: linkifyContent(node.content) }}
-        />
+        {renderContent(node, linkifyContent(node.content))}
 
         {/* Child nodes (subfolders, sections) */}
         {(() => {

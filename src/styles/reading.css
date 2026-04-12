@@ -161,6 +161,47 @@
   margin: 1rem 0;
 }
 
+/* ── Display mode styles ─────────────────────────────── */
+
+.kb-code-display {
+  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-size: var(--prose-font-size, 14px);
+  line-height: 1.5;
+  padding: 1rem 1.25rem;
+  background: var(--colorNeutralBackground3);
+  border: 1px solid var(--colorNeutralStroke2);
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: pre;
+  max-width: var(--prose-max-width, 75%);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.kb-code-display code {
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: inherit;
+}
+
+.kb-tree-display {
+  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-size: var(--prose-font-size, 14px);
+  line-height: 1.6;
+  padding: 1rem 1.25rem;
+  max-width: var(--prose-max-width, 75%);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.kb-file-list {
+  max-width: var(--prose-max-width, 75%);
+  width: 100%;
+  margin: 0 auto;
+  font-size: var(--prose-font-size, 14px);
+}
+
 /* ── Responsive layout ───────────────────────────────── */
 @media (min-width: 1025px) {
   .kb-prose {

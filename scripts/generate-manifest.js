@@ -25,6 +25,7 @@ import {
   existsSync,
 } from 'node:fs';
 import { execSync } from 'node:child_process';
+import yaml from 'yaml';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const kbRoot = resolve(__dirname, '..');
@@ -282,6 +283,139 @@ export function fetchLocalCommits(cwd = hostRoot) {
   }
 }
 
+// ── Nodemap ────────────────────────────────────────────────
+
+/** Convert a simple glob pattern to a RegExp. */
+function globToRegex(pattern) {
+  let re = '';
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '*' && pattern[i + 1] === '*') {
+      re += '.*';
+      i += 1;
+      if (pattern[i + 1] === '/') i += 1;
+    } else if (c === '*') {
+      re += '[^/]*';
+    } else if (c === '?') {
+      re += '[^/]';
+    } else if ('.+^${}()|[]\\'.includes(c)) {
+      re += '\\' + c;
+    } else {
+      re += c;
+    }
+  }
+  return new RegExp(`^${re}$`);
+}
+
+/**
+ * Read nodemap.yaml from the project root.
+ * @param {string} root
+ * @returns {string|null}
+ */
+export function readNodemap(root) {
+  for (const name of ['nodemap.yaml', 'nodemap.yml']) {
+    const p = resolve(root, name);
+    if (existsSync(p)) {
+      try {
+        return readFileSync(p, 'utf-8');
+      } catch { /* continue */ }
+    }
+  }
+  return null;
+}
+
+/**
+ * Collect all files and directories referenced by nodemap entries.
+ * @param {string} root - Repo root directory
+ * @param {string|null} nodemapRaw - Raw nodemap.yaml content
+ * @param {Array<{path: string, type: string}>} tree - File tree from walkFileSystem
+ * @returns {{ nodemapFiles: Record<string, string>, nodemapDirs: Record<string, Array> }}
+ */
+export function collectNodemapData(root, nodemapRaw, tree) {
+  if (!nodemapRaw) return { nodemapFiles: {}, nodemapDirs: {} };
+
+  let map;
+  try {
+    map = yaml.parse(nodemapRaw);
+  } catch {
+    console.warn('[generate-manifest] Failed to parse nodemap.yaml');
+    return { nodemapFiles: {}, nodemapDirs: {} };
+  }
+
+  if (!map?.nodes?.length) return { nodemapFiles: {}, nodemapDirs: {} };
+
+  const nodemapFiles = {};
+  const nodemapDirs = {};
+
+  function readSafe(filePath) {
+    const abs = resolve(root, filePath);
+    if (!existsSync(abs)) return null;
+    try {
+      return readFileSync(abs, 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  function expandGlob(pattern, exclude) {
+    const regex = globToRegex(pattern);
+    let matches = tree
+      .filter(e => e.type === 'blob' && regex.test(e.path))
+      .map(e => e.path);
+    if (exclude?.length) {
+      matches = matches.filter(p => !exclude.some(ex => globToRegex(ex).test(p)));
+    }
+    return matches;
+  }
+
+  function listDir(dirPath) {
+    const abs = resolve(root, dirPath);
+    if (!existsSync(abs)) return [];
+    try {
+      const entries = readdirSync(abs, { withFileTypes: true });
+      return entries
+        .filter(e => !e.name.startsWith('.'))
+        .map(e => {
+          const entryPath = dirPath ? `${dirPath}/${e.name}` : e.name;
+          const result = { path: entryPath, type: e.isDirectory() ? 'tree' : 'blob' };
+          if (!e.isDirectory()) {
+            try {
+              result.size = statSync(resolve(abs, e.name)).size;
+            } catch { /* ignore */ }
+          }
+          return result;
+        });
+    } catch {
+      return [];
+    }
+  }
+
+  for (const entry of map.nodes) {
+    if (entry.file) {
+      const content = readSafe(entry.file);
+      if (content !== null) nodemapFiles[entry.file] = content;
+    }
+    if (entry.files) {
+      for (const f of entry.files) {
+        const content = readSafe(f);
+        if (content !== null) nodemapFiles[f] = content;
+      }
+    }
+    if (entry.glob && entry.each === 'file') {
+      const matches = expandGlob(entry.glob, entry.exclude);
+      for (const m of matches) {
+        const content = readSafe(m);
+        if (content !== null) nodemapFiles[m] = content;
+      }
+    }
+    if (entry.directory) {
+      nodemapDirs[entry.directory] = listDir(entry.directory);
+    }
+  }
+
+  return { nodemapFiles, nodemapDirs };
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 export function generateManifest(root = hostRoot) {
@@ -292,14 +426,21 @@ export function generateManifest(root = hostRoot) {
   const contentPath = process.env.VITE_KB_PATH || 'content';
   const contentDir = resolve(root, contentPath);
 
+  const tree = walkFileSystem(root);
+  const nodemapRaw = readNodemap(root);
+  const { nodemapFiles, nodemapDirs } = collectNodemapData(root, nodemapRaw, tree);
+
   const manifest = {
     configRaw: readConfig(root, contentPath),
     authoredContent: readAuthoredContent(contentDir, contentPath),
-    tree: walkFileSystem(root),
+    tree,
     readme: readReadme(root),
     issues: fetchLocalIssues(root),
     pullRequests: fetchLocalPullRequests(root),
     commits: fetchLocalCommits(root),
+    nodemapRaw,
+    nodemapFiles,
+    nodemapDirs,
     generatedAt: new Date().toISOString(),
   };
 
@@ -311,6 +452,7 @@ export function generateManifest(root = hostRoot) {
   console.log(`[generate-manifest] Issues: ${manifest.issues.length}`);
   console.log(`[generate-manifest] PRs: ${manifest.pullRequests.length}`);
   console.log(`[generate-manifest] Commits: ${manifest.commits.length}`);
+  console.log(`[generate-manifest] Nodemap: ${nodemapRaw ? `${Object.keys(nodemapFiles).length} files, ${Object.keys(nodemapDirs).length} dirs` : 'not found'}`);
 
   return manifest;
 }
