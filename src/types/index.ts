@@ -272,19 +272,35 @@ export function collapseGraphClusters(graph: KBGraph, collapsedIds: Set<string>)
     const from = remap(e.from);
     const to = remap(e.to);
     if (from === to) continue; // skip intra-cluster edges
-    const key = `${from}→${to}`;
+    const key = `${from}→${to}→${e.type}`;
     if (edgeSeen.has(key)) continue;
     edgeSeen.add(key);
     edges.push({ ...e, from, to });
   }
 
-  // Rebuild related
+  // Rebuild related — for summary nodes, aggregate from constituent nodes
   const nodeIdSet = new Set(nodes.map(n => n.id));
   const related: Record<string, string[]> = {};
+
+  // Aggregate related for collapsed clusters → summary nodes
+  for (const [originalId, summaryId] of collapsedNodeIds) {
+    const origRelated = graph.related[originalId] ?? [];
+    const existing = related[summaryId] ?? [];
+    existing.push(...origRelated.map(remap));
+    related[summaryId] = existing;
+  }
+
+  // Process non-collapsed nodes + deduplicate summary related
   for (const n of nodes) {
-    const originalRelated = graph.related[n.id] ?? [];
-    const mapped = [...new Set(originalRelated.map(remap))].filter(id => id !== n.id && nodeIdSet.has(id));
-    if (mapped.length > 0) related[n.id] = mapped;
+    if (n.id.startsWith('cluster-')) {
+      // Deduplicate summary node's aggregated related
+      related[n.id] = [...new Set(related[n.id] ?? [])].filter(id => id !== n.id && nodeIdSet.has(id));
+      if (related[n.id].length === 0) delete related[n.id];
+    } else {
+      const originalRelated = graph.related[n.id] ?? [];
+      const mapped = [...new Set(originalRelated.map(remap))].filter(id => id !== n.id && nodeIdSet.has(id));
+      if (mapped.length > 0) related[n.id] = mapped;
+    }
   }
 
   return { nodes, edges, clusters: graph.clusters, related };
