@@ -146,6 +146,70 @@ function filterByPredicate(graph: KBGraph, predicate: (n: KBNode) => boolean): K
   return { nodes, edges, clusters: graph.clusters, related };
 }
 
+/**
+ * Collapse specified clusters into single summary nodes.
+ * Each collapsed cluster's nodes are replaced with one summary node;
+ * edges to/from collapsed nodes are remapped to the summary.
+ */
+export function collapseGraphClusters(graph: KBGraph, collapsedIds: Set<string>): KBGraph {
+  if (collapsedIds.size === 0) return graph;
+
+  const collapsedNodeIds = new Map<string, string>(); // original id → summary id
+  const summaryNodes: KBNode[] = [];
+
+  for (const clusterId of collapsedIds) {
+    const cluster = graph.clusters.find(c => c.id === clusterId);
+    if (!cluster) continue;
+    const clusterNodes = graph.nodes.filter(n => n.cluster === clusterId);
+    if (clusterNodes.length === 0) continue;
+
+    const summaryId = `cluster-${clusterId}`;
+    for (const n of clusterNodes) collapsedNodeIds.set(n.id, summaryId);
+
+    summaryNodes.push({
+      id: summaryId,
+      title: `${cluster.name} (${clusterNodes.length})`,
+      cluster: clusterId,
+      content: '',
+      rawContent: '',
+      emoji: clusterNodes[0]?.emoji,
+      connections: [],
+      source: { type: 'file', path: '' },
+    });
+  }
+
+  // Keep non-collapsed nodes + add summary nodes
+  const nodes = [
+    ...graph.nodes.filter(n => !collapsedNodeIds.has(n.id)),
+    ...summaryNodes,
+  ];
+
+  // Remap edges: replace collapsed node refs with their summary
+  const remap = (id: string) => collapsedNodeIds.get(id) ?? id;
+  const edgeSeen = new Set<string>();
+  const edges: KBEdge[] = [];
+  for (const e of graph.edges) {
+    const from = remap(e.from);
+    const to = remap(e.to);
+    if (from === to) continue; // skip intra-cluster edges
+    const key = `${from}→${to}`;
+    if (edgeSeen.has(key)) continue;
+    edgeSeen.add(key);
+    edges.push({ ...e, from, to });
+  }
+
+  // Rebuild related
+  const nodeIdSet = new Set(nodes.map(n => n.id));
+  const related: Record<string, string[]> = {};
+  for (const n of nodes) {
+    const originalRelated = graph.related[n.id] ?? [];
+    const mapped = [...new Set(originalRelated.map(remap))].filter(id => id !== n.id && nodeIdSet.has(id));
+    if (mapped.length > 0) related[n.id] = mapped;
+  }
+
+  return { nodes, edges, clusters: graph.clusters, related };
+}
+
 export interface Connection {
   to: string;
   type?: EdgeType;

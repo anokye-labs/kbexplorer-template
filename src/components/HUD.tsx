@@ -28,7 +28,7 @@ import {
   BookRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme, EdgeType, NodeLayer } from '../types';
-import { EDGE_TYPE_STYLES, NODE_LAYER_META, filterGraphToLayer } from '../types';
+import { EDGE_TYPE_STYLES, NODE_LAYER_META, filterGraphToLayer, collapseGraphClusters } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
 import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
@@ -286,6 +286,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     } catch { /* ignore */ }
     return 'all';
   });
+  const [collapsedClusters, setCollapsedClusters] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('kbe-collapsed-clusters');
+      if (stored) return new Set(JSON.parse(stored) as string[]);
+    } catch { /* ignore */ }
+    return new Set<string>();
+  });
   const resizeRef = useRef<{ startX: number; startW: number } | null>(null);
   const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
 
@@ -358,11 +365,22 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     try { localStorage.setItem('kbe-layer', layer); } catch { /* */ }
   }, []);
 
-  // Filter graph to the active layer view
+  const toggleClusterCollapse = useCallback((clusterId: string) => {
+    setCollapsedClusters(prev => {
+      const next = new Set(prev);
+      if (next.has(clusterId)) next.delete(clusterId);
+      else next.add(clusterId);
+      try { localStorage.setItem('kbe-collapsed-clusters', JSON.stringify([...next])); } catch { /* */ }
+      return next;
+    });
+  }, []);
+
+  // Filter graph: layer view → cluster collapse
   const filteredGraph = React.useMemo<KBGraph>(() => {
-    if (activeLayer === 'all') return graph;
-    return filterGraphToLayer(graph, activeLayer);
-  }, [graph, activeLayer]);
+    let g = activeLayer === 'all' ? graph : filterGraphToLayer(graph, activeLayer);
+    if (collapsedClusters.size > 0) g = collapseGraphClusters(g, collapsedClusters);
+    return g;
+  }, [graph, activeLayer, collapsedClusters]);
 
   const currentNode = currentNodeId
     ? filteredGraph.nodes.find(n => n.id === currentNodeId) ?? graph.nodes.find(n => n.id === currentNodeId) ?? null
@@ -621,12 +639,14 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     } catch { /* node might not exist */ }
   }, [currentNodeId]);
 
-  // Active clusters: only those with 2+ nodes (avoids legend drift)
+  // Active clusters: use the layer-filtered (but not collapsed) graph for the legend
+  // so collapsed clusters still appear and can be toggled back
   const activeClusters = React.useMemo(() => {
+    const layerGraph = activeLayer === 'all' ? graph : filterGraphToLayer(graph, activeLayer);
     const counts = new Map<string, number>();
-    for (const n of filteredGraph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
-    return filteredGraph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
-  }, [filteredGraph]);
+    for (const n of layerGraph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
+    return layerGraph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
+  }, [graph, activeLayer]);
 
   // Active edge types present in the graph
   const activeEdgeTypes = React.useMemo(() => {
@@ -779,12 +799,20 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             </div>
             <Card size="small" style={{ position: 'absolute', bottom: 16, left: 16, zIndex: 10 }}>
               <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
-              {activeClusters.map(c => (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 12px' }}>
-                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
-                  <Caption1>{c.name}</Caption1>
-                </div>
-              ))}
+              {activeClusters.map(c => {
+                const isCollapsed = collapsedClusters.has(c.id);
+                return (
+                  <div
+                    key={c.id}
+                    onClick={() => toggleClusterCollapse(c.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 12px', cursor: 'pointer', opacity: isCollapsed ? 0.5 : 1 }}
+                    title={isCollapsed ? `Expand ${c.name}` : `Collapse ${c.name}`}
+                  >
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
+                    <Caption1 style={{ textDecoration: isCollapsed ? 'line-through' : 'none' }}>{c.name}</Caption1>
+                  </div>
+                );
+              })}
               {activeEdgeTypes.length > 0 && (
                 <>
                   <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 12px' }} />
@@ -928,14 +956,22 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px',
                     background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium,
                     border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '6px 8px',
-                    opacity: 0.9, pointerEvents: 'none',
+                    opacity: 0.9,
                   }}>
-                    {activeClusters.map(c => (
-                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
-                        <span style={{ color: tokens.colorNeutralForeground3 }}>{c.name}</span>
-                      </div>
-                    ))}
+                    {activeClusters.map(c => {
+                      const isCollapsed = collapsedClusters.has(c.id);
+                      return (
+                        <div
+                          key={c.id}
+                          onClick={() => toggleClusterCollapse(c.id)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', opacity: isCollapsed ? 0.5 : 1 }}
+                          title={isCollapsed ? `Expand ${c.name}` : `Collapse ${c.name}`}
+                        >
+                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
+                          <span style={{ color: tokens.colorNeutralForeground3, textDecoration: isCollapsed ? 'line-through' : 'none' }}>{c.name}</span>
+                        </div>
+                      );
+                    })}
                     {activeEdgeTypes.length > 0 && (
                       <>
                         <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
