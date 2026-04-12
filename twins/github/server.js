@@ -61,6 +61,12 @@ const server = createServer(async (req, res) => {
   const params = new URLSearchParams(search ?? '');
   const method = req.method ?? 'GET';
 
+  // Health check for Playwright webServer readiness probe
+  if (pathname === '/health') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    return res.end('OK');
+  }
+
   // CORS preflight
   if (method === 'OPTIONS') {
     res.writeHead(204, {
