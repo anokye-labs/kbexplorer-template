@@ -3,6 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +17,58 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Tier 1: Unit tests
+      - name: Run unit tests
+        run: npm test
+
+      # Tier 2: Graph validation
+      - name: Generate manifest
+        run: node scripts/generate-manifest.js
+        env:
+          VITE_KB_LOCAL: 'true'
+
+      - name: Validate graph
+        run: npm run validate
+
+      # Build for E2E
+      - name: Build
+        run: npx vite build
+        env:
+          VITE_KB_LOCAL: 'true'
+          VITE_BASE_PATH: /kbexplorer/
+
+      # Tier 3: E2E tests
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test --project=chromium
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
   build:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
