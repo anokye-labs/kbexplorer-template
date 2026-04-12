@@ -8,6 +8,7 @@ import yaml from 'yaml';
 import { marked } from 'marked';
 import type { KBNode, KBConfig, KBGraph } from '../types';
 import { DEFAULT_CONFIG } from '../types';
+import { assignIdentity } from './identity';
 import {
   parseMarkdownFile,
   issueToNode,
@@ -175,6 +176,7 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
       id: 'readme', title: 'README', cluster: 'docs',
       content: html, rawContent: readme, emoji: 'Document',
       parent: 'repo-root',
+      identity: 'urn:content:readme',
       connections: readmeConns, source: { type: 'readme' },
     });
   }
@@ -214,7 +216,7 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
     const body = pr.body ?? '';
     const html = marked.parse(body, { async: false }) as string;
     const refs = extractIssueRefs(body);
-    nodes.push({
+    const prNode: KBNode = {
       id: `pr-${pr.number}`,
       title: pr.title,
       cluster: 'pull-request',
@@ -226,7 +228,9 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
         description: `References #${n}`,
       })),
       source: { type: 'pull_request', number: pr.number, state: pr.state },
-    });
+    };
+    prNode.identity = assignIdentity(prNode);
+    nodes.push(prNode);
   }
 
   // Commits as nodes (grouped)

@@ -17,3 +17,14 @@ export {
   extractImportPaths,
   resolveImportPath,
 } from './nodemap';
+export {
+  assignIdentity,
+  shareIdentity,
+  buildIdentityIndex,
+} from './identity';
+export { ProviderRegistry } from './providers';
+export type { GraphProvider, ProviderResult } from './providers';
+export { WorkProvider } from './providers/work-provider';
+export { AuthoredProvider } from './providers/authored-provider';
+export { FilesProvider } from './providers/files-provider';
+export { orchestrate } from './orchestrator';
