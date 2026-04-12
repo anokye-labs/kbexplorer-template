@@ -1,0 +1,1097 @@
+{
+  "sha": "94e3586e3572252ec4aa436285f1f979e789a000",
+  "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/94e3586e3572252ec4aa436285f1f979e789a000",
+  "tree": [
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d0d333a87187562abd115f802c1e8208afc7dd02",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/d0d333a87187562abd115f802c1e8208afc7dd02"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1112b183faef27ee527073fae470635a005217cf",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/1112b183faef27ee527073fae470635a005217cf"
+    },
+    {
+      "path": ".github/workflows/azure-static-web-apps.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da48ddf5de0cfa312bea3e8b2ba5f73c7a0966e4",
+      "size": 1150,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/da48ddf5de0cfa312bea3e8b2ba5f73c7a0966e4"
+    },
+    {
+      "path": ".github/workflows/github-pages.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d68914d69c8c0eed6a9e68467c3ae04c06d05101",
+      "size": 2309,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/d68914d69c8c0eed6a9e68467c3ae04c06d05101"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb2ba54ba6ba1c697d2641d14c5d28b12eb13cb2",
+      "size": 304,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/fb2ba54ba6ba1c697d2641d14c5d28b12eb13cb2"
+    },
+    {
+      "path": ".gitmodules",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8d8d12538a9c824212e3b36801871d9004a97e5",
+      "size": 128,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/f8d8d12538a9c824212e3b36801871d9004a97e5"
+    },
+    {
+      "path": "AGENTS.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "630c18b8bb11269b0f147957f0344a4d448f99c2",
+      "size": 2895,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/630c18b8bb11269b0f147957f0344a4d448f99c2"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da29f9be9d0170d433cd4657eab749c5bd60587c",
+      "size": 1068,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/da29f9be9d0170d433cd4657eab749c5bd60587c"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "814d5848745908374084d2ec809e3755b3e03e03",
+      "size": 14677,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/814d5848745908374084d2ec809e3755b3e03e03"
+    },
+    {
+      "path": "content",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ca2cceea6beb5537ecb4afc61c392ad896fe35c1",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/ca2cceea6beb5537ecb4afc61c392ad896fe35c1"
+    },
+    {
+      "path": "content/app-shell.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "74a2f245df41caaa60b808cb1b94df1913270c43",
+      "size": 6073,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/74a2f245df41caaa60b808cb1b94df1913270c43"
+    },
+    {
+      "path": "content/build-scripts.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b88a292c648e54f83f885a71f3c10575cc1e58d",
+      "size": 3844,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/3b88a292c648e54f83f885a71f3c10575cc1e58d"
+    },
+    {
+      "path": "content/cache-system.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bff5cda29a356c3f89a304b57ad8b053cb891b47",
+      "size": 1701,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/bff5cda29a356c3f89a304b57ad8b053cb891b47"
+    },
+    {
+      "path": "content/catalogue-transformer.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d51ba41b1201ab96cca60cc6ee1afaa3599d888",
+      "size": 5951,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/0d51ba41b1201ab96cca60cc6ee1afaa3599d888"
+    },
+    {
+      "path": "content/config.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "249a51120ea365d1589bb7f423c3e6cc7b864728",
+      "size": 452,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/249a51120ea365d1589bb7f423c3e6cc7b864728"
+    },
+    {
+      "path": "content/content-pipeline.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4eac0246a1f87f73358725a578155f137f0a4ba2",
+      "size": 2216,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/4eac0246a1f87f73358725a578155f137f0a4ba2"
+    },
+    {
+      "path": "content/design-decisions.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dddc8b20a45d9faa4f6194f85a8dc91fbf653310",
+      "size": 1812,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/dddc8b20a45d9faa4f6194f85a8dc91fbf653310"
+    },
+    {
+      "path": "content/github-api.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fcacf24b24533608f6d28c9130deb876a2b234f7",
+      "size": 1681,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/fcacf24b24533608f6d28c9130deb876a2b234f7"
+    },
+    {
+      "path": "content/graph-engine.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "299feaf6fe7b1b3e92ddceebf2138d2bfc992eb2",
+      "size": 1920,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/299feaf6fe7b1b3e92ddceebf2138d2bfc992eb2"
+    },
+    {
+      "path": "content/graph-network.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "260442fe1aa96bd191940e096c27fac2fcd18df5",
+      "size": 6624,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/260442fe1aa96bd191940e096c27fac2fcd18df5"
+    },
+    {
+      "path": "content/hud.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "81d8f47e0b16d5418babda04b081a072c1b36d33",
+      "size": 2068,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/81d8f47e0b16d5418babda04b081a072c1b36d33"
+    },
+    {
+      "path": "content/init-script.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "68de240575990865400c320a32a49c3d378bcebf",
+      "size": 6736,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/68de240575990865400c320a32a49c3d378bcebf"
+    },
+    {
+      "path": "content/kb-loader.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b36f24b3838b3c511bf73dd31114a584ca8fc71c",
+      "size": 5426,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/b36f24b3838b3c511bf73dd31114a584ca8fc71c"
+    },
+    {
+      "path": "content/keyboard-nav.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f632ddda1a4379375cdffae1e06d930329878ad",
+      "size": 4421,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/9f632ddda1a4379375cdffae1e06d930329878ad"
+    },
+    {
+      "path": "content/loading-error-screens.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3ec4cd2d1bf466127819bcd38c8be4a8e41f4b60",
+      "size": 5172,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/3ec4cd2d1bf466127819bcd38c8be4a8e41f4b60"
+    },
+    {
+      "path": "content/local-loader.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2b1d9df3bc09433d926be80f6d2ec9af4d1a78c",
+      "size": 7042,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/a2b1d9df3bc09433d926be80f6d2ec9af4d1a78c"
+    },
+    {
+      "path": "content/manifest-generator.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4a2b0c69b9faebe8bd9f621e8c39e4d9babb03b4",
+      "size": 6752,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/4a2b0c69b9faebe8bd9f621e8c39e4d9babb03b4"
+    },
+    {
+      "path": "content/node-renderer.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32a80084ac279459733195b9b2aeaddcc8b5c9bc",
+      "size": 1600,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/32a80084ac279459733195b9b2aeaddcc8b5c9bc"
+    },
+    {
+      "path": "content/overview-view.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f855698485efcecf5afb0ecf3c9fc5afcdfb1ffe",
+      "size": 4991,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/f855698485efcecf5afb0ecf3c9fc5afcdfb1ffe"
+    },
+    {
+      "path": "content/overview.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e5b13f5b32f05fa556a27065251de5d7d22aad0",
+      "size": 3407,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/9e5b13f5b32f05fa556a27065251de5d7d22aad0"
+    },
+    {
+      "path": "content/reading-view.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "28144b264d3ffd355834f94707378e0298bdda3e",
+      "size": 6107,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/28144b264d3ffd355834f94707378e0298bdda3e"
+    },
+    {
+      "path": "content/spec-graph-store.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c7de50fc40d06804cca926d07856052cb4a46d0",
+      "size": 4939,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/4c7de50fc40d06804cca926d07856052cb4a46d0"
+    },
+    {
+      "path": "content/spec-inline-link-extraction.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "33edcf939ed532cadb79fbe59aa0d512a15e9d40",
+      "size": 7107,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/33edcf939ed532cadb79fbe59aa0d512a15e9d40"
+    },
+    {
+      "path": "content/spec-link-assessment.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "13469c88cbf675f6218684e73c61c86e0268823c",
+      "size": 3975,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/13469c88cbf675f6218684e73c61c86e0268823c"
+    },
+    {
+      "path": "content/spec-multi-layer-identity.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f9c0d5a242c57b0573ea507264f943b0b72981ce",
+      "size": 4822,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/f9c0d5a242c57b0573ea507264f943b0b72981ce"
+    },
+    {
+      "path": "content/spec-node-mapping.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8071a3f3756e5b5ae257aa0ef47f76aa980331d9",
+      "size": 7257,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/8071a3f3756e5b5ae257aa0ef47f76aa980331d9"
+    },
+    {
+      "path": "content/spec-providers-overview.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38da8591e7c8fbb5aa7fff7d583f19c0fd850199",
+      "size": 3907,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/38da8591e7c8fbb5aa7fff7d583f19c0fd850199"
+    },
+    {
+      "path": "content/spec-typed-edges.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "25f0db5ba36c1f13d990cfb55acb119009cc1192",
+      "size": 6584,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/25f0db5ba36c1f13d990cfb55acb119009cc1192"
+    },
+    {
+      "path": "content/spec-views.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "baa9e9a7077ea60ed23b3d521be0a2179018ecf2",
+      "size": 4362,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/baa9e9a7077ea60ed23b3d521be0a2179018ecf2"
+    },
+    {
+      "path": "content/style-system.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ad36da0fcea97ddb41ba6681f57177b41232b91",
+      "size": 6422,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/8ad36da0fcea97ddb41ba6681f57177b41232b91"
+    },
+    {
+      "path": "content/test-suite.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ebd361d5714cc47b9957a13414b70e3a64d67466",
+      "size": 6532,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/ebd361d5714cc47b9957a13414b70e3a64d67466"
+    },
+    {
+      "path": "content/theme-system.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c9e65cef54bb3e3cec248efb912146ed1bd99743",
+      "size": 1502,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/c9e65cef54bb3e3cec248efb912146ed1bd99743"
+    },
+    {
+      "path": "content/type-system.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "505474ed4c531e1fe9230f6c583c94b9a2762fdd",
+      "size": 7019,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/505474ed4c531e1fe9230f6c583c94b9a2762fdd"
+    },
+    {
+      "path": "content/visual-system.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1e9c58841e729e6c680317f6f315c03a3c966713",
+      "size": 1743,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/1e9c58841e729e6c680317f6f315c03a3c966713"
+    },
+    {
+      "path": "content/vite-config.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bfaf2ce5233542ce721e7a24b55b3890fc7f521f",
+      "size": 4196,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/bfaf2ce5233542ce721e7a24b55b3890fc7f521f"
+    },
+    {
+      "path": "content/wiki-configuration.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8bd46169c485263989cc22a98fe26da2f2ad2f97",
+      "size": 1428,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/8bd46169c485263989cc22a98fe26da2f2ad2f97"
+    },
+    {
+      "path": "content/wiki-content-modes.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aba7416b5bf9896864ee533db4d641ac90daeaac",
+      "size": 1773,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/aba7416b5bf9896864ee533db4d641ac90daeaac"
+    },
+    {
+      "path": "content/wiki-data-pipeline.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1c8de3c3f9921cf0f297aa2c4cc267a0eb5b7544",
+      "size": 1613,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/1c8de3c3f9921cf0f297aa2c4cc267a0eb5b7544"
+    },
+    {
+      "path": "content/wiki-deep-dive.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c02f7647d21e84a46bd842475193cacf4e66c335",
+      "size": 1361,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/c02f7647d21e84a46bd842475193cacf4e66c335"
+    },
+    {
+      "path": "content/wiki-getting-started.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "767be4393c221ab40db83c60bb3ead79ad3bb0f3",
+      "size": 1475,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/767be4393c221ab40db83c60bb3ead79ad3bb0f3"
+    },
+    {
+      "path": "content/wiki-hud-system.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce15f69931bd4908dbe8f5d7a2701136f0e10271",
+      "size": 1754,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/ce15f69931bd4908dbe8f5d7a2701136f0e10271"
+    },
+    {
+      "path": "content/wiki-infrastructure.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "74d042763a76b6cbd91b0fc1827ae3bcf4610c7c",
+      "size": 1601,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/74d042763a76b6cbd91b0fc1827ae3bcf4610c7c"
+    },
+    {
+      "path": "content/wiki-overview.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e33ce78566c74da6e126838e2770d685e15e4488",
+      "size": 1846,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/e33ce78566c74da6e126838e2770d685e15e4488"
+    },
+    {
+      "path": "content/wiki-setup.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcf678f6469a78e17a95b9ecc7feb6c2858e0bc8",
+      "size": 1592,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/dcf678f6469a78e17a95b9ecc7feb6c2858e0bc8"
+    },
+    {
+      "path": "content/wiki-theming.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4ebf0860af0595b726a13a2105e66b304b1e842c",
+      "size": 1194,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/4ebf0860af0595b726a13a2105e66b304b1e842c"
+    },
+    {
+      "path": "content/wiki-visual-system.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8bff3a259ee901d08f8146cdb1da22f58b6bbb78",
+      "size": 1651,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/8bff3a259ee901d08f8146cdb1da22f58b6bbb78"
+    },
+    {
+      "path": "e2e",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9998445c48268af8ff47a16ffcf045dd53c16fe7",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/9998445c48268af8ff47a16ffcf045dd53c16fe7"
+    },
+    {
+      "path": "e2e/cluster-collapse.spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b087ab4f1f2b51c4ea55bce97b39fddc3c4349b",
+      "size": 2005,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/9b087ab4f1f2b51c4ea55bce97b39fddc3c4349b"
+    },
+    {
+      "path": "e2e/display-modes.spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5953d1f989313b33f3a0a4e6600dcd09b76d183f",
+      "size": 1102,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/5953d1f989313b33f3a0a4e6600dcd09b76d183f"
+    },
+    {
+      "path": "e2e/layer-views.spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f7a89ff11555b5daca442a33135860dc155d793e",
+      "size": 1364,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/f7a89ff11555b5daca442a33135860dc155d793e"
+    },
+    {
+      "path": "e2e/navigation.spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0879d9472391d2aaccd49244f8243982fcd1ad34",
+      "size": 1948,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/0879d9472391d2aaccd49244f8243982fcd1ad34"
+    },
+    {
+      "path": "e2e/smoke.spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f35ee0dee7607410e228ff853df065eb2063c4ae",
+      "size": 1217,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/f35ee0dee7607410e228ff853df065eb2063c4ae"
+    },
+    {
+      "path": "eslint.config.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e6b472f583e34a1cca751440d4f241495475723",
+      "size": 616,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/5e6b472f583e34a1cca751440d4f241495475723"
+    },
+    {
+      "path": "fluentui-system-icons",
+      "mode": "160000",
+      "type": "commit",
+      "sha": "1764a200a27299537c0dcb2ff1d724ddf5c2889f"
+    },
+    {
+      "path": "index.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88e278400f4d0b74021095aa1da50d9e803bd23e",
+      "size": 362,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/88e278400f4d0b74021095aa1da50d9e803bd23e"
+    },
+    {
+      "path": "nodemap.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4668a3322e2c986b8f90885380bab218e0a74fe3",
+      "size": 938,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/4668a3322e2c986b8f90885380bab218e0a74fe3"
+    },
+    {
+      "path": "package-lock.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3ac8e4ad8c07f0ad099b01f449bc9f3fe9c0d1ba",
+      "size": 209800,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/3ac8e4ad8c07f0ad099b01f449bc9f3fe9c0d1ba"
+    },
+    {
+      "path": "package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a3c06a6d625f129cfe0ceca533b8526429f2b814",
+      "size": 1379,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/a3c06a6d625f129cfe0ceca533b8526429f2b814"
+    },
+    {
+      "path": "playwright.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f6d9b252dd511330f131ac161dec109276833f9a",
+      "size": 640,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/f6d9b252dd511330f131ac161dec109276833f9a"
+    },
+    {
+      "path": "public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e7f666ab0aa6266a092c5209a97643c371fa3d39",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/e7f666ab0aa6266a092c5209a97643c371fa3d39"
+    },
+    {
+      "path": "public/favicon.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6893eb13237060adc0c968a690149a49faa2d7d3",
+      "size": 9522,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/6893eb13237060adc0c968a690149a49faa2d7d3"
+    },
+    {
+      "path": "scripts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "394f3a5e5c354ff55cf3b14029659017932f2930",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/394f3a5e5c354ff55cf3b14029659017932f2930"
+    },
+    {
+      "path": "scripts/__tests__",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8bc9ce2f9b91c448b6ca8d25c15594f8cee56419",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/8bc9ce2f9b91c448b6ca8d25c15594f8cee56419"
+    },
+    {
+      "path": "scripts/__tests__/generate-manifest.test.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d71a75be7daaefea6b76454d9ab6160465d6110f",
+      "size": 7289,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/d71a75be7daaefea6b76454d9ab6160465d6110f"
+    },
+    {
+      "path": "scripts/generate-manifest.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c59fee1264f244f24cc8e6d3520a422048a41236",
+      "size": 14618,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/c59fee1264f244f24cc8e6d3520a422048a41236"
+    },
+    {
+      "path": "scripts/validate-graph.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "14a44f665efb0c4a84037fe955eb7ff2c686b313",
+      "size": 7932,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/14a44f665efb0c4a84037fe955eb7ff2c686b313"
+    },
+    {
+      "path": "src",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "deb98e39215b897e1a5430455f1467e436abd6bc",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/deb98e39215b897e1a5430455f1467e436abd6bc"
+    },
+    {
+      "path": "src/App.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "023ef28322b53cfd1b52afb6d94c7146b6768333",
+      "size": 3820,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/023ef28322b53cfd1b52afb6d94c7146b6768333"
+    },
+    {
+      "path": "src/api",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a771d7a643bd6a73ac65b89fa8fcf2f5616386f9",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/a771d7a643bd6a73ac65b89fa8fcf2f5616386f9"
+    },
+    {
+      "path": "src/api/github.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7c33dbd3220c9fdbcd9b1168b4a94e4411d1655",
+      "size": 8149,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/a7c33dbd3220c9fdbcd9b1168b4a94e4411d1655"
+    },
+    {
+      "path": "src/api/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b715427dde45c472672580be799b1dc7802a1a58",
+      "size": 274,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/b715427dde45c472672580be799b1dc7802a1a58"
+    },
+    {
+      "path": "src/components",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "72c2d9674889f4277115c79801ff06ff1008c04e",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/72c2d9674889f4277115c79801ff06ff1008c04e"
+    },
+    {
+      "path": "src/components/ErrorScreen.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e8264f9add22de39c650fdb9cf5fc4e03dce17b4",
+      "size": 2034,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/e8264f9add22de39c650fdb9cf5fc4e03dce17b4"
+    },
+    {
+      "path": "src/components/HUD.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d34c3e05b243253d0671f533be11b40e77f8256",
+      "size": 52676,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/2d34c3e05b243253d0671f533be11b40e77f8256"
+    },
+    {
+      "path": "src/components/LoadingScreen.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "10f3c296b218680587b35baf32c420464633dcbd",
+      "size": 503,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/10f3c296b218680587b35baf32c420464633dcbd"
+    },
+    {
+      "path": "src/components/NodeVisual.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "172e64199b5e042bdf91fe90ad8f6045b7aa763c",
+      "size": 173005,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/172e64199b5e042bdf91fe90ad8f6045b7aa763c"
+    },
+    {
+      "path": "src/engine",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4d6473ef37c8a2309feb4298a1f6a295c01f4f32",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/4d6473ef37c8a2309feb4298a1f6a295c01f4f32"
+    },
+    {
+      "path": "src/engine/__tests__",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b99b5af15846f740619fae21b7bd8b5dbeab9118",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/b99b5af15846f740619fae21b7bd8b5dbeab9118"
+    },
+    {
+      "path": "src/engine/__tests__/graph.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b28a3294cc8e76ac2846bc258f63901e61c203f5",
+      "size": 10070,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/b28a3294cc8e76ac2846bc258f63901e61c203f5"
+    },
+    {
+      "path": "src/engine/__tests__/identity.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9cd88e2aa4ad42b6652605bbcdd6e6d839c17600",
+      "size": 4080,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/9cd88e2aa4ad42b6652605bbcdd6e6d839c17600"
+    },
+    {
+      "path": "src/engine/__tests__/nodemap.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b2179ede5ccce1fb056645f5fa0aa3b0b711368",
+      "size": 11886,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/7b2179ede5ccce1fb056645f5fa0aa3b0b711368"
+    },
+    {
+      "path": "src/engine/__tests__/parser.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5d652b1ec9d9069ceb5135e94981fe874b8aa96c",
+      "size": 6538,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/5d652b1ec9d9069ceb5135e94981fe874b8aa96c"
+    },
+    {
+      "path": "src/engine/__tests__/providers.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5148e4bf9d018ac3bae85d317776c2d82de6a282",
+      "size": 2040,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/5148e4bf9d018ac3bae85d317776c2d82de6a282"
+    },
+    {
+      "path": "src/engine/__tests__/providers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f87aa72c8e73f73fb770abf2678aa87df85e2437",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/f87aa72c8e73f73fb770abf2678aa87df85e2437"
+    },
+    {
+      "path": "src/engine/__tests__/providers/authored-provider.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f54762c952cb4476d12bb731c59fe7e249bcecc",
+      "size": 2653,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/4f54762c952cb4476d12bb731c59fe7e249bcecc"
+    },
+    {
+      "path": "src/engine/__tests__/providers/files-provider.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb1a95afd99b656a0aa778602d17cf61421a7f5e",
+      "size": 2835,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/cb1a95afd99b656a0aa778602d17cf61421a7f5e"
+    },
+    {
+      "path": "src/engine/__tests__/providers/work-provider.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0eae93fcbbc92176578f0731ba98505f8839462b",
+      "size": 3796,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/0eae93fcbbc92176578f0731ba98505f8839462b"
+    },
+    {
+      "path": "src/engine/createGraphNetwork.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6be09d39e54cf946a8b71c5324a7ebae78c0e55f",
+      "size": 16240,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/6be09d39e54cf946a8b71c5324a7ebae78c0e55f"
+    },
+    {
+      "path": "src/engine/graph.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "605353dd9b20fe1ec96e48ab2a075577940b50fd",
+      "size": 5803,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/605353dd9b20fe1ec96e48ab2a075577940b50fd"
+    },
+    {
+      "path": "src/engine/identity.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "40c69126b4d0db953057ea4cca994332eac69683",
+      "size": 1420,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/40c69126b4d0db953057ea4cca994332eac69683"
+    },
+    {
+      "path": "src/engine/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa11c2c27baeeb8119234a128f2c51bf9e35e65d",
+      "size": 933,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/aa11c2c27baeeb8119234a128f2c51bf9e35e65d"
+    },
+    {
+      "path": "src/engine/local-loader.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4213b393cdc1c45c1e59b893f85a5902a55b84c9",
+      "size": 10813,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/4213b393cdc1c45c1e59b893f85a5902a55b84c9"
+    },
+    {
+      "path": "src/engine/nodeRenderer.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d81badee137efad8d37c2ba024a294b8fd3034c",
+      "size": 1312422,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/4d81badee137efad8d37c2ba024a294b8fd3034c"
+    },
+    {
+      "path": "src/engine/nodemap.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcb403ae4b86a216d07858c038c9626ca806b50f",
+      "size": 14539,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/dcb403ae4b86a216d07858c038c9626ca806b50f"
+    },
+    {
+      "path": "src/engine/orchestrator.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a891085846fce6f69bb0e8cf44c50781c14f394b",
+      "size": 1258,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/a891085846fce6f69bb0e8cf44c50781c14f394b"
+    },
+    {
+      "path": "src/engine/parser.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "07746f0d43f8cbff65b8687f06ef8832d505cc0b",
+      "size": 19300,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/07746f0d43f8cbff65b8687f06ef8832d505cc0b"
+    },
+    {
+      "path": "src/engine/providers.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "03b1a209a9a3db4cfd99788fbe1add74451aac79",
+      "size": 1570,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/03b1a209a9a3db4cfd99788fbe1add74451aac79"
+    },
+    {
+      "path": "src/engine/providers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b974447d3d29f865f43b4a1e125d1ac02c34760f",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/b974447d3d29f865f43b4a1e125d1ac02c34760f"
+    },
+    {
+      "path": "src/engine/providers/authored-provider.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a70d02ef27c37629f40673458b0aa44425e8e556",
+      "size": 2394,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/a70d02ef27c37629f40673458b0aa44425e8e556"
+    },
+    {
+      "path": "src/engine/providers/files-provider.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f61f6d6db38b756b907dc790287af2cda126eda",
+      "size": 1074,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/0f61f6d6db38b756b907dc790287af2cda126eda"
+    },
+    {
+      "path": "src/engine/providers/work-provider.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c1b563d7cf52bb3a4a2cc5791b3acb6656962bae",
+      "size": 2966,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/c1b563d7cf52bb3a4a2cc5791b3acb6656962bae"
+    },
+    {
+      "path": "src/generated",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4119e77051bb82668a28d4bdcd4671be16ec554e",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/4119e77051bb82668a28d4bdcd4671be16ec554e"
+    },
+    {
+      "path": "src/generated/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d7a019c5dffc3d43172b363d51b7af2b6c44ff76",
+      "size": 19,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/d7a019c5dffc3d43172b363d51b7af2b6c44ff76"
+    },
+    {
+      "path": "src/hooks",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ffebc4ce541ecebe0acb91f75f1af7a77833a759",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/ffebc4ce541ecebe0acb91f75f1af7a77833a759"
+    },
+    {
+      "path": "src/hooks/useKeyboardNav.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "678949f2a32ba724e9fa3741ed909945d42f61cc",
+      "size": 1678,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/678949f2a32ba724e9fa3741ed909945d42f61cc"
+    },
+    {
+      "path": "src/hooks/useKnowledgeBase.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3ade126596e2f6d61260191abf0a3abf2189e23",
+      "size": 2808,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/c3ade126596e2f6d61260191abf0a3abf2189e23"
+    },
+    {
+      "path": "src/hooks/useTheme.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "33242796925d4ce6bf32e61ac14fb9b846b52096",
+      "size": 2432,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/33242796925d4ce6bf32e61ac14fb9b846b52096"
+    },
+    {
+      "path": "src/index.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "be3e2c9fcc82bb82ca691b8a721ec0b89241c423",
+      "size": 542,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/be3e2c9fcc82bb82ca691b8a721ec0b89241c423"
+    },
+    {
+      "path": "src/main.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bef5202a32cbd0632c43de40f6e908532903fd42",
+      "size": 230,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/bef5202a32cbd0632c43de40f6e908532903fd42"
+    },
+    {
+      "path": "src/styles",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1b19a9b07d6b4061fd394e68add5ff3b26be1b6c",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/1b19a9b07d6b4061fd394e68add5ff3b26be1b6c"
+    },
+    {
+      "path": "src/styles/hud.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "52268a914dc2c3490ff6a482c19b9a890da4c5c4",
+      "size": 479,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/52268a914dc2c3490ff6a482c19b9a890da4c5c4"
+    },
+    {
+      "path": "src/styles/overview.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b2b5668d5bfdd080702832f9a15ead4ba4685ca",
+      "size": 203,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/9b2b5668d5bfdd080702832f9a15ead4ba4685ca"
+    },
+    {
+      "path": "src/styles/reading.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a4cdeffbb16e8fd7cad53a3f979a7978e08c58bf",
+      "size": 5060,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/a4cdeffbb16e8fd7cad53a3f979a7978e08c58bf"
+    },
+    {
+      "path": "src/styles/responsive.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "845c053914a06025dd514f942e8b6b9f2bf8285c",
+      "size": 627,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/845c053914a06025dd514f942e8b6b9f2bf8285c"
+    },
+    {
+      "path": "src/styles/visuals.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80081ff49218ba1ab38367af0e336333a85a93dd",
+      "size": 3596,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/80081ff49218ba1ab38367af0e336333a85a93dd"
+    },
+    {
+      "path": "src/types",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0c741d71c7a8e2178068cb6cf2640c78a16a9cb8",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/0c741d71c7a8e2178068cb6cf2640c78a16a9cb8"
+    },
+    {
+      "path": "src/types/__tests__",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5e2a31a30b28f099ba64f87f96dbc0ad0a3fb00a",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/5e2a31a30b28f099ba64f87f96dbc0ad0a3fb00a"
+    },
+    {
+      "path": "src/types/__tests__/index.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b07da55e2b09d584ad6f1361aa6b17132dc22d1",
+      "size": 9628,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/1b07da55e2b09d584ad6f1361aa6b17132dc22d1"
+    },
+    {
+      "path": "src/types/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a971e718d75d34d85bf01c9dc766a8eac9b19de7",
+      "size": 15388,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/a971e718d75d34d85bf01c9dc766a8eac9b19de7"
+    },
+    {
+      "path": "src/views",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2657670bfa8d482445f2538d84d8ca6507102591",
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/2657670bfa8d482445f2538d84d8ca6507102591"
+    },
+    {
+      "path": "src/views/OverviewView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ebbf1d82afffc33528ebf8c5933a8b851a4827b2",
+      "size": 5262,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/ebbf1d82afffc33528ebf8c5933a8b851a4827b2"
+    },
+    {
+      "path": "src/views/ReadingView.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0afb48c160cafe65570576be2580bc7ca2f701e1",
+      "size": 12668,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/0afb48c160cafe65570576be2580bc7ca2f701e1"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "357c5dfe82f56233ea58b27cdaf0aaccb4ea447f",
+      "size": 369,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/357c5dfe82f56233ea58b27cdaf0aaccb4ea447f"
+    },
+    {
+      "path": "staticwebapp.config.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a873f526e2cc80d9768451eaacc176addddeb8db",
+      "size": 109,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/a873f526e2cc80d9768451eaacc176addddeb8db"
+    },
+    {
+      "path": "tsconfig.app.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af516fcca5aeda0272708668cbb6cc4eca71d410",
+      "size": 732,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/af516fcca5aeda0272708668cbb6cc4eca71d410"
+    },
+    {
+      "path": "tsconfig.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ffef600d959ec9e396d5a260bd3f5b927b2cef8",
+      "size": 119,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/1ffef600d959ec9e396d5a260bd3f5b927b2cef8"
+    },
+    {
+      "path": "tsconfig.node.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8a67f62f4ceebff3424e6e8cd4b3c25b17347546",
+      "size": 653,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/8a67f62f4ceebff3424e6e8cd4b3c25b17347546"
+    },
+    {
+      "path": "vite.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9dc1a78ae1215925b4b2fcc384a1f798dfd8abf4",
+      "size": 716,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/9dc1a78ae1215925b4b2fcc384a1f798dfd8abf4"
+    },
+    {
+      "path": "vitest.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7090e4a9df1ad7a97393113fa0399c4471ad0cc2",
+      "size": 331,
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/7090e4a9df1ad7a97393113fa0399c4471ad0cc2"
+    }
+  ],
+  "truncated": false
+}
