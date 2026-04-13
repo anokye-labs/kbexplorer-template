@@ -4,9 +4,11 @@
  * Tests ETag/cache behavior.
  */
 export function intercept(req, res) {
-  if (req.headers['if-none-match']) {
+  const clientEtag = req.headers['if-none-match'];
+  // Only return 304 if the ETag actually matches our fixture ETag
+  if (clientEtag && (clientEtag === '"fixture-etag"' || clientEtag.includes('fixture'))) {
     res.writeHead(304, {
-      'ETag': req.headers['if-none-match'],
+      'ETag': clientEtag,
       'Access-Control-Allow-Origin': '*',
       'X-RateLimit-Remaining': '59',
       'X-RateLimit-Reset': String(Math.floor(Date.now() / 1000) + 3600),

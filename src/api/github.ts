@@ -219,12 +219,21 @@ export async function fetchPullRequests(source: SourceConfig): Promise<GHIssue[]
   const cached = cacheGet<GHIssue[]>(cacheKey);
   if (cached) return cached.data;
 
-  const { data } = await ghFetch<GHIssue[]>(
-    `/repos/${source.owner}/${source.repo}/pulls?state=all&per_page=100`
-  );
+  const allPRs: GHIssue[] = [];
+  let page = 1;
+  const perPage = 100;
 
-  cacheSet(cacheKey, data);
-  return data;
+  while (true) {
+    const { data } = await ghFetch<GHIssue[]>(
+      `/repos/${source.owner}/${source.repo}/pulls?state=all&per_page=${perPage}&page=${page}`
+    );
+    allPRs.push(...data);
+    if (data.length < perPage) break;
+    page++;
+  }
+
+  cacheSet(cacheKey, allPRs);
+  return allPRs;
 }
 
 export interface GHCommit {

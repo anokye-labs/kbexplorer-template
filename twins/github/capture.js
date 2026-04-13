@@ -79,8 +79,11 @@ save('pulls.json', pulls);
 const { data: commits } = await ghFetch(`${base}/commits?sha=main&per_page=50`);
 save('commits.json', commits);
 
-// File contents
-const fileTargets = ['README.md', 'content/config.yaml'];
+// File contents — include content/*.md paths discovered from the tree
+const contentPaths = tree.tree
+  .filter(e => e.type === 'blob' && e.path.startsWith('content/') && e.path.endsWith('.md'))
+  .map(e => e.path);
+const fileTargets = ['README.md', 'content/config.yaml', ...contentPaths];
 for (const filePath of fileTargets) {
   try {
     const { data } = await ghFetch(`${base}/contents/${filePath}`);

@@ -36,17 +36,19 @@ const routes = [
   { pattern: /^\/repos\/[^/]+\/[^/]+\/contents\/(.+)/, fixtureFromPath: true },
 ];
 
-function respond(res, statusCode, body) {
+function respond(res, statusCode, body, options = {}) {
   const json = JSON.stringify(body);
-  res.writeHead(statusCode, {
+  const headers = {
     'Content-Type': 'application/json; charset=utf-8',
     'X-RateLimit-Remaining': '59',
     'X-RateLimit-Reset': String(Math.floor(Date.now() / 1000) + 3600),
-    'ETag': '"fixture-etag"',
+    'ETag': options.etag ?? '"fixture-etag"',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Authorization, Accept, If-None-Match',
-    'Access-Control-Expose-Headers': 'ETag, X-RateLimit-Remaining, X-RateLimit-Reset',
-  });
+    'Access-Control-Expose-Headers': 'ETag, X-RateLimit-Remaining, X-RateLimit-Reset, Link',
+  };
+  if (options.link) headers['Link'] = options.link;
+  res.writeHead(statusCode, headers);
   res.end(json);
 }
 
@@ -93,31 +95,40 @@ const server = createServer(async (req, res) => {
     if (route.fixtureFromPath) {
       const contentPath = match[1];
       const encoded = contentPath.replace(/\//g, '%2F');
-      const data = loadFixture(`files/${encoded}.json`);
+      const fixtureName = `files/${encoded}.json`;
+      const data = loadFixture(fixtureName);
       if (!data) {
-        return respond(res, 404, { message: 'Not Found' });
+        return respond(res, 404, { message: 'Not Found', documentation_url: 'https://docs.github.com/rest' });
       }
-      return respond(res, 200, data);
+      return respond(res, 200, data, { etag: `"${fixtureName}-single"` });
     }
 
     // Array fixtures with pagination support
     const data = loadFixture(route.fixture);
     if (!data) {
-      return respond(res, 404, { message: 'Not Found' });
+      return respond(res, 404, { message: 'Not Found', documentation_url: 'https://docs.github.com/rest' });
     }
 
-    // Simple pagination: page > 1 returns empty array for list endpoints
     if (Array.isArray(data)) {
-      const page = Number(params.get('page') ?? '1');
-      if (page > 1) {
-        return respond(res, 200, []);
+      const perPage = Math.min(Number(params.get('per_page') ?? 30), 100);
+      const page = Number(params.get('page') ?? 1);
+      const start = (page - 1) * perPage;
+      const end = page * perPage;
+      const sliced = data.slice(start, end);
+      const hasNext = end < data.length;
+
+      const options = { etag: `"${route.fixture}-${data.length}"` };
+      if (hasNext) {
+        const nextUrl = `http://localhost:${PORT}${pathname}?per_page=${perPage}&page=${page + 1}`;
+        options.link = `<${nextUrl}>; rel="next"`;
       }
+      return respond(res, 200, sliced, options);
     }
 
-    return respond(res, 200, data);
+    return respond(res, 200, data, { etag: `"${route.fixture}-single"` });
   }
 
-  respond(res, 404, { message: `No twin route for ${pathname}` });
+  respond(res, 404, { message: `No twin route for ${pathname}`, documentation_url: 'https://docs.github.com/rest' });
 });
 
 server.listen(PORT, () => {

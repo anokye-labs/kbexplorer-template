@@ -14,7 +14,10 @@ export function intercept(req, res) {
       'X-RateLimit-Reset': String(Math.floor(Date.now() / 1000) + 60),
       'Access-Control-Allow-Origin': '*',
     });
-    res.end(JSON.stringify({ message: 'API rate limit exceeded' }));
+    res.end(JSON.stringify({
+      message: 'API rate limit exceeded',
+      documentation_url: 'https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting',
+    }));
     return true;
   }
   return false;
