@@ -9,6 +9,8 @@ on:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
   pages: write
   id-token: write
 
@@ -48,6 +50,7 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
+          GH_TOKEN: ${{ github.token }}
 
       # Tier 3: E2E tests
       - name: Install Playwright browsers
@@ -91,6 +94,7 @@ jobs:
         env:
           VITE_KB_LOCAL: 'true'
           VITE_BASE_PATH: /kbexplorer-template/
+          GH_TOKEN: ${{ github.token }}
 
       - name: Copy index.html to 404.html for SPA routing
         run: cp dist/index.html dist/404.html
