@@ -1,0 +1,395 @@
+{
+  "meta": {
+    "repo": "anokye-labs/kbexplorer-template",
+    "generatedAt": "2025-07-15T00:00:00Z",
+    "nodeCount": 37,
+    "edgeHintCount": 128,
+    "clusterCount": 7
+  },
+  "clusters": {
+    "engine": { "name": "Engine", "color": "#4A9CC8", "description": "Core graph computation and orchestration" },
+    "ui": { "name": "Interface", "color": "#8CB050", "description": "React components and interactive views" },
+    "visual": { "name": "Visual System", "color": "#E8A838", "description": "Styling, theming, and visual rendering" },
+    "data": { "name": "Data Layer", "color": "#C07840", "description": "Content providers, API, and caching" },
+    "infra": { "name": "Infrastructure", "color": "#5A98A8", "description": "Build tooling, config, and deployment" },
+    "design": { "name": "Design Decisions", "color": "#A86FDF", "description": "Architecture specs and design rationale" },
+    "guide": { "name": "Guide", "color": "#39FF14", "description": "Onboarding and usage documentation" }
+  },
+  "nodes": [
+    {
+      "id": "overview",
+      "title": "kbexplorer Architecture",
+      "cluster": "guide",
+      "emoji": "Globe",
+      "file": "content/overview.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["graph-engine", "type-system", "app-shell", "content-pipeline", "hud"]
+    },
+    {
+      "id": "graph-engine",
+      "title": "Graph Engine",
+      "cluster": "engine",
+      "emoji": "Flash",
+      "file": "src/engine/graph.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["type-system", "orchestrator", "graph-network", "overview"]
+    },
+    {
+      "id": "orchestrator",
+      "title": "Orchestrator",
+      "cluster": "engine",
+      "emoji": "ArrowSync",
+      "file": "src/engine/orchestrator.ts",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document the orchestrator: how it coordinates providers, parser, and graph engine to produce the final KBGraph. Cite src/engine/orchestrator.ts. Show the pipeline: providers → parser → graph.",
+      "edgeHints": ["graph-engine", "parser", "providers-overview", "content-pipeline"]
+    },
+    {
+      "id": "parser",
+      "title": "Markdown Parser",
+      "cluster": "engine",
+      "emoji": "DocumentText",
+      "file": "src/engine/parser.ts",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document the markdown parser: how it extracts frontmatter, inline links, and structured content from raw markdown. Cite src/engine/parser.ts. Show relationship to identity system.",
+      "edgeHints": ["identity", "orchestrator", "type-system", "node-mapping"]
+    },
+    {
+      "id": "identity",
+      "title": "Identity System",
+      "cluster": "engine",
+      "emoji": "Fingerprint",
+      "file": "src/engine/identity.ts",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document the multi-layer identity system: how nodes get stable IDs, how aliases and references resolve. Cite src/engine/identity.ts. Link to spec-multi-layer-identity.",
+      "edgeHints": ["parser", "type-system", "multi-layer-identity", "local-loader"]
+    },
+    {
+      "id": "local-loader",
+      "title": "Local Loader",
+      "cluster": "engine",
+      "emoji": "FolderOpen",
+      "file": "src/engine/local-loader.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["orchestrator", "providers-overview", "node-mapping", "identity", "kb-loader"]
+    },
+    {
+      "id": "graph-network",
+      "title": "Graph Network",
+      "cluster": "engine",
+      "emoji": "Organization",
+      "file": "src/engine/createGraphNetwork.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["graph-engine", "node-renderer", "hud", "type-system"]
+    },
+    {
+      "id": "node-renderer",
+      "title": "Node Renderer",
+      "cluster": "visual",
+      "emoji": "PaintBrush",
+      "file": "src/engine/nodeRenderer.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["graph-network", "visual-system", "hud"]
+    },
+    {
+      "id": "node-mapping",
+      "title": "Node Mapping",
+      "cluster": "engine",
+      "emoji": "Map",
+      "file": "src/engine/nodemap.ts",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document nodemap.ts: how nodemap.yaml entries (file, directory, glob, files modes) are resolved into KBNodes. Cite src/engine/nodemap.ts and nodemap.yaml.",
+      "edgeHints": ["parser", "local-loader", "spec-node-mapping", "type-system"]
+    },
+    {
+      "id": "providers-overview",
+      "title": "Content Providers",
+      "cluster": "data",
+      "emoji": "PlugConnected",
+      "file": "src/engine/providers.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["authored-provider", "files-provider", "work-provider", "orchestrator", "local-loader"]
+    },
+    {
+      "id": "authored-provider",
+      "title": "Authored Provider",
+      "cluster": "data",
+      "emoji": "Compose",
+      "file": "src/engine/providers/authored-provider.ts",
+      "derived": true,
+      "prompt": "Document the authored-provider: how it loads markdown from content/ directory, parses frontmatter, and produces KBNodes. Cite src/engine/providers/authored-provider.ts.",
+      "edgeHints": ["providers-overview", "parser", "node-mapping", "identity"]
+    },
+    {
+      "id": "files-provider",
+      "title": "Files Provider",
+      "cluster": "data",
+      "emoji": "DocumentCopy",
+      "file": "src/engine/providers/files-provider.ts",
+      "derived": true,
+      "prompt": "Document the files-provider: how it resolves nodemap file/directory/glob entries into raw content. Cite src/engine/providers/files-provider.ts.",
+      "edgeHints": ["providers-overview", "parser", "github-api", "identity"]
+    },
+    {
+      "id": "work-provider",
+      "title": "Work Provider",
+      "cluster": "data",
+      "emoji": "TaskListSquare",
+      "file": "src/engine/providers/work-provider.ts",
+      "derived": true,
+      "prompt": "Document the work-provider: how it fetches GitHub issues and converts them to KBNodes. Cite src/engine/providers/work-provider.ts.",
+      "edgeHints": ["providers-overview", "github-api", "parser", "identity"]
+    },
+    {
+      "id": "type-system",
+      "title": "Type System",
+      "cluster": "engine",
+      "emoji": "Code",
+      "file": "src/types/index.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["graph-engine", "parser", "identity", "overview"]
+    },
+    {
+      "id": "github-api",
+      "title": "GitHub API & Cache",
+      "cluster": "data",
+      "emoji": "Cloud",
+      "file": "src/api/github.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["cache-system", "files-provider", "work-provider", "type-system"]
+    },
+    {
+      "id": "cache-system",
+      "title": "Cache System",
+      "cluster": "data",
+      "emoji": "Database",
+      "file": "src/api/github.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["github-api", "kb-loader", "type-system"]
+    },
+    {
+      "id": "app-shell",
+      "title": "App Shell",
+      "cluster": "ui",
+      "emoji": "WindowNew",
+      "file": "src/App.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["kb-loader", "theme-system", "keyboard-nav", "hud", "overview-view", "reading-view"]
+    },
+    {
+      "id": "hud",
+      "title": "HUD & Minimap",
+      "cluster": "ui",
+      "emoji": "Map",
+      "file": "src/components/HUD.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["graph-network", "node-renderer", "node-visual", "app-shell"]
+    },
+    {
+      "id": "node-visual",
+      "title": "Node Visual",
+      "cluster": "ui",
+      "emoji": "Sparkle",
+      "file": "src/components/NodeVisual.tsx",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document NodeVisual.tsx: how individual node cards are rendered with emoji, cluster color, and click navigation. Cite src/components/NodeVisual.tsx.",
+      "edgeHints": ["hud", "overview-view", "reading-view", "type-system"]
+    },
+    {
+      "id": "loading-error-screens",
+      "title": "Loading & Error Screens",
+      "cluster": "ui",
+      "emoji": "Warning",
+      "file": "src/components/LoadingScreen.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["app-shell", "visual-system"]
+    },
+    {
+      "id": "overview-view",
+      "title": "Overview View",
+      "cluster": "ui",
+      "emoji": "Grid",
+      "file": "src/views/OverviewView.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["node-visual", "app-shell", "type-system"]
+    },
+    {
+      "id": "reading-view",
+      "title": "Reading View",
+      "cluster": "ui",
+      "emoji": "BookOpen",
+      "file": "src/views/ReadingView.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["node-visual", "app-shell", "type-system"]
+    },
+    {
+      "id": "kb-loader",
+      "title": "KB Loader Hook",
+      "cluster": "ui",
+      "emoji": "ArrowDownload",
+      "file": "src/hooks/useKnowledgeBase.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["local-loader", "app-shell", "cache-system", "type-system"]
+    },
+    {
+      "id": "keyboard-nav",
+      "title": "Keyboard Navigation",
+      "cluster": "ui",
+      "emoji": "Keyboard",
+      "file": "src/hooks/useKeyboardNav.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["app-shell", "theme-system"]
+    },
+    {
+      "id": "theme-system",
+      "title": "Theme System",
+      "cluster": "visual",
+      "emoji": "DarkTheme",
+      "file": "src/hooks/useTheme.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["app-shell", "keyboard-nav", "style-system"]
+    },
+    {
+      "id": "style-system",
+      "title": "Style System",
+      "cluster": "visual",
+      "emoji": "PaintBrush",
+      "file": "src/styles/hud.css",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["theme-system", "visual-system", "node-renderer"]
+    },
+    {
+      "id": "visual-system",
+      "title": "Visual System",
+      "cluster": "visual",
+      "emoji": "DesignIdeas",
+      "file": "src/styles/visuals.css",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["style-system", "loading-error-screens", "node-renderer"]
+    },
+    {
+      "id": "content-pipeline",
+      "title": "Content Pipeline",
+      "cluster": "data",
+      "emoji": "Pipeline",
+      "file": "content/content-pipeline.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["orchestrator", "overview", "providers-overview"]
+    },
+    {
+      "id": "design-decisions",
+      "title": "Design Decisions",
+      "cluster": "design",
+      "emoji": "Lightbulb",
+      "file": "content/design-decisions.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["overview", "typed-edges", "multi-layer-identity"]
+    },
+    {
+      "id": "typed-edges",
+      "title": "Typed Edges Spec",
+      "cluster": "design",
+      "emoji": "BranchFork",
+      "file": "content/spec-typed-edges.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["graph-engine", "design-decisions", "inline-link-extraction"]
+    },
+    {
+      "id": "multi-layer-identity",
+      "title": "Multi-Layer Identity Spec",
+      "cluster": "design",
+      "emoji": "LayerDiagonal",
+      "file": "content/spec-multi-layer-identity.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["identity", "design-decisions", "spec-node-mapping"]
+    },
+    {
+      "id": "inline-link-extraction",
+      "title": "Inline Link Extraction",
+      "cluster": "design",
+      "emoji": "Link",
+      "file": "content/spec-inline-link-extraction.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["parser", "typed-edges", "graph-engine"]
+    },
+    {
+      "id": "spec-node-mapping",
+      "title": "Node Mapping Spec",
+      "cluster": "design",
+      "emoji": "DocumentBulletList",
+      "file": "content/spec-node-mapping.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["node-mapping", "multi-layer-identity", "local-loader"]
+    },
+    {
+      "id": "vite-config",
+      "title": "Vite Configuration",
+      "cluster": "infra",
+      "emoji": "Settings",
+      "file": "vite.config.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["build-scripts", "test-suite"]
+    },
+    {
+      "id": "build-scripts",
+      "title": "Build Scripts",
+      "cluster": "infra",
+      "emoji": "Wrench",
+      "file": "scripts/generate-manifest.js",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["vite-config", "test-suite", "catalogue-transformer"]
+    },
+    {
+      "id": "test-suite",
+      "title": "Test Suite",
+      "cluster": "infra",
+      "emoji": "Beaker",
+      "file": "vitest.config.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["vite-config", "build-scripts"]
+    },
+    {
+      "id": "catalogue-transformer",
+      "title": "Catalogue Transformer",
+      "cluster": "infra",
+      "emoji": "ArrowRepeatAll",
+      "file": "content/catalogue-transformer.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": ["build-scripts", "content-pipeline", "graph-engine"]
+    }
+  ]
+}
