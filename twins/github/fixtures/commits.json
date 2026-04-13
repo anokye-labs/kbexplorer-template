@@ -1,0 +1,2107 @@
+[
+  {
+    "sha": "94e3586e3572252ec4aa436285f1f979e789a000",
+    "node_id": "C_kwDOR5SootoAKDk0ZTM1ODZlMzU3MjI1MmVjNGFhNDM2Mjg1ZjFmOTc5ZTc4OWEwMDA",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T16:48:59Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T16:48:59Z"
+      },
+      "message": "feat: comprehensive 3-tier test strategy — 161 tests + CI gate\n\nTier 1 — Unit tests (vitest, 137 tests, 2s):\n- graph.test.ts: buildGraph, buildEdges, computeRelated, getHubNodeId\n- nodemap.test.ts: all 5 mapping modes, connection derivation, edge cases\n- identity.test.ts: assignIdentity URNs, shareIdentity, buildIdentityIndex\n- types/index.test.ts: filterGraphToLayer, collapseGraphClusters, getNodeLayer\n- providers.test.ts: ProviderRegistry topological sort\n- providers/*: FilesProvider, AuthoredProvider, WorkProvider\n- Fixed pre-existing parser test failures\n\nTier 2 — Graph validation (scripts/validate-graph.js, 6 rules):\n- No broken inline links, duplicate IDs, orphan authored nodes\n- Cluster validity, nodemap file existence, empty content check\n\nTier 3 — E2E smoke tests (Playwright, 18 tests, 2.4m):\n- smoke.spec.ts: app loads, README/overview render, no console errors\n- layer-views.spec.ts: All/Files/Content/Work view switching\n- navigation.spec.ts: inline link nav, back button, connection card, 404\n- display-modes.spec.ts: code/tree/prose display rendering\n- cluster-collapse.spec.ts: collapse/expand cycle, strikethrough style\n\nCI/CD:\n- github-pages.yml: test job gates deploy (unit → validate → E2E)\n- PR trigger added for test-on-PR\n- Playwright report uploaded as artifact\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "412d2e45bb268d107862eed05536f1300cf7d8bd",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/412d2e45bb268d107862eed05536f1300cf7d8bd"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/94e3586e3572252ec4aa436285f1f979e789a000",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/94e3586e3572252ec4aa436285f1f979e789a000",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/94e3586e3572252ec4aa436285f1f979e789a000",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/94e3586e3572252ec4aa436285f1f979e789a000/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "18a37bb76b515f5381b31d0bd04261c3d86adc4a",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/18a37bb76b515f5381b31d0bd04261c3d86adc4a",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/18a37bb76b515f5381b31d0bd04261c3d86adc4a"
+      }
+    ]
+  },
+  {
+    "sha": "18a37bb76b515f5381b31d0bd04261c3d86adc4a",
+    "node_id": "C_kwDOR5SootoAKDE4YTM3YmI3NmI1MTVmNTM4MWIzMWQwYmQwNDI2MWMzZDg2YWRjNGE",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T16:43:54Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T16:43:54Z"
+      },
+      "message": "Add E2E tests for navigation, display modes, and cluster collapse\n\n- navigation.spec.ts: inline link nav, back button, connection card nav, 404\n- display-modes.spec.ts: code display, tree display, prose markdown rendering\n- cluster-collapse.spec.ts: collapse/expand toggle, strikethrough style, restore\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "46d8df48eb350d57e621685681c3a93a91bb26d8",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/46d8df48eb350d57e621685681c3a93a91bb26d8"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/18a37bb76b515f5381b31d0bd04261c3d86adc4a",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/18a37bb76b515f5381b31d0bd04261c3d86adc4a",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/18a37bb76b515f5381b31d0bd04261c3d86adc4a",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/18a37bb76b515f5381b31d0bd04261c3d86adc4a/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "8755540645be96e7f58d0ba8aedf39ecee835e50",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8755540645be96e7f58d0ba8aedf39ecee835e50",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/8755540645be96e7f58d0ba8aedf39ecee835e50"
+      }
+    ]
+  },
+  {
+    "sha": "8755540645be96e7f58d0ba8aedf39ecee835e50",
+    "node_id": "C_kwDOR5SootoAKDg3NTU1NDA2NDViZTk2ZTdmNThkMGJhOGFlZGYzOWVjZWU4MzVlNTA",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T16:11:56Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T16:11:56Z"
+      },
+      "message": "fix: code review fixes + test updates\n\n- Edge dedup in collapseGraphClusters now includes type in key\n  (was losing multi-type edges between same node pair)\n- Summary node related map aggregated from constituent nodes\n  (was empty since summary IDs don't exist in original graph)\n- Nodemap import resolution prefers authored over file nodes\n  for same path (avoids ambiguous resolution)\n- Fixed parser tests: expect derived_from edge + identity URN\n  on parsed nodes (18 tests passing)\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "885c5573d8bb77dc60be663dd0c87ef5c7593fee",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/885c5573d8bb77dc60be663dd0c87ef5c7593fee"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/8755540645be96e7f58d0ba8aedf39ecee835e50",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8755540645be96e7f58d0ba8aedf39ecee835e50",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/8755540645be96e7f58d0ba8aedf39ecee835e50",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8755540645be96e7f58d0ba8aedf39ecee835e50/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "930f94c7be11cbb86949a574b192e166bb7aac59",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/930f94c7be11cbb86949a574b192e166bb7aac59",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/930f94c7be11cbb86949a574b192e166bb7aac59"
+      }
+    ]
+  },
+  {
+    "sha": "930f94c7be11cbb86949a574b192e166bb7aac59",
+    "node_id": "C_kwDOR5SootoAKDkzMGY5NGM3YmUxMWNiYjg2OTQ5YTU3NGIxOTJlMTY2YmI3YWFjNTk",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T14:29:18Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T14:29:18Z"
+      },
+      "message": "feat: provider system + identity URNs (#42, #47)\n\nGraph Provider Architecture:\n- GraphProvider interface + ProviderRegistry with topological sort\n- FilesProvider wraps treeToNodes, AuthoredProvider wraps parseMarkdownFile\n  + loadNodeMap, WorkProvider wraps issues/PRs/commits\n- Orchestrator runs providers in dependency order → unified KBGraph\n- provider field on KBNode tracks which provider created each node\n\nIdentity URNs:\n- identity field on KBNode with canonical URN (urn:file:, urn:content:,\n  urn:issue:, urn:pr:, urn:commit:)\n- assignIdentity() auto-assigns based on node source type\n- buildIdentityIndex() maps URNs to all node IDs sharing them\n- Content layer filter is now identity-aware: edges from file nodes\n  sharing identity with content nodes get remapped to the content node\n\nFiles created:\n- src/engine/providers.ts — interface + registry\n- src/engine/providers/files-provider.ts\n- src/engine/providers/authored-provider.ts\n- src/engine/providers/work-provider.ts\n- src/engine/orchestrator.ts\n- src/engine/identity.ts\n\nCloses #42, closes #47\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "b43df9e7974ca8f020a221cfececb50305bdb257",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/b43df9e7974ca8f020a221cfececb50305bdb257"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/930f94c7be11cbb86949a574b192e166bb7aac59",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/930f94c7be11cbb86949a574b192e166bb7aac59",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/930f94c7be11cbb86949a574b192e166bb7aac59",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/930f94c7be11cbb86949a574b192e166bb7aac59/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "611e13809ab082bd462a8fd9ebf14095d35a5280",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/611e13809ab082bd462a8fd9ebf14095d35a5280",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/611e13809ab082bd462a8fd9ebf14095d35a5280"
+      }
+    ]
+  },
+  {
+    "sha": "611e13809ab082bd462a8fd9ebf14095d35a5280",
+    "node_id": "C_kwDOR5SootoAKDYxMWUxMzgwOWFiMDgyYmQ0NjJhOGZkOWViZjE0MDk1ZDM1YTUyODA",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T14:06:50Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T14:06:50Z"
+      },
+      "message": "feat: node mapping — nodemap.yaml maps files to graph nodes (#41)\n\nNew nodemap.yaml config defines how repo files become knowledge graph\nnodes with 5 mapping modes:\n\n- **Single file** — 1 file → 1 node (code/prose display)\n- **Split** — 1 file → parent + section nodes at ## headings\n- **Merge** — N files → 1 combined node\n- **Glob** — pattern → N nodes, one per matching file\n- **Directory** — dir → 1 tree node with file listing\n\nDisplay modes in ReadingView:\n- code: syntax-highlighted source in <pre><code>\n- tree: directory listing with 📁/📄 icons and sizes\n- file-list: tabular file listing\n- table: pipe/tab-delimited data as HTML table\n- diagram: placeholder for future Mermaid support\n- prose: existing markdown rendering (default)\n\nImplementation:\n- src/engine/nodemap.ts: loadNodeMap() with all 5 modes + connection\n  derivation (imports/references/explicit)\n- src/types/index.ts: DisplayMode, NodeMapEntry, NodeMap types +\n  KBNode.display field\n- src/views/ReadingView.tsx: renderContent() dispatcher + TreeView,\n  FileListView, TableView helper components\n- scripts/generate-manifest.js: reads nodemap.yaml, collects file\n  contents + directory listings into manifest\n- src/engine/local-loader.ts: processes nodemap from manifest\n- nodemap.yaml: 5 demo entries for kbexplorer itself (ESLint, SWA\n  config, styles dir, hooks glob, tsconfig merge)\n\nExisting authored content and README unchanged.\n\nCloses #41\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "86af7db8d9648659e6fbd86495aaf1efdd7ec0c3",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/86af7db8d9648659e6fbd86495aaf1efdd7ec0c3"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/611e13809ab082bd462a8fd9ebf14095d35a5280",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/611e13809ab082bd462a8fd9ebf14095d35a5280",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/611e13809ab082bd462a8fd9ebf14095d35a5280",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/611e13809ab082bd462a8fd9ebf14095d35a5280/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "f1317f1d97aa19b00c46e7ca44162f037e040f8d",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f1317f1d97aa19b00c46e7ca44162f037e040f8d",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f1317f1d97aa19b00c46e7ca44162f037e040f8d"
+      }
+    ]
+  },
+  {
+    "sha": "f1317f1d97aa19b00c46e7ca44162f037e040f8d",
+    "node_id": "C_kwDOR5SootoAKGYxMzE3ZjFkOTdhYTE5YjAwYzQ2ZTdjYTQ0MTYyZjAzN2UwNDBmOGQ",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T13:17:42Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-12T13:17:42Z"
+      },
+      "message": "feat: cluster collapse — click legend to collapse/expand clusters (#57)\n\nClick any cluster name in the sidebar or overlay legend to collapse it\ninto a single summary node. Collapsed clusters show with strikethrough\ntext and 50% opacity. Click again to expand. State persisted in\nlocalStorage.\n\nImplementation:\n- collapseGraphClusters() in types/index.ts: replaces cluster's nodes\n  with one summary node, remaps edges, deduplicates cross-cluster edges\n- Collapse state piped through filteredGraph memo (layer → collapse)\n- Legend uses the pre-collapse graph so collapsed clusters stay visible\n  for toggling back\n- Works in both sidebar and overlay legends\n\nCloses #57\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "67e8caa81773a9ff943acfdd911947607e3979e3",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/67e8caa81773a9ff943acfdd911947607e3979e3"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/f1317f1d97aa19b00c46e7ca44162f037e040f8d",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f1317f1d97aa19b00c46e7ca44162f037e040f8d",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f1317f1d97aa19b00c46e7ca44162f037e040f8d",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f1317f1d97aa19b00c46e7ca44162f037e040f8d/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "79fc1e080b3cdc8b89f8e314532536d231f10f42",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/79fc1e080b3cdc8b89f8e314532536d231f10f42",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/79fc1e080b3cdc8b89f8e314532536d231f10f42"
+      }
+    ]
+  },
+  {
+    "sha": "79fc1e080b3cdc8b89f8e314532536d231f10f42",
+    "node_id": "C_kwDOR5SootoAKDc5ZmMxZTA4MGIzY2RjOGI4OWY4ZTMxNDUzMjUzNmQyMzFmMTBmNDI",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T23:31:08Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T23:31:08Z"
+      },
+      "message": "feat: README with 88 inline links + extract links from README in parser\n\nThe README now links every feature, concept, and component it mentions\nto the corresponding content node — 88 internal links across 35 unique\ntargets. Previously the README had zero links to content nodes.\n\nKey changes:\n- README.md: card grid → overview-view, constellation → graph-network,\n  reading view → reading-view, HUD → hud, GitHub API → github-api,\n  local mode → local-loader, manifest → manifest-generator, etc.\n- parser.ts + local-loader.ts: README inline link extraction added —\n  [text](node-id) links in README.md now create graph edges, same as\n  authored content. Previously only fuzzy title matching was used.\n- graph.ts: hub node prefers readme (reverted overview-first change)\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "7ea9fbf66f24d89e704ad4c26a20443adc2c8dc7",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/7ea9fbf66f24d89e704ad4c26a20443adc2c8dc7"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/79fc1e080b3cdc8b89f8e314532536d231f10f42",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/79fc1e080b3cdc8b89f8e314532536d231f10f42",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/79fc1e080b3cdc8b89f8e314532536d231f10f42",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/79fc1e080b3cdc8b89f8e314532536d231f10f42/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "5c378674fe704e56a718b67bf2bc25e7c2c230d9",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/5c378674fe704e56a718b67bf2bc25e7c2c230d9",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/5c378674fe704e56a718b67bf2bc25e7c2c230d9"
+      }
+    ]
+  },
+  {
+    "sha": "5c378674fe704e56a718b67bf2bc25e7c2c230d9",
+    "node_id": "C_kwDOR5SootoAKDVjMzc4Njc0ZmU3MDRlNTZhNzE4YjY3YmYyYmMyNWU3YzJjMjMwZDk",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T21:19:29Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T21:19:29Z"
+      },
+      "message": "feat: default landing page is now 'overview' instead of 'readme'\n\ngetHubNodeId() now prefers the authored 'overview' node (the enriched\narchitecture page with 24 inline links) over the repo 'readme' (the\nGitHub-facing install doc). Falls back to readme, then most-connected.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "9c4a4ac973b6dc23caa81ef8c3f88135f289443e",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/9c4a4ac973b6dc23caa81ef8c3f88135f289443e"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/5c378674fe704e56a718b67bf2bc25e7c2c230d9",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/5c378674fe704e56a718b67bf2bc25e7c2c230d9",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/5c378674fe704e56a718b67bf2bc25e7c2c230d9",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/5c378674fe704e56a718b67bf2bc25e7c2c230d9/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "184b20160c6270db0bf43748c41a55985364374d",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/184b20160c6270db0bf43748c41a55985364374d",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/184b20160c6270db0bf43748c41a55985364374d"
+      }
+    ]
+  },
+  {
+    "sha": "184b20160c6270db0bf43748c41a55985364374d",
+    "node_id": "C_kwDOR5SootoAKDE4NGIyMDE2MGM2MjcwZGIwYmY0Mzc0OGM0MWE1NTk4NTM2NDM3NGQ",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T20:42:16Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T20:42:16Z"
+      },
+      "message": "content: enrich README + fix orphans — readability & reachability pass\n\nREADME (overview.md) expanded from 8 outgoing links to 24, covering\nall major graph hubs across six new sections: data flow, visual\nexperience, graph engine, architecture roadmap, and getting started.\n\nFixed 4 orphan nodes (0 incoming links):\n- catalogue-transformer ← content-pipeline, manifest-generator\n- spec-typed-edges ← type-system, graph-engine\n- wiki-deep-dive ← wiki-getting-started\n- wiki-getting-started ← wiki-overview\n\nZero orphans remaining. Every content node is now reachable.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "c639b23f25a16332a96e5d571e2fdf0263bdd7b3",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/c639b23f25a16332a96e5d571e2fdf0263bdd7b3"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/184b20160c6270db0bf43748c41a55985364374d",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/184b20160c6270db0bf43748c41a55985364374d",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/184b20160c6270db0bf43748c41a55985364374d",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/184b20160c6270db0bf43748c41a55985364374d/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "256e68c21c4097f84d9fefd1cba38cbb79eb7c6c",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/256e68c21c4097f84d9fefd1cba38cbb79eb7c6c",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/256e68c21c4097f84d9fefd1cba38cbb79eb7c6c"
+      }
+    ]
+  },
+  {
+    "sha": "256e68c21c4097f84d9fefd1cba38cbb79eb7c6c",
+    "node_id": "C_kwDOR5SootoAKDI1NmU2OGMyMWM0MDk3Zjg0ZDlmZWZkMWNiYTM4Y2JiNzllYjdjNmM",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T20:18:08Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T20:18:08Z"
+      },
+      "message": "fix: font scaling — relative units for headings + line-height, cap at 1.6rem\n\nHeadings now use em units (1.65em, 1.35em, 1.12em, 1em) so they scale\nwith --prose-font-size. Line-height switched from fixed 20px to\nrelative 1.5 (body) / 1.3 (headings) — no more text overlap at large\nsizes. Max font capped at 1.6rem (was 2.6rem which was unreadable).\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "69ba6b659f89e9e6070154291a2e27ae2550b94f",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/69ba6b659f89e9e6070154291a2e27ae2550b94f"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/256e68c21c4097f84d9fefd1cba38cbb79eb7c6c",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/256e68c21c4097f84d9fefd1cba38cbb79eb7c6c",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/256e68c21c4097f84d9fefd1cba38cbb79eb7c6c",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/256e68c21c4097f84d9fefd1cba38cbb79eb7c6c/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "d69b7a2e46eb8180b72f7678cff705c20d0c3106",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d69b7a2e46eb8180b72f7678cff705c20d0c3106",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/d69b7a2e46eb8180b72f7678cff705c20d0c3106"
+      }
+    ]
+  },
+  {
+    "sha": "d69b7a2e46eb8180b72f7678cff705c20d0c3106",
+    "node_id": "C_kwDOR5SootoAKGQ2OWI3YTJlNDZlYjgxODBiNzJmNzY3OGNmZjcwNWMyMGQwYzMxMDY",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T20:14:27Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T20:14:27Z"
+      },
+      "message": "refactor: convert 204 frontmatter connections to inline links across 42 files\n\nEvery frontmatter connections: entry has been replaced with an inline\n[text](target-id) link woven naturally into the prose body. The parser\nextracts these as 'references' edges (source: 'inline') instead of\n'frontmatter' edges — a stronger, more discoverable link type.\n\nBefore: 204 frontmatter connections, 0 inline links\nAfter:  0 frontmatter connections, 248 inline links\n\n42 content files modified, net -338 lines (frontmatter YAML is verbose,\ninline links are concise).\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "bb94298f854af7eb2a047d424b64dc0400c2d7f7",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/bb94298f854af7eb2a047d424b64dc0400c2d7f7"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/d69b7a2e46eb8180b72f7678cff705c20d0c3106",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d69b7a2e46eb8180b72f7678cff705c20d0c3106",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/d69b7a2e46eb8180b72f7678cff705c20d0c3106",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d69b7a2e46eb8180b72f7678cff705c20d0c3106/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "d562bb28222217651f0cbc1034af1979b2670e49",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d562bb28222217651f0cbc1034af1979b2670e49",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/d562bb28222217651f0cbc1034af1979b2670e49"
+      }
+    ]
+  },
+  {
+    "sha": "d562bb28222217651f0cbc1034af1979b2670e49",
+    "node_id": "C_kwDOR5SootoAKGQ1NjJiYjI4MjIyMjE3NjUxZjBjYmMxMDM0YWYxOTc5YjI2NzBlNDk",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T20:10:27Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T20:10:27Z"
+      },
+      "message": "feat: double max font size (1.3rem → 2.6rem)\n\nExtended FONT_SIZES array from 5 to 7 steps: 0.92, 1.0, 1.18, 1.4,\n1.7, 2.0, 2.6rem. Updated both sidebar and bottom-dock font sliders.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "f56d38cb601ee9bf53ceeace4b979a53d8ac55fb",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/f56d38cb601ee9bf53ceeace4b979a53d8ac55fb"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/d562bb28222217651f0cbc1034af1979b2670e49",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d562bb28222217651f0cbc1034af1979b2670e49",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/d562bb28222217651f0cbc1034af1979b2670e49",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d562bb28222217651f0cbc1034af1979b2670e49/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "17bc7007b5d86f13b0155af22c3a8d2ba15e4f20",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/17bc7007b5d86f13b0155af22c3a8d2ba15e4f20",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/17bc7007b5d86f13b0155af22c3a8d2ba15e4f20"
+      }
+    ]
+  },
+  {
+    "sha": "17bc7007b5d86f13b0155af22c3a8d2ba15e4f20",
+    "node_id": "C_kwDOR5SootoAKDE3YmM3MDA3YjVkODZmMTNiMDE1NWFmMjJjM2E4ZDJiYTE1ZTRmMjA",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T19:00:22Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T19:00:22Z"
+      },
+      "message": "feat: exclusive layer views + overlay toggles + smart content filtering\n\nLayer views are now exclusive radio buttons (All, Files, Content, Work)\ninstead of combinatorial checkboxes. Available in both sidebar and\nexpanded overlay map.\n\nContent view:\n- Shows authored content nodes + file nodes they reference\n- Excludes content/ tree nodes (redundant with authored nodes)\n- e.g. README references src/ and kbexplorer — those show, but\n  content/overview.md does NOT (it already appears as 'overview' node)\n\nWork view:\n- Shows issues, PRs, commits only\n- Cross-references between issues visible as pink edges\n\nOther changes:\n- filterGraphToLayer() in types/index.ts handles per-layer logic\n- isContentTreeNode() identifies redundant content/ file entries\n- Layer selection persisted as single value in localStorage (kbe-layer)\n- Both sidebar and overlay show the same layer selector chips\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "75389413b09f2088daea06400c3ad99fdce5bb7f",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/75389413b09f2088daea06400c3ad99fdce5bb7f"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/17bc7007b5d86f13b0155af22c3a8d2ba15e4f20",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/17bc7007b5d86f13b0155af22c3a8d2ba15e4f20",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/17bc7007b5d86f13b0155af22c3a8d2ba15e4f20",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/17bc7007b5d86f13b0155af22c3a8d2ba15e4f20/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "d031b40a39168282a2d4b9f21a8670e04a2cd900",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d031b40a39168282a2d4b9f21a8670e04a2cd900",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/d031b40a39168282a2d4b9f21a8670e04a2cd900"
+      }
+    ]
+  },
+  {
+    "sha": "d031b40a39168282a2d4b9f21a8670e04a2cd900",
+    "node_id": "C_kwDOR5SootoAKGQwMzFiNDBhMzkxNjgyODJhMmQ0YjlmMjFhODY3MGUwNGEyY2Q5MDA",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T02:38:56Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T02:38:56Z"
+      },
+      "message": "fix: fit-all for small layer views + fitOnStabilize takes priority over focus\n\nWhen a filtered graph has <60 nodes (e.g. Content-only with ~45),\nfitOnStabilize is enabled so all nodes are visible instead of focusing\non one node with everything else off-screen. Also changed the\nstabilized handler so fitOnStabilize takes priority over focusNodeId —\nthe selected node still gets highlighted but the camera shows the\nwhole graph.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "b9b0b0aba5c4fff94bbd1ee15d556d2b7976c78e",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/b9b0b0aba5c4fff94bbd1ee15d556d2b7976c78e"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/d031b40a39168282a2d4b9f21a8670e04a2cd900",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d031b40a39168282a2d4b9f21a8670e04a2cd900",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/d031b40a39168282a2d4b9f21a8670e04a2cd900",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d031b40a39168282a2d4b9f21a8670e04a2cd900/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "aa73d4bb85cbe543288444aac76e39a271eec386",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/aa73d4bb85cbe543288444aac76e39a271eec386",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/aa73d4bb85cbe543288444aac76e39a271eec386"
+      }
+    ]
+  },
+  {
+    "sha": "aa73d4bb85cbe543288444aac76e39a271eec386",
+    "node_id": "C_kwDOR5SootoAKGFhNzNkNGJiODVjYmU1NDMyODg0NDRhYWM3NmUzOWEyNzFlZWMzODY",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T02:16:49Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T02:16:49Z"
+      },
+      "message": "fix: brighter edge colors + thicker lines for dark background visibility\n\nBumped all edge colors to lighter/more saturated variants and increased\nminimum width from 0.8 to 1.2. Grays that blended into dark background\n(#484f58, #6e7681) replaced with lighter tones (#8b949e, #a0adb8).\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "980668be3e51ec2de72bd2be9783cd9b08b62564",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/980668be3e51ec2de72bd2be9783cd9b08b62564"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/aa73d4bb85cbe543288444aac76e39a271eec386",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/aa73d4bb85cbe543288444aac76e39a271eec386",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/aa73d4bb85cbe543288444aac76e39a271eec386",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/aa73d4bb85cbe543288444aac76e39a271eec386/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "ab240d6ec570d70e171ea67431606ddd93d3fa25",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/ab240d6ec570d70e171ea67431606ddd93d3fa25",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/ab240d6ec570d70e171ea67431606ddd93d3fa25"
+      }
+    ]
+  },
+  {
+    "sha": "ab240d6ec570d70e171ea67431606ddd93d3fa25",
+    "node_id": "C_kwDOR5SootoAKGFiMjQwZDZlYzU3MGQ3MGUxNzFlYTY3NDMxNjA2ZGRkOTNkM2ZhMjU",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T01:46:59Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T01:46:59Z"
+      },
+      "message": "fix: dynamic key nodes + adaptive emphasis per layer view\n\n- KEY_NODE_IDS replaced with computeKeyNodes() — top 8 nodes by degree\n  in the current (filtered) graph get a size boost\n- Emphasis adapts to graph size: <30 nodes → 50% opacity with labels,\n  <60 → 30% opacity, 60+ → 15% opacity (original behavior)\n- Skip emphasis entirely when selected node isn't in the filtered graph\n  (e.g. viewing Files layer while README is selected)\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "3ed1f874ed1d864f23c08b60e047feefb24a3c82",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/3ed1f874ed1d864f23c08b60e047feefb24a3c82"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/ab240d6ec570d70e171ea67431606ddd93d3fa25",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/ab240d6ec570d70e171ea67431606ddd93d3fa25",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/ab240d6ec570d70e171ea67431606ddd93d3fa25",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/ab240d6ec570d70e171ea67431606ddd93d3fa25/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "9fc4611000db9eeab47d53be76bbef23d2c32988",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/9fc4611000db9eeab47d53be76bbef23d2c32988",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/9fc4611000db9eeab47d53be76bbef23d2c32988"
+      }
+    ]
+  },
+  {
+    "sha": "9fc4611000db9eeab47d53be76bbef23d2c32988",
+    "node_id": "C_kwDOR5SootoAKDlmYzQ2MTEwMDBkYjllZWFiNDdkNTNiZTc2YmJlZjIzZDJjMzI5ODg",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T01:15:08Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-11T01:15:08Z"
+      },
+      "message": "feat: layer toggles — show/hide file, content, work layers (#55)\n\nThree toggle chips (Files, Content, Work) at the top of the sidebar\ngraph let users filter which node layers are visible. Toggling a layer\noff removes its nodes and edges from the graph, minimap, and legends.\nAt least one layer must stay active.\n\n- NodeLayer type + getNodeLayer() classifier in types/index.ts\n- NODE_LAYER_META with labels and colors per layer\n- filteredGraph memo filters nodes/edges/related by active layers\n- All graph consumers (sidebar, overlay, minimap, legends) use filteredGraph\n- Layer selection persisted in localStorage (kbe-layers)\n\nCloses #55\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "5a511b775d91b86655a62f78dd09cad7b3b46e38",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/5a511b775d91b86655a62f78dd09cad7b3b46e38"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/9fc4611000db9eeab47d53be76bbef23d2c32988",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/9fc4611000db9eeab47d53be76bbef23d2c32988",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/9fc4611000db9eeab47d53be76bbef23d2c32988",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/9fc4611000db9eeab47d53be76bbef23d2c32988/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "f314c0c694f422c06ceef8e2610125f7b5e32179",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f314c0c694f422c06ceef8e2610125f7b5e32179",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f314c0c694f422c06ceef8e2610125f7b5e32179"
+      }
+    ]
+  },
+  {
+    "sha": "f314c0c694f422c06ceef8e2610125f7b5e32179",
+    "node_id": "C_kwDOR5SootoAKGYzMTRjMGM2OTRmNDIyYzA2Y2VlZjhlMjYxMDEyNWY3YjVlMzIxNzk",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T22:08:07Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T22:08:07Z"
+      },
+      "message": "feat: edge type visual styling — colors, dashes, and legend (#56)\n\nEach EdgeType now has a distinct visual style (color, dash pattern,\nwidth) defined in EDGE_TYPE_STYLES. Edges in the graph use their\ntype's style instead of a uniform gray. The sidebar and overlay\nlegends show active edge types with matching line samples.\n\n- Contains: solid gray, References: solid blue, Cross-ref: solid pink\n- Frontmatter: dashed green, Mentions: dotted gray, Related: dotted dark\n- Closes: solid green, Modifies: dashed amber, Imports: solid purple\n- Edge tooltips now show type label (e.g. 'References: ...')\n- Removed unused edgeWidth/edgeDashes options from createGraphNetwork\n\nCloses #56\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "d502efeddcb1ecdfe162ea29a45b95635d9a1fcb",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/d502efeddcb1ecdfe162ea29a45b95635d9a1fcb"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/f314c0c694f422c06ceef8e2610125f7b5e32179",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f314c0c694f422c06ceef8e2610125f7b5e32179",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f314c0c694f422c06ceef8e2610125f7b5e32179",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f314c0c694f422c06ceef8e2610125f7b5e32179/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "8cf5034dce9c077c6915f88a70e7a5c387128ae6",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8cf5034dce9c077c6915f88a70e7a5c387128ae6",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/8cf5034dce9c077c6915f88a70e7a5c387128ae6"
+      }
+    ]
+  },
+  {
+    "sha": "8cf5034dce9c077c6915f88a70e7a5c387128ae6",
+    "node_id": "C_kwDOR5SootoAKDhjZjUwMzRkY2U5YzA3N2M2OTE1Zjg4YTcwZTdhNWMzODcxMjhhZTY",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:55:37Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:55:37Z"
+      },
+      "message": "fix: stop graph drift — increase stabilization to 500 iterations + double physics kill\n\nPhysics was likely not fully converging in 150 iterations with 150+\nnodes. Increased to 500 and added stabilizationIterationsDone listener\nas a second physics kill to ensure nodes stop moving.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "c863b26c7e140011277a56c8935b2a1e11d45deb",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/c863b26c7e140011277a56c8935b2a1e11d45deb"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/8cf5034dce9c077c6915f88a70e7a5c387128ae6",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8cf5034dce9c077c6915f88a70e7a5c387128ae6",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/8cf5034dce9c077c6915f88a70e7a5c387128ae6",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8cf5034dce9c077c6915f88a70e7a5c387128ae6/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "c63cf3b0d97f173f6e08ffaed33129e008a92545",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/c63cf3b0d97f173f6e08ffaed33129e008a92545",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/c63cf3b0d97f173f6e08ffaed33129e008a92545"
+      }
+    ]
+  },
+  {
+    "sha": "c63cf3b0d97f173f6e08ffaed33129e008a92545",
+    "node_id": "C_kwDOR5SootoAKGM2M2NmM2IwZDk3ZjE3M2Y2ZTA4ZmZhZWQzMzEyOWUwMDhhOTI1NDU",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:49:42Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:49:42Z"
+      },
+      "message": "fix: default zoom 1.0x, max zoom 2.0x\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "844cdc564713df396b9d4971cebcb997a6262d45",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/844cdc564713df396b9d4971cebcb997a6262d45"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/c63cf3b0d97f173f6e08ffaed33129e008a92545",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/c63cf3b0d97f173f6e08ffaed33129e008a92545",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/c63cf3b0d97f173f6e08ffaed33129e008a92545",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/c63cf3b0d97f173f6e08ffaed33129e008a92545/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "d8982d35b9865e0c182ce29f388af2bb1d19971a",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d8982d35b9865e0c182ce29f388af2bb1d19971a",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/d8982d35b9865e0c182ce29f388af2bb1d19971a"
+      }
+    ]
+  },
+  {
+    "sha": "d8982d35b9865e0c182ce29f388af2bb1d19971a",
+    "node_id": "C_kwDOR5SootoAKGQ4OTgyZDM1Yjk4NjVlMGMxODJjZTI5ZjM4OGFmMmJiMWQxOTk3MWE",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:42:53Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:42:53Z"
+      },
+      "message": "fix: reduce default zoom to 1.2x, keep 2.3x as max ceiling\n\n1.2x shows the current node with its neighborhood visible. Users can\nzoom in manually up to 2.3x via the slider. Re-center, navigation,\nand initial load all consistently use 1.2x.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "76fb72c3650561cd336befa9fef1a4c12c47ac39",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/76fb72c3650561cd336befa9fef1a4c12c47ac39"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/d8982d35b9865e0c182ce29f388af2bb1d19971a",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d8982d35b9865e0c182ce29f388af2bb1d19971a",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/d8982d35b9865e0c182ce29f388af2bb1d19971a",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/d8982d35b9865e0c182ce29f388af2bb1d19971a/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "f16da7fbb9f655bca0b3ec4e7453fde9a3da34c1",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f16da7fbb9f655bca0b3ec4e7453fde9a3da34c1",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f16da7fbb9f655bca0b3ec4e7453fde9a3da34c1"
+      }
+    ]
+  },
+  {
+    "sha": "f16da7fbb9f655bca0b3ec4e7453fde9a3da34c1",
+    "node_id": "C_kwDOR5SootoAKGYxNmRhN2ZiYjlmNjU1YmNhMGIzZWM0ZTc0NTNmZGU5YTNkYTM0YzE",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:40:19Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:40:19Z"
+      },
+      "message": "fix: consistent zoom on navigate — match initial focus scale (2.3x)\n\nNavigation between nodes was preserving whatever zoom the user had\n(net.getScale()) while initial load and re-center both used 2.3x.\nNow all three use the same scale for a consistent experience.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "78f5fb960dd6c4fb8018b86f0d3d85de5c1be019",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/78f5fb960dd6c4fb8018b86f0d3d85de5c1be019"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/f16da7fbb9f655bca0b3ec4e7453fde9a3da34c1",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f16da7fbb9f655bca0b3ec4e7453fde9a3da34c1",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f16da7fbb9f655bca0b3ec4e7453fde9a3da34c1",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f16da7fbb9f655bca0b3ec4e7453fde9a3da34c1/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "625f0541c01b3dad6af88f74e13b608a3059e2ea",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/625f0541c01b3dad6af88f74e13b608a3059e2ea",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/625f0541c01b3dad6af88f74e13b608a3059e2ea"
+      }
+    ]
+  },
+  {
+    "sha": "625f0541c01b3dad6af88f74e13b608a3059e2ea",
+    "node_id": "C_kwDOR5SootoAKDYyNWYwNTQxYzAxYjNkYWQ2YWY4OGY3NGUxM2I2MDhhMzA1OWUyZWE",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:05:02Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T21:05:02Z"
+      },
+      "message": "fix: stop graph drifting — disable physics in factory + after emphasis updates\n\nPhysics is now disabled in createGraphNetwork's stabilized handler\n(single source of truth) instead of scattered across HUD callers.\nAlso kills physics after setEmphasis() since DataSet.update() can\nre-trigger the physics simulation.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "57756bd1a54b79c85b83899abdc1d063310c6735",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/57756bd1a54b79c85b83899abdc1d063310c6735"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/625f0541c01b3dad6af88f74e13b608a3059e2ea",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/625f0541c01b3dad6af88f74e13b608a3059e2ea",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/625f0541c01b3dad6af88f74e13b608a3059e2ea",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/625f0541c01b3dad6af88f74e13b608a3059e2ea/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "05ff6949aa58732f4405b2cb0ad1664d04d5a215",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/05ff6949aa58732f4405b2cb0ad1664d04d5a215",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/05ff6949aa58732f4405b2cb0ad1664d04d5a215"
+      }
+    ]
+  },
+  {
+    "sha": "05ff6949aa58732f4405b2cb0ad1664d04d5a215",
+    "node_id": "C_kwDOR5SootoAKDA1ZmY2OTQ5YWE1ODczMmY0NDA1YjJjYjBhZDE2NjRkMDRkNWEyMTU",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T20:57:12Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T20:57:12Z"
+      },
+      "message": "fix: re-center focuses on current node + reactive zoom sliders\n\nRe-center button now focuses on the selected node at 2.3x (sidebar) or\n2.0x (overlay) instead of fitting all nodes. Zoom sliders are now driven\nby React state synced with vis-network zoom events, so dragging them\nactually works.\n\n- Re-center: focus(currentNodeId) instead of fit() (falls back to fit\n  when no node selected)\n- Zoom slider: sidebarZoom/overlayZoom state synced via network.on('zoom')\n- Initial focus bumped from 1.8x to 2.3x for better readability\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "0e5fae82c51394fe376624954143a0d2733a1449",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/0e5fae82c51394fe376624954143a0d2733a1449"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/05ff6949aa58732f4405b2cb0ad1664d04d5a215",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/05ff6949aa58732f4405b2cb0ad1664d04d5a215",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/05ff6949aa58732f4405b2cb0ad1664d04d5a215",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/05ff6949aa58732f4405b2cb0ad1664d04d5a215/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "c16df740760558cd688fa10aa8f8346853e52636",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/c16df740760558cd688fa10aa8f8346853e52636",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/c16df740760558cd688fa10aa8f8346853e52636"
+      }
+    ]
+  },
+  {
+    "sha": "c16df740760558cd688fa10aa8f8346853e52636",
+    "node_id": "C_kwDOR5SootoAKGMxNmRmNzQwNzYwNTU4Y2Q2ODhmYTEwYWE4ZjgzNDY4NTNlNTI2MzY",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T19:41:54Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T19:41:54Z"
+      },
+      "message": "feat: dynamic neighborhood highlighting on node selection (#59)\n\nWhen a node is selected, its direct neighbors stay fully visible while\nall other nodes and edges fade to near-invisible (opacity 0.15). The\nemphasis updates dynamically via setEmphasis() without rebuilding the\nvis-network — smooth transitions as users navigate between nodes.\n\n- Add setEmphasis() to GraphNetworkResult for live node/edge updates\n- Sidebar graph updates emphasis on currentNodeId change (no rebuild)\n- Overlay map also shows neighborhood emphasis for selected node\n- Edges between non-neighbors fade to 0.08 opacity; partial edges 0.25\n- Consistent 0.15 opacity for faded nodes (was 0.3, now stronger contrast)\n- Focus animation slowed to 300ms for smoother panning on navigate\n\nCloses #59\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "0fa8079d7429524e312d31e9e2dcb2d6ce36b657",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/0fa8079d7429524e312d31e9e2dcb2d6ce36b657"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/c16df740760558cd688fa10aa8f8346853e52636",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/c16df740760558cd688fa10aa8f8346853e52636",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/c16df740760558cd688fa10aa8f8346853e52636",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/c16df740760558cd688fa10aa8f8346853e52636/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "98b03f9694b5059006b644c3b4db5e484de44395",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/98b03f9694b5059006b644c3b4db5e484de44395",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/98b03f9694b5059006b644c3b4db5e484de44395"
+      }
+    ]
+  },
+  {
+    "sha": "98b03f9694b5059006b644c3b4db5e484de44395",
+    "node_id": "C_kwDOR5SootoAKDk4YjAzZjk2OTRiNTA1OTAwNmI2NDRjM2I0ZGI1ZTQ4NGRlNDQzOTU",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:39:57Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:39:57Z"
+      },
+      "message": "feat: zoom sliders on sidebar and overlay maps + larger overlay\n\n- Overlay expanded to 95vw × 92vh (was 90vw × 85vh, maxWidth removed)\n- Zoom slider on overlay (bottom-right): range 20-300%, smooth animation\n- Zoom slider on sidebar graph (bottom): compact with −/+ labels\n- Both sliders call network.moveTo() with easeInOutQuad animation\n\nVerified with Playwright: overlay shows zoom slider, clusters legend,\nre-center + close buttons. Graph renders with 13 clusters.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "1ea3cfc56940d7efd9eba7c4ccb3106bcff5b0ee",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/1ea3cfc56940d7efd9eba7c4ccb3106bcff5b0ee"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/98b03f9694b5059006b644c3b4db5e484de44395",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/98b03f9694b5059006b644c3b4db5e484de44395",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/98b03f9694b5059006b644c3b4db5e484de44395",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/98b03f9694b5059006b644c3b4db5e484de44395/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "8d792951c3cf27d7b688281a57c8db3ed7d20d80",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8d792951c3cf27d7b688281a57c8db3ed7d20d80",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/8d792951c3cf27d7b688281a57c8db3ed7d20d80"
+      }
+    ]
+  },
+  {
+    "sha": "8d792951c3cf27d7b688281a57c8db3ed7d20d80",
+    "node_id": "C_kwDOR5SootoAKDhkNzkyOTUxYzNjZjI3ZDdiNjg4MjgxYTU3YzhkYjNlZDdkMjBkODA",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:26:33Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:26:33Z"
+      },
+      "message": "fix: zoom in more on sidebar + overlay graphs, enable sidebar panning\n\n- Sidebar graph: scale 1.8 when focused on a node (was 1.0), now\n  shows current node and neighbors at readable size. Panning enabled.\n- Overlay graph: fitOnStabilize uses maxZoomLevel 2.0\n- Both graphs: interactive (drag to pan, scroll to zoom)\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "fd3d274bd672c5cbf381e56df26d1ee70e57ddb5",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/fd3d274bd672c5cbf381e56df26d1ee70e57ddb5"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/8d792951c3cf27d7b688281a57c8db3ed7d20d80",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8d792951c3cf27d7b688281a57c8db3ed7d20d80",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/8d792951c3cf27d7b688281a57c8db3ed7d20d80",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/8d792951c3cf27d7b688281a57c8db3ed7d20d80/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "f47e912e3d1042cce1afda5888f22b892c5b1ae1",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f47e912e3d1042cce1afda5888f22b892c5b1ae1",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f47e912e3d1042cce1afda5888f22b892c5b1ae1"
+      }
+    ]
+  },
+  {
+    "sha": "f47e912e3d1042cce1afda5888f22b892c5b1ae1",
+    "node_id": "C_kwDOR5SootoAKGY0N2U5MTJlM2QxMDQyY2NlMWFmZGE1ODg4ZjIyYjg5MmM1YjFhZTE",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:17:23Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:17:23Z"
+      },
+      "message": "feat: enable panning and zoom on expanded map + zoom limits\n\n- Expanded overlay: dragView and zoomView enabled (interactive: true)\n- Sidebar minimap: stays non-interactive (click to expand)\n- Zoom speed reduced to 0.3 for smoother control\n- After stabilization, zoom can't go below 0.3 scale (prevents\n  zooming out to nothingness)\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "7fb14b9b59c570d46defd963b3209017c36e2b07",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/7fb14b9b59c570d46defd963b3209017c36e2b07"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/f47e912e3d1042cce1afda5888f22b892c5b1ae1",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f47e912e3d1042cce1afda5888f22b892c5b1ae1",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f47e912e3d1042cce1afda5888f22b892c5b1ae1",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f47e912e3d1042cce1afda5888f22b892c5b1ae1/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "7e75b97ffad322d6b9b385bd9e35798d3e9bffcc",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7e75b97ffad322d6b9b385bd9e35798d3e9bffcc",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/7e75b97ffad322d6b9b385bd9e35798d3e9bffcc"
+      }
+    ]
+  },
+  {
+    "sha": "7e75b97ffad322d6b9b385bd9e35798d3e9bffcc",
+    "node_id": "C_kwDOR5SootoAKDdlNzViOTdmZmFkMzIyZDZiOWIzODViZDllMzU3OThkM2U5YmZmY2M",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:12:06Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:12:06Z"
+      },
+      "message": "fix: stop physics after stabilization + zoom in on re-center\n\n- Overlay graph now stops physics after stabilization (was drifting forever)\n- Overlay has its own network ref (was incorrectly using sidebar ref)\n- Re-center uses maxZoomLevel: 1.5 so it zooms in rather than showing\n  everything tiny\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "999b10db42f09a8619df5adadfcd66fc951d0bb4",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/999b10db42f09a8619df5adadfcd66fc951d0bb4"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/7e75b97ffad322d6b9b385bd9e35798d3e9bffcc",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7e75b97ffad322d6b9b385bd9e35798d3e9bffcc",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/7e75b97ffad322d6b9b385bd9e35798d3e9bffcc",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7e75b97ffad322d6b9b385bd9e35798d3e9bffcc/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "e30d949d082f62aa37f3387d2bdef8ad8ca8d816",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/e30d949d082f62aa37f3387d2bdef8ad8ca8d816",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/e30d949d082f62aa37f3387d2bdef8ad8ca8d816"
+      }
+    ]
+  },
+  {
+    "sha": "e30d949d082f62aa37f3387d2bdef8ad8ca8d816",
+    "node_id": "C_kwDOR5SootoAKGUzMGQ5NDlkMDgyZjYyYWEzN2YzMzg3ZDJiZGVmOGFkOGNhOGQ4MTY",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:01:09Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T18:01:09Z"
+      },
+      "message": "feat: add re-center button to constellation graph\n\nAdds a MyLocation icon button to both:\n- Sidebar graph (left/right dock) — next to the expand button\n- Expanded overlay — next to the dismiss button\n\nCalls vis-network fit() with smooth animation (400ms easeInOutQuad)\nto zoom and pan to show all nodes.\n\nVerified with Playwright: button visible in overlay as 'Re-center'.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "2a93fe0ddd94dc1a56b87a07c03350ecd3f7725c",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/2a93fe0ddd94dc1a56b87a07c03350ecd3f7725c"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/e30d949d082f62aa37f3387d2bdef8ad8ca8d816",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/e30d949d082f62aa37f3387d2bdef8ad8ca8d816",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/e30d949d082f62aa37f3387d2bdef8ad8ca8d816",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/e30d949d082f62aa37f3387d2bdef8ad8ca8d816/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "ed212ec0710e1e97ac39a08892ae609a31dd0a87",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/ed212ec0710e1e97ac39a08892ae609a31dd0a87",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/ed212ec0710e1e97ac39a08892ae609a31dd0a87"
+      }
+    ]
+  },
+  {
+    "sha": "ed212ec0710e1e97ac39a08892ae609a31dd0a87",
+    "node_id": "C_kwDOR5SootoAKGVkMjEyZWMwNzEwZTFlOTdhYzM5YTA4ODkyYWU2MDlhMzFkZDBhODc",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T17:53:36Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T17:53:36Z"
+      },
+      "message": "feat: clickable file paths (#51) + edge-weight ranked related panel (#52)\n\n#51: File path references in code tags (src/engine/parser.ts) are now\nclickable links navigating to the file's graph node. Also converts\nmarkdown [text](node-id) links to hash-based graph navigation.\nCSS: dashed underline on file links, solid on hover.\n\n#52: Related panel now ranks by edge weight instead of raw degree.\nderived_from (3.0) and references (2.0) edges now surface file nodes\nthat were previously hidden behind high-degree authored nodes.\nIncreased max from 8 to 12 related nodes.\n\nVerified with Playwright:\n- content-pipeline.md (derived_from) appears first in related panel\n- src/engine/parser.ts is clickable, links to file-src/engine/parser.ts\n- parser.ts appears in related panel\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "0daa81e785fb49e64ba0bab3a52e06cf79f97d4d",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/0daa81e785fb49e64ba0bab3a52e06cf79f97d4d"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/ed212ec0710e1e97ac39a08892ae609a31dd0a87",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/ed212ec0710e1e97ac39a08892ae609a31dd0a87",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/ed212ec0710e1e97ac39a08892ae609a31dd0a87",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/ed212ec0710e1e97ac39a08892ae609a31dd0a87/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "93654f4bf9c8d3bd4a5420a8ad0243905ff77c97",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/93654f4bf9c8d3bd4a5420a8ad0243905ff77c97",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/93654f4bf9c8d3bd4a5420a8ad0243905ff77c97"
+      }
+    ]
+  },
+  {
+    "sha": "93654f4bf9c8d3bd4a5420a8ad0243905ff77c97",
+    "node_id": "C_kwDOR5SootoAKDkzNjU0ZjRiZjljOGQzYmQ0YTU0MjBhOGFkMDI0MzkwNWZmNzdjOTc",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T17:25:13Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T17:25:13Z"
+      },
+      "message": "feat: typed directional edges — every edge has type, source, and weight (#49, #50)\n\nEdge types: contains, derived_from, imports, references, frontmatter,\nmentions, cross_references, modifies, closes, related\n\nEdge sources: inline (from body links), frontmatter (YAML declared),\ninferred (system-derived like containment and fuzzy matching)\n\nDefault weights per type influence layout physics:\n- contains: 5.0 (tight), derived_from: 3.0, references: 2.0,\n  frontmatter: 1.5, mentions: 0.5, related: 0.3\n\nAll edge creation sites updated: parseMarkdownFile, issueToNode,\nsplitIntoSections, loadRepoContent, buildEdges, orphan linking.\n\nContent node spec-typed-edges.md added with full design for runtime\nfiltering and edge styling (Phases 2-3 for future).\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "b0c98ef3e0c3f27aa43cfb98ef713f2991b9ec92",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/b0c98ef3e0c3f27aa43cfb98ef713f2991b9ec92"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/93654f4bf9c8d3bd4a5420a8ad0243905ff77c97",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/93654f4bf9c8d3bd4a5420a8ad0243905ff77c97",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/93654f4bf9c8d3bd4a5420a8ad0243905ff77c97",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/93654f4bf9c8d3bd4a5420a8ad0243905ff77c97/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "15b7df4b7219d05b9159a5261c3dc8bbfe310bd8",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/15b7df4b7219d05b9159a5261c3dc8bbfe310bd8",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/15b7df4b7219d05b9159a5261c3dc8bbfe310bd8"
+      }
+    ]
+  },
+  {
+    "sha": "15b7df4b7219d05b9159a5261c3dc8bbfe310bd8",
+    "node_id": "C_kwDOR5SootoAKDE1YjdkZjRiNzIxOWQwNWI5MTU5YTUyNjFjM2RjOGJiZmUzMTBiZDg",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T16:09:33Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T16:09:33Z"
+      },
+      "message": "fix: stop excluding content/ from file tree — authored nodes now link back to their source files\n\nContent files were excluded from treeToNodes, so file-content/*.md nodes\ndidn't exist. The derived_from edges from authored nodes had nowhere to\nconnect. Now content/ files appear in the file tree AND as authored nodes,\nlinked by derived_from edges.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "737d6177c16c445cc2892e883ca8bc92d3e26311",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/737d6177c16c445cc2892e883ca8bc92d3e26311"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/15b7df4b7219d05b9159a5261c3dc8bbfe310bd8",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/15b7df4b7219d05b9159a5261c3dc8bbfe310bd8",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/15b7df4b7219d05b9159a5261c3dc8bbfe310bd8",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/15b7df4b7219d05b9159a5261c3dc8bbfe310bd8/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "941e9be31cccd3d17bc434073563604b6322efbd",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/941e9be31cccd3d17bc434073563604b6322efbd",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/941e9be31cccd3d17bc434073563604b6322efbd"
+      }
+    ]
+  },
+  {
+    "sha": "941e9be31cccd3d17bc434073563604b6322efbd",
+    "node_id": "C_kwDOR5SootoAKDk0MWU5YmUzMWNjY2QzZDE3YmM0MzQwNzM1NjM2MDRiNjMyMmVmYmQ",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T16:05:28Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T16:05:28Z"
+      },
+      "message": "feat: extract inline links and file references as graph edges\n\nparseMarkdownFile now automatically extracts:\n1. Markdown [text](target) links → edges to target nodes\n2. File path references (src/..., scripts/...) → edges to file tree nodes\n3. Implicit derived_from edge → links every authored node to its source file\n\nThis means content bodies that mention [Graph Engine](graph-engine) or\nreference src/engine/parser.ts now create real edges in the graph without\nany frontmatter declaration. The graph should be significantly denser.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "8ed38d6ef7063502a8c6f9cb7bc7c12724c4f0d4",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/8ed38d6ef7063502a8c6f9cb7bc7c12724c4f0d4"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/941e9be31cccd3d17bc434073563604b6322efbd",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/941e9be31cccd3d17bc434073563604b6322efbd",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/941e9be31cccd3d17bc434073563604b6322efbd",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/941e9be31cccd3d17bc434073563604b6322efbd/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "55a87b1eabcaa0d6f892f3d9047aa14a8c06ab62",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/55a87b1eabcaa0d6f892f3d9047aa14a8c06ab62",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/55a87b1eabcaa0d6f892f3d9047aa14a8c06ab62"
+      }
+    ]
+  },
+  {
+    "sha": "55a87b1eabcaa0d6f892f3d9047aa14a8c06ab62",
+    "node_id": "C_kwDOR5SootoAKDU1YTg3YjFlYWJjYWEwZDZmODkyZjNkOTA0N2FhMTRhOGMwNmFiNjI",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T15:24:02Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T15:24:02Z"
+      },
+      "message": "refactor: convert 33 frontmatter connections to inline links across 21 files\n\nApplied the inline-link-extraction principle: if a connection target is\nmentioned in the body text, the mention becomes an inline [link](target)\nand the frontmatter connection is removed.\n\nResult: 0 redundant frontmatter connections (was 2). 193 connections\nremain in frontmatter as document-level relationships not expressed\nin the body.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "5d4bebc105a280c8d6938f5eeda10ef4f84f0ad5",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/5d4bebc105a280c8d6938f5eeda10ef4f84f0ad5"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/55a87b1eabcaa0d6f892f3d9047aa14a8c06ab62",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/55a87b1eabcaa0d6f892f3d9047aa14a8c06ab62",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/55a87b1eabcaa0d6f892f3d9047aa14a8c06ab62",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/55a87b1eabcaa0d6f892f3d9047aa14a8c06ab62/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "472396c1571437601a1c818a5cc759bc6bbfbfb1",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/472396c1571437601a1c818a5cc759bc6bbfbfb1",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/472396c1571437601a1c818a5cc759bc6bbfbfb1"
+      }
+    ]
+  },
+  {
+    "sha": "472396c1571437601a1c818a5cc759bc6bbfbfb1",
+    "node_id": "C_kwDOR5SootoAKDQ3MjM5NmMxNTcxNDM3NjAxYTFjODE4YTVjYzc1OWJjNmJiZmJmYjE",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T15:12:40Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T15:12:40Z"
+      },
+      "message": "feat: add inline link extraction spec node (#48)\n\nFundamental shift: inline links in content ARE the graph edges.\nFrontmatter connections become optional/supplementary.\n\nSpec covers: markdown links, issue refs, code imports, file containment,\nedge source typing (inline/frontmatter/inferred), location tracking for\ncorrect 1-to-N splitting, and link assessment implications.\n\nConnected to 11 architecture nodes including content-pipeline, graph-engine,\ntype-system, reading-view, and all provider specs.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "00111ea5183a1bb70911a74754b77e8d796bb606",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/00111ea5183a1bb70911a74754b77e8d796bb606"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/472396c1571437601a1c818a5cc759bc6bbfbfb1",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/472396c1571437601a1c818a5cc759bc6bbfbfb1",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/472396c1571437601a1c818a5cc759bc6bbfbfb1",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/472396c1571437601a1c818a5cc759bc6bbfbfb1/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "9ed4d1eda7e9de371194bd6ce8b4439ffce6295f",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/9ed4d1eda7e9de371194bd6ce8b4439ffce6295f",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/9ed4d1eda7e9de371194bd6ce8b4439ffce6295f"
+      }
+    ]
+  },
+  {
+    "sha": "9ed4d1eda7e9de371194bd6ce8b4439ffce6295f",
+    "node_id": "C_kwDOR5SootoAKDllZDRkMWVkYTdlOWRlMzcxMTk0YmQ2Y2U4YjQ0MzlmZmNlNjI5NWY",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T13:58:07Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T13:58:07Z"
+      },
+      "message": "feat: add link assessment + multi-layer identity spec nodes (#46, #47)\n\nTwo new content nodes deeply connected to the architecture graph:\n\nspec-link-assessment: graph health analysis CLI command\n- 8 connections to architecture nodes + issue-46\n- Detects orphans, broken refs, weak clusters, missing cross-refs, coverage gaps\n\nspec-multi-layer-identity: same entity across providers\n- 11 connections to architecture nodes + issue-47\n- Identity URNs link file nodes, content nodes, and commit targets\n- Views decide which representation to show per identity\n- Link assessment detects unmapped identities\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "7987f1c0ce23d9abda2665d4f8170a2fe4b04a9f",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/7987f1c0ce23d9abda2665d4f8170a2fe4b04a9f"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/9ed4d1eda7e9de371194bd6ce8b4439ffce6295f",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/9ed4d1eda7e9de371194bd6ce8b4439ffce6295f",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/9ed4d1eda7e9de371194bd6ce8b4439ffce6295f",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/9ed4d1eda7e9de371194bd6ce8b4439ffce6295f/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "44ca01a65a9bf2d40618df2874034419a6b40f80",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/44ca01a65a9bf2d40618df2874034419a6b40f80",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/44ca01a65a9bf2d40618df2874034419a6b40f80"
+      }
+    ]
+  },
+  {
+    "sha": "44ca01a65a9bf2d40618df2874034419a6b40f80",
+    "node_id": "C_kwDOR5SootoAKDQ0Y2EwMWE2NWE5YmYyZDQwNjE4ZGYyODc0MDM0NDE5YTZiNDBmODA",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T13:18:17Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T13:18:17Z"
+      },
+      "message": "fix: move specs into content/ with deep architecture + issue connections\n\nSpecs are content — moved from specs/ into content/:\n- spec-providers-overview: 11 connections (3 specs + 7 architecture + 1 issue)\n- spec-node-mapping: 10 connections (content-pipeline, graph-engine, type-system,\n  wiki-content-modes, overview-view, reading-view, manifest-generator, issue-41)\n- spec-graph-store: 11 connections (local-loader, cache-system, manifest-generator,\n  type-system, graph-engine, github-api, content-pipeline, issue-42)\n- spec-views: 11 connections (hud, overview-view, reading-view, graph-network,\n  graph-engine, github-api, issues 43-45)\n\nRemoved specs/ top-level folder and reverted manifest generator special-case.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "ddbbea3881ff82e5a874786ad68477398f239edc",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/ddbbea3881ff82e5a874786ad68477398f239edc"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/44ca01a65a9bf2d40618df2874034419a6b40f80",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/44ca01a65a9bf2d40618df2874034419a6b40f80",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/44ca01a65a9bf2d40618df2874034419a6b40f80",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/44ca01a65a9bf2d40618df2874034419a6b40f80/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "e647a103ca2cb3b579a484cca8b2b9657f888d52",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/e647a103ca2cb3b579a484cca8b2b9657f888d52",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/e647a103ca2cb3b579a484cca8b2b9657f888d52"
+      }
+    ]
+  },
+  {
+    "sha": "e647a103ca2cb3b579a484cca8b2b9657f888d52",
+    "node_id": "C_kwDOR5SootoAKGU2NDdhMTAzY2EyY2IzYjU3OWE0ODRjY2E4YjJiOTY1N2Y4ODhkNTI",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T12:57:25Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T12:57:25Z"
+      },
+      "message": "feat: spec files as graph nodes + manifest reads specs/\n\n- Added kbexplorer frontmatter to all 4 spec files so they appear as nodes\n- Manifest generator now reads specs/ alongside content/\n- Added fluentui-system-icons to SKIP_DIRS (prevents stack overflow)\n- 4 spec nodes in 'design' cluster with cross-connections\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "422cb1fb408424043bc856bef44f33ec90c75524",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/422cb1fb408424043bc856bef44f33ec90c75524"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/e647a103ca2cb3b579a484cca8b2b9657f888d52",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/e647a103ca2cb3b579a484cca8b2b9657f888d52",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/e647a103ca2cb3b579a484cca8b2b9657f888d52",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/e647a103ca2cb3b579a484cca8b2b9657f888d52/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "7c2cc3f1b6e53767614349d3ebe15987046e16dc",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7c2cc3f1b6e53767614349d3ebe15987046e16dc",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/7c2cc3f1b6e53767614349d3ebe15987046e16dc"
+      }
+    ]
+  },
+  {
+    "sha": "7c2cc3f1b6e53767614349d3ebe15987046e16dc",
+    "node_id": "C_kwDOR5SootoAKDdjMmNjM2YxYjZlNTM3Njc2MTQzNDlkM2ViZTE1OTg3MDQ2ZTE2ZGM",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T12:37:03Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T12:37:03Z"
+      },
+      "message": "spec: graph provider system — tree structure with crawl/walk/run evolution\n\nReplaced single monolithic spec with a tree:\n- specs/providers/00-overview.md — current architecture analysis + evolution path\n- specs/providers/01-node-mapping.md — how files become nodes (nodemap.yaml)\n- specs/providers/02-graph-store.md — SQLite cache + provider interface\n- specs/providers/03-views-and-expansion.md — graph views + on-demand + external\n\nKey shift from previous design:\n- Crawl-walk-run evolution of existing codebase, not a rewrite\n- Node mapping (projections) moved to Phase 1, not Phase 4\n- File/git providers come first (file-centric, not API-centric)\n- nodemap.yaml works NOW without any provider system\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "b924f078c9f562aa10fdd5cada4bb4e4d5fb5262",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/b924f078c9f562aa10fdd5cada4bb4e4d5fb5262"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/7c2cc3f1b6e53767614349d3ebe15987046e16dc",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7c2cc3f1b6e53767614349d3ebe15987046e16dc",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/7c2cc3f1b6e53767614349d3ebe15987046e16dc",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7c2cc3f1b6e53767614349d3ebe15987046e16dc/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "b12f3ab0c8710997f01b7b38bfb02caced9d664d",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/b12f3ab0c8710997f01b7b38bfb02caced9d664d",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/b12f3ab0c8710997f01b7b38bfb02caced9d664d"
+      }
+    ]
+  },
+  {
+    "sha": "b12f3ab0c8710997f01b7b38bfb02caced9d664d",
+    "node_id": "C_kwDOR5SootoAKGIxMmYzYWIwYzg3MTA5OTdmMDFiN2IzOGJmYjAyY2FjZWQ5ZDY2NGQ",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T02:11:27Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-10T02:11:27Z"
+      },
+      "message": "spec: graph provider architecture — layered providers with caching and views\n\nDesign for provider-based graph system:\n- Providers contribute nodes/edges with prescribed resolution depth\n- Append-only SQLite graph store with provider attribution\n- On-demand expansion (click to load more from any provider)\n- Trigger system: providers activate based on existing graph state\n- Graph views: named projections over the unified graph\n- 7 providers: files, git, github, azdo, authored, projection, external\n- 5 implementation phases\n\nSee specs/graph-provider-architecture.md for full design.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "7f5c101256501767ee3dbc6e8737e41215c52a96",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/7f5c101256501767ee3dbc6e8737e41215c52a96"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/b12f3ab0c8710997f01b7b38bfb02caced9d664d",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/b12f3ab0c8710997f01b7b38bfb02caced9d664d",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/b12f3ab0c8710997f01b7b38bfb02caced9d664d",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/b12f3ab0c8710997f01b7b38bfb02caced9d664d/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "7bb138d0a78b5803ae4b42c9f61a5dabf7145473",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7bb138d0a78b5803ae4b42c9f61a5dabf7145473",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/7bb138d0a78b5803ae4b42c9f61a5dabf7145473"
+      }
+    ]
+  },
+  {
+    "sha": "7bb138d0a78b5803ae4b42c9f61a5dabf7145473",
+    "node_id": "C_kwDOR5SootoAKDdiYjEzOGQwYTc4YjU4MDNhZTRiNDJjOWY2MWE1ZGFiZjcxNDU0NzM",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T22:23:12Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T22:23:12Z"
+      },
+      "message": "docs: update README for template repo + CLI tool references\n\n- Renamed title to kbexplorer-template\n- Badge updated to GitHub Pages workflow\n- Added live demo link\n- 'Using in Another Repo' now references npx @anokye-labs/kbexplorer\n- Removed manual setup instructions (CLI handles everything)\n- Updated clone URL\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "7a1a268810717e97ac5404cad2423dff76554ae4",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/7a1a268810717e97ac5404cad2423dff76554ae4"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/7bb138d0a78b5803ae4b42c9f61a5dabf7145473",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7bb138d0a78b5803ae4b42c9f61a5dabf7145473",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/7bb138d0a78b5803ae4b42c9f61a5dabf7145473",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/7bb138d0a78b5803ae4b42c9f61a5dabf7145473/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "43b41ee60300f12af2f6214d7c4005fc30e601b4",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/43b41ee60300f12af2f6214d7c4005fc30e601b4",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/43b41ee60300f12af2f6214d7c4005fc30e601b4"
+      }
+    ]
+  },
+  {
+    "sha": "43b41ee60300f12af2f6214d7c4005fc30e601b4",
+    "node_id": "C_kwDOR5SootoAKDQzYjQxZWU2MDMwMGYxMmFmMmY2MjE0ZDdjNDAwNWZjMzBlNjAxYjQ",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T22:21:46Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T22:21:46Z"
+      },
+      "message": "chore: clean template — remove scripts and agents moved to @anokye-labs/kbexplorer CLI\n\nRemoved:\n- scripts/init.js, dev.js, build.js, transform-catalogue.js (now in CLI)\n- .github/copilot/ agents, commands, skills (now bundled in CLI npm package)\n- Kept: scripts/generate-manifest.js (used by Vite plugin at build time)\n\nRenamed package to kbexplorer-template.\nAdded .playwright-cli/ to .gitignore.\n\nInstall the CLI: npx @anokye-labs/kbexplorer init\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "a3f173d008f0beb890d0c095582953dde73379e2",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/a3f173d008f0beb890d0c095582953dde73379e2"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/43b41ee60300f12af2f6214d7c4005fc30e601b4",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/43b41ee60300f12af2f6214d7c4005fc30e601b4",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/43b41ee60300f12af2f6214d7c4005fc30e601b4",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/43b41ee60300f12af2f6214d7c4005fc30e601b4/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "f6c82f0d81d25bb5d72f9646d9b2d80066d153cc",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f6c82f0d81d25bb5d72f9646d9b2d80066d153cc",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f6c82f0d81d25bb5d72f9646d9b2d80066d153cc"
+      }
+    ]
+  },
+  {
+    "sha": "f6c82f0d81d25bb5d72f9646d9b2d80066d153cc",
+    "node_id": "C_kwDOR5SootoAKGY2YzgyZjBkODFkMjViYjVkNzJmOTY0NmQ5YjJkODAwNjZkMTUzY2M",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T19:15:07Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T19:15:07Z"
+      },
+      "message": "Merge remote-tracking branch 'origin/feature/kb-generate-content'",
+      "tree": {
+        "sha": "c4e019cc66cbfcc6d3fdce93a75afc2e9f48282b",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/c4e019cc66cbfcc6d3fdce93a75afc2e9f48282b"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/f6c82f0d81d25bb5d72f9646d9b2d80066d153cc",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f6c82f0d81d25bb5d72f9646d9b2d80066d153cc",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f6c82f0d81d25bb5d72f9646d9b2d80066d153cc",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f6c82f0d81d25bb5d72f9646d9b2d80066d153cc/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "a70c29ff6b24a7675e10e335da3b62f81342744b",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/a70c29ff6b24a7675e10e335da3b62f81342744b",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/a70c29ff6b24a7675e10e335da3b62f81342744b"
+      },
+      {
+        "sha": "6fc3d91f13f6399706568e572e2ffc994a05d20b",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/6fc3d91f13f6399706568e572e2ffc994a05d20b",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/6fc3d91f13f6399706568e572e2ffc994a05d20b"
+      }
+    ]
+  },
+  {
+    "sha": "6fc3d91f13f6399706568e572e2ffc994a05d20b",
+    "node_id": "C_kwDOR5SootoAKDZmYzNkOTFmMTNmNjM5OTcwNjU2OGU1NzJlMmZmYzk5NGEwNWQyMGI",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T19:13:45Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T19:13:45Z"
+      },
+      "message": "feat: add GitHub Pages deployment workflow\n\nDeploys to GitHub Pages on push to main. Builds with local mode\n(manifest + VITE_KB_LOCAL=true) and VITE_BASE_PATH=/kbexplorer/.\nCopies index.html to 404.html for SPA hash-routing support.\n\nRequires enabling GitHub Pages in repo settings (source: GitHub Actions).\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "fcc0aaa3bb822640b7d3bf05bba5421718353759",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/fcc0aaa3bb822640b7d3bf05bba5421718353759"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/6fc3d91f13f6399706568e572e2ffc994a05d20b",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/6fc3d91f13f6399706568e572e2ffc994a05d20b",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/6fc3d91f13f6399706568e572e2ffc994a05d20b",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/6fc3d91f13f6399706568e572e2ffc994a05d20b/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "b2db00620872199d124e22550d5013a847525d62",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/b2db00620872199d124e22550d5013a847525d62",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/b2db00620872199d124e22550d5013a847525d62"
+      }
+    ]
+  },
+  {
+    "sha": "b2db00620872199d124e22550d5013a847525d62",
+    "node_id": "C_kwDOR5SootoAKGIyZGIwMDYyMDg3MjE5OWQxMjRlMjI1NTBkNTAxM2E4NDc1MjVkNjI",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T17:40:40Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-09T17:40:40Z"
+      },
+      "message": "feat: register all 2,629 Fluent UI system icons\n\nFull Fluent icon library now available — kb-architect can pick the\nbest icon for any concept, not just the 70 in our vocabulary.\n\n- NodeVisual.tsx: 2,629 React icon components registered in FLUENT_ICONS\n- nodeRenderer.ts: 2,629 SVG paths for canvas rendering in minimap/graph\n- Dynamic shape inference replaces hardcoded ICON_NODE_SHAPE map\n  (document-like → roundedRect, structural → roundedSquare, rest → circle)\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "a27e94808db4723a673e444475da492d06ab6b62",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/a27e94808db4723a673e444475da492d06ab6b62"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/b2db00620872199d124e22550d5013a847525d62",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/b2db00620872199d124e22550d5013a847525d62",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/b2db00620872199d124e22550d5013a847525d62",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/b2db00620872199d124e22550d5013a847525d62/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "3fd4572b1d4421a8e30fbfdd6bf854c8f7d396b5",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/3fd4572b1d4421a8e30fbfdd6bf854c8f7d396b5",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/3fd4572b1d4421a8e30fbfdd6bf854c8f7d396b5"
+      }
+    ]
+  },
+  {
+    "sha": "3fd4572b1d4421a8e30fbfdd6bf854c8f7d396b5",
+    "node_id": "C_kwDOR5SootoAKDNmZDQ1NzJiMWQ0NDIxYThlMzBmYmZkZDZiZjg1NGM4ZjdkMzk2YjU",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-08T23:53:44Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-08T23:53:44Z"
+      },
+      "message": "fix: add SVG paths for all 70 Fluent icons to canvas renderer\n\nnodeRenderer.ts now has ICON_PATHS and ICON_NODE_SHAPE entries for all\n70 registered Fluent icons (was 11). The minimap/constellation graph\nnow renders Building, Database, Flow, Settings, Book, etc. as proper\nSVG icons inside canvas nodes — not just empty shapes.\n\nIcon paths extracted from @fluentui/react-icons via server-side rendering.\nShape assignments: circles for status/flow icons, rounded squares for\nstructural icons, rounded rects for document-type icons.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "16d28db9305843139471a364b56b09c68ee43d8d",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/16d28db9305843139471a364b56b09c68ee43d8d"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/3fd4572b1d4421a8e30fbfdd6bf854c8f7d396b5",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/3fd4572b1d4421a8e30fbfdd6bf854c8f7d396b5",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/3fd4572b1d4421a8e30fbfdd6bf854c8f7d396b5",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/3fd4572b1d4421a8e30fbfdd6bf854c8f7d396b5/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "5ab2cb20539f278820af759c9a5bdadae264d0af",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/5ab2cb20539f278820af759c9a5bdadae264d0af",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/5ab2cb20539f278820af759c9a5bdadae264d0af"
+      }
+    ]
+  },
+  {
+    "sha": "5ab2cb20539f278820af759c9a5bdadae264d0af",
+    "node_id": "C_kwDOR5SootoAKDVhYjJjYjIwNTM5ZjI3ODgyMGFmNzU5YzlhNWJkYWRhZTI2NGQwYWY",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-08T23:47:51Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-08T23:47:51Z"
+      },
+      "message": "fix: replace all emoji with Fluent UI icon names in content files\n\nAll 37 content files updated: emoji like 📖🏗️💾🔌 replaced with\nregistered Fluent icon names (Book, Building, Database, PlugConnected, etc.)\nthat render as proper Fluent UI icon components in the app.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "5cb36a5650bea8c2e92e8592c8dbbd018a1b964d",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/5cb36a5650bea8c2e92e8592c8dbbd018a1b964d"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/5ab2cb20539f278820af759c9a5bdadae264d0af",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/5ab2cb20539f278820af759c9a5bdadae264d0af",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/5ab2cb20539f278820af759c9a5bdadae264d0af",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/5ab2cb20539f278820af759c9a5bdadae264d0af/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "f95c728db8f1cec68637eda4325891cacfaad3ec",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f95c728db8f1cec68637eda4325891cacfaad3ec",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f95c728db8f1cec68637eda4325891cacfaad3ec"
+      }
+    ]
+  },
+  {
+    "sha": "f95c728db8f1cec68637eda4325891cacfaad3ec",
+    "node_id": "C_kwDOR5SootoAKGY5NWM3MjhkYjhmMWNlYzY4NjM3ZWRhNDMyNTg5MWNhY2ZhYWQzZWM",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-08T23:43:52Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-08T23:43:52Z"
+      },
+      "message": "feat: generate full KB content + Fluent UI icon mapping\n\nContent generation pipeline run:\n- kb-architect produced 37-node catalogue (21 existing imported, 16 new)\n- 21 existing content files imported with enriched connections (153 total)\n- 16 new content files generated by kb-writer with Mermaid diagrams,\n  source citations, and summary tables\n- Wiki files flattened from content/wiki/ to content/wiki-*.md\n- config.yaml regenerated with content-only clusters (no visual/theme)\n\nFluent UI icon system expanded:\n- NodeVisual.tsx: FLUENT_ICONS registry expanded from 11 to 70+ icons\n  covering architecture, data, API, UI, security, config, testing,\n  engine, docs, code, graph, visual, navigation, status categories\n- transform-catalogue.js: TOPIC_ICON_MAP uses Fluent icon names instead\n  of emoji (Building, Database, PlugConnected, etc.)\n- kb-architect agent: icon assignment table updated with Fluent names\n- content-generation reference: emoji mapping replaced with icon mapping\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "484e78823f691f3c4676a8e27efc0a2f18ccf653",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/484e78823f691f3c4676a8e27efc0a2f18ccf653"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/f95c728db8f1cec68637eda4325891cacfaad3ec",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f95c728db8f1cec68637eda4325891cacfaad3ec",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/f95c728db8f1cec68637eda4325891cacfaad3ec",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/f95c728db8f1cec68637eda4325891cacfaad3ec/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "cf24fe27c4aa8f149ca00001846f56bfe23e8f70",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/cf24fe27c4aa8f149ca00001846f56bfe23e8f70",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/cf24fe27c4aa8f149ca00001846f56bfe23e8f70"
+      }
+    ]
+  },
+  {
+    "sha": "a70c29ff6b24a7675e10e335da3b62f81342744b",
+    "node_id": "C_kwDOR5SootoAKGE3MGMyOWZmNmIyNGE3Njc1ZTEwZTMzNWRhM2I2MmY4MTM0Mjc0NGI",
+    "commit": {
+      "author": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-08T22:48:45Z"
+      },
+      "committer": {
+        "name": "Hoop Somuah",
+        "email": "hoopsomuah@hotmail.com",
+        "date": "2026-04-08T22:48:45Z"
+      },
+      "message": "Add fluentui-system-icons as submodule\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
+      "tree": {
+        "sha": "6c8fa7ec81551e6326a590b1f2d81e21068dd586",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/trees/6c8fa7ec81551e6326a590b1f2d81e21068dd586"
+      },
+      "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/commits/a70c29ff6b24a7675e10e335da3b62f81342744b",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/a70c29ff6b24a7675e10e335da3b62f81342744b",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/a70c29ff6b24a7675e10e335da3b62f81342744b",
+    "comments_url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/a70c29ff6b24a7675e10e335da3b62f81342744b/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "84bf940b71ac021cbe2afa4b1f445959774c4d63",
+        "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/commits/84bf940b71ac021cbe2afa4b1f445959774c4d63",
+        "html_url": "https://github.com/anokye-labs/kbexplorer-template/commit/84bf940b71ac021cbe2afa4b1f445959774c4d63"
+      }
+    ]
+  }
+]

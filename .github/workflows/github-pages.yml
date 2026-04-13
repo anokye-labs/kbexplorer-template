@@ -38,6 +38,7 @@ jobs:
         run: node scripts/generate-manifest.js
         env:
           VITE_KB_LOCAL: 'true'
+          GH_TOKEN: ${{ github.token }}
 
       - name: Validate graph
         run: npm run validate
@@ -47,7 +48,6 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
-          VITE_BASE_PATH: /kbexplorer/
 
       # Tier 3: E2E tests
       - name: Install Playwright browsers
