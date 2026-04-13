@@ -14,7 +14,9 @@
     "test:e2e:ui": "playwright test --ui",
     "preview": "vite preview",
     "validate": "node scripts/validate-graph.js",
-    "assess": "node scripts/assess-graph.js"
+    "assess": "node scripts/assess-graph.js",
+    "derive": "node scripts/derive-content.js",
+    "compare": "node scripts/compare-content.js"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.73.7",
