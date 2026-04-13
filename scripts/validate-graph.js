@@ -138,10 +138,16 @@ let errors = 0;
 
 // Rule 1: No broken inline links
 const brokenLinks = [];
+const missingGhLinks = [];
 for (const c of parsedContent) {
   for (const target of c.links) {
     if (!nodeIds.has(target)) {
-      brokenLinks.push({ from: c.id, target });
+      // issue-* and pr-* links depend on GitHub data availability
+      if ((target.startsWith('issue-') || target.startsWith('pr-')) && issueCount === 0) {
+        missingGhLinks.push({ from: c.id, target });
+      } else {
+        brokenLinks.push({ from: c.id, target });
+      }
     }
   }
 }
@@ -153,6 +159,10 @@ if (brokenLinks.length > 0) {
   }
 } else {
   log('✅ No broken inline links');
+}
+if (missingGhLinks.length > 0) {
+  warnings += missingGhLinks.length;
+  log(`⚠️  ${missingGhLinks.length} issue/PR link(s) skipped (no GitHub data in manifest)`);
 }
 
 // Rule 2: No duplicate node IDs

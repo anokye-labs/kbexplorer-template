@@ -54,6 +54,8 @@ function cacheSet<T>(key: string, data: T, etag?: string): void {
   }
 }
 
+const GH_API_BASE = import.meta.env.VITE_GH_API_BASE ?? 'https://api.github.com';
+
 async function ghFetch<T>(path: string, etag?: string): Promise<{ data: T; etag?: string }> {
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
@@ -62,7 +64,7 @@ async function ghFetch<T>(path: string, etag?: string): Promise<{ data: T; etag?
     headers['If-None-Match'] = etag;
   }
 
-  const res = await fetch(`https://api.github.com${path}`, { headers });
+  const res = await fetch(`${GH_API_BASE}${path}`, { headers });
 
   if (res.status === 304) {
     throw new NotModifiedError();
@@ -143,6 +145,9 @@ export function resolveImageUrl(source: SourceConfig, path: string): string {
     return `${import.meta.env.BASE_URL || '/'}${path}`;
   }
   const branch = source.branch ?? 'main';
+  if (GH_API_BASE !== 'https://api.github.com') {
+    return `${GH_API_BASE}/repos/${source.owner}/${source.repo}/contents/${path}?ref=${branch}`;
+  }
   return `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${branch}/${path}`;
 }
 
@@ -214,12 +219,21 @@ export async function fetchPullRequests(source: SourceConfig): Promise<GHIssue[]
   const cached = cacheGet<GHIssue[]>(cacheKey);
   if (cached) return cached.data;
 
-  const { data } = await ghFetch<GHIssue[]>(
-    `/repos/${source.owner}/${source.repo}/pulls?state=all&per_page=100`
-  );
+  const allPRs: GHIssue[] = [];
+  let page = 1;
+  const perPage = 100;
 
-  cacheSet(cacheKey, data);
-  return data;
+  while (true) {
+    const { data } = await ghFetch<GHIssue[]>(
+      `/repos/${source.owner}/${source.repo}/pulls?state=all&per_page=${perPage}&page=${page}`
+    );
+    allPRs.push(...data);
+    if (data.length < perPage) break;
+    page++;
+  }
+
+  cacheSet(cacheKey, allPRs);
+  return allPRs;
 }
 
 export interface GHCommit {

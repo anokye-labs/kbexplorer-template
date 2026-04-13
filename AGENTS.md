@@ -55,3 +55,7 @@ The HUD minimap uses one `<canvas ref={canvasRef}>` per dock orientation (vertic
 ### Themes
 
 Three themes via FluentProvider: dark (`webDarkTheme`), light (`webLightTheme`), sepia (custom `createLightTheme` with amber brand ramp).
+
+## Validation Strategy
+This project uses a Digital Twin Universe (DTU) for integration testing.
+Before building or evolving any feature that touches an external service, read `DTU.md`.
