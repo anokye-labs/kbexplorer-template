@@ -48,6 +48,8 @@ export interface KBNode {
   connections: Connection[];
   /** Canonical identity URN linking representations across providers */
   identity?: string;
+  /** Whether this node's content was machine-derived (can be re-generated) */
+  derived?: boolean;
   /** Source of this node: authored markdown or GitHub artifact */
   source: NodeSource;
   /** Which provider created this node */
@@ -114,7 +116,7 @@ export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string }
 /** Classify a node into a graph layer based on its source. */
 export function getNodeLayer(node: KBNode): NodeLayer {
   const t = node.source.type;
-  if (t === 'authored' || t === 'readme') return 'content';
+  if (t === 'authored' || t === 'readme' || t === 'derived') return 'content';
   if (t === 'section') return 'content';
   if (t === 'issue' || t === 'pull_request' || t === 'commit') return 'work';
   return 'file';
@@ -359,7 +361,8 @@ export type NodeSource =
   | { type: 'commit'; sha: string }
   | { type: 'file'; path: string }
   | { type: 'readme' }
-  | { type: 'section'; parentSource: NodeSource };
+  | { type: 'section'; parentSource: NodeSource }
+  | { type: 'derived'; generator: string };
 
 /** Full knowledge base configuration (from config.yaml). */
 export interface KBConfig {
