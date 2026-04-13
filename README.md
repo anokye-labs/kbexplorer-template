@@ -4,7 +4,7 @@ Interactive Knowledge Base Explorer — turn any GitHub repository into a naviga
 
 [![Deploy to GitHub Pages](https://github.com/anokye-labs/kbexplorer-template/actions/workflows/github-pages.yml/badge.svg)](https://github.com/anokye-labs/kbexplorer-template/actions/workflows/github-pages.yml)
 
-**Live demo:** [anokye-labs.github.io/kbexplorer](https://anokye-labs.github.io/kbexplorer/)
+**Live demo:** [anokye-labs.github.io/kbexplorer-template](https://anokye-labs.github.io/kbexplorer-template/)
 
 ---
 

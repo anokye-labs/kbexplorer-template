@@ -89,7 +89,7 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
-          VITE_BASE_PATH: /kbexplorer/
+          VITE_BASE_PATH: /kbexplorer-template/
 
       - name: Copy index.html to 404.html for SPA routing
         run: cp dist/index.html dist/404.html
