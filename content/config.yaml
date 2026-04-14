@@ -33,15 +33,55 @@ providers:
     cluster: reference
     options:
       articles:
+        # Graph theory & visualization
         - title: Knowledge graph
           connections: [graph-engine, type-system]
         - title: Force-directed graph drawing
           connections: [graph-network]
         - title: Graph (abstract data type)
           connections: [graph-engine, type-system]
-        - title: Fluent Design System
-          id: wiki-fluent
-          connections: [style-system, theme-system]
+        - title: Graph theory
+          connections: [graph-engine]
+        - title: Network science
+          connections: [graph-engine, graph-network]
+        - title: Small-world network
+          connections: [graph-engine]
+        - title: Breadth-first search
+          id: wiki-bfs
+          connections: [graph-network]
+        # Web tech & architecture
         - title: Single-page application
           id: wiki-spa
           connections: [app-shell, vite-config]
+        - title: React (software)
+          id: wiki-react
+          connections: [app-shell, hud]
+        - title: TypeScript
+          id: wiki-typescript
+          connections: [type-system, vite-config]
+        - title: Fluent Design System
+          id: wiki-fluent
+          connections: [style-system, theme-system]
+        - title: WebGL
+          id: wiki-webgl
+          connections: [graph-network]
+        # Content & knowledge management
+        - title: Markdown
+          id: wiki-markdown
+          connections: [content-pipeline, parser]
+        - title: YAML
+          id: wiki-yaml
+          connections: [wiki-configuration, node-mapping]
+        - title: Content management system
+          id: wiki-cms
+          connections: [content-pipeline, local-loader]
+        # Software engineering
+        - title: Continuous integration
+          id: wiki-ci
+          connections: [build-scripts, test-suite]
+        - title: Software testing
+          id: wiki-testing
+          connections: [test-suite]
+        - title: Digital twin
+          id: wiki-digital-twin
+          connections: [github-api, cache-system]
