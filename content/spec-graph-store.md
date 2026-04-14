@@ -1,172 +1,28 @@
 ---
 id: "spec-graph-store"
-title: "Graph Store + Provider Interface"
+title: "Graph Store Spec"
 emoji: "Database"
 cluster: design
+derived: true
 connections: []
 ---
----
-# Graph Store + Provider Interface
+
+The graph store specification describes a durable SQLite backing layer for the knowledge graph. Designed as part of the Graph Provider Architecture ([#40](https://github.com/anokye-labs/kbexplorer-template/issues/40)) and tracked in [#42](https://github.com/anokye-labs/kbexplorer-template/issues/42).
 
 ## Problem
 
-This is the walk phase of the [provider system](spec-providers-overview).
-After [node mapping](spec-node-mapping) gives us flexible file→node projection,
-we need:
+Currently, the knowledge graph is rebuilt from scratch on every page load. For large repositories with hundreds of nodes, this creates noticeable startup latency. The [GitHub API](github-api) rate limit (60 req/hour unauthenticated) compounds the problem.
 
-1. A **persistent cache** so nodes don't need to be re-derived every time
-2. A **provider interface** so different data sources (files, git, GitHub)
-   are pluggable
-3. **Provider attribution** so we know which provider created each node
-4. **Resolution depth tracking** so we know what's been resolved and what's expandable
+## Solution
 
-## Solution: SQLite Graph Store + Provider Interface
+A SQLite database caches the computed graph: nodes table with identity URN and content hash, edges table with type/weight/direction, metadata table for timestamps and version.
 
-### Graph Store
+## How It Connects
 
-SQLite database at `.kbexplorer/graph.db` (gitignored). Append-only with
-provider attribution. Each node/edge records who created it and when.
+The store sits between [providers](providers-overview) and the [graph engine](graph-engine). Providers write to the store; the engine reads from it. The [orchestrator](orchestrator) checks the store before running providers — if cached data is fresh, providers are skipped.
 
-The store extends the `GraphNode` and `GraphEdge` interfaces from the
-[type system](type-system) with provider attribution and persistence.
+The [identity system](identity) provides stable URNs as primary keys. The [node mapping](node-mapping) system's file-based identities enable incremental updates. The [cache system](cache-system) in `github.ts` could defer to the store for persistence. The [local loader](local-loader) could write during manifest generation.
 
-```sql
-CREATE TABLE nodes (
-  id TEXT PRIMARY KEY,
-  type TEXT NOT NULL,           -- 'file', 'commit', 'issue', 'authored', ...
-  provider TEXT NOT NULL,       -- 'files', 'git', 'github', 'authored', ...
-  title TEXT NOT NULL,
-  content TEXT,
-  raw_content TEXT,
-  cluster TEXT,
-  icon TEXT,
-  parent TEXT,
-  display TEXT,                 -- 'prose', 'code', 'tree', 'table', ...
-  meta TEXT,                    -- JSON: provider-specific metadata
-  expandable BOOLEAN DEFAULT 0,
-  expanded BOOLEAN DEFAULT 0,
-  depth INTEGER DEFAULT 0,
-  resolved_at TEXT NOT NULL,
-  expires_at TEXT
-);
+## Status
 
-CREATE TABLE edges (
-  id TEXT PRIMARY KEY,          -- canonical: min(from,to)|max(from,to)|type
-  from_id TEXT NOT NULL,
-  to_id TEXT NOT NULL,
-  type TEXT NOT NULL,           -- 'contains', 'imports', 'references', 'modifies', ...
-  provider TEXT NOT NULL,
-  description TEXT,
-  weight REAL DEFAULT 1.0,
-  meta TEXT,
-  resolved_at TEXT NOT NULL
-);
-
-CREATE TABLE provider_state (
-  provider TEXT PRIMARY KEY,
-  last_run TEXT,
-  resolution TEXT,              -- preset name
-  node_count INTEGER,
-  edge_count INTEGER,
-  config_hash TEXT,             -- hash of provider config for change detection
-  meta TEXT
-);
-
-CREATE TABLE expandable (
-  node_id TEXT NOT NULL,
-  provider TEXT NOT NULL,
-  hint TEXT,
-  estimated_nodes INTEGER,
-  PRIMARY KEY (node_id, provider)
-);
-```
-
-This enables [view projections](spec-views) — filtering and grouping the
-graph by provider, node type, or edge type.
-
-### Provider Interface
-
-```typescript
-interface GraphProvider {
-  id: string;
-  name: string;
-  nodeTypes: string[];
-  requires: string[];          // prerequisites: '.git', 'gh', 'network'
-
-  resolution: {
-    default: string;           // preset name
-    presets: Record<string, ResolutionPreset>;
-  };
-
-  resolve(ctx: ProviderContext): Promise<ProviderResult>;
-  expand?(nodeId: string, ctx: ProviderContext): Promise<ProviderResult>;
-  triggers?: TriggerPattern[];
-}
-```
-
-### Resolution Presets
-
-Per-provider depth limits defined in config:
-
-```yaml
-providers:
-  files:
-    resolution: standard
-  git:
-    resolution: summary
-    limits:
-      commitsPerFile: 5
-      branches: false
-  github:
-    resolution: summary
-    limits:
-      maxIssues: 50
-      prFileList: false
-```
-
-### Provider Execution Order
-
-Providers run in layers based on triggers:
-
-```
-Layer 0: files (always), authored (if content/ exists)
-Layer 1: git (if .git exists)
-Layer 2: github (if remote is github.com)
-Layer 3: projection (after all others)
-```
-
-### Storage Notes
-
-**Why SQLite**: Zero install, queryable, file-based, well-understood. It
-supersedes the [localStorage cache](cache-system) and replaces the
-[manifest file](manifest-generator) with a queryable store.
-Schema designed so it could migrate to Dolt (versioned SQL) later
-if graph-state diffing becomes valuable. The key Dolt insight is the
-`resolved_at` / `provider_state` tracking — this gives us cache
-invalidation and incremental updates.
-
-**Cache invalidation**: Each provider stores a `config_hash` in
-`provider_state`. If the config changes, the provider re-resolves.
-Individual nodes have `expires_at` for time-based expiry.
-
-### Transition Path
-
-The graph store wraps around the existing pipeline, replacing the
-[local loader](local-loader) and adding a cache layer around the
-[graph engine](graph-engine):
-
-```
-Current:
-  parser.ts → KBNode[] → buildGraph → KBGraph → render
-
-With store:
-  parser.ts → KBNode[] → store.upsert() → store.query() → KBGraph → render
-  providers  → KBNode[] → store.upsert() ↗
-```
-
-The store is a caching layer. Providers populate it. The UI reads from it.
-The existing `parser.ts` functions become the internals of the files/authored
-providers, refactoring the logic currently in the [content pipeline](content-pipeline).
-[GitHub API](github-api) calls move into a dedicated GitHub provider.
-
-Tracked by [#42](issue-42).
+The spec is complete. The provider interface was implemented in commit `930f94c`. SQLite integration is a future phase of the [provider architecture spec](spec-providers-overview). The [content pipeline](content-pipeline) would gain a persistence layer.

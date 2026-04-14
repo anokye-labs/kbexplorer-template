@@ -1,35 +1,64 @@
 ---
 id: "wiki-getting-started"
 title: "Getting Started"
-emoji: "Book"
+emoji: "Rocket"
 cluster: guide
+derived: true
 connections: []
 ---
 
+This guide walks you through setting up kbexplorer for local development.
 
+## Prerequisites
 
-# Getting Started
+- **Node.js 18+** and npm
+- **Git** for cloning
+- Optional: `gh` CLI for fetching GitHub data into the manifest
 
-This guide walks you through setting up kbexplorer, understanding its [content modes](wiki-content-modes), and [configuring](wiki-configuration) it for your repository. Start with [What is kbexplorer?](wiki-overview) for the conceptual foundation, or jump to [Installation & Development](wiki-setup) to get running immediately. For a bird's-eye view of the codebase, see the [architecture overview](overview).
-
-## Quick Start
+## Step 1: Clone and Install
 
 ```bash
-git clone https://github.com/anokye-labs/kbexplorer.git
-cd kbexplorer
+git clone https://github.com/anokye-labs/kbexplorer-template.git
+cd kbexplorer-template
 npm install
+```
+
+## Step 2: Generate the Manifest
+
+The [build scripts](build-scripts) create a local manifest:
+
+```bash
+npm run prebuild
+```
+
+This runs the [manifest generator](manifest-generator) which walks the file system and optionally calls `gh` for issue data. Output goes to `src/generated/repo-manifest.json`.
+
+## Step 3: Start Development
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:5173` — by default it explores its own repository, showing issues, README, and file structure as an interactive knowledge graph.
+Vite starts on `http://localhost:5173`. The [Vite configuration](vite-config) auto-regenerates the manifest on build start.
 
-## What You'll See
+## Step 4: Explore
 
-- **README as homepage** — the landing page renders the repo's README with a sidebar constellation showing your position in the graph
-- **Sidebar HUD** — dock it left or right for the full Okoto-style experience: live graph up top, connections below, reading tools at the bottom
-- **Three themes** — dark, light, and sepia, toggled from the HUD or with the `t` key
-- **File tree** — directories and source files are nodes in the graph, connected to their parent folders
+- Open the browser — land on the [overview grid](overview-view)
+- Click a card to enter the [reading view](reading-view)
+- Press `t` to try different [themes](theme-system)
+- Open the [HUD](hud) minimap to see the full constellation
+
+## Troubleshooting
+
+- **`$RefreshReg$ is not defined`** — Vite HMR stale cache. Kill Vite, delete `node_modules/.vite`, restart
+- **Empty graph** — run `npm run prebuild` to regenerate
+- **Rate limited** — the [local loader](local-loader) bypasses the [GitHub API](github-api) entirely
 
 ## Next Steps
 
-Once you're oriented, continue to the [architecture deep dive](wiki-deep-dive) for a detailed walkthrough of kbexplorer's five major subsystems.
+- **[Setup Guide](wiki-setup)** — detailed configuration
+- **[Configuration Guide](wiki-configuration)** — clusters, themes, caching
+- **[Content Modes](wiki-content-modes)** — authored vs repo-aware
+- **[Data Pipeline Guide](wiki-data-pipeline)** — how content flows
+- **[HUD System Guide](wiki-hud-system)** — master the sidebar
+- **[Infrastructure Guide](wiki-infrastructure)** — CI/CD and deployment

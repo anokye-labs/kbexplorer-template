@@ -1,119 +1,45 @@
 ---
 id: "app-shell"
-title: "Application Shell"
-emoji: "Building"
+title: "App Shell"
+emoji: "WindowNew"
 cluster: ui
+derived: true
 connections: []
 ---
 
-# Application Shell
-
-The application shell sits at the root of the [kbexplorer architecture](overview), providing a single, stable entry point that boots the Fluent 2 design system, initialises routing, loads the knowledge graph, and coordinates every top-level UI subsystem. Without this orchestration layer every feature would need its own copy of theme wiring, route handling, and loading-state management.
-
-## At a Glance
-
-| Component | Responsibility | Key File | Source |
-|-----------|---------------|----------|--------|
-| `App` | Fluent theme provider + HashRouter host | `src/App.tsx` | [src/App.tsx:82](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L82) |
-| `Explorer` | Orchestrate loading, keyboard nav, [HUD — Heads-Up Display](hud), routing | `src/App.tsx` | [src/App.tsx:28](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L28) |
-| `ReadingRoute` | Extract `id` param and render ReadingView | `src/App.tsx` | [src/App.tsx:17](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L17) |
-| `useCurrentNodeId` | Parse hash URL for current node | `src/App.tsx` | [src/App.tsx:22](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L22) |
-| `createRoot` | React 19 root mount | `src/main.tsx` | [src/main.tsx:6](https://github.com/anokye-labs/kbexplorer/blob/main/src/main.tsx#L6) |
-
-## Boot Sequence
-
-```mermaid
-flowchart TD
-    A["main.tsx · createRoot"] --> B["App · FluentProvider + HashRouter"]
-    B --> C["Explorer component"]
-    C --> D{"useKnowledgeBase"}
-    D -->|loading| E["LoadingScreen"]
-    D -->|error| F["ErrorScreen"]
-    D -->|ready| G["Routes + HUD"]
-    G --> H["/node/:id → ReadingView"]
-    G --> I["/* → redirect to hub node"]
-    G --> J["HUD panel"]
-
-    style A fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style B fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style C fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style D fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style E fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style F fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style G fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style H fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style I fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style J fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-```
-
-<!-- Sources: src/App.tsx:82-91, src/App.tsx:28-80, src/main.tsx:6-9 -->
-
-## Component Composition
-
-```mermaid
-flowchart LR
-    subgraph App
-        FP["FluentProvider\n(theme)"]
-        HR["HashRouter"]
-    end
-    subgraph Explorer
-        KB["useKnowledgeBase"]
-        KN["useKeyboardNav"]
-        HUD["HUD component"]
-        RV["ReadingView"]
-    end
-
-    FP --> HR --> Explorer
-    KB --> RV
-    KB --> HUD
-
-    style FP fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style HR fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style KB fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style KN fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style HUD fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style RV fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-```
-
-<!-- Sources: src/App.tsx:82-91, src/App.tsx:56-79 -->
-
-## FluentProvider Wrapping
-
-The `App` component initialises the Fluent 2 design system by calling the [theme system](theme-system)'s [`useTheme`](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L83) hook to obtain a `themeMode`, a Fluent `Theme` token set, and a setter. The entire component tree is wrapped in `<FluentProvider theme={fluentTheme}>` at [src/App.tsx:86](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L86) so that every child has access to Fluent's CSS-in-JS tokens.
+The application shell (`src/App.tsx`) is the top-level React component that orchestrates layout, routing, and global state. It wraps everything in a Fluent `FluentProvider` for theming and renders three major regions: the sidebar [HUD](hud), the main content area (which switches between views), and global overlays like [loading/error states](loading-error-screens). It was scaffolded in [PR #2](https://github.com/anokye-labs/kbexplorer-template/pull/2).
 
 ## Routing
 
-A `HashRouter` is used (not `BrowserRouter`) because the app is deployed as a static SPA. Two routes are defined at [src/App.tsx:59-66](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L59):
+The app uses hash-based routing (`#/node/{id}`, `#/graph`, `#/overview`) to support Azure Static Web Apps SPA fallback without server configuration. Three views are mounted:
 
-| Route | Behaviour |
-|-------|-----------|
-| `/node/:id` | Renders `ReadingRoute`, which extracts `id` via `useParams` and passes it to the [reading view](reading-view) |
-| `*` (catch-all) | Redirects to the hub node via the [graph engine](graph-engine)'s `getHubNodeId(graph)`, falling back to the first node in the graph |
+- **[Overview View](overview-view)** — card grid landing page, the default route
+- **[Reading View](reading-view)** — immersive content reader for individual nodes
+- **Graph View** — full constellation via [graph network](graph-network)
 
-## Explorer Orchestration
+The initial route was changed from `readme` to `overview` in commit `5c37867`.
 
-The `Explorer` component at [src/App.tsx:28](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L28) is the heart of the shell. It:
+```typescript
+<FluentProvider theme={fluentTheme}>
+  <div className="kb-app">
+    <HUD graph={graph} ... />
+    <main>
+      {route === 'overview' && <OverviewView ... />}
+      {route === 'reading' && <ReadingView ... />}
+      {route === 'graph' && <GraphView ... />}
+    </main>
+  </div>
+</FluentProvider>
+```
 
-1. **Loads data** — calls the [KB loader](kb-loader)'s `useKnowledgeBase()` and renders [loading/error screens](loading-error-screens) based on status ([src/App.tsx:44-45](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L44))
-2. **Enables keyboard shortcuts** — passes the graph to [keyboard navigation](keyboard-nav)'s `useKeyboardNav` ([src/App.tsx:39-42](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L39))
-3. **Mounts HUD** — renders the HUD component with graph, config, current node, and theme callbacks ([src/App.tsx:69-77](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L69))
+## State Management
 
-## Persisted HUD State
+The shell manages three pieces of global state via hooks:
 
-HUD dock position and collapsed state survive page reloads via `localStorage`:
+1. **Knowledge base** — loaded via the [KB loader hook](kb-loader), which returns `{ status, graph, config }`
+2. **Theme** — managed by the [theme system](theme-system)'s `useTheme()`, returning mode + Fluent theme object
+3. **Keyboard navigation** — the [keyboard nav](keyboard-nav) hook listens for global shortcuts (`t` for theme, arrows for node navigation)
 
-| Key | Default | Purpose |
-|-----|---------|---------|
-| `kbe-hud-collapsed` | `false` | Whether the HUD panel is collapsed |
-| `kbe-hud-dock` | `'bottom'` | Dock position: `top`, `bottom`, `left`, `right` |
-| `kbe-sidebar-w` | `25` | Sidebar width in `vw` units when docked left/right |
+## Theme Integration
 
-These are initialised in `useState` lazy initialisers at [src/App.tsx:32-37](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L32).
-
-## Dynamic Padding
-
-The main content area receives dynamic padding so it never overlaps the HUD regardless of dock position. The padding computation at [src/App.tsx:50-54](https://github.com/anokye-labs/kbexplorer/blob/main/src/App.tsx#L50) accounts for:
-
-- **Collapsed** → small `40px` padding in the dock direction
-- **Left/Right dock** → padding uses `--kbe-sidebar-width` CSS custom property
-- **Top/Bottom dock** → fixed `156px` padding
+The `FluentProvider` receives the current theme from `useTheme()`. Theme changes propagate through all Fluent components and CSS token values instantly. The [theme system](theme-system) supports dark, light, and sepia — the sepia theme uses a custom `createLightTheme()` with an amber brand ramp. The Fluent 2 installation ([PR #20](https://github.com/anokye-labs/kbexplorer-template/pull/20)) made this propagation automatic.

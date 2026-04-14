@@ -1,30 +1,34 @@
 ---
 id: "github-api"
-title: "GitHub API Client"
-emoji: "PlugConnected"
+title: "GitHub API & Cache"
+emoji: "Cloud"
 cluster: data
+derived: true
 connections: []
 ---
 
+The GitHub API client (`src/api/github.ts`) fetches repository content at runtime — file trees, issues, pull requests, README, and individual files. It includes a built-in [cache system](cache-system) that stores responses in localStorage with TTL-based expiration, and a version-stamped cache that invalidates automatically when the data shape changes.
 
-# GitHub API Client
+## API Functions
 
-The API client (`src/api/github.ts`) handles all communication with GitHub's REST API, supplying raw data to the [content pipeline](content-pipeline). It uses `SourceConfig` from the [type system](type-system) for endpoint configuration, and its type definitions are also imported by the [local loader](local-loader). The module also exports `resolveImageUrl`, used by the [visual system](visual-system) to resolve repository-relative image paths.
+```typescript
+fetchTree(source: SourceConfig): Promise<GHTreeItem[]>
+fetchFile(source: SourceConfig, path: string): Promise<string>
+fetchFiles(source: SourceConfig, paths: string[]): Promise<Record<string, string>>
+fetchIssues(source: SourceConfig): Promise<GHIssue[]>
+resolveImageUrl(source: SourceConfig, path: string): string
+```
 
-## Endpoints Used
+Each function constructs a GitHub REST API URL, checks the cache, and falls back to a network fetch. The `resolveImageUrl` function was updated for local mode in [#34](https://github.com/anokye-labs/kbexplorer-template/issues/34) — in local mode it returns `import.meta.env.BASE_URL + path` instead of `raw.githubusercontent.com`.
 
-- `GET /repos/{owner}/{repo}/issues?state=all` — all issues (PRs filtered out client-side)
-- `GET /repos/{owner}/{repo}/contents/{path}` — single file content (base64 encoded)
-- `GET /repos/{owner}/{repo}/git/trees/{branch}?recursive=1` — full file tree
+## Rate Limiting
 
-## Caching
+GitHub's REST API has a 60 req/hour limit for unauthenticated requests. The [local loader](local-loader) eliminates this entirely by using pre-built manifests. The [Digital Twin Universe (PR #66)](https://github.com/anokye-labs/kbexplorer-template/pull/66) provides a mock server for development and testing, bypassing both rate limits and network flakiness.
 
-All responses are cached via the [cache system](cache-system) in `localStorage` with a 5-minute TTL under the `kbe:` prefix. A `CACHE_VERSION` constant in the module header auto-invalidates all cached data when bumped — this prevents stale data from poisoning renders after breaking changes to the parsing logic.
+## CI Integration
 
-## Rate Limit Handling
+Missing `GH_TOKEN` in CI was a recurring pain point. [PR #74](https://github.com/anokye-labs/kbexplorer-template/pull/74) fixed the deploy build's manifest generation, and [PR #75](https://github.com/anokye-labs/kbexplorer-template/pull/75) added `issues:read` and `pull-requests:read` permissions to the workflow. The wave 1 readiness work ([#69](https://github.com/anokye-labs/kbexplorer-template/issues/69)) hardened the overall CI configuration. The GitHub Pages base path was fixed in commit `e263f95`.
 
-Unauthenticated GitHub API allows 60 requests/hour. When exhausted (403 + `X-RateLimit-Remaining: 0`), the client throws `RateLimitError`. The loading hook catches this and shows an error screen instead of a blank page.
+## Integration
 
-## Error Recovery
-
-Each fetch in `loadRepoContent` is wrapped in `.catch(() => [])` so partial failures (e.g., rate limit on issues but not tree) still produce a usable graph. If ALL content is empty (0 nodes), the app shows an explicit error screen.
+The API client is consumed by the [parser](parser) for remote-mode content loading, by the [files provider](files-provider) indirectly through `treeToNodes()`, and by the [work provider](work-provider) for issue/PR fetching. The [type system](type-system) defines the `SourceConfig` interface that all API functions accept. The [content pipeline](content-pipeline) routes through this module in remote mode.

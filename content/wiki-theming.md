@@ -1,34 +1,41 @@
 ---
 id: "wiki-theming"
-title: "Theme System"
-emoji: "Book"
+title: "Theming Guide"
+emoji: "Color"
 cluster: guide
-parent: "wiki-deep-dive"
+derived: true
 connections: []
 ---
 
+Three visual themes affect every surface in the application.
 
+## Available Themes
 
-# [Theme System](theme-system)
+| Theme | Shortcut | Best For |
+|-------|----------|----------|
+| **Dark** | `t` to cycle | Code reading, low light |
+| **Light** | `t` to cycle | Bright environments, presentations |
+| **Sepia** | `t` to cycle | Extended reading, reduced eye strain |
 
-kbexplorer supports three themes via Fluent 2's FluentProvider.
+## How Themes Propagate
 
-## Themes
+The [theme system](theme-system) returns a Fluent `Theme` object that the [application shell](app-shell) passes to `<FluentProvider>`. Every Fluent component picks up correct colors automatically.
 
-| Theme | Source | Description |
-|-------|--------|-------------|
-| **Dark** | `webDarkTheme` | Default. Standard Fluent dark palette. |
-| **Light** | `webLightTheme` | Standard Fluent light palette. |
-| **Sepia** | Custom `createLightTheme()` | Warm amber brand ramp (16 shades from `#1C1308` to `#FCF7F0`) with overrides for neutral background, card, and stroke tokens. |
+Custom components use Fluent tokens via the [style system](style-system). The [node renderer](node-renderer) reads `isDark` to adjust canvas rendering. The [graph network](graph-network) uses theme colors for edges and backgrounds.
 
-## Architecture
+## The Sepia Theme
 
-A single `FluentProvider` wraps the entire app. The `useTheme` hook returns `[ThemeMode, FluentTheme, setMode]` — the theme object is passed to FluentProvider, and all components inherit colors, typography, and spacing automatically.
+Custom `createLightTheme()` with amber brand ramp, overriding 20+ tokens:
 
-## Toggle
+```typescript
+colorNeutralBackground1: '#F5ECD7'  // warm paper
+colorNeutralForeground1: '#2A2520'  // warm dark text
+```
 
-Three HUD buttons: moon (`WeatherMoonRegular`), sun (`WeatherSunnyRegular`), book (`BookRegular`). The `t` keyboard shortcut cycles through all three. Preference persists in localStorage as `kbe-theme`.
+## Customizing
 
-## Fallback
+To add a theme: define a `BrandVariants` ramp in the [theme system](theme-system), create via `createLightTheme()`, override tokens, add to `MODES` and `THEME_MAP`, update [keyboard nav](keyboard-nav) cycle.
 
-The `html` element has `background: #292929` as a fallback for scroll areas beyond FluentProvider's reach.
+## Persistence
+
+Stored in localStorage under `kbe-theme`. The [visual system](visual-system) and [overview view](overview-view) respect the theme automatically.

@@ -1,32 +1,37 @@
 ---
 id: "theme-system"
 title: "Theme System"
-emoji: "Color"
-cluster: ui
+emoji: "DarkTheme"
+cluster: visual
+derived: true
 connections: []
 ---
 
+The theme system (`src/hooks/useTheme.ts`) provides three visual modes — dark, light, and sepia — that propagate through every surface in kbexplorer via Fluent UI's `FluentProvider` and CSS token system. Theme choice persists in localStorage and can be cycled with the `t` [keyboard shortcut](keyboard-nav).
 
-# Theme System
+## Three Themes
 
-kbexplorer supports three themes via Fluent 2's `FluentProvider`: **dark**, **light**, and **sepia**.
+| Theme | Base | Character |
+|-------|------|-----------|
+| **Dark** | `webDarkTheme` | Default. High contrast for code and graphs |
+| **Light** | `webLightTheme` | Standard Fluent light palette |
+| **Sepia** | Custom `createLightTheme` | Warm amber paper for long reading sessions |
 
-## Implementation
+The sepia theme uses a custom `BrandVariants` ramp with 16 amber tones (#1C1308 to #FCF7F0) and overrides 20+ Fluent tokens for paper-like warmth — `colorNeutralBackground1: '#F5ECD7'`, `colorNeutralForeground1: '#2A2520'`. It was designed in [#13](https://github.com/anokye-labs/kbexplorer-template/issues/13) and shipped in [PR #8](https://github.com/anokye-labs/kbexplorer-template/pull/8).
 
-The `useTheme` hook (`src/hooks/useTheme.ts`) returns `[ThemeMode, FluentTheme, setMode]`. The [app shell](app-shell) calls `useTheme` and passes the active Fluent theme to a single `FluentProvider` at the root — all components, including the [visual system](visual-system), inherit colors, typography, and spacing automatically.
+## Hook API
 
-## Themes
+```typescript
+function useTheme(): [ThemeMode, FluentTheme, (t: ThemeMode) => void]
+// Returns: [currentMode, fluentThemeObject, setMode]
+```
 
-- **Dark** — `webDarkTheme` from @fluentui/react-components
-- **Light** — `webLightTheme` from @fluentui/react-components
-- **Sepia** — custom theme built with `createLightTheme()` using a 16-shade warm amber `BrandVariants` ramp (from `#1C1308` to `#FCF7F0`), with overrides for neutral background, card, and stroke tokens
+The [application shell](app-shell) calls `useTheme()` and passes the Fluent theme to `<FluentProvider>`. All Fluent components and `makeStyles` rules automatically pick up the correct token values.
 
-The active theme also determines opaque background fills in the [node renderer](node-renderer), preventing edge bleed-through on the graph canvas.
+## Persistence
 
-## Toggle
+Theme choice is stored in localStorage under `kbe-theme`. The `readStored()` helper reads and validates on mount, defaulting to `dark`. This is one of the `kbe-*` keys mentioned in the AGENTS.md cache versioning rules.
 
-The [HUD — Heads-Up Display](hud) tools strip has three buttons: moon (WeatherMoonRegular), sun (WeatherSunnyRegular), and book (BookRegular) icons. The `t` [keyboard shortcut](keyboard-nav) cycles through all three. Preference persists in localStorage as `kbe-theme`.
+## Integration
 
-## Fallback Background
-
-The `html` element has `background: #292929` as a fallback for scroll areas beyond the FluentProvider's reach (e.g., overscroll on mobile).
+The theme affects the [node renderer](node-renderer) (icon fill/stroke), the [style system](style-system) (CSS variables), the [visual system](visual-system) (all seven surfaces), and the [graph network](graph-network) (edge/background colors). The Fluent 2 installation ([PR #20](https://github.com/anokye-labs/kbexplorer-template/pull/20)) made theme propagation automatic via `FluentProvider`.

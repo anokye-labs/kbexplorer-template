@@ -1,0 +1,1619 @@
+{
+  "meta": {
+    "repo": "anokye-labs/kbexplorer-template",
+    "generatedAt": "2025-07-15T00:00:00Z",
+    "nodeCount": 37,
+    "edgeHintCount": 128,
+    "clusterCount": 7
+  },
+  "clusters": {
+    "engine": {
+      "name": "Engine",
+      "color": "#4A9CC8",
+      "description": "Core graph computation and orchestration"
+    },
+    "ui": {
+      "name": "Interface",
+      "color": "#8CB050",
+      "description": "React components and interactive views"
+    },
+    "visual": {
+      "name": "Visual System",
+      "color": "#E8A838",
+      "description": "Styling, theming, and visual rendering"
+    },
+    "data": {
+      "name": "Data Layer",
+      "color": "#C07840",
+      "description": "Content providers, API, and caching"
+    },
+    "infra": {
+      "name": "Infrastructure",
+      "color": "#5A98A8",
+      "description": "Build tooling, config, and deployment"
+    },
+    "design": {
+      "name": "Design Decisions",
+      "color": "#A86FDF",
+      "description": "Architecture specs and design rationale"
+    },
+    "guide": {
+      "name": "Guide",
+      "color": "#39FF14",
+      "description": "Onboarding and usage documentation"
+    }
+  },
+  "nodes": [
+    {
+      "id": "overview",
+      "title": "kbexplorer Architecture",
+      "cluster": "guide",
+      "emoji": "Globe",
+      "file": "content/overview.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "graph-engine",
+        "type-system",
+        "app-shell",
+        "content-pipeline",
+        "hud"
+      ],
+      "relatedIssues": [
+        {
+          "number": 40,
+          "title": "Graph Provider Architecture — provider-based graph system",
+          "state": "open",
+          "snippet": "## Design Specs  Structured as a spec tree in `specs/providers/`: - `00-overview.md` — current architecture analysis + evolution path - `01-node-mapping.md` — how files become nodes (nodemap.yaml, pro"
+        },
+        {
+          "number": 39,
+          "title": "Rich graph views — deeper visualization and navigation",
+          "state": "open",
+          "snippet": "Deeper visualization and navigation improvements.  ## Blocked by - #54 sub-issues (#55, #56, #57, #59) — sense-making improvements come first - #44 (graph views) — view system enables richer projectio"
+        },
+        {
+          "number": 17,
+          "title": "Authored mode: markdown with YAML frontmatter",
+          "state": "closed",
+          "snippet": "## Overview  While the default experience uses GitHub API data (#12), kbexplorer also supports an **authored mode** where content comes from a collection of Markdown files with YAML frontmatter. This "
+        },
+        {
+          "number": 16,
+          "title": "Keyboard navigation",
+          "state": "closed",
+          "snippet": "## Keyboard Navigation  ### Active Shortcuts  | Key | Action | |-----|--------| | `t` | Cycle theme (dark → light → sepia) | | `←` / `→` | Previous / next node in reading view |  ### Removed Shortcuts"
+        },
+        {
+          "number": 14,
+          "title": "Phase 2: Embedded Copilot conversation module",
+          "state": "open",
+          "snippet": "## Vision  Phase 2 introduces an embedded **GitHub Copilot conversation panel** directly inside kbexplorer. Users will be able to ask questions about the knowledge base — \"What issues are related to a"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 21,
+          "title": "feat: Fluent 2 overview, loading/error, and visual system",
+          "state": "merged",
+          "snippet": "## Changes  - **OverviewView**: Replaced custom HTML/CSS with Fluent Card, Badge, CounterBadge, Title1, Subtitle2, makeStyles grid layout - **LoadingScreen**: Fluent Spinner + Body1 (removed custom sp"
+        },
+        {
+          "number": 18,
+          "title": "feat: responsive layout + example issues for default experience",
+          "state": "merged",
+          "snippet": "## Summary  Responsive CSS audit across all views plus 8 example GitHub issues to enrich the default repo-aware experience.  ### Responsive Layout (Task 1)  - **Breakpoints**: Desktop (>1024px), Table"
+        },
+        {
+          "number": 8,
+          "title": "feat: theme system, keyboard navigation, and HUD",
+          "state": "merged",
+          "snippet": "## Summary  Three cross-cutting features for kbexplorer:  ### 1. Theme System (\\src/hooks/useTheme.ts\\) - Dark/light/sepia switching with CSS variables - Persisted in localStorage (\\kbe-theme\\) - Body"
+        },
+        {
+          "number": 5,
+          "title": "feat: overview card grid + loading/error states",
+          "state": "merged",
+          "snippet": "## Changes  - **OverviewView** (\\src/views/OverviewView.tsx\\): Card grid landing page grouped by cluster with NodeVisual, connection counts, cluster pills, and hover effects (border glow + lift). Resp"
+        },
+        {
+          "number": 2,
+          "title": "feat: scaffold Vite + React + TypeScript project",
+          "state": "merged",
+          "snippet": "Scaffolds the kbexplorer repo with Vite + React 19 + TypeScript (strict mode).  ## What  - Vite + React 19 + TypeScript project scaffold - Core dependencies: react-router-dom, vis-network, vis-data, g"
+        }
+      ],
+      "recentCommits": [
+        {
+          "sha": "5c37867",
+          "message": "feat: default landing page is now 'overview' instead of 'readme'"
+        }
+      ]
+    },
+    {
+      "id": "graph-engine",
+      "title": "Graph Engine",
+      "cluster": "engine",
+      "emoji": "Flash",
+      "file": "src/engine/graph.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "type-system",
+        "orchestrator",
+        "graph-network",
+        "overview"
+      ],
+      "relatedIssues": [
+        {
+          "number": 59,
+          "title": "Active node neighborhood view — focus graph on current node's connections",
+          "state": "closed",
+          "snippet": "Parent: #54  When a node is focused, the expanded map filters to its N-hop neighborhood.  ## Blocked by None — works with current graph data  ## Tasks  - [ ] Implement N-hop neighborhood extraction fu"
+        },
+        {
+          "number": 58,
+          "title": "Cluster group collapse — collapse cluster into summary node",
+          "state": "closed",
+          "snippet": "Parent: #54 (Sense-making epic)  ## Problem  Clusters with many nodes crowd the graph. You want to see that Code exists and connects to things, without seeing every file.  ## Solution  Click cluster i"
+        },
+        {
+          "number": 57,
+          "title": "Cluster group collapse — collapse cluster nodes into summary node",
+          "state": "closed",
+          "snippet": "Parent: #54  Click a cluster to collapse its nodes into a single summary node.  ## Blocked by - #55 (layer toggles — establishes the pattern for filtering nodes from the graph)  ## Tasks  - [ ] Implem"
+        },
+        {
+          "number": 56,
+          "title": "Edge type visual styling — colors, dashes, arrows per edge type",
+          "state": "closed",
+          "snippet": "Parent: #54  Render edges differently per type in vis-network. Prerequisite: #50 (typed edges) ✅ done.  ## Tasks  - [ ] Define edge color/dash/arrow map in createGraphNetwork.ts - [ ] Map KBEdge.type "
+        },
+        {
+          "number": 55,
+          "title": "Layer toggles in HUD — show/hide file, content, work, concept layers",
+          "state": "closed",
+          "snippet": "Parent: #54  Add layer toggles to the HUD to show/hide groups of node types.  ## Blocked by None — node type info already in KBNode.source.type  ## Tasks  - [ ] Define layer definitions: Content (auth"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 76,
+          "title": "feat: Content Derivation Engine — graph-aware content generation pipeline",
+          "state": "merged",
+          "snippet": "## What  Infrastructure to derive kbexplorer content from systems of record (source files, git, issues) instead of hand-authoring everything. Goal: delete \\content/\\ and re-derive it, getting somethin"
+        },
+        {
+          "number": 68,
+          "title": "fix: update vite to 8.0.5 to clear SEC-03 alerts",
+          "state": "merged",
+          "snippet": "## Summary - update `vite` from the vulnerable 8.0.3 lockfile resolution to 8.0.5 - clear the open Vite Dependabot advisories behind SEC-03 - keep the change limited to `package.json` and `package-loc"
+        },
+        {
+          "number": 28,
+          "title": "feat: HUD depth/collapse/dock + graph node shapes + overlay animation",
+          "state": "merged",
+          "snippet": "Major HUD rework + graph visual improvements. See commit message."
+        },
+        {
+          "number": 22,
+          "title": "feat: Fluent 2 reading view, graph view, and HUD",
+          "state": "merged",
+          "snippet": "- ReadingView: Fluent Button, Title1, Badge, Card for connections, prose with Fluent 2 dark-theme token values - GraphView: Fluent Card legend with CardHeader, Button back link, vis-network colors fro"
+        },
+        {
+          "number": 19,
+          "title": "fix: font sizer, minimap layout, and constellation overlay",
+          "state": "merged",
+          "snippet": "Fixes four issues:  1. **Font sizer broken** — .kb-prose was hardcoding font-size: 1.05rem, ignoring the CSS variable 2. **Width sizer partly broken** — now properly consumed 3. **Minimap layout wrong"
+        }
+      ],
+      "recentCommits": [
+        {
+          "sha": "57a7996",
+          "message": "feat: Content Derivation Engine — graph-aware content generation pipeline (#76)"
+        },
+        {
+          "sha": "611e138",
+          "message": "feat: node mapping — nodemap.yaml maps files to graph nodes (#41)"
+        },
+        {
+          "sha": "8cf5034",
+          "message": "fix: stop graph drift — increase stabilization to 500 iterations + double physics kill"
+        },
+        {
+          "sha": "625f054",
+          "message": "fix: stop graph drifting — disable physics in factory + after emphasis updates"
+        },
+        {
+          "sha": "8d79295",
+          "message": "fix: zoom in more on sidebar + overlay graphs, enable sidebar panning"
+        },
+        {
+          "sha": "e30d949",
+          "message": "feat: add re-center button to constellation graph"
+        },
+        {
+          "sha": "941e9be",
+          "message": "feat: extract inline links and file references as graph edges"
+        },
+        {
+          "sha": "e647a10",
+          "message": "feat: spec files as graph nodes + manifest reads specs/"
+        }
+      ]
+    },
+    {
+      "id": "orchestrator",
+      "title": "Orchestrator",
+      "cluster": "engine",
+      "emoji": "ArrowSync",
+      "file": "src/engine/orchestrator.ts",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document the orchestrator: how it coordinates providers, parser, and graph engine to produce the final KBGraph. Cite src/engine/orchestrator.ts. Show the pipeline: providers → parser → graph.",
+      "edgeHints": [
+        "graph-engine",
+        "parser",
+        "providers-overview",
+        "content-pipeline"
+      ],
+      "relatedIssues": [
+        {
+          "number": 42,
+          "title": "Walk: Graph store (SQLite) + file/git providers",
+          "state": "closed",
+          "snippet": "Parent: #40 Spec: content/spec-graph-store.md  SQLite graph cache with provider interface.  ## Blocked by - #41 (node mapping — providers need the mapping system to know how to produce nodes)  ## Task"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "parser",
+      "title": "Markdown Parser",
+      "cluster": "engine",
+      "emoji": "DocumentText",
+      "file": "src/engine/parser.ts",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document the markdown parser: how it extracts frontmatter, inline links, and structured content from raw markdown. Cite src/engine/parser.ts. Show relationship to identity system.",
+      "edgeHints": [
+        "identity",
+        "orchestrator",
+        "type-system",
+        "node-mapping"
+      ],
+      "relatedIssues": [
+        {
+          "number": 52,
+          "title": "Edge-type-aware related panel ranking",
+          "state": "closed",
+          "snippet": "## Problem  The Related panel in the HUD shows the top 8 neighbors sorted by degree (connection count). This pushes out file nodes and other low-degree nodes, even when they have strong typed edges to"
+        },
+        {
+          "number": 51,
+          "title": "Clickable file path references in reading view",
+          "state": "closed",
+          "snippet": "## Problem  When content mentions `src/engine/parser.ts` in the body, the edge exists in the graph data (type: `references`, source: `inferred`), but the text renders as a plain `<code>` tag — not cli"
+        },
+        {
+          "number": 50,
+          "title": "Typed directional edges — rich link system with filtering and layout",
+          "state": "closed",
+          "snippet": "## Content Node  See `content/spec-typed-edges.md` for the full design.  ## Summary  Upgrade the edge system from `{ to, description }` to typed, directional, weighted edges with source tracking. Enab"
+        },
+        {
+          "number": 41,
+          "title": "Crawl: Node mapping — how files become nodes (nodemap.yaml)",
+          "state": "closed",
+          "snippet": "Parent: #40 Spec: content/spec-node-mapping.md  Define how files become nodes via nodemap.yaml.  ## Blocked by None  ## Tasks  - [ ] Define nodemap.yaml schema (single file, split, merge, glob, direct"
+        },
+        {
+          "number": 40,
+          "title": "Graph Provider Architecture — provider-based graph system",
+          "state": "open",
+          "snippet": "## Design Specs  Structured as a spec tree in `specs/providers/`: - `00-overview.md` — current architecture analysis + evolution path - `01-node-mapping.md` — how files become nodes (nodemap.yaml, pro"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 38,
+          "title": "feat: Replace GitHub API with local data for self-exploration",
+          "state": "merged",
+          "snippet": "refs #29  ## Summary  Adds manifest-only local mode that eliminates all GitHub API calls at runtime for self-exploration. A pre-build script generates `src/generated/repo-manifest.json` containing eve"
+        },
+        {
+          "number": 4,
+          "title": "feat: core modules — GitHub client, parser, graph engine, visual system",
+          "state": "merged",
+          "snippet": "Implements the foundational runtime modules for kbexplorer.  ## Modules  | Module | Path | Purpose | |--------|------|---------| | GitHub client | src/api/github.ts | Fetch files, trees, issues, PRs w"
+        }
+      ],
+      "recentCommits": [
+        {
+          "sha": "79fc1e0",
+          "message": "feat: README with 88 inline links + extract links from README in parser"
+        }
+      ]
+    },
+    {
+      "id": "identity",
+      "title": "Identity System",
+      "cluster": "engine",
+      "emoji": "Fingerprint",
+      "file": "src/engine/identity.ts",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document the multi-layer identity system: how nodes get stable IDs, how aliases and references resolve. Cite src/engine/identity.ts. Link to spec-multi-layer-identity.",
+      "edgeHints": [
+        "parser",
+        "type-system",
+        "multi-layer-identity",
+        "local-loader"
+      ],
+      "relatedIssues": [
+        {
+          "number": 54,
+          "title": "Epic: Sense-making — make the graph human-readable at any scale",
+          "state": "closed",
+          "snippet": "## Vision  The graph has outgrown what a single human can comprehend. Sense-making is the top priority.  ## The Layer Model  1. **File layer** — raw file system (directories, source files, configs) 2."
+        },
+        {
+          "number": 47,
+          "title": "Multi-layer node identity — same entity across providers",
+          "state": "closed",
+          "snippet": "Spec: content/spec-multi-layer-identity.md  Same entity across providers — identity URNs.  ## Blocked by - #41 (node mapping — file: field creates identity links) - #42 (graph store — identity column "
+        },
+        {
+          "number": 9,
+          "title": "Visual Identity System: 4 modes × 7 surfaces",
+          "state": "closed",
+          "snippet": "## Visual Identity System  ### Icon Rendering - Fluent icons sourced from `@fluentui/react-icons`, colored with their cluster color (not monochrome) - Icons are drawn as SVG data URIs inside canvas sh"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 26,
+          "title": "docs: update README to reflect Fluent 2 refresh",
+          "state": "merged",
+          "snippet": "Updates README to reflect the Fluent 2 visual refresh: - Fonts: Segoe UI + Cascadia Code (replaces Instrument Serif, General Sans, JetBrains Mono) - Visual identity: Fluent icons from @fluentui/react-"
+        },
+        {
+          "number": 18,
+          "title": "feat: responsive layout + example issues for default experience",
+          "state": "merged",
+          "snippet": "## Summary  Responsive CSS audit across all views plus 8 example GitHub issues to enrich the default repo-aware experience.  ### Responsive Layout (Task 1)  - **Breakpoints**: Desktop (>1024px), Table"
+        },
+        {
+          "number": 15,
+          "title": "feat: Azure Static Web Apps deployment + comprehensive README",
+          "state": "merged",
+          "snippet": "## Changes  - **Azure Static Web Apps workflow** — GitHub Actions CI/CD that builds and deploys on push to main, creates staging environments for PRs, and cleans up on PR close - **SPA routing config*"
+        }
+      ],
+      "recentCommits": [
+        {
+          "sha": "930f94c",
+          "message": "feat: provider system + identity URNs (#42, #47)"
+        },
+        {
+          "sha": "9ed4d1e",
+          "message": "feat: add link assessment + multi-layer identity spec nodes (#46, #47)"
+        }
+      ]
+    },
+    {
+      "id": "local-loader",
+      "title": "Local Loader",
+      "cluster": "engine",
+      "emoji": "FolderOpen",
+      "file": "src/engine/local-loader.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "orchestrator",
+        "providers-overview",
+        "node-mapping",
+        "identity",
+        "kb-loader"
+      ],
+      "relatedIssues": [
+        {
+          "number": 37,
+          "title": "Unit and scenario tests for local data pipeline",
+          "state": "closed",
+          "snippet": "Parent: #29 Depends on: all other issues  Comprehensive test coverage using Vitest:  ### Unit tests for generate-manifest.js - FS walk produces correct tree structure - Content files read and embedded"
+        },
+        {
+          "number": 33,
+          "title": "Update useKnowledgeBase hook with mode routing",
+          "state": "closed",
+          "snippet": "Parent: #29 Depends on: local loader  Update `src/hooks/useKnowledgeBase.ts` to: 1. Check `isLocalMode()` 2. If local: use `loadLocalConfig`, `loadLocalRepoContent`, `loadLocalAuthoredContent` 3. If r"
+        },
+        {
+          "number": 32,
+          "title": "Local content loader (local-loader.ts)",
+          "state": "closed",
+          "snippet": "Parent: #29 Depends on: manifest script, exported parsers  Create `src/engine/local-loader.ts` providing:  - `isLocalMode(): boolean` — true if `VITE_KB_LOCAL=true` or manifest exists - `loadLocalConf"
+        },
+        {
+          "number": 31,
+          "title": "Export parser functions for reuse by local loader",
+          "state": "closed",
+          "snippet": "Parent: #29  Export these functions from `src/engine/parser.ts` so `local-loader.ts` can reuse them: - `parseMarkdownFile(path, raw)` - `treeToNodes(tree, repoName, excludePaths?)` - `issueToNode(issu"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 38,
+          "title": "feat: Replace GitHub API with local data for self-exploration",
+          "state": "merged",
+          "snippet": "refs #29  ## Summary  Adds manifest-only local mode that eliminates all GitHub API calls at runtime for self-exploration. A pre-build script generates `src/generated/repo-manifest.json` containing eve"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "graph-network",
+      "title": "Graph Network",
+      "cluster": "engine",
+      "emoji": "Organization",
+      "file": "src/engine/createGraphNetwork.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "graph-engine",
+        "node-renderer",
+        "hud",
+        "type-system"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "node-renderer",
+      "title": "Node Renderer",
+      "cluster": "visual",
+      "emoji": "PaintBrush",
+      "file": "src/engine/nodeRenderer.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "graph-network",
+        "visual-system",
+        "hud"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "node-mapping",
+      "title": "Node Mapping",
+      "cluster": "engine",
+      "emoji": "Map",
+      "file": "src/engine/nodemap.ts",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document nodemap.ts: how nodemap.yaml entries (file, directory, glob, files modes) are resolved into KBNodes. Cite src/engine/nodemap.ts and nodemap.yaml.",
+      "edgeHints": [
+        "parser",
+        "local-loader",
+        "spec-node-mapping",
+        "type-system"
+      ],
+      "relatedIssues": [
+        {
+          "number": 54,
+          "title": "Epic: Sense-making — make the graph human-readable at any scale",
+          "state": "closed",
+          "snippet": "## Vision  The graph has outgrown what a single human can comprehend. Sense-making is the top priority.  ## The Layer Model  1. **File layer** — raw file system (directories, source files, configs) 2."
+        },
+        {
+          "number": 47,
+          "title": "Multi-layer node identity — same entity across providers",
+          "state": "closed",
+          "snippet": "Spec: content/spec-multi-layer-identity.md  Same entity across providers — identity URNs.  ## Blocked by - #41 (node mapping — file: field creates identity links) - #42 (graph store — identity column "
+        },
+        {
+          "number": 42,
+          "title": "Walk: Graph store (SQLite) + file/git providers",
+          "state": "closed",
+          "snippet": "Parent: #40 Spec: content/spec-graph-store.md  SQLite graph cache with provider interface.  ## Blocked by - #41 (node mapping — providers need the mapping system to know how to produce nodes)  ## Task"
+        },
+        {
+          "number": 41,
+          "title": "Crawl: Node mapping — how files become nodes (nodemap.yaml)",
+          "state": "closed",
+          "snippet": "Parent: #40 Spec: content/spec-node-mapping.md  Define how files become nodes via nodemap.yaml.  ## Blocked by None  ## Tasks  - [ ] Define nodemap.yaml schema (single file, split, merge, glob, direct"
+        },
+        {
+          "number": 40,
+          "title": "Graph Provider Architecture — provider-based graph system",
+          "state": "open",
+          "snippet": "## Design Specs  Structured as a spec tree in `specs/providers/`: - `00-overview.md` — current architecture analysis + evolution path - `01-node-mapping.md` — how files become nodes (nodemap.yaml, pro"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 76,
+          "title": "feat: Content Derivation Engine — graph-aware content generation pipeline",
+          "state": "merged",
+          "snippet": "## What  Infrastructure to derive kbexplorer content from systems of record (source files, git, issues) instead of hand-authoring everything. Goal: delete \\content/\\ and re-derive it, getting somethin"
+        }
+      ],
+      "recentCommits": [
+        {
+          "sha": "611e138",
+          "message": "feat: node mapping — nodemap.yaml maps files to graph nodes (#41)"
+        }
+      ]
+    },
+    {
+      "id": "providers-overview",
+      "title": "Content Providers",
+      "cluster": "data",
+      "emoji": "PlugConnected",
+      "file": "src/engine/providers.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "authored-provider",
+        "files-provider",
+        "work-provider",
+        "orchestrator",
+        "local-loader"
+      ],
+      "relatedIssues": [
+        {
+          "number": 54,
+          "title": "Epic: Sense-making — make the graph human-readable at any scale",
+          "state": "closed",
+          "snippet": "## Vision  The graph has outgrown what a single human can comprehend. Sense-making is the top priority.  ## The Layer Model  1. **File layer** — raw file system (directories, source files, configs) 2."
+        },
+        {
+          "number": 47,
+          "title": "Multi-layer node identity — same entity across providers",
+          "state": "closed",
+          "snippet": "Spec: content/spec-multi-layer-identity.md  Same entity across providers — identity URNs.  ## Blocked by - #41 (node mapping — file: field creates identity links) - #42 (graph store — identity column "
+        },
+        {
+          "number": 44,
+          "title": "Run: Graph views — projections over the unified graph",
+          "state": "open",
+          "snippet": "Parent: #40 Spec: content/spec-views.md  Named view projections over the unified graph.  ## Blocked by - #42 (graph store — views query the store by provider/type) - #55 (layer toggles — layer filteri"
+        },
+        {
+          "number": 42,
+          "title": "Walk: Graph store (SQLite) + file/git providers",
+          "state": "closed",
+          "snippet": "Parent: #40 Spec: content/spec-graph-store.md  SQLite graph cache with provider interface.  ## Blocked by - #41 (node mapping — providers need the mapping system to know how to produce nodes)  ## Task"
+        },
+        {
+          "number": 40,
+          "title": "Graph Provider Architecture — provider-based graph system",
+          "state": "open",
+          "snippet": "## Design Specs  Structured as a spec tree in `specs/providers/`: - `00-overview.md` — current architecture analysis + evolution path - `01-node-mapping.md` — how files become nodes (nodemap.yaml, pro"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "authored-provider",
+      "title": "Authored Provider",
+      "cluster": "data",
+      "emoji": "Compose",
+      "file": "src/engine/providers/authored-provider.ts",
+      "derived": true,
+      "prompt": "Document the authored-provider: how it loads markdown from content/ directory, parses frontmatter, and produces KBNodes. Cite src/engine/providers/authored-provider.ts.",
+      "edgeHints": [
+        "providers-overview",
+        "parser",
+        "node-mapping",
+        "identity"
+      ],
+      "relatedIssues": [
+        {
+          "number": 42,
+          "title": "Walk: Graph store (SQLite) + file/git providers",
+          "state": "closed",
+          "snippet": "Parent: #40 Spec: content/spec-graph-store.md  SQLite graph cache with provider interface.  ## Blocked by - #41 (node mapping — providers need the mapping system to know how to produce nodes)  ## Task"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "files-provider",
+      "title": "Files Provider",
+      "cluster": "data",
+      "emoji": "DocumentCopy",
+      "file": "src/engine/providers/files-provider.ts",
+      "derived": true,
+      "prompt": "Document the files-provider: how it resolves nodemap file/directory/glob entries into raw content. Cite src/engine/providers/files-provider.ts.",
+      "edgeHints": [
+        "providers-overview",
+        "parser",
+        "github-api",
+        "identity"
+      ],
+      "relatedIssues": [
+        {
+          "number": 42,
+          "title": "Walk: Graph store (SQLite) + file/git providers",
+          "state": "closed",
+          "snippet": "Parent: #40 Spec: content/spec-graph-store.md  SQLite graph cache with provider interface.  ## Blocked by - #41 (node mapping — providers need the mapping system to know how to produce nodes)  ## Task"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "work-provider",
+      "title": "Work Provider",
+      "cluster": "data",
+      "emoji": "TaskListSquare",
+      "file": "src/engine/providers/work-provider.ts",
+      "derived": true,
+      "prompt": "Document the work-provider: how it fetches GitHub issues and converts them to KBNodes. Cite src/engine/providers/work-provider.ts.",
+      "edgeHints": [
+        "providers-overview",
+        "github-api",
+        "parser",
+        "identity"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "type-system",
+      "title": "Type System",
+      "cluster": "engine",
+      "emoji": "Code",
+      "file": "src/types/index.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "graph-engine",
+        "parser",
+        "identity",
+        "overview"
+      ],
+      "relatedIssues": [
+        {
+          "number": 52,
+          "title": "Edge-type-aware related panel ranking",
+          "state": "closed",
+          "snippet": "## Problem  The Related panel in the HUD shows the top 8 neighbors sorted by degree (connection count). This pushes out file nodes and other low-degree nodes, even when they have strong typed edges to"
+        },
+        {
+          "number": 47,
+          "title": "Multi-layer node identity — same entity across providers",
+          "state": "closed",
+          "snippet": "Spec: content/spec-multi-layer-identity.md  Same entity across providers — identity URNs.  ## Blocked by - #41 (node mapping — file: field creates identity links) - #42 (graph store — identity column "
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 15,
+          "title": "feat: Azure Static Web Apps deployment + comprehensive README",
+          "state": "merged",
+          "snippet": "## Changes  - **Azure Static Web Apps workflow** — GitHub Actions CI/CD that builds and deploys on push to main, creates staging environments for PRs, and cleans up on PR close - **SPA routing config*"
+        },
+        {
+          "number": 8,
+          "title": "feat: theme system, keyboard navigation, and HUD",
+          "state": "merged",
+          "snippet": "## Summary  Three cross-cutting features for kbexplorer:  ### 1. Theme System (\\src/hooks/useTheme.ts\\) - Dark/light/sepia switching with CSS variables - Persisted in localStorage (\\kbe-theme\\) - Body"
+        },
+        {
+          "number": 5,
+          "title": "feat: overview card grid + loading/error states",
+          "state": "merged",
+          "snippet": "## Changes  - **OverviewView** (\\src/views/OverviewView.tsx\\): Card grid landing page grouped by cluster with NodeVisual, connection counts, cluster pills, and hover effects (border glow + lift). Resp"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "github-api",
+      "title": "GitHub API & Cache",
+      "cluster": "data",
+      "emoji": "Cloud",
+      "file": "src/api/github.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "cache-system",
+        "files-provider",
+        "work-provider",
+        "type-system"
+      ],
+      "relatedIssues": [
+        {
+          "number": 71,
+          "title": "Add wave 2 PR workflow gates",
+          "state": "closed",
+          "snippet": "## Summary\r Add the standardized wave-2 pull request workflow coverage:\r - dependency review\r - linked issue validation\r - PR title validation\r - cancel-in-progress concurrency on the new PR workflows"
+        },
+        {
+          "number": 69,
+          "title": "Wave 1 readiness: core settings and PR template",
+          "state": "closed",
+          "snippet": "## Summary\r Apply the approved wave-1 readiness improvements for this repository.\r \r ## Scope\r - [ ] Enable automated security fixes\r - [ ] Set GitHub Actions default workflow permissions to \read\r - ["
+        },
+        {
+          "number": 52,
+          "title": "Edge-type-aware related panel ranking",
+          "state": "closed",
+          "snippet": "## Problem  The Related panel in the HUD shows the top 8 neighbors sorted by degree (connection count). This pushes out file nodes and other low-degree nodes, even when they have strong typed edges to"
+        },
+        {
+          "number": 43,
+          "title": "Walk: GitHub/ADO provider with on-demand PR expansion",
+          "state": "open",
+          "snippet": "Parent: #40  GitHub provider with depth limits and on-demand expansion.  ## Blocked by - #42 (graph store — needs the provider interface and store)  ## Tasks  - [ ] Implement GitHub provider (wraps ex"
+        },
+        {
+          "number": 34,
+          "title": "Update resolveImageUrl for local mode",
+          "state": "closed",
+          "snippet": "Parent: #29  In `src/api/github.ts`, update `resolveImageUrl()` to: - Local mode: return `import.meta.env.BASE_URL + path` (served by Vite) - Remote mode: return `raw.githubusercontent.com` URL (exist"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 76,
+          "title": "feat: Content Derivation Engine — graph-aware content generation pipeline",
+          "state": "merged",
+          "snippet": "## What  Infrastructure to derive kbexplorer content from systems of record (source files, git, issues) instead of hand-authoring everything. Goal: delete \\content/\\ and re-derive it, getting somethin"
+        },
+        {
+          "number": 75,
+          "title": "fix: add issues + pull-requests permissions to CI",
+          "state": "merged",
+          "snippet": "gh CLI was failing in CI because the workflow only had contents:read. Added issues:read and pull-requests:read permissions so the manifest includes all GitHub data.  Found via Playwright validation — "
+        },
+        {
+          "number": 74,
+          "title": "fix: pass GH_TOKEN to deploy build manifest",
+          "state": "merged",
+          "snippet": "Deploy build's manifest generation was missing GH_TOKEN — gh CLI couldn't fetch issues/PRs, resulting in empty Work view and 'Node not found' for issue nodes on the live site.  Found during Playwright"
+        },
+        {
+          "number": 70,
+          "title": "Apply wave 1 readiness core settings (#69)",
+          "state": "merged",
+          "snippet": "Refs #69\r \r ## Summary\r - add a repository pull request template that captures summary, linked issue, and verification evidence\r - document the wave-1 readiness settings already applied directly in Gi"
+        },
+        {
+          "number": 66,
+          "title": "feat: Digital Twin Universe — GitHub API twin for testing",
+          "state": "merged",
+          "snippet": "## What  Adds a complete DTU (Digital Twin Universe) for GitHub API interactions, eliminating rate limiting and flakiness from development and testing.  ### twins/github/ - **server.js** — zero-depend"
+        }
+      ],
+      "recentCommits": [
+        {
+          "sha": "1d7781e",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "597a396",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "37043b5",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "4e4db2b",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "e263f95",
+          "message": "fix: GitHub Pages base path → /kbexplorer-template/ (#73)"
+        },
+        {
+          "sha": "1514afd",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "374bb06",
+          "message": "feat: Digital Twin Universe — GitHub API twin for testing (#66)"
+        }
+      ]
+    },
+    {
+      "id": "cache-system",
+      "title": "Cache System",
+      "cluster": "data",
+      "emoji": "Database",
+      "file": "src/api/github.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "github-api",
+        "kb-loader",
+        "type-system"
+      ],
+      "relatedIssues": [
+        {
+          "number": 71,
+          "title": "Add wave 2 PR workflow gates",
+          "state": "closed",
+          "snippet": "## Summary\r Add the standardized wave-2 pull request workflow coverage:\r - dependency review\r - linked issue validation\r - PR title validation\r - cancel-in-progress concurrency on the new PR workflows"
+        },
+        {
+          "number": 69,
+          "title": "Wave 1 readiness: core settings and PR template",
+          "state": "closed",
+          "snippet": "## Summary\r Apply the approved wave-1 readiness improvements for this repository.\r \r ## Scope\r - [ ] Enable automated security fixes\r - [ ] Set GitHub Actions default workflow permissions to \read\r - ["
+        },
+        {
+          "number": 52,
+          "title": "Edge-type-aware related panel ranking",
+          "state": "closed",
+          "snippet": "## Problem  The Related panel in the HUD shows the top 8 neighbors sorted by degree (connection count). This pushes out file nodes and other low-degree nodes, even when they have strong typed edges to"
+        },
+        {
+          "number": 43,
+          "title": "Walk: GitHub/ADO provider with on-demand PR expansion",
+          "state": "open",
+          "snippet": "Parent: #40  GitHub provider with depth limits and on-demand expansion.  ## Blocked by - #42 (graph store — needs the provider interface and store)  ## Tasks  - [ ] Implement GitHub provider (wraps ex"
+        },
+        {
+          "number": 34,
+          "title": "Update resolveImageUrl for local mode",
+          "state": "closed",
+          "snippet": "Parent: #29  In `src/api/github.ts`, update `resolveImageUrl()` to: - Local mode: return `import.meta.env.BASE_URL + path` (served by Vite) - Remote mode: return `raw.githubusercontent.com` URL (exist"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 76,
+          "title": "feat: Content Derivation Engine — graph-aware content generation pipeline",
+          "state": "merged",
+          "snippet": "## What  Infrastructure to derive kbexplorer content from systems of record (source files, git, issues) instead of hand-authoring everything. Goal: delete \\content/\\ and re-derive it, getting somethin"
+        },
+        {
+          "number": 75,
+          "title": "fix: add issues + pull-requests permissions to CI",
+          "state": "merged",
+          "snippet": "gh CLI was failing in CI because the workflow only had contents:read. Added issues:read and pull-requests:read permissions so the manifest includes all GitHub data.  Found via Playwright validation — "
+        },
+        {
+          "number": 74,
+          "title": "fix: pass GH_TOKEN to deploy build manifest",
+          "state": "merged",
+          "snippet": "Deploy build's manifest generation was missing GH_TOKEN — gh CLI couldn't fetch issues/PRs, resulting in empty Work view and 'Node not found' for issue nodes on the live site.  Found during Playwright"
+        },
+        {
+          "number": 70,
+          "title": "Apply wave 1 readiness core settings (#69)",
+          "state": "merged",
+          "snippet": "Refs #69\r \r ## Summary\r - add a repository pull request template that captures summary, linked issue, and verification evidence\r - document the wave-1 readiness settings already applied directly in Gi"
+        },
+        {
+          "number": 66,
+          "title": "feat: Digital Twin Universe — GitHub API twin for testing",
+          "state": "merged",
+          "snippet": "## What  Adds a complete DTU (Digital Twin Universe) for GitHub API interactions, eliminating rate limiting and flakiness from development and testing.  ### twins/github/ - **server.js** — zero-depend"
+        }
+      ],
+      "recentCommits": [
+        {
+          "sha": "1d7781e",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "597a396",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "37043b5",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "4e4db2b",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "e263f95",
+          "message": "fix: GitHub Pages base path → /kbexplorer-template/ (#73)"
+        },
+        {
+          "sha": "1514afd",
+          "message": "Merge branch 'main' of https://github.com/anokye-labs/kbexplorer-template"
+        },
+        {
+          "sha": "374bb06",
+          "message": "feat: Digital Twin Universe — GitHub API twin for testing (#66)"
+        }
+      ]
+    },
+    {
+      "id": "app-shell",
+      "title": "App Shell",
+      "cluster": "ui",
+      "emoji": "WindowNew",
+      "file": "src/App.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "kb-loader",
+        "theme-system",
+        "keyboard-nav",
+        "hud",
+        "overview-view",
+        "reading-view"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [
+        {
+          "number": 2,
+          "title": "feat: scaffold Vite + React + TypeScript project",
+          "state": "merged",
+          "snippet": "Scaffolds the kbexplorer repo with Vite + React 19 + TypeScript (strict mode).  ## What  - Vite + React 19 + TypeScript project scaffold - Core dependencies: react-router-dom, vis-network, vis-data, g"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "hud",
+      "title": "HUD & Minimap",
+      "cluster": "ui",
+      "emoji": "Map",
+      "file": "src/components/HUD.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "graph-network",
+        "node-renderer",
+        "node-visual",
+        "app-shell"
+      ],
+      "relatedIssues": [
+        {
+          "number": 55,
+          "title": "Layer toggles in HUD — show/hide file, content, work, concept layers",
+          "state": "closed",
+          "snippet": "Parent: #54  Add layer toggles to the HUD to show/hide groups of node types.  ## Blocked by None — node type info already in KBNode.source.type  ## Tasks  - [ ] Define layer definitions: Content (auth"
+        },
+        {
+          "number": 54,
+          "title": "Epic: Sense-making — make the graph human-readable at any scale",
+          "state": "closed",
+          "snippet": "## Vision  The graph has outgrown what a single human can comprehend. Sense-making is the top priority.  ## The Layer Model  1. **File layer** — raw file system (directories, source files, configs) 2."
+        },
+        {
+          "number": 52,
+          "title": "Edge-type-aware related panel ranking",
+          "state": "closed",
+          "snippet": "## Problem  The Related panel in the HUD shows the top 8 neighbors sorted by degree (connection count). This pushes out file nodes and other low-degree nodes, even when they have strong typed edges to"
+        },
+        {
+          "number": 50,
+          "title": "Typed directional edges — rich link system with filtering and layout",
+          "state": "closed",
+          "snippet": "## Content Node  See `content/spec-typed-edges.md` for the full design.  ## Summary  Upgrade the edge system from `{ to, description }` to typed, directional, weighted edges with source tracking. Enab"
+        },
+        {
+          "number": 44,
+          "title": "Run: Graph views — projections over the unified graph",
+          "state": "open",
+          "snippet": "Parent: #40 Spec: content/spec-views.md  Named view projections over the unified graph.  ## Blocked by - #42 (graph store — views query the store by provider/type) - #55 (layer toggles — layer filteri"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "node-visual",
+      "title": "Node Visual",
+      "cluster": "ui",
+      "emoji": "Sparkle",
+      "file": "src/components/NodeVisual.tsx",
+      "authored": false,
+      "derived": true,
+      "prompt": "Document NodeVisual.tsx: how individual node cards are rendered with emoji, cluster color, and click navigation. Cite src/components/NodeVisual.tsx.",
+      "edgeHints": [
+        "hud",
+        "overview-view",
+        "reading-view",
+        "type-system"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "loading-error-screens",
+      "title": "Loading & Error Screens",
+      "cluster": "ui",
+      "emoji": "Warning",
+      "file": "src/components/LoadingScreen.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "app-shell",
+        "visual-system"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "overview-view",
+      "title": "Overview View",
+      "cluster": "ui",
+      "emoji": "Grid",
+      "file": "src/views/OverviewView.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "node-visual",
+        "app-shell",
+        "type-system"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "reading-view",
+      "title": "Reading View",
+      "cluster": "ui",
+      "emoji": "BookOpen",
+      "file": "src/views/ReadingView.tsx",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "node-visual",
+        "app-shell",
+        "type-system"
+      ],
+      "relatedIssues": [
+        {
+          "number": 51,
+          "title": "Clickable file path references in reading view",
+          "state": "closed",
+          "snippet": "## Problem  When content mentions `src/engine/parser.ts` in the body, the edge exists in the graph data (type: `references`, source: `inferred`), but the text renders as a plain `<code>` tag — not cli"
+        },
+        {
+          "number": 39,
+          "title": "Rich graph views — deeper visualization and navigation",
+          "state": "open",
+          "snippet": "Deeper visualization and navigation improvements.  ## Blocked by - #54 sub-issues (#55, #56, #57, #59) — sense-making improvements come first - #44 (graph views) — view system enables richer projectio"
+        },
+        {
+          "number": 17,
+          "title": "Authored mode: markdown with YAML frontmatter",
+          "state": "closed",
+          "snippet": "## Overview  While the default experience uses GitHub API data (#12), kbexplorer also supports an **authored mode** where content comes from a collection of Markdown files with YAML frontmatter. This "
+        },
+        {
+          "number": 16,
+          "title": "Keyboard navigation",
+          "state": "closed",
+          "snippet": "## Keyboard Navigation  ### Active Shortcuts  | Key | Action | |-----|--------| | `t` | Cycle theme (dark → light → sepia) | | `←` / `→` | Previous / next node in reading view |  ### Removed Shortcuts"
+        },
+        {
+          "number": 14,
+          "title": "Phase 2: Embedded Copilot conversation module",
+          "state": "open",
+          "snippet": "## Vision  Phase 2 introduces an embedded **GitHub Copilot conversation panel** directly inside kbexplorer. Users will be able to ask questions about the knowledge base — \"What issues are related to a"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 22,
+          "title": "feat: Fluent 2 reading view, graph view, and HUD",
+          "state": "merged",
+          "snippet": "- ReadingView: Fluent Button, Title1, Badge, Card for connections, prose with Fluent 2 dark-theme token values - GraphView: Fluent Card legend with CardHeader, Button back link, vis-network colors fro"
+        },
+        {
+          "number": 8,
+          "title": "feat: theme system, keyboard navigation, and HUD",
+          "state": "merged",
+          "snippet": "## Summary  Three cross-cutting features for kbexplorer:  ### 1. Theme System (\\src/hooks/useTheme.ts\\) - Dark/light/sepia switching with CSS variables - Persisted in localStorage (\\kbe-theme\\) - Body"
+        },
+        {
+          "number": 7,
+          "title": "feat: reading view with prose, connections, and navigation",
+          "state": "merged",
+          "snippet": "## Reading View  Implements the detail panel shown when navigating to \\#/node/{id}\\.  ### What's included  - **ReadingView component** (\\src/views/ReadingView.tsx\\)   - Hero/sprite/emoji header based "
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "kb-loader",
+      "title": "KB Loader Hook",
+      "cluster": "ui",
+      "emoji": "ArrowDownload",
+      "file": "src/hooks/useKnowledgeBase.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "local-loader",
+        "app-shell",
+        "cache-system",
+        "type-system"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "keyboard-nav",
+      "title": "Keyboard Navigation",
+      "cluster": "ui",
+      "emoji": "Keyboard",
+      "file": "src/hooks/useKeyboardNav.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "app-shell",
+        "theme-system"
+      ],
+      "relatedIssues": [
+        {
+          "number": 16,
+          "title": "Keyboard navigation",
+          "state": "closed",
+          "snippet": "## Keyboard Navigation  ### Active Shortcuts  | Key | Action | |-----|--------| | `t` | Cycle theme (dark → light → sepia) | | `←` / `→` | Previous / next node in reading view |  ### Removed Shortcuts"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 18,
+          "title": "feat: responsive layout + example issues for default experience",
+          "state": "merged",
+          "snippet": "## Summary  Responsive CSS audit across all views plus 8 example GitHub issues to enrich the default repo-aware experience.  ### Responsive Layout (Task 1)  - **Breakpoints**: Desktop (>1024px), Table"
+        },
+        {
+          "number": 8,
+          "title": "feat: theme system, keyboard navigation, and HUD",
+          "state": "merged",
+          "snippet": "## Summary  Three cross-cutting features for kbexplorer:  ### 1. Theme System (\\src/hooks/useTheme.ts\\) - Dark/light/sepia switching with CSS variables - Persisted in localStorage (\\kbe-theme\\) - Body"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "theme-system",
+      "title": "Theme System",
+      "cluster": "visual",
+      "emoji": "DarkTheme",
+      "file": "src/hooks/useTheme.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "app-shell",
+        "keyboard-nav",
+        "style-system"
+      ],
+      "relatedIssues": [
+        {
+          "number": 14,
+          "title": "Phase 2: Embedded Copilot conversation module",
+          "state": "open",
+          "snippet": "## Vision  Phase 2 introduces an embedded **GitHub Copilot conversation panel** directly inside kbexplorer. Users will be able to ask questions about the knowledge base — \"What issues are related to a"
+        },
+        {
+          "number": 13,
+          "title": "Theme System: Fluent dark/light",
+          "state": "closed",
+          "snippet": "## Theme System  ### Three Themes There are **three** themes, not two:  | Theme | Base | Notes | |-------|------|-------| | **Dark** | `webDarkTheme` | Fluent default dark palette | | **Light** | `web"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 20,
+          "title": "feat: install Fluent UI React + FluentProvider",
+          "state": "merged",
+          "snippet": "Gate PR for Fluent 2 refresh. Adds @fluentui/react-components, wraps app in FluentProvider, rewrites theme system. <!-- devin-review-badge-begin -->  ---  <a href=\"https://app.devin.ai/review/anokye-l"
+        },
+        {
+          "number": 18,
+          "title": "feat: responsive layout + example issues for default experience",
+          "state": "merged",
+          "snippet": "## Summary  Responsive CSS audit across all views plus 8 example GitHub issues to enrich the default repo-aware experience.  ### Responsive Layout (Task 1)  - **Breakpoints**: Desktop (>1024px), Table"
+        },
+        {
+          "number": 8,
+          "title": "feat: theme system, keyboard navigation, and HUD",
+          "state": "merged",
+          "snippet": "## Summary  Three cross-cutting features for kbexplorer:  ### 1. Theme System (\\src/hooks/useTheme.ts\\) - Dark/light/sepia switching with CSS variables - Persisted in localStorage (\\kbe-theme\\) - Body"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "style-system",
+      "title": "Style System",
+      "cluster": "visual",
+      "emoji": "PaintBrush",
+      "file": "src/styles/hud.css",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "theme-system",
+        "visual-system",
+        "node-renderer"
+      ],
+      "relatedIssues": [
+        {
+          "number": 55,
+          "title": "Layer toggles in HUD — show/hide file, content, work, concept layers",
+          "state": "closed",
+          "snippet": "Parent: #54  Add layer toggles to the HUD to show/hide groups of node types.  ## Blocked by None — node type info already in KBNode.source.type  ## Tasks  - [ ] Define layer definitions: Content (auth"
+        },
+        {
+          "number": 54,
+          "title": "Epic: Sense-making — make the graph human-readable at any scale",
+          "state": "closed",
+          "snippet": "## Vision  The graph has outgrown what a single human can comprehend. Sense-making is the top priority.  ## The Layer Model  1. **File layer** — raw file system (directories, source files, configs) 2."
+        },
+        {
+          "number": 52,
+          "title": "Edge-type-aware related panel ranking",
+          "state": "closed",
+          "snippet": "## Problem  The Related panel in the HUD shows the top 8 neighbors sorted by degree (connection count). This pushes out file nodes and other low-degree nodes, even when they have strong typed edges to"
+        },
+        {
+          "number": 50,
+          "title": "Typed directional edges — rich link system with filtering and layout",
+          "state": "closed",
+          "snippet": "## Content Node  See `content/spec-typed-edges.md` for the full design.  ## Summary  Upgrade the edge system from `{ to, description }` to typed, directional, weighted edges with source tracking. Enab"
+        },
+        {
+          "number": 44,
+          "title": "Run: Graph views — projections over the unified graph",
+          "state": "open",
+          "snippet": "Parent: #40 Spec: content/spec-views.md  Named view projections over the unified graph.  ## Blocked by - #42 (graph store — views query the store by provider/type) - #55 (layer toggles — layer filteri"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 28,
+          "title": "feat: HUD depth/collapse/dock + graph node shapes + overlay animation",
+          "state": "merged",
+          "snippet": "Major HUD rework + graph visual improvements. See commit message."
+        },
+        {
+          "number": 22,
+          "title": "feat: Fluent 2 reading view, graph view, and HUD",
+          "state": "merged",
+          "snippet": "- ReadingView: Fluent Button, Title1, Badge, Card for connections, prose with Fluent 2 dark-theme token values - GraphView: Fluent Card legend with CardHeader, Button back link, vis-network colors fro"
+        },
+        {
+          "number": 18,
+          "title": "feat: responsive layout + example issues for default experience",
+          "state": "merged",
+          "snippet": "## Summary  Responsive CSS audit across all views plus 8 example GitHub issues to enrich the default repo-aware experience.  ### Responsive Layout (Task 1)  - **Breakpoints**: Desktop (>1024px), Table"
+        },
+        {
+          "number": 8,
+          "title": "feat: theme system, keyboard navigation, and HUD",
+          "state": "merged",
+          "snippet": "## Summary  Three cross-cutting features for kbexplorer:  ### 1. Theme System (\\src/hooks/useTheme.ts\\) - Dark/light/sepia switching with CSS variables - Persisted in localStorage (\\kbe-theme\\) - Body"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "visual-system",
+      "title": "Visual System",
+      "cluster": "visual",
+      "emoji": "DesignIdeas",
+      "file": "src/styles/visuals.css",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "style-system",
+        "loading-error-screens",
+        "node-renderer"
+      ],
+      "relatedIssues": [
+        {
+          "number": 17,
+          "title": "Authored mode: markdown with YAML frontmatter",
+          "state": "closed",
+          "snippet": "## Overview  While the default experience uses GitHub API data (#12), kbexplorer also supports an **authored mode** where content comes from a collection of Markdown files with YAML frontmatter. This "
+        },
+        {
+          "number": 3,
+          "title": "Core modules: GitHub client, content parser, graph engine, visual system, router",
+          "state": "closed",
+          "snippet": "Implement core runtime modules: GitHub API client, content parser (authored + repo-aware), graph engine, visual system (7 surfaces x 4 modes), router, useKnowledgeBase hook. Closes when build passes a"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 21,
+          "title": "feat: Fluent 2 overview, loading/error, and visual system",
+          "state": "merged",
+          "snippet": "## Changes  - **OverviewView**: Replaced custom HTML/CSS with Fluent Card, Badge, CounterBadge, Title1, Subtitle2, makeStyles grid layout - **LoadingScreen**: Fluent Spinner + Body1 (removed custom sp"
+        },
+        {
+          "number": 4,
+          "title": "feat: core modules — GitHub client, parser, graph engine, visual system",
+          "state": "merged",
+          "snippet": "Implements the foundational runtime modules for kbexplorer.  ## Modules  | Module | Path | Purpose | |--------|------|---------| | GitHub client | src/api/github.ts | Fetch files, trees, issues, PRs w"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "content-pipeline",
+      "title": "Content Pipeline",
+      "cluster": "data",
+      "emoji": "Pipeline",
+      "file": "content/content-pipeline.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "orchestrator",
+        "overview",
+        "providers-overview"
+      ],
+      "relatedIssues": [
+        {
+          "number": 52,
+          "title": "Edge-type-aware related panel ranking",
+          "state": "closed",
+          "snippet": "## Problem  The Related panel in the HUD shows the top 8 neighbors sorted by degree (connection count). This pushes out file nodes and other low-degree nodes, even when they have strong typed edges to"
+        },
+        {
+          "number": 51,
+          "title": "Clickable file path references in reading view",
+          "state": "closed",
+          "snippet": "## Problem  When content mentions `src/engine/parser.ts` in the body, the edge exists in the graph data (type: `references`, source: `inferred`), but the text renders as a plain `<code>` tag — not cli"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "design-decisions",
+      "title": "Design Decisions",
+      "cluster": "design",
+      "emoji": "Lightbulb",
+      "file": "content/design-decisions.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "overview",
+        "typed-edges",
+        "multi-layer-identity"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [
+        {
+          "number": 76,
+          "title": "feat: Content Derivation Engine — graph-aware content generation pipeline",
+          "state": "merged",
+          "snippet": "## What  Infrastructure to derive kbexplorer content from systems of record (source files, git, issues) instead of hand-authoring everything. Goal: delete \\content/\\ and re-derive it, getting somethin"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "typed-edges",
+      "title": "Typed Edges Spec",
+      "cluster": "design",
+      "emoji": "BranchFork",
+      "file": "content/spec-typed-edges.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "graph-engine",
+        "design-decisions",
+        "inline-link-extraction"
+      ],
+      "relatedIssues": [
+        {
+          "number": 50,
+          "title": "Typed directional edges — rich link system with filtering and layout",
+          "state": "closed",
+          "snippet": "## Content Node  See `content/spec-typed-edges.md` for the full design.  ## Summary  Upgrade the edge system from `{ to, description }` to typed, directional, weighted edges with source tracking. Enab"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "multi-layer-identity",
+      "title": "Multi-Layer Identity Spec",
+      "cluster": "design",
+      "emoji": "LayerDiagonal",
+      "file": "content/spec-multi-layer-identity.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "identity",
+        "design-decisions",
+        "spec-node-mapping"
+      ],
+      "relatedIssues": [
+        {
+          "number": 47,
+          "title": "Multi-layer node identity — same entity across providers",
+          "state": "closed",
+          "snippet": "Spec: content/spec-multi-layer-identity.md  Same entity across providers — identity URNs.  ## Blocked by - #41 (node mapping — file: field creates identity links) - #42 (graph store — identity column "
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": [
+        {
+          "sha": "9ed4d1e",
+          "message": "feat: add link assessment + multi-layer identity spec nodes (#46, #47)"
+        }
+      ]
+    },
+    {
+      "id": "inline-link-extraction",
+      "title": "Inline Link Extraction",
+      "cluster": "design",
+      "emoji": "Link",
+      "file": "content/spec-inline-link-extraction.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "parser",
+        "typed-edges",
+        "graph-engine"
+      ],
+      "relatedIssues": [
+        {
+          "number": 54,
+          "title": "Epic: Sense-making — make the graph human-readable at any scale",
+          "state": "closed",
+          "snippet": "## Vision  The graph has outgrown what a single human can comprehend. Sense-making is the top priority.  ## The Layer Model  1. **File layer** — raw file system (directories, source files, configs) 2."
+        },
+        {
+          "number": 48,
+          "title": "Inline link extraction — connections derived from content, not frontmatter",
+          "state": "closed",
+          "snippet": "## Content Node  See `content/spec-inline-link-extraction.md` in the knowledge graph for the full design.  ## Core Principle  **Inline links ARE the graph edges.** A markdown link `[Graph Engine](grap"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": [
+        {
+          "sha": "472396c",
+          "message": "feat: add inline link extraction spec node (#48)"
+        }
+      ]
+    },
+    {
+      "id": "spec-node-mapping",
+      "title": "Node Mapping Spec",
+      "cluster": "design",
+      "emoji": "DocumentBulletList",
+      "file": "content/spec-node-mapping.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "node-mapping",
+        "multi-layer-identity",
+        "local-loader"
+      ],
+      "relatedIssues": [
+        {
+          "number": 41,
+          "title": "Crawl: Node mapping — how files become nodes (nodemap.yaml)",
+          "state": "closed",
+          "snippet": "Parent: #40 Spec: content/spec-node-mapping.md  Define how files become nodes via nodemap.yaml.  ## Blocked by None  ## Tasks  - [ ] Define nodemap.yaml schema (single file, split, merge, glob, direct"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "vite-config",
+      "title": "Vite Configuration",
+      "cluster": "infra",
+      "emoji": "Settings",
+      "file": "vite.config.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "build-scripts",
+        "test-suite"
+      ],
+      "relatedIssues": [
+        {
+          "number": 35,
+          "title": "Vite plugin for manifest auto-generation",
+          "state": "closed",
+          "snippet": "Parent: #29 Depends on: manifest script  Add a Vite plugin to `vite.config.ts` that runs `generate-manifest.js` on `buildStart`. This ensures the manifest is always fresh when starting dev or building"
+        }
+      ],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "build-scripts",
+      "title": "Build Scripts",
+      "cluster": "infra",
+      "emoji": "Wrench",
+      "file": "scripts/generate-manifest.js",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "vite-config",
+        "test-suite",
+        "catalogue-transformer"
+      ],
+      "relatedIssues": [
+        {
+          "number": 37,
+          "title": "Unit and scenario tests for local data pipeline",
+          "state": "closed",
+          "snippet": "Parent: #29 Depends on: all other issues  Comprehensive test coverage using Vitest:  ### Unit tests for generate-manifest.js - FS walk produces correct tree structure - Content files read and embedded"
+        },
+        {
+          "number": 35,
+          "title": "Vite plugin for manifest auto-generation",
+          "state": "closed",
+          "snippet": "Parent: #29 Depends on: manifest script  Add a Vite plugin to `vite.config.ts` that runs `generate-manifest.js` on `buildStart`. This ensures the manifest is always fresh when starting dev or building"
+        },
+        {
+          "number": 30,
+          "title": "Pre-build manifest script (generate-manifest.js)",
+          "state": "closed",
+          "snippet": "Parent: #29  Create `scripts/generate-manifest.js` that generates `src/generated/repo-manifest.json`.  ## What it does - Walks local file system → produces GHTreeItem-compatible tree (filters dotfiles"
+        }
+      ],
+      "relatedPRs": [
+        {
+          "number": 38,
+          "title": "feat: Replace GitHub API with local data for self-exploration",
+          "state": "merged",
+          "snippet": "refs #29  ## Summary  Adds manifest-only local mode that eliminates all GitHub API calls at runtime for self-exploration. A pre-build script generates `src/generated/repo-manifest.json` containing eve"
+        }
+      ],
+      "recentCommits": []
+    },
+    {
+      "id": "test-suite",
+      "title": "Test Suite",
+      "cluster": "infra",
+      "emoji": "Beaker",
+      "file": "vitest.config.ts",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "vite-config",
+        "build-scripts"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    },
+    {
+      "id": "catalogue-transformer",
+      "title": "Catalogue Transformer",
+      "cluster": "infra",
+      "emoji": "ArrowRepeatAll",
+      "file": "content/catalogue-transformer.md",
+      "authored": true,
+      "prompt": "SKIP — authored content exists",
+      "edgeHints": [
+        "build-scripts",
+        "content-pipeline",
+        "graph-engine"
+      ],
+      "relatedIssues": [],
+      "relatedPRs": [],
+      "recentCommits": []
+    }
+  ]
+}

@@ -1,34 +1,43 @@
 ---
 id: "node-renderer"
-title: "Custom Node Renderer"
+title: "Node Renderer"
 emoji: "PaintBrush"
 cluster: visual
+derived: true
 connections: []
 ---
 
-
-# Custom Node Renderer
-
-The node renderer (`src/engine/nodeRenderer.ts`), called by the [graph network factory](graph-network), draws Fluent-style shapes with embedded icon SVGs on the vis-network canvas, forming part of the [visual system](visual-system).
+The node renderer (`src/engine/nodeRenderer.ts`) is the custom canvas drawing engine that paints every node in the constellation graph. Instead of using vis-network's built-in shapes, kbexplorer draws Fluent UI icons directly onto the HTML5 canvas — this gives pixel-perfect control over icon rendering, shape variants, and dark/light mode adaptation that the built-in shapes can't achieve.
 
 ## How It Works
 
-The [graph engine](graph-engine) delegates node drawing to this renderer. vis-network's `shape: 'custom'` + `ctxRenderer` callback gives full control over node appearance. Each node gets:
+`createNodeRenderer()` returns a draw function that vis-network calls for each node on every frame:
 
-1. **Opaque background fill** — theme-aware (`#1f1f1f` dark, `#ffffff` light) so edges don't bleed through
-2. **Cluster-colored overlay** — semi-transparent fill using the node's cluster color
-3. **Shape** — determined by icon type: circles (Sparkle, Flag, Lightbulb), rounded squares (Wrench, Bug), rounded rects (Document, Folder)
-4. **Icon SVG** — drawn as a data URI image at 55% of node size
-5. **Label** — rendered by the ctxRenderer itself (vis-network's built-in labels don't work with custom shapes)
+```typescript
+function createNodeRenderer(
+  iconName: string,   // Fluent icon name (e.g., "Flash", "Code")
+  color: string,      // Cluster color hex
+  size: number,       // Node radius in pixels
+  isDark: boolean,    // Dark mode flag
+  label?: string,     // Optional text label
+  disconnected?: boolean
+): (ctx: CanvasRenderingContext2D, x: number, y: number) => void
+```
 
-## Emphasis
+The renderer paints a rounded shape (circle, rounded square, or rounded rectangle depending on icon type), fills it with the cluster color at reduced opacity, then draws the Fluent icon as an SVG data URI overlay. Labels render below the shape in the current theme's foreground color.
 
-When `emphasizeNodeId` is set in graph options, non-neighbor nodes render at 60% size and 30% opacity with hidden labels. This creates the Okoto-style focus effect.
+## Shape System
 
-## Disconnected Warning
+The `ICON_NODE_SHAPE` map determines which shape each icon gets. The `inferNodeShape()` helper provides defaults — most icons render as circles, but document-related icons use rounded rectangles. This was part of the graph node shapes work in [PR #28](https://github.com/anokye-labs/kbexplorer-template/pull/28), which also added the overlay animation system.
 
-Nodes with zero edges display a red `!` badge at their top-right corner.
+## Icon Library
 
-## Icon Registry
+The renderer embeds 150+ Fluent UI icon SVG paths in the `ICON_PATHS` dictionary — a subset of `@fluentui/react-icons` hand-selected for the knowledge graph use case. `getIconImage()` converts each icon to a canvas-drawable `Image` via SVG data URI construction and caches the result for performance. Icons are colored with their cluster color — never monochrome.
 
-`ICON_PATHS` maps icon names to SVG path data extracted from @fluentui/react-icons source. `ICON_NODE_SHAPE` maps each icon to its shape type. Both are used by the [HUD](hud) minimap canvas renderer as well.
+## Dark Mode Rendering
+
+In dark mode, background fills use lighter opacity and icon strokes invert. The `isDark` parameter flows from the [theme system](theme-system) through the [graph network](graph-network) factory. The `hexToRgba()` helper adjusts fill and stroke colors accordingly — without this, nodes would be invisible on dark backgrounds.
+
+## Integration
+
+The renderer is consumed exclusively by the [graph network](graph-network) factory's `buildVisNode()` function. Each node gets its own renderer instance, configured with the node's emoji and cluster color. The [HUD](hud) minimap uses a simplified version for its smaller display. The [visual system](visual-system) coordinates which icon surfaces use which rendering path.

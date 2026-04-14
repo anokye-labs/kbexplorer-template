@@ -1,33 +1,40 @@
 ---
 id: "wiki-overview"
-title: "What is kbexplorer?"
-emoji: "Book"
+title: "Welcome to kbexplorer"
+emoji: "Home"
 cluster: guide
-parent: "wiki-getting-started"
+derived: true
 connections: []
 ---
 
+Welcome to kbexplorer — an interactive knowledge graph explorer that turns your GitHub repository into a navigable constellation of interconnected ideas.
 
+## What You're Looking At
 
-# What is kbexplorer?
+The application has three views:
 
-kbexplorer turns any GitHub repository into a navigable knowledge graph. Point it at a repo and it fetches issues, the README, and the file tree at runtime — no build step required — then renders them as an interconnected constellation you can explore through reading views and a live force-directed graph.
+1. **[Overview Grid](overview-view)** — a card-based landing page grouped by cluster. Start here
+2. **[Reading View](reading-view)** — click any card to dive into its content with connections
+3. **Graph View** — a force-directed constellation via the [graph network](graph-network)
 
-## Three Inspirations
+## The HUD
 
-The project synthesizes patterns from three knowledge explorer prototypes built by Anokye Labs:
+The sidebar [HUD](hud) is always visible with a minimap, related nodes, layer toggles, and cluster collapse controls. Dock it to any screen edge.
 
-**Claws** was a structured KB browser optimized for fast retrieval — hierarchical cards, deep-dive panels, keyboard-driven navigation. kbexplorer inherits its card-based node browsing.
+## Quick Navigation
 
-**Mukaase** was a narrative reader that treated content as linked prose with a persistent bottom control bar. kbexplorer's HUD — the dockable toolbar with navigation, theme controls, and related nodes — is a direct descendant.
+- Press `t` to cycle themes via [keyboard navigation](keyboard-nav)
+- Press `←`/`→` to move between nodes in the [reading view](reading-view)
+- Click any inline link to follow a connection
 
-**Okoto** was an interactive architecture walkthrough with a sidebar constellation graph, parent/section node hierarchy, and node emphasis (current + neighbors bright, rest faded). kbexplorer's sidebar layout, live graph, and emphasis system are modeled on Okoto.
+## Next Steps
 
-## Core Experience
-
-1. **Land on README** — the homepage is always the README, the natural entry point to any repo
-2. **Read and explore** — prose content with child nodes linked as cards below
-3. **Navigate the constellation** — the sidebar graph shows your position in the knowledge network, click nodes to jump
-4. **See connections** — every node shows its related nodes in the HUD's connections panel
-
-For the full technical architecture, see the [architecture overview](overview). Ready to try it? Head to the [getting started guide](wiki-getting-started).
+- **[Getting Started](wiki-getting-started)** — set up the project locally
+- **[Configuration Guide](wiki-configuration)** — clusters, themes, caching
+- **[Content Modes](wiki-content-modes)** — authored vs repo-aware content
+- **[Data Pipeline Guide](wiki-data-pipeline)** — how content flows
+- **[Deep Dive](wiki-deep-dive)** — architecture walkthrough
+- **[HUD System Guide](wiki-hud-system)** — master the sidebar
+- **[Theming Guide](wiki-theming)** — customize dark, light, and sepia
+- **[Visual System Guide](wiki-visual-system)** — seven rendering surfaces
+- **[Architecture Overview](overview)** — the full system map

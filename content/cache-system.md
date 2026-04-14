@@ -1,43 +1,39 @@
 ---
 id: "cache-system"
-title: "Cache & Versioning"
-emoji: "Settings"
-cluster: infra
+title: "Cache System"
+emoji: "Database"
+cluster: data
+derived: true
 connections: []
 ---
 
-
-# Cache & Versioning
-
-The caching system prevents redundant GitHub API calls and protects against stale data after code changes.
+The cache system (embedded in `src/api/github.ts`) reduces GitHub API calls by storing responses in `localStorage` with TTL-based expiration. It is tightly integrated with the [GitHub API client](github-api) because cache key formats depend on API URL patterns.
 
 ## How It Works
 
-All [GitHub API](github-api) responses are stored in `localStorage` under the `kbe:` prefix with a 5-minute TTL. On each fetch, the client checks for a cached entry — if present and fresh, it's returned without hitting the network.
+Each cached entry is stored as a JSON object with a timestamp and data payload under a `kbe:` prefixed key. On read, the system checks whether the entry is within its 5-minute TTL window. Expired or missing entries trigger a fresh network fetch.
 
-## Version Invalidation
+```typescript
+const CACHE_PREFIX = 'kbe:';
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_VERSION = 12;
+```
 
-A `CACHE_VERSION` constant at the top of `src/api/github.ts` acts as a schema version for cached data. On app load, the stored version is compared to the current constant. If they differ, **all** `kbe:` prefixed localStorage keys are cleared.
+## Version Stamping
 
-This is critical because changes to the [content pipeline](content-pipeline)'s parsing logic (e.g., adding file nodes, fixing UTF-8 encoding, changing connection algorithms) produce incompatible cached data. Without versioning, users see broken renders that only clear with manual "Clear site data."
+`CACHE_VERSION` is the most critical value in this system. When bumped, all previously cached data is purged on next load. The AGENTS.md contains a strict rule: **bump `CACHE_VERSION` whenever you change the shape or encoding of cached data, localStorage key formats, content parsing logic, or any `kbe-*` setting**. Failing to do this causes silent corruption — users see stale data that doesn't match the current parser expectations, leading to broken renders that only clear with manual "Clear site data."
 
-### Rule
+## What Gets Cached
 
-**Bump `CACHE_VERSION` whenever you change:**
-- The shape or encoding of cached data
-- localStorage key names or value formats
-- Content parsing logic that changes what nodes/edges are produced
-- Any setting stored in localStorage
+- File tree responses (consumed by the [files provider](files-provider))
+- Individual file contents (consumed by the [parser](parser))
+- Issue lists (consumed by the [work provider](work-provider))
+- README content
 
-This rule is codified in `AGENTS.md`.
+## Why Not IndexedDB
 
-## Settings Persistence
+localStorage was chosen for simplicity and synchronous access. The 5MB limit is sufficient because kbexplorer caches JSON responses, not binary blobs. The [Digital Twin Universe (PR #66)](https://github.com/anokye-labs/kbexplorer-template/pull/66) bypasses the cache entirely for testing.
 
-User preferences are stored separately from API cache:
-- `kbe-hud-dock` — dock position
-- `kbe-hud-collapsed` — collapsed state
-- `kbe-sidebar-w` — sidebar width (vw)
-- `kbe-map-split` — graph/connections split (%)
-- `kbe-font-size` — font size index
-- `kbe-col-width` — column width index
-- `kbe-theme` — theme preference
+## Integration
+
+The cache is consumed by the [GitHub API](github-api) functions. The [KB loader](kb-loader) triggers cache reads during startup. The [local loader](local-loader) bypasses the cache entirely since it reads from the pre-built manifest. Settings stored in localStorage (like `kbe-theme` from the [theme system](theme-system)) use different key prefixes and are not affected by version bumps. The [type system](type-system) defines the data shapes that the cache stores.
