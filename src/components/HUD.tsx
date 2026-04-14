@@ -280,6 +280,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const [mapSplit, setMapSplit] = useState(() => readPersisted('kbe-map-split', 50));
   const [sidebarZoom, setSidebarZoom] = useState(180);
   const [overlayZoom, setOverlayZoom] = useState(100);
+  const [detailLevel, setDetailLevel] = useState(() => readPersisted('kbe-detail', 40));
   const [activeLayer, setActiveLayer] = useState<NodeLayer | 'all'>(() => {
     try {
       const stored = localStorage.getItem('kbe-layer');
@@ -380,8 +381,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const trimResult = React.useMemo<TrimResult>(() => {
     let g = activeLayer === 'all' ? graph : filterGraphToLayer(graph, activeLayer);
     if (collapsedClusters.size > 0) g = collapseGraphClusters(g, collapsedClusters);
-    return trimGraphToLimits(g, currentNodeId);
-  }, [graph, activeLayer, collapsedClusters, currentNodeId]);
+    return trimGraphToLimits(g, currentNodeId, detailLevel, detailLevel * 2);
+  }, [graph, activeLayer, collapsedClusters, currentNodeId, detailLevel]);
 
   const filteredGraph = trimResult.graph;
 
@@ -843,31 +844,47 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 </>
               )}
             </Card>
-            {/* Zoom slider */}
+            {/* Zoom & Detail sliders */}
             <div style={{
               position: 'absolute', bottom: 16, right: 16, zIndex: 10,
-              display: 'flex', alignItems: 'center', gap: 8,
+              display: 'flex', alignItems: 'center', gap: 16,
               background: tokens.colorNeutralBackground1,
               borderRadius: tokens.borderRadiusMedium,
               border: `1px solid ${tokens.colorNeutralStroke2}`,
               padding: '6px 12px',
               opacity: 0.9,
             }}>
-              <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Zoom</Caption1>
-              <Slider
-                min={20}
-                max={200}
-                step={10}
-                value={overlayZoom}
-                onChange={(_e, data) => {
-                  setOverlayZoom(data.value);
-                  overlayNetworkRef.current?.moveTo({
-                    scale: data.value / 100,
-                    animation: { duration: 150, easingFunction: 'easeInOutQuad' },
-                  });
-                }}
-                style={{ width: 120 }}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Detail</Caption1>
+                <Slider
+                  min={10}
+                  max={80}
+                  step={10}
+                  value={detailLevel}
+                  onChange={(_e, data) => {
+                    setDetailLevel(data.value);
+                    try { localStorage.setItem('kbe-detail', String(data.value)); } catch { /* */ }
+                  }}
+                  style={{ width: 100 }}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Zoom</Caption1>
+                <Slider
+                  min={20}
+                  max={200}
+                  step={10}
+                  value={overlayZoom}
+                  onChange={(_e, data) => {
+                    setOverlayZoom(data.value);
+                    overlayNetworkRef.current?.moveTo({
+                      scale: data.value / 100,
+                      animation: { duration: 150, easingFunction: 'easeInOutQuad' },
+                    });
+                  }}
+                  style={{ width: 100 }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -1039,32 +1056,48 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     title="Expand constellation"
                     style={{ position: 'absolute', top: 42, right: 8, zIndex: 5 }}
                   />
-                  {/* Zoom slider */}
+                  {/* Detail & Zoom sliders */}
                   <div style={{
                     position: 'absolute', bottom: 8, left: 8, right: 8, zIndex: 5,
-                    display: 'flex', alignItems: 'center', gap: 6,
+                    display: 'flex', flexDirection: 'column', gap: 2,
                     background: tokens.colorNeutralBackground1,
                     borderRadius: tokens.borderRadiusMedium,
-                    padding: '2px 8px',
+                    padding: '4px 8px',
                     opacity: 0.85,
                   }}>
-                    <Caption2 style={{ color: tokens.colorNeutralForeground3, fontSize: 10 }}>−</Caption2>
-                    <Slider
-                      size="small"
-                      min={20}
-                      max={200}
-                      step={10}
-                      value={sidebarZoom}
-                      onChange={(_e, data) => {
-                        setSidebarZoom(data.value);
-                        sidebarNetworkRef.current?.moveTo({
-                          scale: data.value / 100,
-                          animation: { duration: 150, easingFunction: 'easeInOutQuad' },
-                        });
-                      }}
-                      style={{ flex: 1 }}
-                    />
-                    <Caption2 style={{ color: tokens.colorNeutralForeground3, fontSize: 10 }}>+</Caption2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Caption2 style={{ color: tokens.colorNeutralForeground3, fontSize: 9, width: 30 }}>Detail</Caption2>
+                      <Slider
+                        size="small"
+                        min={10}
+                        max={80}
+                        step={10}
+                        value={detailLevel}
+                        onChange={(_e, data) => {
+                          setDetailLevel(data.value);
+                          try { localStorage.setItem('kbe-detail', String(data.value)); } catch { /* */ }
+                        }}
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Caption2 style={{ color: tokens.colorNeutralForeground3, fontSize: 9, width: 30 }}>Zoom</Caption2>
+                      <Slider
+                        size="small"
+                        min={20}
+                        max={200}
+                        step={10}
+                        value={sidebarZoom}
+                        onChange={(_e, data) => {
+                          setSidebarZoom(data.value);
+                          sidebarNetworkRef.current?.moveTo({
+                            scale: data.value / 100,
+                            animation: { duration: 150, easingFunction: 'easeInOutQuad' },
+                          });
+                        }}
+                        style={{ flex: 1 }}
+                      />
+                    </div>
                   </div>
                 </div>
 
