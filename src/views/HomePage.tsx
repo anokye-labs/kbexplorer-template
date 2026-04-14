@@ -256,16 +256,24 @@ function NodeCard({ node, config, onClick }: { node: KBNode; config: KBConfig; o
   )
 }
 
-/** Pick curated nodes: hub neighbors + highest-degree + external */
+/** Pick curated nodes: content-first, cluster-diverse, external included */
 function getCuratedNodes(graph: KBGraph): KBNode[] {
   const picked = new Set<string>()
   const result: KBNode[] = []
 
-  // Key content nodes by cluster variety
+  // Filter to curate-worthy nodes (authored content, derived, external — not raw files/dirs/issues/PRs)
+  const curatable = graph.nodes.filter(n => {
+    if (n.source.type === 'file') return false
+    if (n.source.type === 'issue' || n.source.type === 'pull_request' || n.source.type === 'commit') return false
+    if (n.id === 'readme' || n.id === 'repo-root' || n.id === 'commits') return false
+    if (n.source.type === 'section') return false
+    return true
+  })
+
+  // Group by cluster
   const byCluster = new Map<string, KBNode[]>()
-  for (const n of graph.nodes) {
-    if (n.source.type === 'issue' || n.source.type === 'pull_request' || n.source.type === 'commit') continue
-    if (n.id === 'readme' || n.id === 'repo-root' || n.id === 'commits') continue
+  for (const n of curatable) {
+    if (n.source.type === 'external') continue // handled separately
     const list = byCluster.get(n.cluster) ?? []
     list.push(n)
     byCluster.set(n.cluster, list)

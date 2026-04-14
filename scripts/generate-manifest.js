@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * Pre-build manifest generator for kbexplorer local mode.
  *
@@ -458,7 +456,8 @@ export function generateManifest(root = hostRoot) {
 }
 
 // Run if called directly
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` ||
-    process.argv[1]?.endsWith('generate-manifest.js')) {
+if (process.argv[1] &&
+    (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` ||
+     process.argv[1].endsWith('generate-manifest.js'))) {
   generateManifest();
 }
