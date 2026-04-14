@@ -1,37 +1,34 @@
 ---
 id: "visual-system"
-title: "Visual Identity System"
-emoji: "PaintBrush"
+title: "Visual System"
+emoji: "DesignIdeas"
 cluster: visual
+derived: true
 connections: []
 ---
 
+The visual system (`src/styles/visuals.css`) coordinates how nodes appear across seven rendering surfaces. It was one of the four core modules built in [PR #4](https://github.com/anokye-labs/kbexplorer-template/pull/4) and refreshed with Fluent 2 in [PR #21](https://github.com/anokye-labs/kbexplorer-template/pull/21). The visual identity issue ([#9](https://github.com/anokye-labs/kbexplorer-template/issues/9)) defined the original 4-modes × 7-surfaces matrix.
 
-# Visual Identity System
+## Seven Surfaces
 
-The visual system (`src/components/NodeVisual.tsx`) renders node icons across all UI surfaces — [reading view](reading-view) headers, connection cards, [HUD](hud) thumbnails, the [overview view](overview-view), and child node lists. It imports `resolveImageUrl` from the [GitHub API client](github-api) for repository-relative image paths and applies CSS classes from the [style system](style-system). The [node renderer](node-renderer) consumes these visuals for canvas-level graph drawing.
+| Surface | Component | Rendering |
+|---------|-----------|-----------|
+| Card grid | [Overview View](overview-view) | Fluent Card with emoji |
+| Reading hero | [Reading View](reading-view) | Large icon + title |
+| Connections panel | [HUD](hud) | Small [NodeVisual](node-visual) cards |
+| Constellation nodes | [Graph Network](graph-network) | Canvas via [Node Renderer](node-renderer) |
+| Minimap dots | [HUD](hud) | Canvas circles |
+| Breadcrumbs | Navigation bar | Inline icon + text |
+| Search results | Filter panel | Compact list items |
 
-## Cluster-Colored Icons
+## Four Modes
 
-Every Fluent icon renders in its cluster color via the `clusterColor` prop, with colour coordination from the [theme system](theme-system). This matches the colored enclosures in the constellation graph — a feature icon is the same blue whether you see it in the sidebar, the reading view header, or as a graph node.
+Each surface renders nodes in one of four visual modes: **Normal** (standard cluster color), **Emphasized** (brighter, larger when selected), **Faded** (dimmed when another node is emphasized), and **Disconnected** (dashed borders for orphan nodes). The emphasis/fade system is in the [graph network](graph-network) factory's `setEmphasis()` function.
 
-## Icon Map
+## Icon System
 
-`FLUENT_ICONS` maps icon name strings to React components from @fluentui/react-icons:
+Fluent icons from `@fluentui/react-icons` are sourced and colored with cluster color — never monochrome. The [node renderer](node-renderer) embeds 150+ icon SVG paths and renders them as SVG data URIs on canvas. The authored mode ([#17](https://github.com/anokye-labs/kbexplorer-template/issues/17)) established the emoji-per-node convention in frontmatter.
 
-| Icon Name | Component | Used For |
-|-----------|-----------|----------|
-| Sparkle | SparkleRegular | Features |
-| Wrench | WrenchRegular | Tasks |
-| Bug | BugRegular | Bugs |
-| Flag | FlagRegular | Epics |
-| Document | DocumentRegular | Files, docs |
-| Folder | FolderRegular | Directories |
-| Lightbulb | LightbulbRegular | Enhancements |
-| Pin | PinRegular | Default |
-| Merge | MergeRegular | Pull requests |
-| BranchFork | BranchForkRegular | Commits |
+## Integration
 
-## Surface Sizes
-
-Each surface has a defined icon size — 80px for reading headers, 48px for cards, 44px for HUD thumbnails. The system auto-falls back to a letter-avatar when no matching icon exists.
+The visual system sits between the [theme system](theme-system) (which provides color tokens) and the [style system](style-system) (which applies layout). The [loading and error screens](loading-error-screens) also follow the visual system's patterns.

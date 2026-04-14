@@ -1,32 +1,40 @@
 ---
 id: "wiki-infrastructure"
-title: "Infrastructure & Conventions"
-emoji: "Book"
+title: "Infrastructure Guide"
+emoji: "Server"
 cluster: guide
-parent: "wiki-deep-dive"
+derived: true
 connections: []
 ---
 
+Build, test, and deployment infrastructure.
 
+## Build System
 
-# Infrastructure & Conventions
+[Vite 8](vite-config) for development and production. Custom plugin auto-generates manifest via [build scripts](build-scripts).
+
+```bash
+npm run dev        # Dev server (port 5173)
+npm run build      # Production build to dist/
+npm run prebuild   # Generate manifest
+npm test           # Vitest unit tests
+npx playwright test # E2E tests
+```
+
+## Testing
+
+The [test suite](test-suite) has two layers: **Vitest** (unit tests for [parser](parser), [graph engine](graph-engine), [local loader](local-loader)) and **Playwright** (E2E verification). Always run Playwright before declaring done.
 
 ## Deployment
 
-Azure Static Web Apps via GitHub Actions, with build tooling from the [Vite configuration](vite-config). The [build scripts](build-scripts) and [manifest generator](manifest-generator) automate pre- and post-build steps. Push to `main` triggers build + deploy. PRs get staging previews. `staticwebapp.config.json` rewrites all paths to `index.html` for SPA routing.
+Azure Static Web Apps via GitHub Actions. Builds project, deploys `dist/`, creates PR staging environments. The [application shell](app-shell) uses hash routing for SPA compatibility.
 
-## AGENTS.md Rules
+## CI Lessons
 
-Three hard rules codified for all agents working in this repo (see [design decisions](design-decisions) for rationale):
+- Pass `GH_TOKEN` to manifest generation (PR #74)
+- Add `issues:read` and `pull-requests:read` permissions (PR #75)
+- Wave-2 gates (#71): dependency review, linked issue validation, PR title validation
 
-1. **No pixels** — use `vw`, `vh`, `%`, or Fluent tokens for all layout dimensions. Borders are the only exception.
-2. **Bump `CACHE_VERSION`** — whenever cached data format changes, bump the constant in `src/api/github.ts` (see [cache system](cache-system) for details). Stale localStorage is the #1 source of "it's broken" reports.
-3. **Verify with playwright** — test the actual user flow before declaring done. Test with persisted state, not clean browsers.
+## Digital Twin Universe
 
-## Vite HMR Gotchas
-
-After structural changes (new files, moved exports), HMR frequently serves stale code. The `$RefreshReg$ is not defined` error always means stale cache. Fix: kill server → delete `node_modules/.vite` → restart.
-
-## Rate Limits
-
-Unauthenticated GitHub API: 60 requests/hour. Every test browser session that clears localStorage triggers fresh API calls. Be conservative with cache-busting during development.
+The [GitHub API](github-api) mock server provides zero-dependency test doubles, eliminating rate limiting. See DTU.md.

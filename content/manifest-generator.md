@@ -1,118 +1,37 @@
 ---
 id: "manifest-generator"
 title: "Manifest Generator"
-emoji: "Wrench"
+emoji: "BuildingFactory"
 cluster: infra
+derived: true
 connections: []
 ---
 
-# Manifest Generator
+The manifest generator (`scripts/generate-manifest.js`) is the pre-build script that creates the complete data snapshot used by the [local loader](local-loader). It replaces all runtime [GitHub API](github-api) calls with a single static JSON file.
 
-The manifest generator exists to snapshot the host repository into a single JSON file at build time, so the [local-mode loader](local-loader) can produce the exact same knowledge graph as the API path — but without any runtime GitHub API calls. This is critical for offline usage, CI/CD preview deployments, and avoiding rate-limit issues during development.
+## What It Generates
 
-## At a Glance
+`src/generated/repo-manifest.json` contains:
 
-| Function | Responsibility | Key File | Source |
-|----------|---------------|----------|--------|
-| `generateManifest` | Orchestrate all readers and write JSON | `scripts/generate-manifest.js` | [scripts/generate-manifest.js:286](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L286) |
-| `walkFileSystem` | Recursive FS walker producing GHTreeItem entries | `scripts/generate-manifest.js` | [scripts/generate-manifest.js:67](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L67) |
-| `readAuthoredContent` | Read all `.md` files from content directory | `scripts/generate-manifest.js` | [scripts/generate-manifest.js:107](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L107) |
-| `readConfig` | Locate and read config.yaml | `scripts/generate-manifest.js` | [scripts/generate-manifest.js:140](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L140) |
-| `fetchLocalIssues` | Fetch issues via `gh` CLI | `scripts/generate-manifest.js` | [scripts/generate-manifest.js:188](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L188) |
-| `fetchLocalPullRequests` | Fetch PRs via `gh` CLI | `scripts/generate-manifest.js` | [scripts/generate-manifest.js:226](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L226) |
-| `fetchLocalCommits` | Parse `git log` output | `scripts/generate-manifest.js` | [scripts/generate-manifest.js:260](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L260) |
-| `detectHostRoot` | Detect submodule vs standalone mode | `scripts/generate-manifest.js` | [scripts/generate-manifest.js:33](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L33) |
+1. **File tree** — GHTreeItem-compatible array from local file system walk
+2. **Content files** — all markdown from `content/` directory, embedded as strings
+3. **Issues** — fetched via `gh issue list` CLI command
+4. **Pull requests** — fetched via `gh pr list` CLI command
+5. **Commits** — fetched via `gh api` for recent history
+6. **Config** — `config.yaml` and `nodemap.yaml` contents
 
-## Generation Pipeline
+## Vite Integration
 
-```mermaid
-flowchart TD
-    A["generateManifest(root)"] --> B["readConfig(root, contentPath)"]
-    A --> C["readAuthoredContent(contentDir)"]
-    A --> D["walkFileSystem(root)"]
-    A --> E["readReadme(root)"]
-    A --> F["fetchLocalIssues(root)"]
-    A --> G["fetchLocalPullRequests(root)"]
-    A --> H["fetchLocalCommits(root)"]
-    B --> I["repo-manifest.json"]
-    C --> I
-    D --> I
-    E --> I
-    F --> I
-    G --> I
-    H --> I
-    I --> J["src/generated/\nrepo-manifest.json"]
+The [Vite configuration](vite-config) includes a plugin that runs the manifest generator on `buildStart` ([#35](https://github.com/anokye-labs/kbexplorer-template/issues/35)). This ensures freshness for both development and production builds.
 
-    style A fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style B fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style C fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style D fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style E fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style F fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style G fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style H fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style I fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style J fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
+```bash
+npm run prebuild   # or: node scripts/generate-manifest.js
 ```
 
-<!-- Sources: scripts/generate-manifest.js:286-315 -->
+## CI Lessons
 
-## Submodule Detection
+Missing `GH_TOKEN` in CI silently produces empty work data. [PR #74](https://github.com/anokye-labs/kbexplorer-template/pull/74) fixed the deploy build, and [PR #75](https://github.com/anokye-labs/kbexplorer-template/pull/75) added required permissions. These failures were caught by Playwright E2E tests in the [test suite](test-suite).
 
-```mermaid
-flowchart TD
-    A["detectHostRoot()"] --> B{"parent has .git\n+ package.json?"}
-    B -->|yes| C{"parent name\n≠ kbexplorer?"}
-    C -->|yes| D["Return parent\nas hostRoot"]
-    C -->|no| E["Return kbRoot"]
-    B -->|no| E
+## Integration
 
-    style A fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style B fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style C fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style D fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style E fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-```
-
-<!-- Sources: scripts/generate-manifest.js:33-46 -->
-
-## walkFileSystem
-
-The recursive directory walker at [scripts/generate-manifest.js:67-97](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L67) produces entries compatible with the GitHub API's `GHTreeItem` shape:
-
-| Rule | Details |
-|------|---------|
-| **Skipped directories** | `node_modules`, `.git`, `dist`, `.kbexplorer`, `.astro`, `.vscode`, `.idea`, `coverage` |
-| **Skipped files** | `package-lock.json`, `.DS_Store`, `Thumbs.db` |
-| **Hidden files** | Skipped (`.` prefix), except `.github` |
-| **Entries** | `{ path, type: 'blob'|'tree', size? }` — size from `statSync` |
-
-## readAuthoredContent
-
-At [scripts/generate-manifest.js:107-130](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L107), this function recursively reads all `.md` files from the content directory, returning a `Record<string, string>` keyed by relative path (e.g., `content/overview.md` → raw markdown string).
-
-## readConfig
-
-The config reader at [scripts/generate-manifest.js:140-154](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L140) searches three locations in order:
-
-1. `{root}/{contentPath}/config.yaml`
-2. `{root}/{contentPath}/config.yml`
-3. `{root}/config.yaml`
-
-Returns the raw YAML string or `null`.
-
-## GitHub Data Fetching
-
-Issues and PRs are fetched via the `gh` CLI (if available) with a 30-second timeout:
-
-| Function | Command | Limit | Source |
-|----------|---------|-------|--------|
-| `fetchLocalIssues` | `gh issue list --json ... --state all` | 200 | [line 188](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L188) |
-| `fetchLocalPullRequests` | `gh pr list --json ... --state all` | 200 | [line 226](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L226) |
-| `fetchLocalCommits` | `git log --pretty=format:"%H\|\|\|%s\|\|\|%an\|\|\|%aI" -50` | 50 | [line 260](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L260) |
-
-All three are best-effort — failures are logged as warnings and return empty arrays, so the manifest still generates even without `gh` CLI or in repos without remotes. This resilience is verified by the [test suite](test-suite).
-
-## Output
-
-The assembled manifest is written to `src/generated/repo-manifest.json` at [scripts/generate-manifest.js:305-306](https://github.com/anokye-labs/kbexplorer/blob/main/scripts/generate-manifest.js#L305), where the [Vite build](vite-config) includes it in the bundle. A summary of entry counts is logged to stdout. The content directory consumed by `readAuthoredContent` is typically scaffolded by the [catalogue transformer](catalogue-transformer).
+The generator is called by the [build scripts](build-scripts) and feeds the [local loader](local-loader). The [authored provider](authored-provider), [files provider](files-provider), and [work provider](work-provider) all consume manifest data.

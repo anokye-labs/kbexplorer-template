@@ -1,36 +1,40 @@
 ---
 id: "hud"
-title: "HUD — Heads-Up Display"
-emoji: "Color"
+title: "HUD & Minimap"
+emoji: "Map"
 cluster: ui
+derived: true
 connections: []
 ---
 
+The HUD (`src/components/HUD.tsx`) is the persistent sidebar that provides orientation and navigation throughout kbexplorer. It contains the minimap constellation, related node panels, layer toggles, cluster collapse controls, and docking options. It is always visible regardless of which view is active — this is what makes it a heads-up display rather than a simple sidebar.
 
-# HUD — Heads-Up Display
+## Minimap
 
-The HUD (`src/components/HUD.tsx`) is the persistent control surface mounted by the [application shell](app-shell), serving as primary navigation for the [kbexplorer architecture](overview). It renders graph data from the [graph engine](graph-engine) and adapts its layout based on dock position, with responsive CSS from the [style system](style-system).
+The minimap renders a small-scale version of the full constellation using a `<canvas>` element. The `drawMinimap` function reads positions from `computeGraphPositions()` in the [graph network](graph-network) module and draws nodes as colored dots. The current node is highlighted, giving spatial context for where you are in the graph. The minimap uses one canvas ref per dock orientation (vertical vs horizontal) — when the dock switches, the canvas unmounts and remounts, and the draw effect re-fires via `dock` in the dependency array.
 
-## Sidebar Layout (Left/Right Dock)
+## Layer Toggles
 
-Inspired by Okoto's sidebar, the vertical layout has three zones:
+Added in [#55](https://github.com/anokye-labs/kbexplorer-template/issues/55) as part of the sense-making epic ([#54](https://github.com/anokye-labs/kbexplorer-template/issues/54)), layer toggles show/hide groups of node types: Content (authored), File (source), Work (issues/PRs), and Concept. This filters the graph without changing the underlying data — nodes are hidden at the vis-network level.
 
-1. **Live constellation** — a full vis-network graph instance built via [graph network](graph-network) utilities (`createGraphNetwork` and `computeGraphPositions`), occupying ~50% of the sidebar height. The [node renderer](node-renderer) handles constellation node display. Interactive — click a node to navigate. Physics freeze after stabilization. Current node + neighbors are emphasized (full opacity/size), everything else fades to 30%.
+## Cluster Collapse
 
-2. **Connections panel** — scrollable list of related nodes as cards with [NodeVisual](visual-system) icon, title, description snippet, and cluster color bar. A row-resize handle between the graph and connections allows adjusting the split (20%–80%, persisted).
+Clicking a cluster label collapses all its nodes into a single summary node ([#57](https://github.com/anokye-labs/kbexplorer-template/issues/57), [#58](https://github.com/anokye-labs/kbexplorer-template/issues/58)). The [node renderer](node-renderer) draws collapsed clusters with a stacked appearance. This dramatically reduces visual clutter for large clusters.
 
-3. **Tools strip** — compact bottom row with [theme system](theme-system) toggle (dark/light/sepia), dock position buttons, Aa font size slider, and Width slider.
+## Related Panel
 
-The sidebar width defaults to 25vw, resizable 15–50vw via a col-resize handle on the inner edge.
+The related panel shows up to 12 neighboring nodes for the currently selected node, rendered as [NodeVisual](node-visual) cards. The ranking weights edge type then degree — strongly-typed edges (like `contains`) outrank weak links, as redesigned in [#52](https://github.com/anokye-labs/kbexplorer-template/issues/52).
 
-## Horizontal Layout (Top/Bottom Dock)
+## Dock Positions
 
-The horizontal layout uses a three-panel row: minimap canvas (left), navigation + related nodes strip (center), reading tools (right).
+The HUD can dock to left, right, bottom, or top. Dock position persists in localStorage. The dock rework in [PR #28](https://github.com/anokye-labs/kbexplorer-template/pull/28) added depth controls and overlay animation alongside the docking system. The [style system](style-system) provides the CSS for each dock variant.
 
-## Constellation Overlay
+## Neighborhood View
 
-Clicking the MAP button (horizontal dock) opens a full-screen overlay with the same vis-network graph, floating cluster legend, and bounded panning.
+The active node neighborhood view ([#59](https://github.com/anokye-labs/kbexplorer-template/issues/59)) filters the minimap to show only the N-hop neighborhood of the focused node, reducing information overload in dense graphs.
 
-## Persistence
+```typescript
+<HUD graph={graph} activeNodeId={currentId} onNodeClick={navigateToNode} dock={dockPosition} />
+```
 
-Dock position, collapsed state, sidebar width, graph/connections split, font size, and column width are all persisted in localStorage.
+The [application shell](app-shell) renders the HUD at the top level so it persists across view transitions.

@@ -1,46 +1,39 @@
 ---
 id: "wiki-content-modes"
 title: "Content Modes"
-emoji: "Book"
+emoji: "DocumentMultiple"
 cluster: guide
-parent: "wiki-getting-started"
+derived: true
 connections: []
 ---
 
+kbexplorer supports two content modes that determine where graph data comes from.
 
+## Authored Mode
 
-# Content Modes
+Content comes from markdown files with YAML frontmatter in `content/`. Each file becomes a node. The [authored provider](authored-provider) processes them via the [parser](parser).
 
-kbexplorer supports two content modes that can run independently or **blended together** in a single graph.
-
-## Repo-Aware (Default)
-
-Zero-config exploration of any GitHub repository. The [content pipeline](content-pipeline) fetches and parses:
-
-- **Issues** — each becomes a node, clustered by first label. Cross-references (`#N`) create edges. Issues with 2+ headings split into parent + section nodes.
-- **README** — single node connected to issues it mentions (keyword matching) and directories it references.
-- **File tree** — repo root, directories (2 levels deep), and individual source files (`.ts`, `.tsx`, `.md`, `.json`, `.yaml`, `.css`). Each file is parented to its containing directory.
-
-PRs and commits are not included — the [GitHub API client](github-api) doesn't provide reliable associations without per-PR API calls that would exhaust the rate limit.
-
-## Authored
-
-Markdown files with YAML frontmatter in a `content/` directory. Full control over node metadata, connections, and clusters:
-
-```yaml
+```markdown
 ---
-id: my-concept
-title: "My Concept"
-emoji: "Sparkle"
-cluster: architecture
-connections:
-  - to: other-concept
-    description: "depends on"
+id: "my-component"
+title: "My Component"
+emoji: "Code"
+cluster: engine
+connections: []
 ---
+
+Link to other nodes like [graph engine](graph-engine)
+to create edges via [inline link extraction](inline-link-extraction).
 ```
 
-## Blended Mode
+## Repo-Aware Mode
 
-When `source.path` is set in config AND the repo has issues/files, kbexplorer loads **both** — repo-aware nodes and authored nodes merge into a single graph. Authored docs can link to repo file nodes (e.g., `to: file-src/engine/graph.ts`), creating cross-layer edges between documentation and code.
+Content comes from the [GitHub API](github-api) at runtime: issues → work nodes ([work provider](work-provider)), README → doc node, file tree → structural nodes ([files provider](files-provider)).
 
-All content modes work identically in [local mode](local-loader), which reads from a pre-built manifest instead of the API.
+## Combining Modes
+
+Both run simultaneously. The [KB loader](kb-loader) merges results via the [orchestrator](orchestrator) and [provider system](providers-overview). The [multi-layer identity](multi-layer-identity) system prevents duplicates.
+
+## Local vs Remote
+
+Orthogonal to content mode. The [local loader](local-loader) reads a manifest; the [GitHub API](github-api) fetches live data. Both serve either mode. See [Getting Started](wiki-getting-started).
