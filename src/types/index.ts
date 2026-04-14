@@ -399,18 +399,8 @@ export function trimGraphToLimits(
   // Build trimmed node list
   const nodes = graph.nodes.filter(n => kept.has(n.id))
 
-  // Edge trimming
-  let edges = graph.edges.filter(e => kept.has(e.from) && kept.has(e.to))
-  if (edges.length > maxEdges) {
-    // Score edges: current-node edges first, then by weight
-    edges.sort((a, b) => {
-      const aHasCurrent = currentNodeId && (a.from === currentNodeId || a.to === currentNodeId) ? 1 : 0
-      const bHasCurrent = currentNodeId && (b.from === currentNodeId || b.to === currentNodeId) ? 1 : 0
-      if (aHasCurrent !== bHasCurrent) return bHasCurrent - aHasCurrent
-      return (b.weight ?? 0) - (a.weight ?? 0)
-    })
-    edges = edges.slice(0, maxEdges)
-  }
+  // Keep ALL edges between visible nodes (no edge cap — visual importance handles density)
+  const edges = graph.edges.filter(e => kept.has(e.from) && kept.has(e.to))
 
   // Rebuild related
   const nodeIdSet = new Set(nodes.map(n => n.id))
