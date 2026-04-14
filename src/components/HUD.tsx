@@ -381,7 +381,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const trimResult = React.useMemo<TrimResult>(() => {
     let g = activeLayer === 'all' ? graph : filterGraphToLayer(graph, activeLayer);
     if (collapsedClusters.size > 0) g = collapseGraphClusters(g, collapsedClusters);
-    return trimGraphToLimits(g, currentNodeId, detailLevel, detailLevel * 2);
+    return trimGraphToLimits(g, currentNodeId, detailLevel, Infinity);
   }, [graph, activeLayer, collapsedClusters, currentNodeId, detailLevel]);
 
   const filteredGraph = trimResult.graph;
@@ -857,9 +857,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Detail</Caption1>
                 <Slider
-                  min={10}
-                  max={80}
-                  step={10}
+                  min={1}
+                  max={100}
+                  step={1}
                   value={detailLevel}
                   onChange={(_e, data) => {
                     setDetailLevel(data.value);
@@ -1069,9 +1069,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                       <Caption2 style={{ color: tokens.colorNeutralForeground3, fontSize: 9, width: 30 }}>Detail</Caption2>
                       <Slider
                         size="small"
-                        min={10}
-                        max={80}
-                        step={10}
+                        min={1}
+                        max={100}
+                        step={1}
                         value={detailLevel}
                         onChange={(_e, data) => {
                           setDetailLevel(data.value);

@@ -185,19 +185,44 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const setEmphasis = (nodeId: string | null) => {
     // Skip emphasis if target node isn't in this graph
     const active = nodeId && nodeIdSet.has(nodeId) ? nodeId : null;
-    const newEmphasized = new Set<string>();
+
+    // Build hop-distance map from focus node (BFS)
+    const hopDistance = new Map<string, number>();
     if (active) {
-      newEmphasized.add(active);
+      hopDistance.set(active, 0);
+      const adjacency = new Map<string, string[]>();
       for (const edge of graph.edges) {
-        if (edge.from === active) newEmphasized.add(edge.to);
-        if (edge.to === active) newEmphasized.add(edge.from);
+        if (!adjacency.has(edge.from)) adjacency.set(edge.from, []);
+        if (!adjacency.has(edge.to)) adjacency.set(edge.to, []);
+        adjacency.get(edge.from)!.push(edge.to);
+        adjacency.get(edge.to)!.push(edge.from);
+      }
+      const queue = [active];
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        const d = hopDistance.get(current)!;
+        for (const neighbor of adjacency.get(current) ?? []) {
+          if (!hopDistance.has(neighbor)) {
+            hopDistance.set(neighbor, d + 1);
+            queue.push(neighbor);
+          }
+        }
       }
     }
 
-    // Update nodes
+    // Update nodes — same as before, 1-hop neighborhood stays bright
+    const hop1 = new Set<string>();
+    if (active) {
+      hop1.add(active);
+      for (const edge of graph.edges) {
+        if (edge.from === active) hop1.add(edge.to);
+        if (edge.to === active) hop1.add(edge.from);
+      }
+    }
+
     const nodeUpdates: Record<string, unknown>[] = [];
     for (const n of graph.nodes) {
-      const faded = active && !newEmphasized.has(n.id);
+      const faded = active && !hop1.has(n.id);
       const sizeRange: [number, number] = faded
         ? [nodeSizeRange[0] * fadedSizeScale, nodeSizeRange[1] * fadedSizeScale]
         : nodeSizeRange;
@@ -211,21 +236,61 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     }
     nodes.update(nodeUpdates);
 
-    // Update edges
+    // Update edges — multi-tier importance based on hop distance from focus
+    // Tier 0: direct (both endpoints in 1-hop) → full color, full width
+    // Tier 1: near (at least one endpoint in 1-hop) → type color at 50% opacity, reduced width
+    // Tier 2: 2-hop bridge (both endpoints ≤ 2 hops) → type color at 25%, thin
+    // Tier 3: distant → nearly invisible
     const edgeUpdates: Record<string, unknown>[] = [];
     for (const ei of edgesByIndex) {
       const style = edgeStyle(ei.type);
-      const bothIn = newEmphasized.has(ei.from) && newEmphasized.has(ei.to);
-      const neitherIn = active && !newEmphasized.has(ei.from) && !newEmphasized.has(ei.to);
+      if (!active) {
+        // No focus — all edges at full style
+        edgeUpdates.push({
+          id: ei.id,
+          color: { color: style.color, hover: style.color, highlight: style.color },
+          width: style.width,
+          dashes: style.dashes,
+        });
+        continue;
+      }
+
+      const fromHop = hopDistance.get(ei.from) ?? 999;
+      const toHop = hopDistance.get(ei.to) ?? 999;
+      const maxHop = Math.max(fromHop, toHop);
+      const minHop = Math.min(fromHop, toHop);
+
+      let color: string;
+      let width: number;
+      let dashes: boolean | number[];
+
+      if (maxHop <= 1) {
+        // Tier 0: direct neighborhood — full prominence
+        color = style.color;
+        width = style.width * 1.2;
+        dashes = style.dashes;
+      } else if (minHop <= 1) {
+        // Tier 1: one endpoint is direct neighbor — visible but softer
+        color = style.color + '80'; // 50% alpha
+        width = style.width * 0.8;
+        dashes = style.dashes;
+      } else if (maxHop <= 2) {
+        // Tier 2: 2-hop bridge — faint but colored
+        color = style.color + '40'; // 25% alpha
+        width = Math.max(style.width * 0.5, 0.8);
+        dashes = style.dashes;
+      } else {
+        // Tier 3: distant — barely visible
+        color = isDark ? 'rgba(60,60,60,0.15)' : 'rgba(180,180,180,0.15)';
+        width = 0.4;
+        dashes = false;
+      }
+
       edgeUpdates.push({
         id: ei.id,
-        color: {
-          color: neitherIn ? EDGE_FADED_COLOR : !bothIn && active ? 'rgba(80,80,80,0.25)' : style.color,
-          hover: style.color,
-          highlight: style.color,
-        },
-        width: neitherIn ? 0.5 : style.width,
-        dashes: neitherIn ? false : style.dashes,
+        color: { color, hover: style.color, highlight: style.color },
+        width,
+        dashes,
       });
     }
     edges.update(edgeUpdates);
