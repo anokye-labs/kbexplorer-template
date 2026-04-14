@@ -23,3 +23,25 @@ clusters:
   guide:
     name: "Guide"
     color: "#39FF14"
+  reference:
+    name: "Reference"
+    color: "#79C0FF"
+
+providers:
+  - type: wikipedia
+    name: Concepts
+    cluster: reference
+    options:
+      articles:
+        - title: Knowledge graph
+          connections: [graph-engine, type-system]
+        - title: Force-directed graph drawing
+          connections: [graph-network]
+        - title: Graph (abstract data type)
+          connections: [graph-engine, type-system]
+        - title: Fluent Design System
+          id: wiki-fluent
+          connections: [style-system, theme-system]
+        - title: Single-page application
+          id: wiki-spa
+          connections: [app-shell, vite-config]
