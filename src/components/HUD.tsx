@@ -28,7 +28,8 @@ import {
   BookRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme, EdgeType, NodeLayer } from '../types';
-import { EDGE_TYPE_STYLES, NODE_LAYER_META, filterGraphToLayer, collapseGraphClusters } from '../types';
+import { EDGE_TYPE_STYLES, NODE_LAYER_META, filterGraphToLayer, collapseGraphClusters, trimGraphToLimits } from '../types';
+import type { TrimResult } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
 import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
@@ -375,12 +376,14 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     });
   }, []);
 
-  // Filter graph: layer view → cluster collapse
-  const filteredGraph = React.useMemo<KBGraph>(() => {
+  // Filter graph: layer view → cluster collapse → trim to limits
+  const trimResult = React.useMemo<TrimResult>(() => {
     let g = activeLayer === 'all' ? graph : filterGraphToLayer(graph, activeLayer);
     if (collapsedClusters.size > 0) g = collapseGraphClusters(g, collapsedClusters);
-    return g;
-  }, [graph, activeLayer, collapsedClusters]);
+    return trimGraphToLimits(g, currentNodeId);
+  }, [graph, activeLayer, collapsedClusters, currentNodeId]);
+
+  const filteredGraph = trimResult.graph;
 
   const currentNode = currentNodeId
     ? filteredGraph.nodes.find(n => n.id === currentNodeId) ?? graph.nodes.find(n => n.id === currentNodeId) ?? null
@@ -797,6 +800,14 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 );
               })}
             </div>
+            {trimResult.trimmed && (
+              <Caption2 style={{
+                position: 'absolute', top: 42, left: 14, zIndex: 10,
+                color: tokens.colorNeutralForeground3, opacity: 0.8,
+              }}>
+                Showing {filteredGraph.nodes.length} of {trimResult.totalNodes} nodes
+              </Caption2>
+            )}
             <Card size="small" style={{ position: 'absolute', bottom: 16, left: 16, zIndex: 10 }}>
               <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
               {activeClusters.map(c => {
@@ -951,6 +962,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                       );
                     })}
                   </div>
+                  {/* Trim indicator */}
+                  {trimResult.trimmed && (
+                    <Caption2 style={{
+                      position: 'absolute', top: 28, left: 10, zIndex: 7,
+                      color: tokens.colorNeutralForeground3, opacity: 0.7, fontSize: 9,
+                    }}>
+                      {filteredGraph.nodes.length}/{trimResult.totalNodes} nodes
+                    </Caption2>
+                  )}
                   {/* Legend overlay with background */}
                   <div style={{
                     position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px',

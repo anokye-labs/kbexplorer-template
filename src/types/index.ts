@@ -308,6 +308,126 @@ export function collapseGraphClusters(graph: KBGraph, collapsedIds: Set<string>)
   return { nodes, edges, clusters: graph.clusters, related };
 }
 
+/** Hard visibility limits for the rendered graph. */
+export const MAX_VISIBLE_NODES = 20
+export const MAX_VISIBLE_EDGES = 40
+
+export interface TrimResult {
+  graph: KBGraph
+  trimmed: boolean
+  totalNodes: number
+  totalEdges: number
+}
+
+/**
+ * Cap graph to MAX_VISIBLE_NODES / MAX_VISIBLE_EDGES.
+ * Selection strategy:
+ * 1. Always keep the hub node and current node
+ * 2. Reserve 1-hop neighbors of the current node
+ * 3. Ensure at least 1 node per cluster (cluster floor)
+ * 4. Fill remaining slots by degree (most connected first)
+ * 5. After node trim, cap edges — prefer current-node edges, then by weight
+ */
+export function trimGraphToLimits(
+  graph: KBGraph,
+  currentNodeId?: string | null,
+  maxNodes = MAX_VISIBLE_NODES,
+  maxEdges = MAX_VISIBLE_EDGES,
+): TrimResult {
+  const totalNodes = graph.nodes.length
+  const totalEdges = graph.edges.length
+
+  if (totalNodes <= maxNodes && totalEdges <= maxEdges) {
+    return { graph, trimmed: false, totalNodes, totalEdges }
+  }
+
+  // Build degree map
+  const degree = new Map<string, number>()
+  for (const n of graph.nodes) degree.set(n.id, 0)
+  for (const e of graph.edges) {
+    degree.set(e.from, (degree.get(e.from) ?? 0) + 1)
+    degree.set(e.to, (degree.get(e.to) ?? 0) + 1)
+  }
+
+  // Find hub
+  let hubId: string | null = null
+  let hubDeg = -1
+  for (const [id, d] of degree) {
+    if (d > hubDeg) { hubId = id; hubDeg = d }
+  }
+  // Prefer readme/overview as hub
+  if (graph.nodes.some(n => n.id === 'readme')) hubId = 'readme'
+  else if (graph.nodes.some(n => n.id === 'overview')) hubId = 'overview'
+
+  const kept = new Set<string>()
+
+  // 1. Hub + current node
+  if (hubId) kept.add(hubId)
+  if (currentNodeId && degree.has(currentNodeId)) kept.add(currentNodeId)
+
+  // 2. Current node's 1-hop neighbors
+  if (currentNodeId) {
+    const neighbors: { id: string; deg: number }[] = []
+    for (const e of graph.edges) {
+      if (e.from === currentNodeId && degree.has(e.to)) neighbors.push({ id: e.to, deg: degree.get(e.to)! })
+      if (e.to === currentNodeId && degree.has(e.from)) neighbors.push({ id: e.from, deg: degree.get(e.from)! })
+    }
+    neighbors.sort((a, b) => b.deg - a.deg)
+    const neighborBudget = Math.min(Math.floor(maxNodes * 0.3), neighbors.length)
+    for (let i = 0; i < neighborBudget; i++) kept.add(neighbors[i].id)
+  }
+
+  // 3. Cluster floor — at least 1 node per cluster
+  const clusters = new Set(graph.nodes.map(n => n.cluster).filter(Boolean))
+  for (const cid of clusters) {
+    if ([...kept].some(id => graph.nodes.find(n => n.id === id)?.cluster === cid)) continue
+    // Pick highest-degree node from this cluster
+    const best = graph.nodes
+      .filter(n => n.cluster === cid)
+      .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0))[0]
+    if (best && kept.size < maxNodes) kept.add(best.id)
+  }
+
+  // 4. Fill by degree
+  const byDegree = [...graph.nodes]
+    .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0))
+  for (const n of byDegree) {
+    if (kept.size >= maxNodes) break
+    kept.add(n.id)
+  }
+
+  // Build trimmed node list
+  const nodes = graph.nodes.filter(n => kept.has(n.id))
+
+  // Edge trimming
+  let edges = graph.edges.filter(e => kept.has(e.from) && kept.has(e.to))
+  if (edges.length > maxEdges) {
+    // Score edges: current-node edges first, then by weight
+    edges.sort((a, b) => {
+      const aHasCurrent = currentNodeId && (a.from === currentNodeId || a.to === currentNodeId) ? 1 : 0
+      const bHasCurrent = currentNodeId && (b.from === currentNodeId || b.to === currentNodeId) ? 1 : 0
+      if (aHasCurrent !== bHasCurrent) return bHasCurrent - aHasCurrent
+      return (b.weight ?? 0) - (a.weight ?? 0)
+    })
+    edges = edges.slice(0, maxEdges)
+  }
+
+  // Rebuild related
+  const nodeIdSet = new Set(nodes.map(n => n.id))
+  const related: Record<string, string[]> = {}
+  for (const id of nodeIdSet) {
+    const r = (graph.related[id] ?? []).filter(rid => nodeIdSet.has(rid))
+    if (r.length > 0) related[id] = r
+  }
+
+  return {
+    graph: { nodes, edges, clusters: graph.clusters, related },
+    trimmed: true,
+    totalNodes,
+    totalEdges,
+  }
+}
+
 export interface Connection {
   to: string;
   type?: EdgeType;
