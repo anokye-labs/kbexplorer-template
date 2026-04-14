@@ -1,34 +1,54 @@
 ---
 id: "wiki-data-pipeline"
-title: "Data Pipeline"
-emoji: "Book"
+title: "Data Pipeline Guide"
+emoji: "DataFlow"
 cluster: guide
-parent: "wiki-deep-dive"
+derived: true
 connections: []
 ---
 
+How content flows from sources to rendered views — the [content pipeline](content-pipeline) from a user perspective.
 
+## The Flow
 
-# Data Pipeline
+```
+Markdown → Parser → Providers → Orchestrator → Graph Engine → Views
+```
 
-The data pipeline transforms raw GitHub API responses into an interactive knowledge graph.
+## Step 1: Author Content
 
-## Flow
+Create markdown in `content/` with YAML frontmatter. Use `[text](node-id)` links to create edges — [inline link extraction](inline-link-extraction) handles the rest.
 
-1. **`useKnowledgeBase`** hook triggers on mount
-2. **[GitHub API client](github-api)** (`src/api/github.ts`) fetches issues, file tree, README — with localStorage caching and rate limit handling
-3. **[Content pipeline](content-pipeline)** (`src/engine/parser.ts`) normalizes into `KBNode[]` — assigns icons, clusters, cross-references, parent/child relationships
-4. **[Graph engine](graph-engine)** (`src/engine/graph.ts`) computes edges (explicit connections + containment), rescues orphans, builds related-node maps
-5. **Views** render the computed `KBGraph`
+## Step 2: Map Source Files
 
-## Blended Loading
+Add entries to `nodemap.yaml`. The [node mapping](node-mapping) system supports five modes. The [Node Mapping Spec](spec-node-mapping) has the schema.
 
-When `source.path` is configured, the hook loads both repo-aware content AND authored markdown files, merging them before graph computation. This creates a unified graph where documentation nodes link to code nodes. In [local mode](local-loader), the same pipeline runs against a pre-built manifest instead of live API calls.
+## Step 3: Generate Manifest
 
-## Key Implementation Details
+```bash
+npm run prebuild
+```
 
-- UTF-8 decoding uses `TextDecoder` (not `atob`) for multi-byte character safety
-- Issue cross-references (`#N`) become edges automatically
-- README connections use 60% keyword match threshold against issue titles
-- Files with key extensions (`.ts`, `.tsx`, `.md`, `.json`, `.yaml`, `.css`) become individual nodes parented to their directory
-- `CACHE_VERSION` constant auto-invalidates stale cached data on code changes
+The [build scripts](build-scripts) capture everything the [local loader](local-loader) needs.
+
+## Step 4: Inspect the Graph
+
+```bash
+node scripts/assess-graph.js
+```
+
+Evaluates connectivity (4-8 links/node target), cluster balance, orphans, and hub reachability.
+
+## Providers
+
+| Provider | Input | Output |
+|----------|-------|--------|
+| [Authored](authored-provider) | Markdown + nodemap | Content nodes |
+| [Files](files-provider) | File tree | Directory/file nodes |
+| [Work](work-provider) | Issues/PRs/commits | Work nodes |
+
+## Troubleshooting
+
+- **Broken links** — check target node IDs exist; the [parser](parser) drops invalid links
+- **Missing edges** — use `[text](node-id)` format, not full URLs
+- **Stale graph** — re-run `npm run prebuild` and restart [Vite](vite-config)

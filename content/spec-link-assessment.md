@@ -1,102 +1,43 @@
 ---
 id: "spec-link-assessment"
-title: "Link Assessment — Graph Health Analysis"
-emoji: "Search"
+title: "Link Assessment Spec"
+emoji: "LinkSquare"
 cluster: design
+derived: true
 connections: []
-
 ---
 
-# Link Assessment — Graph Health Analysis
+The link assessment specification defines how the quality and health of the knowledge graph's connections are evaluated. Added in commit `9ed4d1e` alongside the [multi-layer identity spec](multi-layer-identity).
 
-## Problem
+## Five Assessment Dimensions
 
-As the graph grows across [providers](spec-providers-overview) and content, connection quality degrades
-silently. Authored content nodes may reference nodes that don't exist. Source
-files mentioned in documentation may not have corresponding edges. Entire
-clusters may be internally connected but isolated from the rest of the graph.
+1. **Connectivity** — average links per node (target: 4-8). Too few = disconnected islands; too many = hairball
+2. **Cluster balance** — standard deviation of cluster sizes. Wildly unbalanced clusters produce lopsided layouts
+3. **Link density** — ratio of actual edges to possible edges (target: 0.1-0.3). Too dense is unreadable; too sparse is fragmented
+4. **Bidirectionality** — percentage of edges with a reciprocal edge. Higher reciprocity = better cross-linking
+5. **Content depth** — average content length per node. Short nodes add structural noise without understanding
 
-There is no tool to detect these problems. You only discover them by browsing
-the graph and noticing something looks wrong.
+## The Assessment Script
 
-## Solution: `npx @anokye-labs/kbexplorer links`
+The [build scripts](build-scripts) include `assess-graph.js`:
 
-A CLI command that analyzes the graph and reports health issues:
-
-### Analysis Categories
-
-| Category | What It Detects |
-|----------|----------------|
-| **Orphan nodes** | Nodes with zero connections — they float alone in the graph |
-| **Broken references** | Connections where `to:` points to a node ID that doesn't exist |
-| **Weak clusters** | Clusters where nodes only connect within the cluster — no cross-cluster edges |
-| **Missing cross-references** | Content that mentions file paths, node titles, or issue numbers in its body text but has no corresponding connection in frontmatter |
-| **Coverage gaps** | Source files in the repo that have no corresponding content node |
-| **Stale connections** | Connections to nodes from providers that haven't run recently |
-
-### Output
-
-```
-$ npx @anokye-labs/kbexplorer links
-
-Graph Health Report
-───────────────────
-Nodes: 41 authored, 26 issues, 19 PRs, 50 commits, 103 files
-Edges: 219 total
-
-⚠ Orphan nodes (3):
-  - file-eslint.config.js (no connections)
-  - issue-14 (no connections to other nodes)
-  - pr-15 (no connections)
-
-✗ Broken references (1):
-  - [Views, Expansion, and External Providers](spec-views) → [issue 46](issue-46) (node does not exist)
-
-⚠ Weak clusters (1):
-  - "guide" cluster: 11 nodes, 0 cross-cluster edges
-
-⚠ Missing cross-references (5):
-  - [Content Pipeline](content-pipeline).md mentions "github.ts" but no connection to github-api
-  - spec-graph-store.md mentions "SQLite" but no connection to cache-system
-  ...
-
-⚠ Coverage gaps (8):
-  - src/index.css — no content node
-  - src/styles/responsive.css — no content node
-  ...
-
-Suggestions:
-  - Add connection from content-pipeline → github-api
-  - Consider authored content for src/index.css
+```bash
+node scripts/assess-graph.js
+# Reads content/*.md, extracts inline links, builds graph, scores quality
 ```
 
-### Interactive Mode
+It checks for orphan nodes (0 incoming links), hub reachability (BFS from highest-degree node), and high out-degree hubs. All checks produce suggestions — the script never fails.
 
-With `--fix` flag, the tool offers to:
-- Add missing cross-reference connections to frontmatter
-- Create skeleton content nodes for uncovered source files
-- Remove broken references
+## Thresholds
 
-### How It Works
+| Metric | Good | Warning |
+|--------|------|---------|
+| Nodes per view | ≤ 50 | > 50 |
+| Edges per view | ≤ 100 | > 100 |
+| Clusters | ≤ 8 | > 8 |
+| Hub hops | ≤ 3 | > 3 |
+| High out-degree | < 15 | ≥ 15 |
 
-The assessment reads from the [manifest](manifest-generator) (or graph store when that exists).
-It builds the full graph using the [graph engine](graph-engine), then runs each analysis pass:
+## Integration
 
-1. **Orphan detection**: nodes with degree 0 in the adjacency list
-2. **Broken reference scan**: connections where `to` ID isn't in the [node map](spec-node-mapping)
-3. **Cluster isolation**: for each cluster, count edges that cross cluster boundaries
-4. **Content scanning**: regex scan of `rawContent` for file paths (`src/...`), node IDs, and issue refs (`#N`), then check if corresponding edges exist
-5. **Coverage check**: compare file tree nodes against content nodes
-
-### Relationship to Providers
-
-When the provider system (spec-graph-store) is implemented, the link assessment
-runs against the unified graph store instead of the manifest. Each analysis
-category maps to a provider:
-- Broken references → cross-provider edge validation
-- Coverage gaps → files provider vs authored provider comparison
-- Stale connections → provider_state.last_run timestamps
-
-Coverage gaps can also indicate where [multi-layer identity](spec-multi-layer-identity) mapping is
-needed — the same entity exists as both file and content nodes but lacks an
-identity link.
+Runs after content derivation via the [catalogue transformer](catalogue-transformer). The [inline link extraction](inline-link-extraction) spec defines how links become edges. The [content pipeline](content-pipeline) produces the content that gets assessed. The [design decisions](design-decisions) node covers the broader rationale.

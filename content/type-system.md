@@ -1,140 +1,66 @@
 ---
 id: "type-system"
-title: "Core Type Definitions"
-emoji: "Building"
+title: "Type System"
+emoji: "Code"
 cluster: engine
+derived: true
 connections: []
 ---
 
-# Core Type Definitions
+The type system (`src/types/index.ts`) is the shared vocabulary of kbexplorer. Every module imports its data shapes from here — node definitions, edge semantics, cluster membership, configuration schema. Changing a type here ripples through the [graph engine](graph-engine), the [parser](parser), the [identity system](identity), and all three views.
 
-The type system exists to provide a single source of truth for every data shape in kbexplorer. By centralising types in `src/types/index.ts`, every module operates against the same contracts — the [graph engine](graph-engine) and [content pipeline](content-pipeline) consume `KBNode` and `KBGraph`, the [GitHub API client](github-api) uses `SourceConfig`, and UI components like the [HUD](hud), [application shell](app-shell), [reading view](reading-view), and [overview view](overview-view) all import from this single source — eliminating the class of bugs that come from shape mismatches between data producers and consumers.
+## Core Types
 
-## At a Glance
+```typescript
+interface KBNode {
+  id: string;
+  title: string;
+  content: string;           // rendered HTML
+  rawContent?: string;       // original markdown
+  emoji?: string;            // Fluent icon name
+  cluster?: string;          // cluster membership
+  connections: Connection[];  // edges to other nodes
+  parent?: string;           // containment parent
+  source: NodeSource;        // provenance (authored, file, issue, …)
+  identity?: string;         // canonical URN
+  provider?: string;         // which provider produced it
+}
 
-| Type | Purpose | Source |
-|------|---------|--------|
-| `KBNode` | A node in the knowledge graph | [src/types/index.ts:4](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L4) |
-| `Connection` | Edge description from frontmatter | [src/types/index.ts:20](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L20) |
-| `Cluster` | Cluster identity (id, name, colour) | [src/types/index.ts:25](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L25) |
-| `KBGraph` | Assembled graph: nodes + edges + clusters + related map | [src/types/index.ts:32](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L32) |
-| `KBEdge` | Weighted edge between nodes | [src/types/index.ts:39](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L39) |
-| `NodeSource` | Discriminated union for node origin | [src/types/index.ts:61](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L61) |
-| `KBConfig` | Full app configuration shape | [src/types/index.ts:71](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L71) |
-| `DEFAULT_CONFIG` | Fallback config from env vars | [src/types/index.ts:137](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L137) |
-| `VisualMode` | `'sprites' \| 'heroes' \| 'emoji' \| 'none'` | [src/types/index.ts:47](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L47) |
-| `Theme` | `'dark' \| 'light' \| 'sepia'` | [src/types/index.ts:50](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L50) |
-
-## Type Relationships
-
-```mermaid
-classDiagram
-    class KBNode {
-        +string id
-        +string title
-        +string cluster
-        +string content
-        +string rawContent
-        +string? emoji
-        +string? image
-        +string? sprite
-        +string? parent
-        +Connection[] connections
-        +NodeSource source
-    }
-    class KBGraph {
-        +KBNode[] nodes
-        +KBEdge[] edges
-        +Cluster[] clusters
-        +Record related
-    }
-    class KBEdge {
-        +string from
-        +string to
-        +string description
-        +number? weight
-    }
-    class KBConfig {
-        +string title
-        +SourceConfig source
-        +Record clusters
-        +VisualsConfig visuals
-        +ThemeConfig theme
-        +GraphConfig graph
-        +FeaturesConfig features
-    }
-
-    KBGraph --> KBNode
-    KBGraph --> KBEdge
-    KBGraph --> Cluster
-    KBNode --> Connection
-    KBNode --> NodeSource
-    KBConfig --> SourceConfig
+interface KBEdge {
+  from: string;
+  to: string;
+  type: EdgeType;
+  weight: number;
+  description?: string;
+  source: string;            // frontmatter | inline | inferred
+}
 ```
 
-<!-- Sources: src/types/index.ts:4-119 -->
+## Edge Types and Weights
 
-## NodeSource Discriminated Union
+The typed edge system was designed in the [typed edges spec](typed-edges) and implemented in [#50](https://github.com/anokye-labs/kbexplorer-template/issues/50). `EDGE_TYPE_WEIGHTS` maps each type to a numeric weight; `EDGE_TYPE_STYLES` maps to visual properties consumed by the [graph network](graph-network) factory:
 
-```mermaid
-flowchart LR
-    NS["NodeSource"] --> A["authored\n{file: string}"]
-    NS --> B["issue\n{number, state, labels}"]
-    NS --> C["pull_request\n{number, state}"]
-    NS --> D["commit\n{sha: string}"]
-    NS --> E["file\n{path: string}"]
-    NS --> F["readme"]
-    NS --> G["section\n{parentSource}"]
+| Type | Weight | Visual | Meaning |
+|------|--------|--------|---------|
+| `contains` | 3 | solid, thick | Parent-child |
+| `references` | 1 | solid, thin | Explicit link |
+| `cross_references` | 0.8 | dashed | Issue cross-reference |
+| `related` | 0.5 | dotted, faint | Orphan rescue |
 
-    style NS fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style A fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style B fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style C fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style D fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style E fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style F fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style G fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-```
+The ranking redesign ([#52](https://github.com/anokye-labs/kbexplorer-template/issues/52)) ensured edge type weights affect the [HUD](hud)'s related panel ordering.
 
-<!-- Sources: src/types/index.ts:61-68 -->
+## Configuration
 
-## KBNode Interface
+`KBConfig` defines the runtime configuration shape, and `DEFAULT_CONFIG` provides fallback values. `SourceConfig` specifies where to fetch content — repo owner/name, content path, and display mode. The [KB loader](kb-loader) and [local loader](local-loader) both read config at startup.
 
-Defined at [src/types/index.ts:4-18](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L4), `KBNode` is the core entity:
+## Display Modes
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `id` | `string` | Unique identifier (slug from filename or `issue-N`) |
-| `title` | `string` | Display name |
-| `cluster` | `string` | Cluster membership (maps to colour/grouping) |
-| `content` | `string` | Pre-rendered HTML from markdown |
-| `rawContent` | `string` | Original markdown source |
-| `emoji` | `string?` | Unicode emoji or Fluent icon name |
-| `image` | `string?` | Repo-relative path for heroes mode |
-| `sprite` | `string?` | Repo-relative path for sprites mode |
-| `parent` | `string?` | Parent node ID for hierarchical trees |
-| `nodeType` | `'parent' \| 'section'?` | Whether this node has children or is a section |
-| `connections` | `Connection[]` | Outgoing edges from frontmatter or auto-detection |
-| `source` | `NodeSource` | Provenance: authored, issue, PR, commit, file, readme, or section |
+The `DisplayMode` union (`'authored' | 'repo-aware'`) determines which content pipeline runs. Authored mode loads markdown from a content directory; repo-aware mode fetches from the [GitHub API](github-api). The [overview](overview) summarizes both modes.
 
-## KBConfig Interface
+## Cluster Types
 
-The full configuration at [src/types/index.ts:71-119](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L71) covers every aspect of the app:
+`Cluster` carries `id`, `name`, `color`, and optional `description`. The [parser](parser)'s `extractClusters()` generates these from node metadata, and the [graph engine](graph-engine) groups nodes visually by cluster. [PR #5](https://github.com/anokye-labs/kbexplorer-template/pull/5) introduced the [overview view](overview-view) card grid that groups nodes by cluster.
 
-| Section | Key Fields | Purpose |
-|---------|-----------|---------|
-| `source` | `owner`, `repo`, `branch`, `path?` | Which GitHub repo to load |
-| `clusters` | `Record<string, {name, color}>` | Cluster display metadata |
-| `visuals` | `mode`, `fallback`, `hero?`, `hud?`, `graph?` | Visual identity settings |
-| `theme` | `default`, `font?` | Theme and typography |
-| `graph` | `physics`, `layout` | Physics simulation and layout engine |
-| `features` | `hud`, `minimap`, `readingTools`, `keyboardNav`, `sparkAnimation` | Feature flags |
-| `bluf?` | `audio?`, `quote?`, `duration?` | Bottom-line-up-front overlay config |
+## Node Map Types
 
-## DEFAULT_CONFIG
-
-The `DEFAULT_CONFIG` constant at [src/types/index.ts:137](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L137) provides sensible defaults. The `resolveDefaultSource()` function at [src/types/index.ts:122](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L122) reads `VITE_KB_OWNER`, `VITE_KB_REPO`, `VITE_KB_BRANCH`, and `VITE_KB_PATH` from `import.meta.env`, falling back to `anokye-labs/kbexplorer` when no env vars are set.
-
-## KBEdge Weight
-
-The `weight` field on `KBEdge` at [src/types/index.ts:43](https://github.com/anokye-labs/kbexplorer/blob/main/src/types/index.ts#L43) controls vis-network spring length: `springLength / weight`. A weight of `2` halves the rest length, pulling connected nodes closer. Default is `1`. Edge categorisation is detailed in the [typed edges spec](spec-typed-edges), which extends these interfaces with `type` and `source` discriminators.
+`NodeMapEntry` and `NodeMap` define the schema for `nodemap.yaml` entries processed by the [node mapping](node-mapping) system — including file/glob/directory modes and connection derivation strategies.

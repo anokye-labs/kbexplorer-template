@@ -1,100 +1,31 @@
 ---
 id: "loading-error-screens"
 title: "Loading & Error Screens"
-emoji: "Color"
+emoji: "Warning"
 cluster: ui
+derived: true
 connections: []
 ---
 
-# Loading & Error Screens
+The loading and error screens (`src/components/LoadingScreen.tsx`) provide feedback during the [KB loader](kb-loader)'s async startup phase. These are the first things users see when opening kbexplorer, so they set the visual tone for the entire experience.
 
-Rendered by the [app shell](app-shell)'s Explorer component, these screens provide feedback during async data fetching and actionable guidance when things go wrong — especially [GitHub API](github-api) rate limiting, the single most common failure mode.
+## Loading State
 
-## At a Glance
+While the [KB loader hook](kb-loader) fetches data from the [GitHub API](github-api) or loads the local manifest, the loading screen shows a Fluent `Spinner` component with a `Body1` status message. The Fluent 2 refresh ([PR #21](https://github.com/anokye-labs/kbexplorer-template/pull/21)) replaced the original custom spinner with the standard Fluent component.
 
-| Component | Responsibility | Key File | Source |
-|-----------|---------------|----------|--------|
-| `LoadingScreen` | Centered spinner during data load | `src/components/LoadingScreen.tsx` | [src/components/LoadingScreen.tsx:14](https://github.com/anokye-labs/kbexplorer/blob/main/src/components/LoadingScreen.tsx#L14) |
-| `ErrorScreen` | Error display with rate-limit detection + retry | `src/components/ErrorScreen.tsx` | [src/components/ErrorScreen.tsx:51](https://github.com/anokye-labs/kbexplorer/blob/main/src/components/ErrorScreen.tsx#L51) |
-| `parseRateLimitReset` | Extract reset time from error messages | `src/components/ErrorScreen.tsx` | [src/components/ErrorScreen.tsx:15](https://github.com/anokye-labs/kbexplorer/blob/main/src/components/ErrorScreen.tsx#L15) |
-| `isRateLimitError` | Detect rate-limit errors via regex | `src/components/ErrorScreen.tsx` | [src/components/ErrorScreen.tsx:28](https://github.com/anokye-labs/kbexplorer/blob/main/src/components/ErrorScreen.tsx#L28) |
+## Error State
 
-## Screen Selection Flow
+If loading fails — typically due to GitHub API rate limiting (60 req/hour for unauthenticated requests) or missing `GH_TOKEN` in CI — the error screen displays the error message with recovery guidance. Common causes include rate limiting, empty manifests (fix: `npm run prebuild`), and missing tokens (fixed in [PR #74](https://github.com/anokye-labs/kbexplorer-template/pull/74), [PR #75](https://github.com/anokye-labs/kbexplorer-template/pull/75)).
 
-```mermaid
-flowchart TD
-    A["useKnowledgeBase state"] --> B{"status?"}
-    B -->|loading| C["LoadingScreen\nSpinner + 'Loading knowledge base…'"]
-    B -->|error| D["ErrorScreen\nMessageBar + rate-limit info"]
-    B -->|ready| E["Main app renders"]
-    D --> F{"isRateLimitError?"}
-    F -->|yes| G["Show reset time\nor fallback message"]
-    F -->|no| H["Show error only"]
-    D --> I["Retry button\nwindow.location.reload()"]
+## Integration
 
-    style A fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style B fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style C fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style D fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style E fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style F fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style G fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style H fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style I fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
+The [application shell](app-shell) conditionally renders these screens based on the `LoadingState` discriminated union:
+
+```typescript
+type LoadingState =
+  | { status: 'loading' }
+  | { status: 'ready'; graph: KBGraph; config: KBConfig }
+  | { status: 'error'; error: string };
 ```
 
-<!-- Sources: src/App.tsx:44-45, src/components/ErrorScreen.tsx:51-76 -->
-
-## Error Handling Pipeline
-
-```mermaid
-flowchart LR
-    Msg["error message string"] --> Parse["parseRateLimitReset()"]
-    Parse --> |"ISO timestamp"| Time["Convert to\nlocal time string"]
-    Parse --> |"retry after N"| Secs["Add N seconds\nto Date.now()"]
-    Parse --> |"no match"| Null["null"]
-
-    Msg --> Check["isRateLimitError()"]
-    Check --> |"rate.?limit or\n403.*limit"| RL["Show rate-limit UI"]
-    Check --> |"no match"| Generic["Show error only"]
-
-    style Msg fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style Parse fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style Time fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style Secs fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style Null fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style Check fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style RL fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style Generic fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-```
-
-<!-- Sources: src/components/ErrorScreen.tsx:15-30 -->
-
-## LoadingScreen
-
-A minimal full-viewport component at [src/components/LoadingScreen.tsx:14-22](https://github.com/anokye-labs/kbexplorer/blob/main/src/components/LoadingScreen.tsx#L14):
-
-| Element | Fluent Component | Details |
-|---------|-----------------|---------|
-| Spinner | `Spinner size="large"` | Animated loading indicator |
-| Message | `Body1` | Static text: "Loading knowledge base…" |
-| Layout | `makeStyles` with `height: 100vh` | Centered flex column with `spacingVerticalXL` gap |
-
-## ErrorScreen
-
-A richer component at [src/components/ErrorScreen.tsx:51-76](https://github.com/anokye-labs/kbexplorer/blob/main/src/components/ErrorScreen.tsx#L51) with three zones:
-
-| Zone | Component | Condition |
-|------|-----------|-----------|
-| Error message | `MessageBar intent="error"` | Always shown |
-| Rate-limit info | `Caption1` | Only when `isRateLimitError(message)` is true |
-| Retry button | `Button appearance="primary"` | Always shown, calls `window.location.reload()` |
-
-## Rate-Limit Detection
-
-The `parseRateLimitReset` function at [src/components/ErrorScreen.tsx:15-26](https://github.com/anokye-labs/kbexplorer/blob/main/src/components/ErrorScreen.tsx#L15) uses two regex patterns:
-
-1. **ISO timestamp pattern**: `/rate limit.*?reset.*?(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2})/i`
-2. **Retry-after seconds**: `/retry after (\d+)/i`
-
-When a match is found, the function converts the extracted value to a local time string via `toLocaleTimeString()`. The `isRateLimitError` function at [src/components/ErrorScreen.tsx:28-30](https://github.com/anokye-labs/kbexplorer/blob/main/src/components/ErrorScreen.tsx#L28) performs a broader check with `/rate.?limit/i` or `/403.*limit/i` to decide whether to show the rate-limit UI at all.
+The screens use Fluent tokens from the [visual system](visual-system) and adapt to the active theme automatically.

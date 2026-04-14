@@ -1,87 +1,51 @@
 ---
 id: "keyboard-nav"
 title: "Keyboard Navigation"
-emoji: "Color"
+emoji: "Keyboard"
 cluster: ui
+derived: true
 connections: []
 ---
 
-# Keyboard Navigation
+The keyboard navigation hook (`src/hooks/useKeyboardNav.ts`) adds global keyboard shortcuts to kbexplorer, making the entire knowledge graph navigable without a mouse. It was implemented as part of [#16](https://github.com/anokye-labs/kbexplorer-template/issues/16) and shipped in [PR #8](https://github.com/anokye-labs/kbexplorer-template/pull/8) alongside the [theme system](theme-system) and [HUD](hud).
 
-Called by the [app shell](app-shell)'s Explorer component, keyboard navigation lets power users browse the knowledge base without touching a mouse. It keeps the interaction model simple — just three keys — while respecting editable elements to avoid conflicts with text input.
+## Active Shortcuts
 
-## At a Glance
+| Key | Action | Context |
+|-----|--------|---------|
+| `t` | Cycle theme (dark → light → sepia) | Global |
+| `←` | Navigate to previous node | Reading view |
+| `→` | Navigate to next node | Reading view |
 
-| Component | Responsibility | Key File | Source |
-|-----------|---------------|----------|--------|
-| `useKeyboardNav` | Global keydown listener hook | `src/hooks/useKeyboardNav.ts` | [src/hooks/useKeyboardNav.ts:11](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L11) |
-| `nextTheme` | Cycle through theme modes | `src/hooks/useTheme.ts` | imported at line 3 |
+## Implementation
 
-## Key Bindings
+The hook attaches a `keydown` listener to `window` and guards against input fields — shortcuts are suppressed when the user is typing in an `INPUT`, `TEXTAREA`, `SELECT`, or `contentEditable` element.
 
-| Key | Action | Source |
-|-----|--------|--------|
-| `t` | Cycle [theme](theme-system): dark → light → sepia → dark | [src/hooks/useKeyboardNav.ts:22-26](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L22) |
-| `←` (ArrowLeft) | Navigate to previous node | [src/hooks/useKeyboardNav.ts:28-41](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L28) |
-| `→` (ArrowRight) | Navigate to next node | [src/hooks/useKeyboardNav.ts:28-41](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L28) |
-
-## Event Flow
-
-```mermaid
-flowchart TD
-    A["window 'keydown' event"] --> B{"target is INPUT,\nTEXTAREA, SELECT\nor contentEditable?"}
-    B -->|yes| C["Ignore — let native\ninput handle it"]
-    B -->|no| D{"key?"}
-    D -->|'t'| E["Read localStorage\nkbe-theme"]
-    E --> F["nextTheme(current)\n→ setTheme()"]
-    D -->|ArrowLeft / ArrowRight| G["Parse window.location.hash\nfor /node/:id"]
-    G --> H["Find current index\nin graph.nodes"]
-    H --> I["Compute next index\n(wraps with modulo)"]
-    I --> J["Set window.location.hash\nto new node"]
-
-    style A fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style B fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style C fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style D fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style E fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style F fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style G fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style H fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style I fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style J fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
+```typescript
+export function useKeyboardNav(
+  graph: KBGraph | null,
+  setTheme: (t: Theme) => void
+): void {
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      // Handle 't' for theme cycling, arrows for node navigation
+    }
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [graph, setTheme]);
+}
 ```
 
-<!-- Sources: src/hooks/useKeyboardNav.ts:16-42 -->
+## Node Sequence Navigation
 
-## Hook Lifecycle
+Arrow keys navigate through the graph's node array in order. The hook reads the current node ID from `window.location.hash`, finds its index in `graph.nodes`, and navigates to the adjacent node. Navigation wraps around — pressing `→` on the last node goes to the first.
 
-```mermaid
-sequenceDiagram
-    participant Explorer as Explorer component
-    participant Hook as useKeyboardNav
-    participant Window as window
+## Theme Cycling
 
-    Explorer->>Hook: mount with graph, setTheme
-    Hook->>Window: addEventListener('keydown', handler)
-    Note over Window: User presses keys...
-    Window->>Hook: keydown event
-    Hook->>Hook: check target element
-    Hook->>Window: update hash or theme
+The `t` key reads the current theme from localStorage (via `kbe-theme`) and advances to the next mode using `nextTheme()` from the [theme system](theme-system). The responsive layout work ([PR #18](https://github.com/anokye-labs/kbexplorer-template/pull/18)) ensured all views handle theme changes gracefully.
 
-    Explorer->>Hook: unmount
-    Hook->>Window: removeEventListener('keydown', handler)
-```
+## Integration
 
-<!-- Sources: src/hooks/useKeyboardNav.ts:46-48 -->
-
-## Input Element Guard
-
-The handler at [src/hooks/useKeyboardNav.ts:17-19](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L17) checks the event target's `tagName` against `INPUT`, `TEXTAREA`, and `SELECT`, plus the `isContentEditable` property. This prevents keyboard shortcuts from hijacking text entry in HUD search boxes or any future form elements.
-
-## Arrow Navigation
-
-Node cycling at [src/hooks/useKeyboardNav.ts:28-41](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L28) parses the current node ID from `window.location.hash`, finds its index in `graph.nodes`, then computes the next index using modular arithmetic — `ArrowRight` adds 1, `ArrowLeft` subtracts 1, both wrapping around the array boundaries. If the graph is `null` or the hash doesn't match the `/node/:id` pattern, the handler is a no-op.
-
-## Cleanup
-
-The `useEffect` returns a cleanup function at [src/hooks/useKeyboardNav.ts:47](https://github.com/anokye-labs/kbexplorer/blob/main/src/hooks/useKeyboardNav.ts#L47) that removes the event listener, ensuring no dangling handlers survive component unmount. The effect depends on the [`KBGraph`](type-system) and `setTheme` callback so the handler is rebuilt if either changes.
+The [application shell](app-shell) calls this hook with the loaded graph and the theme setter. The hook has no UI — it is purely behavioral.

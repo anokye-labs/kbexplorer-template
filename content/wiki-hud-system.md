@@ -1,38 +1,34 @@
 ---
 id: "wiki-hud-system"
-title: "HUD System"
-emoji: "Book"
+title: "HUD System Guide"
+emoji: "PanelLeft"
 cluster: guide
-parent: "wiki-deep-dive"
+derived: true
 connections: []
 ---
 
+How to use the [HUD](hud) (Heads-Up Display) effectively.
 
+## Minimap
 
-# [HUD — Heads-Up Display](hud) System
+Bird's-eye view of the constellation. Current node highlighted. Click to jump. Uses [graph network](graph-network)'s `computeGraphPositions()`.
 
-The HUD (Heads-Up Display) is the persistent control surface visible across all reading views. It adapts its layout based on dock position.
+## Related Panel
 
-## Sidebar Layout (Left/Right Dock)
+Up to 12 connected nodes as [NodeVisual](node-visual) cards. Click to navigate. Ranking prioritizes strongly-typed edges over high-degree weak connections (#52).
 
-The Okoto-inspired vertical layout has three zones stacked vertically:
+## Layer Toggles
 
-1. **Live constellation graph** (~50% height) — a full vis-network instance. Click nodes to navigate. Physics freeze after stabilization. Current node emphasized.
-2. **Connections panel** (remaining height) — scrollable cards with icon, title, description snippet, and cluster color bar. A row-resize handle between graph and connections allows adjusting the split (20%–80%).
-3. **Tools strip** — compact bottom row: theme toggle, dock buttons, font size and width sliders.
+Four buttons show/hide node groups: Content ([authored provider](authored-provider)), File ([files provider](files-provider)), Work ([work provider](work-provider)), Concept. Added in #55.
 
-Sidebar width defaults to 25vw, resizable 15–50vw via col-resize drag handle.
+## Cluster Collapse
 
-**Critical optimization:** The sidebar graph creates once and persists across navigation. When the user clicks a node, only `selectNodes()` + `focus()` are called — no rebuild, no re-stabilization.
+Click cluster label to collapse all nodes into one summary node. The [node renderer](node-renderer) draws a stacked appearance. Click again to expand. From #57.
 
-## Horizontal Layout (Top/Bottom Dock)
+## Dock Positions
 
-Three-panel row: minimap canvas (left), navigation + related strip (center), tools (right). The minimap is a canvas-drawn representation using positions from `computeGraphPositions()`.
+Drag to any screen edge. The [style system](style-system) adapts layout. Persists in localStorage. Added in PR #28 alongside depth controls.
 
-## Constellation Overlay
+## Keyboard
 
-The MAP button opens a full-screen overlay with bounded panning (custom pointer handler clamped to node bounding box), floating cluster legend, and dismiss button.
-
-## Persistence
-
-All HUD state is persisted in localStorage: dock position, collapsed state, sidebar width, graph/connections split, font size, column width.
+Press `t` to cycle [themes](theme-system), arrows to navigate nodes — handled by [keyboard navigation](keyboard-nav).

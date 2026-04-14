@@ -1,112 +1,41 @@
 ---
 id: "graph-network"
-title: "Graph Network Factory"
-emoji: "Flow"
+title: "Graph Network"
+emoji: "Organization"
 cluster: engine
+derived: true
 connections: []
 ---
 
-# Graph Network Factory
+The graph network factory (`src/engine/createGraphNetwork.ts`) bridges the abstract `KBGraph` from the [graph engine](graph-engine) and the visual vis-network library that renders the interactive constellation. It creates vis-network `Network` instances, configures physics, and manages the emphasis system that highlights a node's neighborhood when hovered.
 
-The graph network factory is the bridge between kbexplorer's abstract [`KBGraph`](type-system) data model and the concrete vis-network rendering engine. It exists because raw vis-network requires extensive boilerplate — node sizing, colour mapping, physics tuning, pan/zoom clamping, custom canvas rendering — and this factory encapsulates all of it behind two clean functions: `createGraphNetwork` (interactive) and `computeGraphPositions` (headless layout computation).
+## Creating a Network
 
-## At a Glance
+`createGraphNetwork()` accepts a `GraphNetworkOptions` object (container element, graph data, theme flag, callbacks) and returns a `GraphNetworkResult`:
 
-| Component | Responsibility | Key File | Source |
-|-----------|---------------|----------|--------|
-| `createGraphNetwork` | Build interactive vis-network instance | `src/engine/createGraphNetwork.ts` | [src/engine/createGraphNetwork.ts:88](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L88) |
-| `computeGraphPositions` | Headless layout computation | `src/engine/createGraphNetwork.ts` | [src/engine/createGraphNetwork.ts:294](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L294) |
-| `buildVisNode` | Map KBNode to vis-network node config | `src/engine/createGraphNetwork.ts` | [src/engine/createGraphNetwork.ts:52](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L52) |
-| `GraphNetworkOptions` | Input configuration interface | `src/engine/createGraphNetwork.ts` | [src/engine/createGraphNetwork.ts:14](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L14) |
-| `GraphNetworkResult` | Output: network + DataSets | `src/engine/createGraphNetwork.ts` | [src/engine/createGraphNetwork.ts:30](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L30) |
-
-## Architecture
-
-```mermaid
-flowchart TD
-    A["KBGraph data"] --> B["buildVisNode()\nfor each node"]
-    B --> C["DataSet<nodes>"]
-    A --> D["Edge mapping\nwith spring lengths"]
-    D --> E["DataSet<edges>"]
-    C --> F["new Network(container,\n{nodes, edges}, options)"]
-    E --> F
-    F --> G["ForceAtlas2 stabilization"]
-    G --> H["Bounded panning\nvia pointerdown/pointermove"]
-    G --> I["Zoom clamping"]
-    G --> J["Focus node\nor fit-all"]
-
-    style A fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style B fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style C fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style D fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style E fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style F fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style G fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style H fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style I fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style J fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
+```typescript
+export interface GraphNetworkResult {
+  network: Network;
+  nodes: DataSet<Record<string, unknown>>;
+  edges: DataSet<Record<string, unknown>>;
+  setEmphasis: (nodeId: string | null) => void;
+}
 ```
 
-<!-- Sources: src/engine/createGraphNetwork.ts:88-287 -->
+The factory builds vis-nodes via `buildVisNode()`, which delegates to the [node renderer](node-renderer) for custom canvas drawing. Node sizes scale with degree — more connections mean a larger node. Hub nodes (top 8 by degree via `computeKeyNodes()`) get a 1.5× base size boost, giving visual weight to landing-page nodes like [overview](overview).
 
-## Emphasis and Fading
+## Physics and Stabilization
 
-```mermaid
-flowchart LR
-    E["emphasizeNodeId set"] --> N{"Is node\nin emphasized set?"}
-    N -->|yes| Full["Full opacity\nfull size\nlabel shown"]
-    N -->|no| Faded["0.3 opacity\n60% size\nno label"]
+The network uses barnesHut gravity with force-directed layout. After stabilization completes, physics is **killed** to prevent drift. This was a hard-won fix: commits `625f054` and `8cf5034` addressed a bug where nodes slowly crept across the canvas after every DataSet update. The solution: disable physics in the factory configuration *and* again after emphasis updates.
 
-    style E fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style N fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style Full fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-    style Faded fill:#1e3a5f,stroke:#4a9eed,color:#e0e0e0
-```
+## Emphasis System
 
-<!-- Sources: src/engine/createGraphNetwork.ts:107-129 -->
+`setEmphasis(nodeId)` highlights a node and its direct neighbors at full opacity while fading everything else. This updates vis-network DataSet objects for both nodes and edges. The [HUD](hud) triggers emphasis on hover, creating a focus-plus-context effect. Passing `null` resets all nodes to full opacity.
 
-## buildVisNode
+## Edge Styling
 
-The `buildVisNode` function at [src/engine/createGraphNetwork.ts:52-85](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L52) maps each `KBNode` to a vis-network node config, using degree counts from the [graph engine](graph-engine):
+Edges render per type using `EDGE_TYPE_STYLES` from the [type system](type-system). Different edge types get distinct colors, dash patterns, and arrow styles — implemented as part of [#56](https://github.com/anokye-labs/kbexplorer-template/issues/56). This makes it visually obvious whether a connection is containment, reference, or cross-reference.
 
-| Property | Logic |
-|----------|-------|
-| **Size** | `baseSize + degree × step`, clamped to `[minSize, maxSize]` |
-| **Key node boost** | Nodes in `KEY_NODE_IDS` (`readme`, `overview`, etc.) get 1.5× base and 1.4× max |
-| **Colour** | Looked up from `clusterColorMap` |
-| **Label** | Title truncated to `labelMaxLength` (default 25), hidden when faded |
-| **Shape** | Always `'custom'` — delegates to [`createNodeRenderer`](node-renderer) for canvas drawing |
-| **Disconnected badge** | Nodes with 0 connections get a `⚠ Disconnected node` tooltip |
+## Position Computation
 
-## Physics Configuration
-
-The vis-network uses ForceAtlas2 physics configured at [src/engine/createGraphNetwork.ts:155-163](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L155):
-
-| Parameter | Value | Purpose |
-|-----------|-------|---------|
-| `gravitationalConstant` | `-120` | Repulsion force between nodes |
-| `centralGravity` | `0.01` | Pull toward graph center |
-| `springLength` | `200` | Base edge rest length |
-| `springConstant` | `0.04` | Edge elasticity |
-| `damping` | `0.6` | Velocity damping factor |
-| `stabilization.iterations` | `150` | Steps before stabilized event fires |
-
-Edge `length` is computed as `baseSpringLength / weight` (line 140) so higher-weight edges pull nodes closer together.
-
-## Bounded Panning
-
-Vis-network's built-in `dragView` is disabled. After stabilization, custom pointer event handlers at [src/engine/createGraphNetwork.ts:219-253](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L219) implement bounded panning:
-
-1. `pointerdown` on empty canvas area → capture start position
-2. `pointermove` → compute delta, apply `clamp()` to keep view within graph bounds + 120px padding
-3. `pointerup` / `pointercancel` → end pan
-
-The `clamp()` function at [src/engine/createGraphNetwork.ts:206-216](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L206) ensures users can never scroll the graph entirely off-screen.
-
-## Zoom Clamping
-
-On every `zoom` event at [src/engine/createGraphNetwork.ts:256-263](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L256), the view position is re-clamped to the graph bounds. This prevents the zoom-then-pan exploit that would otherwise let users escape the bounded area.
-
-## computeGraphPositions
-
-The [HUD](hud) uses `computeGraphPositions` for its minimap layout. The function at [src/engine/createGraphNetwork.ts:294-354](https://github.com/anokye-labs/kbexplorer/blob/main/src/engine/createGraphNetwork.ts#L294) creates a hidden off-screen vis-network (400×280px, positioned at `left: -9999px`) purely for layout computation. Once stabilized, it extracts node positions into a `Map<string, {x, y}>`, calls the `onComplete` callback, then destroys itself. Returns a cleanup function for React effect teardown.
+`computeGraphPositions()` creates a hidden off-screen vis-network to compute force-directed layout positions without rendering. It calls back with a position map used by the [HUD](hud) minimap's `drawMinimap` function. The returned cleanup function destroys the hidden network to prevent memory leaks. The `dock` value is in the dependency array so positions recompute when the dock orientation changes.

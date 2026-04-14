@@ -1,73 +1,40 @@
 ---
 id: "wiki-configuration"
-title: "Configuration Reference"
-emoji: "Book"
+title: "Configuration Guide"
+emoji: "Options"
 cluster: guide
-parent: "wiki-getting-started"
+derived: true
 connections: []
 ---
 
+All configurable aspects of kbexplorer.
 
+## Theme Configuration
 
-# Configuration Reference
+The [theme system](theme-system) offers dark (default), light, and sepia. Users switch via `t` [keyboard shortcut](keyboard-nav) or UI toggle. Persists in localStorage under `kbe-theme`.
 
-kbexplorer loads `config.yaml` from the content path (or repo root) at runtime. All fields are optional — sensible defaults apply.
+## Cluster Configuration
 
-## Source
-
-```yaml
-source:
-  owner: anokye-labs
-  repo: kbexplorer
-  path: content          # omit for repo-aware only
-  branch: main
-```
-
-## Clusters
-
-Define named groups with colors. Nodes reference clusters by key:
+Defined in `content/config.yaml`, clusters determine grouping in the [overview view](overview-view) and coloring in the [graph network](graph-network):
 
 ```yaml
 clusters:
   engine:
-    name: Engine
+    name: "Engine"
     color: "#4A9CC8"
-  ui:
-    name: Interface
-    color: "#8CB050"
+    description: "Core graph computation"
 ```
 
-Clusters not defined in config are auto-generated from node data with colors from a built-in palette.
+The [parser](parser)'s `extractClusters()` uses these. Auto-generated clusters receive computed hues.
 
-## Visuals
+## Content Source Configuration
 
-```yaml
-visuals:
-  mode: emoji            # sprites | heroes | emoji | none
-  fallback: emoji
-```
+The [content pipeline](content-pipeline) supports two modes: **Authored** (markdown with frontmatter) and **Repo-aware** (live data from [GitHub API](github-api)). The [KB loader](kb-loader) routes between modes. See [Content Modes](wiki-content-modes).
 
-See [visual system](visual-system) for rendering details on each mode.
+## HUD Configuration
 
-## Theme
+The [HUD](hud) dock position and layer toggle states persist in localStorage. Minimap adapts to dock orientation.
 
-```yaml
-theme:
-  default: dark          # dark | light | sepia
-```
+## Cache Configuration
 
-The [theme system](theme-system) handles persistence and cycling between these modes.
-
-## Features
-
-```yaml
-features:
-  hud: true
-  minimap: true
-  readingTools: true
-  keyboardNav: true
-```
-
-## Default Config
-
-The full default configuration is defined in the [type system](type-system)'s `DEFAULT_CONFIG` constant in `src/types/index.ts`. It targets the kbexplorer repo itself with the `content/` path for blended mode.
+The [cache system](cache-system) uses 5-minute TTL and version-stamped keys. Bump `CACHE_VERSION` when changing data shapes. The [design decisions](design-decisions) node covers rationale.

@@ -1,50 +1,55 @@
 ---
 id: "wiki-setup"
-title: "Installation & Development"
-emoji: "Book"
+title: "Setup Guide"
+emoji: "Settings"
 cluster: guide
-parent: "wiki-getting-started"
+derived: true
 connections: []
 ---
 
+Advanced setup options beyond [Getting Started](wiki-getting-started).
 
+## Environment Variables
 
-# Installation & Development
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `VITE_KB_LOCAL` | `true` | Enable [local loader](local-loader) mode |
+| `VITE_KB_OWNER` | — | GitHub repo owner for remote mode |
+| `VITE_KB_REPO` | — | GitHub repo name for remote mode |
+| `GH_TOKEN` | — | GitHub token for manifest generation |
 
-## Prerequisites
+## Configuration Files
 
-- **Node.js 18+** and npm
+### config.yaml
 
-## Install
+Located in `content/config.yaml`, defines clusters, title, and subtitle. The [parser](parser) reads this at startup:
 
-```bash
-git clone https://github.com/anokye-labs/kbexplorer.git
-cd kbexplorer
-npm install
+```yaml
+title: "My Knowledge Base"
+clusters:
+  engine:
+    name: "Engine"
+    color: "#4A9CC8"
 ```
 
-For new repositories, run the [interactive init script](init-script) to generate configuration files and environment variables.
+### nodemap.yaml
 
-```bash
-npm run dev
-```
+Defines how source files become graph nodes. See the [Node Mapping Spec](spec-node-mapping). The [node mapping](node-mapping) system processes five modes.
 
-This invokes the [build scripts](build-scripts), which detect standalone vs submodule mode and configure the [Vite setup](vite-config) accordingly. Vite starts at `http://localhost:5173`.Content is fetched live from the GitHub API — no content build step. Changes to React code hot-reload via Vite HMR.
+### staticwebapp.config.json
 
-**HMR caveat:** After structural changes (new files, moved exports), HMR can serve stale code. If behavior doesn't match expectations, kill the server, delete `node_modules/.vite`, and restart.
+Configures Azure Static Web Apps SPA routing. The [application shell](app-shell) uses hash-based routing.
 
-## Production Build
+## Build Commands
 
-```bash
-npm run build
-```
+| Command | What it does |
+|---------|-------------|
+| `npm run dev` | Start [Vite](vite-config) dev server |
+| `npm run build` | Production build to `dist/` |
+| `npm run prebuild` | Generate manifest via [build scripts](build-scripts) |
+| `npm test` | Run [test suite](test-suite) |
+| `npx playwright test` | Run E2E tests |
 
-Runs TypeScript type-checking (`tsc -b`) then bundles with Vite to `dist/`.
+## Remote Mode
 
-## Deployment
-
-The app deploys to **Azure Static Web Apps** via GitHub Actions. Push to `main` triggers the workflow. Pull requests get staging previews. The `staticwebapp.config.json` handles SPA routing — all paths rewrite to `index.html`.
-
-## Rate Limits
-
-The GitHub API allows 60 unauthenticated requests/hour. API responses are cached in localStorage for 5 minutes via the [cache system](cache-system) to minimize calls. If rate-limited, the app shows an error screen with guidance.
+Set `VITE_KB_LOCAL=false` and provide owner/repo. The [GitHub API](github-api) fetches content with [cache](cache-system) support.
