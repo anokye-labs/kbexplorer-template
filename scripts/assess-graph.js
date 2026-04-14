@@ -21,8 +21,8 @@ const contentDir = resolve(kbRoot, 'content');
 // ── Limits ─────────────────────────────────────────────────
 
 const LIMITS = {
-  nodesPerView: 20,
-  edgesPerView: 40,
+  nodesPerView: 40,
+  edgesPerView: 80,
   maxClusters: 8,
   maxHubHops: 3,
   highOutDegree: 15,

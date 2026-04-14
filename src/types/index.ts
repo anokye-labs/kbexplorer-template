@@ -309,8 +309,8 @@ export function collapseGraphClusters(graph: KBGraph, collapsedIds: Set<string>)
 }
 
 /** Hard visibility limits for the rendered graph. */
-export const MAX_VISIBLE_NODES = 20
-export const MAX_VISIBLE_EDGES = 40
+export const MAX_VISIBLE_NODES = 40
+export const MAX_VISIBLE_EDGES = 80
 
 export interface TrimResult {
   graph: KBGraph
