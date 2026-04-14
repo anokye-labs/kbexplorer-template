@@ -143,6 +143,13 @@ export async function loadRemoteKnowledgeBase(
 
   registry.register(new WorkProvider(data.issues, shapedPRs, data.commits))
 
+  // ── Register external providers from config ────────────
+  if (config.providers && config.providers.length > 0) {
+    const { loadExternalProviders } = await import('./plugin-loader')
+    const externals = loadExternalProviders(config.providers)
+    for (const p of externals) registry.register(p)
+  }
+
   // ── Collect nodes from providers ───────────────────────
   const allNodes = await collectProviderNodes(registry, config)
 

@@ -472,7 +472,20 @@ export type NodeSource =
   | { type: 'file'; path: string }
   | { type: 'readme' }
   | { type: 'section'; parentSource: NodeSource }
-  | { type: 'derived'; generator: string };
+  | { type: 'derived'; generator: string }
+  | { type: 'external'; provider: string };
+
+/** Configuration for an external provider plugin */
+export interface ExternalProviderConfig {
+  /** Provider type identifier */
+  type: 'wikipedia' | 'orgchart' | 'custom';
+  /** Human-readable name */
+  name?: string;
+  /** Cluster to assign nodes to */
+  cluster?: string;
+  /** Provider-specific options */
+  options?: Record<string, unknown>;
+}
 
 /** Full knowledge base configuration (from config.yaml). */
 export interface KBConfig {
@@ -518,6 +531,7 @@ export interface KBConfig {
     keyboardNav: boolean;
     sparkAnimation: boolean;
   };
+  providers?: ExternalProviderConfig[];
   bluf?: {
     audio?: string;
     quote?: string;
