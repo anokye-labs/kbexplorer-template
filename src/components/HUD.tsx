@@ -26,6 +26,7 @@ import {
   WeatherMoonRegular,
   WeatherSunnyRegular,
   BookRegular,
+  GridRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme, EdgeType, NodeLayer } from '../types';
 import { EDGE_TYPE_STYLES, NODE_LAYER_META, filterGraphToLayer, collapseGraphClusters, trimGraphToLimits } from '../types';
@@ -1115,6 +1116,16 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 {/* Connections panel */}
                 <div style={{ flex: 1, minHeight: '10%', overflowY: 'auto', padding: `0 ${tokens.spacingHorizontalS}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: `${tokens.spacingVerticalS} 0` }}>
+                    <Button
+                      appearance="subtle"
+                      size="small"
+                      icon={<GridRegular />}
+                      onClick={() => { window.location.hash = '#/overview'; }}
+                      title="Card overview"
+                      style={{ marginRight: 'auto' }}
+                    >
+                      Cards
+                    </Button>
                     <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
                       Connections
                     </Caption2>
@@ -1202,6 +1213,14 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   onClick={() => setMapExpanded(true)}
                 >
                   MAP
+                </Button>
+                <Button
+                  appearance="outline"
+                  size="small"
+                  icon={<GridRegular />}
+                  onClick={() => { window.location.hash = '#/overview'; }}
+                >
+                  Cards
                 </Button>
                 <Button
                   appearance="subtle"

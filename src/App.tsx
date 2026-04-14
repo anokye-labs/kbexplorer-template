@@ -8,6 +8,7 @@ import { getHubNodeId } from './engine/graph';
 import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
 import { ReadingView } from './views/ReadingView';
+import { OverviewView } from './views/OverviewView';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ErrorScreen } from './components/ErrorScreen';
 import './styles/visuals.css';
@@ -57,6 +58,7 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
     <>
       <div style={paddingStyle}>
         <Routes>
+          <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
           <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} />} />
           <Route path="*" element={(() => {
             const hubId = getHubNodeId(graph) ?? graph.nodes[0]?.id;

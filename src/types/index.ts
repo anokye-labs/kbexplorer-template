@@ -388,7 +388,25 @@ export function trimGraphToLimits(
     if (best && kept.size < maxNodes) kept.add(best.id)
   }
 
-  // 4. Fill by degree
+  // 4. External provider boost — reserve slots for external nodes proportional to budget
+  const externalNodes = graph.nodes.filter(n => n.source.type === 'external')
+  if (externalNodes.length > 0) {
+    // Reserve up to 20% of budget for external nodes (at least 2)
+    const externalBudget = Math.max(2, Math.floor(maxNodes * 0.2))
+    const externalToAdd = externalNodes
+      .filter(n => !kept.has(n.id))
+      .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0))
+    for (const n of externalToAdd) {
+      if (kept.size >= maxNodes) break
+      const externalKept = [...kept].filter(id =>
+        graph.nodes.find(nd => nd.id === id)?.source.type === 'external'
+      ).length
+      if (externalKept >= externalBudget) break
+      kept.add(n.id)
+    }
+  }
+
+  // 5. Fill remaining by degree
   const byDegree = [...graph.nodes]
     .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0))
   for (const n of byDegree) {
