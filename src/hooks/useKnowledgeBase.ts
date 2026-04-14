@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { KBGraph, KBConfig, SourceConfig } from '../types';
-import { DEFAULT_CONFIG } from '../types';
-import {
-  loadConfig,
-  loadRepoContent,
-  loadAuthoredContent,
-  extractClusters,
-  buildGraph,
-} from '../engine';
 import { detectLocalMode, loadLocalKnowledgeBase } from '../engine/local-loader';
+import { loadRemoteKnowledgeBase } from '../engine/remote-loader';
 
 export type LoadingState =
   | { status: 'loading' }
@@ -18,7 +11,7 @@ export type LoadingState =
 /**
  * Hook that loads the knowledge base.
  * In local mode: imports pre-built manifest (zero API calls).
- * In remote mode: fetches from GitHub API at runtime.
+ * In remote mode: fetches from GitHub API via the provider pipeline.
  */
 export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
   const [state, setState] = useState<LoadingState>({ status: 'loading' });
@@ -32,7 +25,6 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
         const local = await detectLocalMode();
 
         if (local) {
-          // Local mode — use pre-built manifest, zero API calls
           const { graph, config } = await loadLocalKnowledgeBase();
           if (!cancelled) {
             if (graph.nodes.length === 0) {
@@ -47,26 +39,10 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
           return;
         }
 
-        // Remote mode — existing API-based loading
-        const source = sourceOverride ?? DEFAULT_CONFIG.source;
-        const config = await loadConfig(source);
-
-        let nodes = await loadRepoContent(source);
-
-        if (config.source.path) {
-          try {
-            const authored = await loadAuthoredContent(source, config.source.path);
-            nodes = [...nodes, ...authored];
-          } catch {
-            // Authored content dir may not exist
-          }
-        }
-
-        const clusters = extractClusters(nodes, config);
-        const graph = buildGraph(nodes, clusters);
-
+        // Remote mode — fetch from GitHub API via the provider pipeline
+        const { graph, config } = await loadRemoteKnowledgeBase(sourceOverride, 'standard');
         if (!cancelled) {
-          if (nodes.length === 0) {
+          if (graph.nodes.length === 0) {
             setState({
               status: 'error',
               error: 'No content loaded. The GitHub API may be rate-limited — try again in a minute, or check your network.',
