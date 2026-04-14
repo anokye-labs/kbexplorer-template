@@ -59,3 +59,7 @@ Three themes via FluentProvider: dark (`webDarkTheme`), light (`webLightTheme`),
 ## Validation Strategy
 This project uses a Digital Twin Universe (DTU) for integration testing.
 Before building or evolving any feature that touches an external service, read `DTU.md`.
+
+## Content Derivation
+The content in `content/` is machine-derived from the repo's systems of record.
+For the full evaluation pipeline (worktree experiment, quality assessment, comparison), read [`DERIVATION.md`](DERIVATION.md).
