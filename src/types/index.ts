@@ -355,15 +355,17 @@ export function trimGraphToLimits(
   for (const [id, d] of degree) {
     if (d > hubDeg) { hubId = id; hubDeg = d }
   }
-  // Prefer readme/overview as hub
-  if (graph.nodes.some(n => n.id === 'readme')) hubId = 'readme'
+  // Prefer home/readme/overview as hub
+  if (graph.nodes.some(n => n.id === 'home')) hubId = 'home'
+  else if (graph.nodes.some(n => n.id === 'readme')) hubId = 'readme'
   else if (graph.nodes.some(n => n.id === 'overview')) hubId = 'overview'
 
   const kept = new Set<string>()
 
-  // 1. Hub + current node
+  // 1. Hub + current node + readme (always visible)
   if (hubId) kept.add(hubId)
   if (currentNodeId && degree.has(currentNodeId)) kept.add(currentNodeId)
+  if (graph.nodes.some(n => n.id === 'readme')) kept.add('readme')
 
   // 2. Current node's 1-hop neighbors
   if (currentNodeId) {
