@@ -273,14 +273,22 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
       return (
         <div>
           {graph && (
-            <ConstellationHero graph={graph} height="30vh">
-              <div style={{ textAlign: 'center', color: tokens.colorNeutralForeground1 }}>
-                <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 0.5rem' }}>
+            <ConstellationHero graph={graph} height="40vh">
+              <div style={{ textAlign: 'center', color: tokens.colorNeutralForeground1, padding: '4rem 0 2rem' }}>
+                <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 0.75rem', lineHeight: 1.1 }}>
                   {node.title}
                 </h1>
-                <p style={{ opacity: 0.7, fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', margin: 0 }}>
+                <p style={{ opacity: 0.65, fontSize: 'clamp(0.95rem, 1.5vw, 1.15rem)', margin: '0 0 1.5rem', maxWidth: '40ch', marginLeft: 'auto', marginRight: 'auto' }}>
                   Explore the knowledge constellation
                 </p>
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <a href="#/node/readme" style={{ padding: '0.5rem 1.5rem', borderRadius: '2rem', background: '#4A9CC8', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+                    Explore the Graph
+                  </a>
+                  <a href="#/overview" style={{ padding: '0.5rem 1.5rem', borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>
+                    Browse All Nodes
+                  </a>
+                </div>
               </div>
             </ConstellationHero>
           )}

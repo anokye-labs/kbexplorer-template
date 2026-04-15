@@ -13,24 +13,39 @@ const useStyles = makeStyles({
     position: 'relative',
     overflow: 'hidden',
     borderRadius: tokens.borderRadiusXLarge,
-    marginBottom: '2rem',
+    marginBottom: '1.5rem',
   },
   canvas: {
     position: 'absolute',
     inset: 0,
-    opacity: 0.3,
+    opacity: 0.35,
     pointerEvents: 'none',
   },
   overlay: {
     position: 'relative',
+    zIndex: 2,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2rem',
+    minHeight: 'inherit',
+  },
+  fade: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '30%',
+    background: 'linear-gradient(to bottom, transparent, var(--colorNeutralBackground1, #1a1a2e))',
     zIndex: 1,
-    padding: '3rem 2rem 2rem',
+    pointerEvents: 'none',
   },
   glow: {
     position: 'absolute',
     borderRadius: '50%',
     filter: 'blur(100px)',
-    opacity: 0.1,
+    opacity: 0.12,
     pointerEvents: 'none',
     zIndex: 0,
   },
@@ -67,9 +82,10 @@ export function ConstellationHero({ graph, height = '35vh', children }: Constell
 
   return (
     <div className={styles.wrapper} style={{ minHeight: height }}>
-      <div className={styles.glow} style={{ background: '#4A9CC8', width: '40vw', height: '40vw', top: '-30%', left: '-10%' }} />
-      <div className={styles.glow} style={{ background: '#E8A838', width: '35vw', height: '35vw', bottom: '-25%', right: '-5%' }} />
+      <div className={styles.glow} style={{ background: '#4A9CC8', width: '40vw', height: '40vw', top: '-20%', left: '10%' }} />
+      <div className={styles.glow} style={{ background: '#E8A838', width: '35vw', height: '35vw', bottom: '-15%', right: '15%' }} />
       <div ref={canvasRef} className={styles.canvas} />
+      <div className={styles.fade} />
       <div className={styles.overlay}>
         {children}
       </div>
