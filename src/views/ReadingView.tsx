@@ -14,6 +14,7 @@ import {
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 import { HomePageWidgets } from '../components/HomePageWidgets';
+import { ConstellationHero } from '../components/ConstellationHero';
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -271,6 +272,18 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
     case 'homepage':
       return (
         <div>
+          {graph && (
+            <ConstellationHero graph={graph} height="30vh">
+              <div style={{ textAlign: 'center', color: tokens.colorNeutralForeground1 }}>
+                <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 0.5rem' }}>
+                  {node.title}
+                </h1>
+                <p style={{ opacity: 0.7, fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', margin: 0 }}>
+                  Explore the knowledge constellation
+                </p>
+              </div>
+            </ConstellationHero>
+          )}
           <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />
           {graph && config && <HomePageWidgets graph={graph} config={config} />}
         </div>
@@ -335,6 +348,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   const cluster = findCluster(config, graph.clusters, node.cluster);
 
   const showHero = mode === 'heroes' && !!node.image;
+  const isHomepage = node.display === 'homepage';
 
   return (
     <div className={styles.root}>
@@ -343,28 +357,32 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
         <NodeVisual node={node} mode={mode} surface="hero" source={source} />
       )}
 
-      {/* Back link */}
-      <div className={styles.backLink}>
-        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
-          Home
-        </Button>
-      </div>
+      {/* Back link — hide on homepage (it IS home) */}
+      {!isHomepage && (
+        <div className={styles.backLink}>
+          <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
+            Home
+          </Button>
+        </div>
+      )}
 
-      {/* Header */}
-      <header className={`${styles.header} ${showHero ? styles.headerHero : ''}`}>
-        <div className={styles.headerVisual}>
-          {!showHero && (mode === 'sprites' && node.sprite) && (
-            <NodeVisual node={node} mode={mode} surface="header" source={source} clusterColor={cluster.color} />
-          )}
-          {!showHero && mode === 'emoji' && node.emoji && (
-            <NodeVisual node={node} mode="emoji" surface="header" source={source} clusterColor={cluster.color} />
-          )}
-        </div>
-        <div className={styles.clusterBadge}>
-          <Badge appearance="tint" color="informative">{cluster.name}</Badge>
-        </div>
-        <Title1>{node.title}</Title1>
-      </header>
+      {/* Header — skip for homepage (ConstellationHero handles it) */}
+      {!isHomepage && (
+        <header className={`${styles.header} ${showHero ? styles.headerHero : ''}`}>
+          <div className={styles.headerVisual}>
+            {!showHero && (mode === 'sprites' && node.sprite) && (
+              <NodeVisual node={node} mode={mode} surface="header" source={source} clusterColor={cluster.color} />
+            )}
+            {!showHero && mode === 'emoji' && node.emoji && (
+              <NodeVisual node={node} mode="emoji" surface="header" source={source} clusterColor={cluster.color} />
+            )}
+          </div>
+          <div className={styles.clusterBadge}>
+            <Badge appearance="tint" color="informative">{cluster.name}</Badge>
+          </div>
+          <Title1>{node.title}</Title1>
+        </header>
+      )}
 
       {/* Body: prose + connections */}
       <div className={`${styles.body} kb-reading-body`}>
