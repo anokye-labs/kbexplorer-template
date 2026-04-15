@@ -47,9 +47,12 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '70vh',
+    minHeight: '40vh',
+    maxHeight: '50vh',
     textAlign: 'center',
     overflow: 'hidden',
+    paddingTop: '3rem',
+    paddingBottom: '2rem',
   },
   heroCanvas: {
     position: 'absolute',
@@ -64,17 +67,18 @@ const useStyles = makeStyles({
     padding: '0 5vw',
   },
   heroTitle: {
-    fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+    fontSize: 'clamp(1.8rem, 4vw, 3rem)',
     fontWeight: 700,
     letterSpacing: '-0.03em',
-    lineHeight: 1.05,
-    marginBottom: '1.5rem',
+    lineHeight: 1.1,
+    marginBottom: '0.75rem',
+    marginTop: 0,
   },
   heroSub: {
-    fontSize: 'clamp(1rem, 2vw, 1.35rem)',
-    lineHeight: 1.6,
+    fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)',
+    lineHeight: 1.5,
     opacity: 0.75,
-    marginBottom: '2.5rem',
+    marginBottom: '1.5rem',
     maxWidth: '50ch',
   },
   heroCta: {
@@ -98,8 +102,8 @@ const useStyles = makeStyles({
   stats: {
     display: 'flex',
     justifyContent: 'center',
-    gap: '3rem',
-    padding: '2.5rem 5vw',
+    gap: '2.5rem',
+    padding: '1.5rem 5vw',
     flexWrap: 'wrap',
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -108,10 +112,10 @@ const useStyles = makeStyles({
     textAlign: 'center',
   },
   statNumber: {
-    fontSize: '2rem',
+    fontSize: '1.5rem',
     fontWeight: 700,
     lineHeight: 1,
-    marginBottom: '0.25rem',
+    marginBottom: '0.2rem',
   },
   statLabel: {
     fontSize: '0.8rem',
@@ -124,7 +128,7 @@ const useStyles = makeStyles({
   section: {
     maxWidth: '80rem',
     margin: '0 auto',
-    padding: '4rem 5vw',
+    padding: '2.5rem 5vw',
   },
   sectionTitle: {
     fontSize: 'clamp(1.5rem, 3vw, 2rem)',
