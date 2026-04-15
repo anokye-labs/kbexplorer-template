@@ -8,6 +8,7 @@ import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
 import { ReadingView } from './views/ReadingView';
 import { OverviewView } from './views/OverviewView';
+import { HomePage } from './views/HomePage';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ErrorScreen } from './components/ErrorScreen';
 import './styles/visuals.css';
@@ -57,10 +58,11 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
     <>
       <div style={paddingStyle}>
         <Routes>
-          <Route path="/" element={<Navigate to="/node/home" replace />} />
+          <Route path="/" element={<HomePage graph={graph} config={config} />} />
+          <Route path="/node/home" element={<HomePage graph={graph} config={config} />} />
           <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
           <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} />} />
-          <Route path="*" element={<Navigate to="/node/home" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       <HUD

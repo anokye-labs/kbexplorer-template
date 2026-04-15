@@ -274,11 +274,11 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
         <div>
           {graph && (
             <ConstellationHero graph={graph} height="40vh">
-              <div style={{ textAlign: 'center', color: tokens.colorNeutralForeground1, padding: '4rem 0 2rem' }}>
-                <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 0.75rem', lineHeight: 1.1 }}>
+              <div style={{ textAlign: 'center', color: tokens.colorNeutralForeground1 }}>
+                <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 0.5rem', lineHeight: 1.1 }}>
                   {node.title}
                 </h1>
-                <p style={{ opacity: 0.65, fontSize: 'clamp(0.95rem, 1.5vw, 1.15rem)', margin: '0 0 1.5rem', maxWidth: '40ch', marginLeft: 'auto', marginRight: 'auto' }}>
+                <p style={{ opacity: 0.65, fontSize: 'clamp(0.95rem, 1.5vw, 1.15rem)', margin: '0 0 1.25rem', maxWidth: '40ch', marginLeft: 'auto', marginRight: 'auto' }}>
                   Explore the knowledge constellation
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>

@@ -14,6 +14,8 @@ const useStyles = makeStyles({
     overflow: 'hidden',
     borderRadius: tokens.borderRadiusXLarge,
     marginBottom: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
   },
   canvas: {
     position: 'absolute',
@@ -24,12 +26,12 @@ const useStyles = makeStyles({
   overlay: {
     position: 'relative',
     zIndex: 2,
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '2rem',
-    minHeight: 'inherit',
   },
   fade: {
     position: 'absolute',
@@ -68,14 +70,28 @@ export function ConstellationHero({ graph, height = '35vh', children }: Constell
       graph,
       isDark: true,
       interactive: false,
-      fitOnStabilize: true,
-      nodeSizeRange: [10, 20],
+      fitOnStabilize: false,
+      nodeSizeRange: [8, 18],
       nodeSizeStep: 2,
       labelMaxLength: 0,
     })
+    // Override physics to spread nodes across the hero
+    network.setOptions({
+      physics: {
+        solver: 'forceAtlas2Based',
+        forceAtlas2Based: {
+          gravitationalConstant: -200,
+          centralGravity: 0.005,
+          springLength: 300,
+          springConstant: 0.02,
+          damping: 0.5,
+        },
+        stabilization: { enabled: true, iterations: 300 },
+      },
+    })
     network.once('stabilized', () => {
       network.setOptions({ physics: { enabled: false } })
-      network.fit({ animation: false })
+      network.fit({ animation: false, minZoomLevel: 0.3, maxZoomLevel: 0.8 })
     })
     return () => { try { network.destroy() } catch { /* */ } }
   }, [graph])
