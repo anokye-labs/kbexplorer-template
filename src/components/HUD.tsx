@@ -281,7 +281,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const [mapSplit, setMapSplit] = useState(() => readPersisted('kbe-map-split', 50));
   const [sidebarZoom, setSidebarZoom] = useState(180);
   const [overlayZoom, setOverlayZoom] = useState(100);
-  const [detailLevel, setDetailLevel] = useState(() => readPersisted('kbe-detail', 40));
+
+  // Detail: 5 non-linear steps — [5, 15, 40, 70, 100] nodes
+  const DETAIL_STEPS = [5, 15, 40, 70, 100];
+  const [detailIdx, setDetailIdx] = useState(() => readPersisted('kbe-detail', 2));
+  const detailLevel = DETAIL_STEPS[Math.min(detailIdx, DETAIL_STEPS.length - 1)];
   const [activeLayer, setActiveLayer] = useState<NodeLayer | 'all'>(() => {
     try {
       const stored = localStorage.getItem('kbe-layer');
@@ -858,12 +862,12 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Detail</Caption1>
                 <Slider
-                  min={1}
-                  max={100}
+                  min={0}
+                  max={4}
                   step={1}
-                  value={detailLevel}
+                  value={detailIdx}
                   onChange={(_e, data) => {
-                    setDetailLevel(data.value);
+                    setDetailIdx(data.value);
                     try { localStorage.setItem('kbe-detail', String(data.value)); } catch { /* */ }
                   }}
                   style={{ width: 100 }}
@@ -1070,12 +1074,12 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                       <Caption2 style={{ color: tokens.colorNeutralForeground3, fontSize: 9, width: 30 }}>Detail</Caption2>
                       <Slider
                         size="small"
-                        min={1}
-                        max={100}
+                        min={0}
+                        max={4}
                         step={1}
-                        value={detailLevel}
+                        value={detailIdx}
                         onChange={(_e, data) => {
-                          setDetailLevel(data.value);
+                          setDetailIdx(data.value);
                           try { localStorage.setItem('kbe-detail', String(data.value)); } catch { /* */ }
                         }}
                         style={{ flex: 1 }}
