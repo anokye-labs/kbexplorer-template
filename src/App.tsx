@@ -58,11 +58,11 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
     <>
       <div style={paddingStyle}>
         <Routes>
-          <Route path="/" element={<HomePage graph={graph} config={config} />} />
+          <Route path="/" element={<Navigate to="/node/home" replace />} />
           <Route path="/node/home" element={<HomePage graph={graph} config={config} />} />
           <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
           <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/node/home" replace />} />
         </Routes>
       </div>
       <HUD
