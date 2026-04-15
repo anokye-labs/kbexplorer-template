@@ -15,6 +15,7 @@ import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 import { HomePageWidgets } from '../components/HomePageWidgets';
 import { ConstellationHero } from '../components/ConstellationHero';
+import { IconGallery } from '../components/IconGallery';
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -294,6 +295,13 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
           )}
           <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />
           {graph && config && <HomePageWidgets graph={graph} config={config} />}
+        </div>
+      );
+    case 'gallery':
+      return (
+        <div>
+          <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />
+          <IconGallery />
         </div>
       );
     default:
