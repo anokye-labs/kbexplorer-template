@@ -13,6 +13,7 @@ import {
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
+import { HomePageWidgets } from '../components/HomePageWidgets';
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -248,7 +249,7 @@ function TableView({ content }: { content: string }) {
   );
 }
 
-function renderContent(node: KBNode, linkedHtml: string) {
+function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config?: KBConfig) {
   switch (node.display) {
     case 'code':
       return <pre className="kb-code-display"><code>{node.rawContent}</code></pre>;
@@ -265,6 +266,13 @@ function renderContent(node: KBNode, linkedHtml: string) {
             Diagram rendering coming soon
           </Caption1>
           <pre className="kb-code-display"><code>{node.rawContent}</code></pre>
+        </div>
+      );
+    case 'homepage':
+      return (
+        <div>
+          <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />
+          {graph && config && <HomePageWidgets graph={graph} config={config} />}
         </div>
       );
     default:
@@ -360,7 +368,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
 
       {/* Body: prose + connections */}
       <div className={`${styles.body} kb-reading-body`}>
-        {renderContent(node, linkifyContent(node.content))}
+        {renderContent(node, linkifyContent(node.content), graph, config)}
 
         {/* Child nodes (subfolders, sections) */}
         {(() => {
