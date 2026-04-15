@@ -1,6 +1,6 @@
 /** Core data types for the kbexplorer knowledge graph. */
 
-export type DisplayMode = 'prose' | 'code' | 'file-list' | 'tree' | 'table' | 'diagram';
+export type DisplayMode = 'prose' | 'code' | 'file-list' | 'tree' | 'table' | 'diagram' | 'homepage';
 
 /** A single entry in nodemap.yaml */
 export interface NodeMapEntry {
