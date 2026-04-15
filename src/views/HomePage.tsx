@@ -323,6 +323,19 @@ export function HomePage({ graph, config }: HomePageProps) {
   const heroCanvasRef = useRef<HTMLDivElement>(null)
   const [curatedNodes] = useState(() => getCuratedNodes(graph))
 
+  // Find the home node for its narrative prose
+  const homeNode = graph.nodes.find(n => n.id === 'home')
+  const nodeIds = new Set(graph.nodes.map(n => n.id))
+
+  // Linkify home node content — convert [text](node-id) to hash links
+  const linkedContent = homeNode ? homeNode.content.replace(
+    /<a href="([^"#/][^"]*)">/g,
+    (_match: string, target: string) => {
+      if (nodeIds.has(target)) return `<a href="#/node/${encodeURIComponent(target)}">`
+      return `<a href="${target}">`
+    }
+  ) : ''
+
   // Cluster stats
   const clusterCounts = new Map<string, number>()
   for (const n of graph.nodes) {
@@ -416,6 +429,13 @@ export function HomePage({ graph, config }: HomePageProps) {
           <div className={styles.statLabel}>External Sources</div>
         </div>
       </div>
+
+      {/* ── Narrative Prose ── */}
+      {linkedContent && (
+        <section className={styles.section}>
+          <div className="kb-prose" style={{ maxWidth: '70ch' }} dangerouslySetInnerHTML={{ __html: linkedContent }} />
+        </section>
+      )}
 
       {/* ── Clusters ── */}
       <section className={styles.section}>
