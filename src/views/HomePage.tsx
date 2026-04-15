@@ -433,7 +433,7 @@ export function HomePage({ graph, config }: HomePageProps) {
       {/* ── Narrative Prose ── */}
       {linkedContent && (
         <section className={styles.section}>
-          <div className="kb-prose" style={{ maxWidth: '70ch' }} dangerouslySetInnerHTML={{ __html: linkedContent }} />
+          <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedContent }} />
         </section>
       )}
 
