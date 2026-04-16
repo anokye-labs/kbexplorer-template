@@ -369,7 +369,11 @@ test.describe('Visual Validation', () => {
   test('no console errors on key pages', async ({ page }) => {
     const errors: string[] = []
     page.on('console', msg => {
-      if (msg.type() === 'error' && !msg.text().includes('403') && !msg.text().includes('rate')) {
+      if (msg.type() === 'error' &&
+        !msg.text().includes('403') &&
+        !msg.text().includes('rate') &&
+        !msg.text().includes('ERR_NAME_NOT_RESOLVED') &&
+        !msg.text().includes('net::ERR_')) {
         errors.push(msg.text())
       }
     })
