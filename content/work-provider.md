@@ -1,7 +1,7 @@
 ---
 id: "work-provider"
 title: "Work Provider"
-emoji: "TaskListSquare"
+emoji: "TaskListSquareLtr"
 cluster: data
 derived: true
 connections: []

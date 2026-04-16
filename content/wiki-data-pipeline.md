@@ -1,7 +1,7 @@
 ---
 id: "wiki-data-pipeline"
 title: "Data Pipeline Guide"
-emoji: "DataFlow"
+emoji: "Flow"
 cluster: guide
 derived: true
 connections: []
