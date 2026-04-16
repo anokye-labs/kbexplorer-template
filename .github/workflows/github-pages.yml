@@ -45,6 +45,9 @@ jobs:
       - name: Validate graph
         run: npm run validate
 
+      - name: Assess graph quality
+        run: node scripts/assess-graph.js --gate
+
       # Build for E2E
       - name: Build
         run: npx vite build
