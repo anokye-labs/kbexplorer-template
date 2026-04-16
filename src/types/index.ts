@@ -228,6 +228,92 @@ function filterByPredicate(graph: KBGraph, predicate: (n: KBNode) => boolean): K
   return { nodes, edges, clusters: graph.clusters, related };
 }
 
+// ── Graph Views ────────────────────────────────────────────
+
+/** A named view projection over the graph */
+export interface GraphView {
+  id: string
+  name: string
+  icon: string
+  color: string
+  /** Resolve this view — custom logic, not just a filter */
+  resolve: (graph: KBGraph) => KBGraph
+}
+
+/** Built-in views — each with a custom resolver */
+export const BUILT_IN_VIEWS: GraphView[] = [
+  {
+    id: 'all',
+    name: 'All',
+    icon: '',
+    color: '#ffffff',
+    resolve: (graph) => graph,
+  },
+  {
+    id: 'code',
+    name: 'Code',
+    icon: 'Code',
+    color: '#9A8A78',
+    resolve: (graph) => filterByPredicate(graph, n => {
+      const t = n.source.type
+      if (t === 'file') return true
+      // Include authored nodes in code-related clusters
+      if ((t === 'authored' || t === 'derived') &&
+        ['engine', 'data', 'infra'].includes(n.cluster)) return true
+      return false
+    }),
+  },
+  {
+    id: 'content',
+    name: 'Docs',
+    icon: 'Document',
+    color: '#58a6ff',
+    resolve: (graph) => filterGraphToLayer(graph, 'content'),
+  },
+  {
+    id: 'work',
+    name: 'Work',
+    icon: 'Wrench',
+    color: '#d29922',
+    resolve: (graph) => filterByPredicate(graph, n => {
+      const t = n.source.type
+      return t === 'issue' || t === 'pull_request' || t === 'commit'
+    }),
+  },
+  {
+    id: 'external',
+    name: 'External',
+    icon: 'Globe',
+    color: '#79C0FF',
+    resolve: (graph) => {
+      // External nodes + their 1-hop internal neighbors
+      const externalIds = new Set(
+        graph.nodes.filter(n => n.source.type === 'external').map(n => n.id)
+      )
+      const neighborIds = new Set<string>()
+      for (const e of graph.edges) {
+        if (externalIds.has(e.from)) neighborIds.add(e.to)
+        if (externalIds.has(e.to)) neighborIds.add(e.from)
+      }
+      const visibleIds = new Set([...externalIds, ...neighborIds])
+      return filterByPredicate(graph, n => visibleIds.has(n.id))
+    },
+  },
+]
+
+/** Get a view by ID (built-in or custom) */
+export function getView(id: string): GraphView | undefined {
+  return BUILT_IN_VIEWS.find(v => v.id === id)
+}
+
+/** Apply a view to a graph */
+export function filterGraphToView(graph: KBGraph, viewId: string): KBGraph {
+  if (viewId === 'all') return graph
+  const view = getView(viewId)
+  if (!view) return graph
+  return view.resolve(graph)
+}
+
 /**
  * Collapse specified clusters into single summary nodes.
  * Each collapsed cluster's nodes are replaced with one summary node;
