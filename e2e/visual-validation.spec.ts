@@ -137,25 +137,17 @@ test.describe('Visual Validation', () => {
     expect(stored).toBe('left')
   })
 
-  test('dock cycles through all positions without refresh', async ({ page }) => {
+  test('dock cycles through all 4 positions without refresh', async ({ page }) => {
     await page.goto('/#/node/readme', { timeout: 60000 })
     await page.waitForTimeout(3000)
 
-    // Start from bottom (has all 4 buttons)
-    await page.getByRole('button', { name: 'Dock bottom' }).click()
-    await page.waitForTimeout(1500)
+    const positions = ['left', 'right', 'bottom', 'top'] as const
+    for (const pos of positions) {
+      await page.getByRole('button', { name: `Dock ${pos}` }).click()
+      await page.waitForTimeout(1500)
 
-    // Bottom → left → right → bottom (sidebar layout only has left/right/bottom)
-    const sequence = ['left', 'right', 'bottom', 'top'] as const
-    for (const pos of sequence) {
-      const btn = page.getByRole('button', { name: `Dock ${pos}` })
-      if (await btn.count() > 0) {
-        await btn.click()
-        await page.waitForTimeout(1500)
-
-        const stored = await page.evaluate(() => localStorage.getItem('kbe-hud-dock'))
-        expect(stored).toBe(pos)
-      }
+      const stored = await page.evaluate(() => localStorage.getItem('kbe-hud-dock'))
+      expect(stored).toBe(pos)
     }
 
     // Verify HUD is still functional at final position
