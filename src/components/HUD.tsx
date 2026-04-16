@@ -1194,6 +1194,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     <Button appearance={dock === 'left' ? 'primary' : 'subtle'} size="small" icon={<PanelLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" />
                     <Button appearance={dock === 'right' ? 'primary' : 'subtle'} size="small" icon={<PanelRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
                     <Button appearance="subtle" size="small" icon={<PanelBottomRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
+                    <Button appearance="subtle" size="small" icon={<PanelTopExpandRegular />} onClick={() => handleDockChange('top')} title="Dock top" />
                   </div>
                 </div>
               </>

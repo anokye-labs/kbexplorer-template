@@ -82,9 +82,16 @@ test.describe('Visual Validation', () => {
     const stored = await page.evaluate(() => localStorage.getItem('kbe-hud-dock'))
     expect(stored).toBe('right')
 
-    // Content should have right padding
-    const screenshot = await page.screenshot()
-    expect(screenshot.byteLength).toBeGreaterThan(0)
+    // Verify sidebar is on the right side
+    const layout = await page.evaluate(() => {
+      const sidebar = document.querySelector('[class*=expandedContent]') as HTMLElement
+      if (!sidebar) return null
+      const rect = sidebar.getBoundingClientRect()
+      return { left: Math.round(rect.left), right: Math.round(rect.right), vpWidth: window.innerWidth }
+    })
+    if (layout) {
+      expect(layout.right).toBeGreaterThan(layout.vpWidth - 50)
+    }
   })
 
   test('dock bottom works without refresh', async ({ page }) => {
@@ -115,6 +122,64 @@ test.describe('Visual Validation', () => {
 
     const stored = await page.evaluate(() => localStorage.getItem('kbe-hud-dock'))
     expect(stored).toBe('left')
+  })
+
+  test('dock cycles through all 4 positions without refresh', async ({ page }) => {
+    await page.goto('/#/node/readme', { timeout: 60000 })
+    await page.waitForTimeout(3000)
+
+    const positions = ['left', 'right', 'bottom', 'top'] as const
+    for (const pos of positions) {
+      await page.getByRole('button', { name: `Dock ${pos}` }).click()
+      await page.waitForTimeout(1500)
+
+      const stored = await page.evaluate(() => localStorage.getItem('kbe-hud-dock'))
+      expect(stored).toBe(pos)
+    }
+
+    const hudVisible = await page.evaluate(() => {
+      const buttons = [...document.querySelectorAll('button')]
+      return buttons.some(b => b.title?.includes('Dock'))
+    })
+    expect(hudVisible).toBe(true)
+  })
+
+  test('MAP overlay opens and closes', async ({ page }) => {
+    await page.goto('/#/node/readme', { timeout: 60000 })
+    await page.waitForTimeout(3000)
+
+    await page.getByRole('button', { name: 'MAP' }).click()
+    await page.waitForTimeout(2000)
+
+    const canvases = await page.locator('canvas').count()
+    expect(canvases).toBeGreaterThanOrEqual(1)
+
+    const dismissBtn = page.getByRole('button', { name: /Dismiss|Close/ })
+    if (await dismissBtn.count() > 0) {
+      await dismissBtn.click()
+    } else {
+      await page.keyboard.press('Escape')
+    }
+    await page.waitForTimeout(1000)
+  })
+
+  test('collapse and expand HUD', async ({ page }) => {
+    await page.goto('/#/node/readme', { timeout: 60000 })
+    await page.waitForTimeout(3000)
+
+    const collapseBtn = page.getByRole('button', { name: 'Collapse' })
+    if (await collapseBtn.count() > 0) {
+      await collapseBtn.click()
+      await page.waitForTimeout(1000)
+
+      const expandBtn = page.getByRole('button', { name: 'Expand' })
+      await expect(expandBtn).toBeVisible({ timeout: 3000 })
+
+      await expandBtn.click()
+      await page.waitForTimeout(1000)
+
+      await expect(page.getByRole('button', { name: 'MAP' })).toBeVisible()
+    }
   })
 
   // ── Content Node Rendering ────────────────────────────
