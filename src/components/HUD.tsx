@@ -32,8 +32,8 @@ import {
   PanelRightRegular,
   PanelTopExpandRegular,
 } from '@fluentui/react-icons';
-import type { KBGraph, KBConfig, KBNode, Theme, EdgeType, NodeLayer } from '../types';
-import { EDGE_TYPE_STYLES, NODE_LAYER_META, filterGraphToLayer, collapseGraphClusters, trimGraphToLimits } from '../types';
+import type { KBGraph, KBConfig, KBNode, Theme, EdgeType } from '../types';
+import { EDGE_TYPE_STYLES, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
 import type { TrimResult } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
@@ -290,10 +290,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const DETAIL_STEPS = [5, 15, 40, 70, 100];
   const [detailIdx, setDetailIdx] = useState(() => readPersisted('kbe-detail', 2));
   const detailLevel = DETAIL_STEPS[Math.min(detailIdx, DETAIL_STEPS.length - 1)];
-  const [activeLayer, setActiveLayer] = useState<NodeLayer | 'all'>(() => {
+  const [activeView, setActiveView] = useState<string>(() => {
     try {
-      const stored = localStorage.getItem('kbe-layer');
-      if (stored && ['file', 'content', 'work', 'all'].includes(stored)) return stored as NodeLayer | 'all';
+      const stored = localStorage.getItem('kbe-view');
+      if (stored && BUILT_IN_VIEWS.some(v => v.id === stored)) return stored;
+      // Migrate from old layer system
+      const oldLayer = localStorage.getItem('kbe-layer');
+      if (oldLayer === 'file') return 'code';
+      if (oldLayer === 'content') return 'content';
+      if (oldLayer === 'work') return 'work';
     } catch { /* ignore */ }
     return 'all';
   });
@@ -371,9 +376,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     document.addEventListener('pointerup', onUp);
   }, [mapSplit]);
 
-  const selectLayer = useCallback((layer: NodeLayer | 'all') => {
-    setActiveLayer(layer);
-    try { localStorage.setItem('kbe-layer', layer); } catch { /* */ }
+  const selectView = useCallback((viewId: string) => {
+    setActiveView(viewId);
+    try { localStorage.setItem('kbe-view', viewId); } catch { /* */ }
   }, []);
 
   const toggleClusterCollapse = useCallback((clusterId: string) => {
@@ -386,12 +391,12 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     });
   }, []);
 
-  // Filter graph: layer view → cluster collapse → trim to limits
+  // Filter graph: view → cluster collapse → trim to limits
   const trimResult = React.useMemo<TrimResult>(() => {
-    let g = activeLayer === 'all' ? graph : filterGraphToLayer(graph, activeLayer);
+    let g = filterGraphToView(graph, activeView);
     if (collapsedClusters.size > 0) g = collapseGraphClusters(g, collapsedClusters);
     return trimGraphToLimits(g, currentNodeId, detailLevel, Infinity);
-  }, [graph, activeLayer, collapsedClusters, currentNodeId, detailLevel]);
+  }, [graph, activeView, collapsedClusters, currentNodeId, detailLevel]);
 
   const filteredGraph = trimResult.graph;
 
@@ -652,14 +657,13 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     } catch { /* node might not exist */ }
   }, [currentNodeId]);
 
-  // Active clusters: use the layer-filtered (but not collapsed) graph for the legend
-  // so collapsed clusters still appear and can be toggled back
+  // Active clusters: use the view-filtered (but not collapsed) graph for the legend
   const activeClusters = React.useMemo(() => {
-    const layerGraph = activeLayer === 'all' ? graph : filterGraphToLayer(graph, activeLayer);
+    const viewGraph = filterGraphToView(graph, activeView);
     const counts = new Map<string, number>();
-    for (const n of layerGraph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
-    return layerGraph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
-  }, [graph, activeLayer]);
+    for (const n of viewGraph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
+    return viewGraph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
+  }, [graph, activeView]);
 
   // Active edge types present in the graph
   const activeEdgeTypes = React.useMemo(() => {
@@ -782,30 +786,30 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                 aria-label="Close"
               />
             </div>
-            {/* Layer view selector in overlay */}
+            {/* View selector in overlay */}
             <div style={{
               position: 'absolute', top: 12, left: 12, zIndex: 10,
               display: 'flex', gap: 4,
             }}>
-              {([['all', { label: 'All', color: tokens.colorNeutralForeground1 }], ...Object.entries(NODE_LAYER_META)] as [NodeLayer | 'all', { label: string; color: string }][]).map(([layer, meta]) => {
-                const active = activeLayer === layer;
+              {BUILT_IN_VIEWS.map(view => {
+                const active = activeView === view.id;
                 return (
                   <button
-                    key={layer}
-                    onClick={() => selectLayer(layer)}
+                    key={view.id}
+                    onClick={() => selectView(view.id)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 5,
                       padding: '4px 12px', fontSize: 12, fontWeight: 500,
-                      border: `1px solid ${active ? meta.color : tokens.colorNeutralStroke2}`,
+                      border: `1px solid ${active ? view.color : tokens.colorNeutralStroke2}`,
                       borderRadius: 14, cursor: 'pointer',
-                      background: active ? (layer === 'all' ? tokens.colorNeutralBackground3 : meta.color + '22') : tokens.colorNeutralBackground1,
-                      color: active ? meta.color : tokens.colorNeutralForeground3,
+                      background: active ? (view.id === 'all' ? tokens.colorNeutralBackground3 : view.color + '22') : tokens.colorNeutralBackground1,
+                      color: active ? view.color : tokens.colorNeutralForeground3,
                       opacity: active ? 1 : 0.6,
                     }}
-                    title={`${meta.label} view`}
+                    title={`${view.name} view`}
                   >
-                    {layer !== 'all' && <span style={{ width: 7, height: 7, borderRadius: '50%', background: meta.color, opacity: active ? 1 : 0.3 }} />}
-                    {meta.label}
+                    {view.id !== 'all' && <span style={{ width: 7, height: 7, borderRadius: '50%', background: view.color, opacity: active ? 1 : 0.3 }} />}
+                    {view.name}
                   </button>
                 );
               })}
@@ -960,30 +964,30 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     ref={sidebarGraphRef}
                     style={{ width: '100%', height: '100%' }}
                   />
-                  {/* Layer view selector */}
+                  {/* View selector */}
                   <div style={{
                     position: 'absolute', top: 6, left: 8, right: 68, zIndex: 6,
                     display: 'flex', gap: 3, flexWrap: 'wrap',
                   }}>
-                    {([['all', { label: 'All', color: tokens.colorNeutralForeground1 }], ...Object.entries(NODE_LAYER_META)] as [NodeLayer | 'all', { label: string; color: string }][]).map(([layer, meta]) => {
-                      const active = activeLayer === layer;
+                    {BUILT_IN_VIEWS.map(view => {
+                      const active = activeView === view.id;
                       return (
                         <button
-                          key={layer}
-                          onClick={() => selectLayer(layer)}
+                          key={view.id}
+                          onClick={() => selectView(view.id)}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 4,
                             padding: '2px 8px', fontSize: 10, fontWeight: 500,
-                            border: `1px solid ${active ? meta.color : tokens.colorNeutralStroke2}`,
+                            border: `1px solid ${active ? view.color : tokens.colorNeutralStroke2}`,
                             borderRadius: 12, cursor: 'pointer',
-                            background: active ? (layer === 'all' ? tokens.colorNeutralBackground3 : meta.color + '22') : 'transparent',
-                            color: active ? meta.color : tokens.colorNeutralForeground3,
+                            background: active ? (view.id === 'all' ? tokens.colorNeutralBackground3 : view.color + '22') : 'transparent',
+                            color: active ? view.color : tokens.colorNeutralForeground3,
                             opacity: active ? 1 : 0.5,
                           }}
-                          title={`${meta.label} view`}
+                          title={`${view.name} view`}
                         >
-                          {layer !== 'all' && <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.color, opacity: active ? 1 : 0.3 }} />}
-                          {meta.label}
+                          {view.id !== 'all' && <span style={{ width: 6, height: 6, borderRadius: '50%', background: view.color, opacity: active ? 1 : 0.3 }} />}
+                          {view.name}
                         </button>
                       );
                     })}
@@ -993,6 +997,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     <Caption2 style={{
                       position: 'absolute', top: 28, left: 10, zIndex: 7,
                       color: tokens.colorNeutralForeground3, opacity: 0.7, fontSize: 9,
+                      pointerEvents: 'none',
                     }}>
                       {filteredGraph.nodes.length}/{trimResult.totalNodes} nodes
                     </Caption2>
