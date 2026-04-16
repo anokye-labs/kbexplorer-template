@@ -354,4 +354,45 @@ if (suggestions.length === 0) {
 
 log('');
 log(`Assessment complete. ${suggestions.length} suggestion(s).`);
+
+// ── CI Gate Mode ──────────────────────────────────────────
+// Usage: node scripts/assess-graph.js --gate
+// Fails if any quality score drops below the minimum threshold.
+
+const isGate = process.argv.includes('--gate');
+if (isGate) {
+  const MIN_SCORES = {
+    connectivity: 50,
+    clusterBalance: 30,
+    density: 30,
+    bidirectionality: 20,
+    contentDepth: 60,
+  };
+
+  const scores = {
+    connectivity: connectivityScore,
+    clusterBalance: clusterBalanceScore,
+    density: densityScore,
+    bidirectionality: bidirScore,
+    contentDepth: depthScore,
+  };
+
+  let gatePass = true;
+  for (const [name, min] of Object.entries(MIN_SCORES)) {
+    const actual = scores[name];
+    if (actual < min) {
+      log(`❌ GATE FAIL: ${name} = ${actual}/100 (minimum: ${min})`);
+      gatePass = false;
+    }
+  }
+
+  if (!gatePass) {
+    log('');
+    log('Quality gate FAILED — scores below minimum thresholds.');
+    process.exit(1);
+  }
+
+  log('✅ Quality gate passed — all scores above minimums.');
+}
+
 process.exit(0);
