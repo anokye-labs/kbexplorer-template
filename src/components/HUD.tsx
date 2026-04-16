@@ -27,6 +27,10 @@ import {
   WeatherSunnyRegular,
   BookRegular,
   GridRegular,
+  PanelBottomRegular,
+  PanelLeftRegular,
+  PanelRightRegular,
+  PanelTopExpandRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Theme, EdgeType, NodeLayer } from '../types';
 import { EDGE_TYPE_STYLES, NODE_LAYER_META, filterGraphToLayer, collapseGraphClusters, trimGraphToLimits } from '../types';
@@ -1187,9 +1191,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     {themeButtons}
                     <span style={{ flex: 1 }} />
-                    <Button appearance={dock === 'left' ? 'primary' : 'subtle'} size="small" icon={<ArrowLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" />
-                    <Button appearance={dock === 'right' ? 'primary' : 'subtle'} size="small" icon={<ArrowRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
-                    <Button appearance="subtle" size="small" icon={<ArrowDownRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
+                    <Button appearance={dock === 'left' ? 'primary' : 'subtle'} size="small" icon={<PanelLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" />
+                    <Button appearance={dock === 'right' ? 'primary' : 'subtle'} size="small" icon={<PanelRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
+                    <Button appearance="subtle" size="small" icon={<PanelBottomRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
                   </div>
                 </div>
               </>
@@ -1307,28 +1311,28 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   <Button
                     appearance={dock === 'bottom' ? 'primary' : 'subtle'}
                     size="small"
-                    icon={<ArrowDownRegular />}
+                    icon={<PanelBottomRegular />}
                     onClick={() => handleDockChange('bottom')}
                     title="Dock bottom"
                   />
                   <Button
                     appearance="subtle"
                     size="small"
-                    icon={<ArrowLeftRegular />}
+                    icon={<PanelLeftRegular />}
                     onClick={() => handleDockChange('left')}
                     title="Dock left"
                   />
                   <Button
                     appearance="subtle"
                     size="small"
-                    icon={<ArrowRightRegular />}
+                    icon={<PanelRightRegular />}
                     onClick={() => handleDockChange('right')}
                     title="Dock right"
                   />
                   <Button
                     appearance={dock === 'top' ? 'primary' : 'subtle'}
                     size="small"
-                    icon={<ArrowUpRegular />}
+                    icon={<PanelTopExpandRegular />}
                     onClick={() => handleDockChange('top')}
                     title="Dock top"
                   />
