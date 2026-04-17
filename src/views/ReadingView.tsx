@@ -309,6 +309,66 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
   }
 }
 
+/** Describes where a node comes from — shown as a badge next to the cluster */
+function SourceBadge({ node, config }: { node: KBNode; config: KBConfig }) {
+  const repo = `${config.source.owner}/${config.source.repo}`
+  const s = node.source
+
+  let label: string
+  let color: string
+
+  switch (s.type) {
+    case 'issue':
+      label = `GitHub Issue · ${repo} #${s.number}`
+      color = '#d29922'
+      break
+    case 'pull_request':
+      label = `GitHub PR · ${repo} #${s.number}`
+      color = '#56d364'
+      break
+    case 'commit':
+      label = `GitHub Commits · ${repo}`
+      color = '#8b949e'
+      break
+    case 'file':
+      label = `File · ${s.path}`
+      color = '#9A8A78'
+      break
+    case 'authored':
+      label = `Authored · ${s.file.replace(/.*\//, '')}`
+      color = '#58a6ff'
+      break
+    case 'derived':
+      label = `Derived Content`
+      color = '#e8a854'
+      break
+    case 'readme':
+      label = `README · ${repo}`
+      color = '#58a6ff'
+      break
+    case 'external':
+      label = `External · ${s.provider}`
+      color = '#79C0FF'
+      break
+    case 'section':
+      label = 'Section'
+      color = '#8b949e'
+      break
+    default:
+      return null
+  }
+
+  return (
+    <Badge
+      appearance="outline"
+      size="small"
+      style={{ color, borderColor: color + '66', fontWeight: 400 }}
+    >
+      {label}
+    </Badge>
+  )
+}
+
 export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   const styles = useStyles();
   const node = graph.nodes.find(n => n.id === nodeId);
@@ -414,8 +474,9 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
               <NodeVisual node={node} mode="emoji" surface="header" source={source} clusterColor={cluster.color} />
             )}
           </div>
-          <div className={styles.clusterBadge}>
+          <div className={styles.clusterBadge} style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             <Badge appearance="tint" color="informative">{cluster.name}</Badge>
+            <SourceBadge node={node} config={config} />
           </div>
           <Title1>{node.title}</Title1>
         </header>
