@@ -62,6 +62,10 @@ These relationships exist, but they're scattered across tools that don't talk to
 
 kbexplorer enforces [graph constraints](design-decisions): no orphan nodes, every node within three hops of the hub, edges typed and weighted so the constellation is a legible map — not a hairball.
 
+## The interface
+
+See kbexplorer in action: the [constellation graph](ui-constellation) with its multi-tier edge importance, [three themes](ui-themes) (dark, light, sepia), [dock positions](ui-dock-layout) that rearrange the entire layout, different [node types](ui-node-types) from GitHub issues to Wikipedia articles, and the [card overview](ui-card-overview) for scanning the full knowledge base at a glance.
+
 ## Start exploring
 
 Pick a cluster chip above, click into a curated node, or open the constellation and follow the edges. The graph is yours to explore.
