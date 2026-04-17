@@ -43,12 +43,27 @@ interface RepoManifest {
     html_url: string;
     created_at: string;
     updated_at: string;
+    head_branch?: string;
   }>;
   commits: Array<{
     sha: string;
     commit: { message: string; author: { name: string; date: string } };
     html_url: string;
   }>;
+  branches?: Array<{ name: string; protected: boolean }>;
+  repoMetadata?: {
+    name: string;
+    description: string;
+    html_url: string;
+    default_branch: string;
+    stargazers_count: number;
+    forks_count: number;
+    private: boolean;
+    topics: string[];
+    primary_language: string;
+    languages: Array<{ name: string; size: number }>;
+    owner: { login: string; avatar_url: string };
+  } | null;
   nodemapRaw?: string | null;
   nodemapFiles?: Record<string, string>;
   nodemapDirs?: Record<string, Array<{ path: string; type: 'blob' | 'tree'; size?: number }>>;
@@ -331,7 +346,7 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
   );
 
   registry.register(
-    new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits),
+    new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null),
   );
 
   // ── Register external providers from config ────────────

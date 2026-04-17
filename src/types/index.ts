@@ -1,6 +1,6 @@
 /** Core data types for the kbexplorer knowledge graph. */
 
-export type DisplayMode = 'prose' | 'code' | 'file-list' | 'tree' | 'table' | 'diagram' | 'homepage' | 'gallery' | 'icon-detail';
+export type DisplayMode = 'prose' | 'code' | 'file-list' | 'tree' | 'table' | 'diagram' | 'homepage' | 'gallery' | 'icon-detail' | 'repository';
 
 /** A single entry in nodemap.yaml */
 export interface NodeMapEntry {
@@ -118,7 +118,7 @@ export function getNodeLayer(node: KBNode): NodeLayer {
   const t = node.source.type;
   if (t === 'authored' || t === 'readme' || t === 'derived') return 'content';
   if (t === 'section') return 'content';
-  if (t === 'issue' || t === 'pull_request' || t === 'commit') return 'work';
+  if (t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository') return 'work';
   return 'file';
 }
 
@@ -277,7 +277,7 @@ export const BUILT_IN_VIEWS: GraphView[] = [
     color: '#d29922',
     resolve: (graph) => filterByPredicate(graph, n => {
       const t = n.source.type
-      return t === 'issue' || t === 'pull_request' || t === 'commit'
+      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository'
     }),
   },
   {
@@ -579,7 +579,10 @@ export type NodeSource =
   | { type: 'readme' }
   | { type: 'section'; parentSource: NodeSource }
   | { type: 'derived'; generator: string }
-  | { type: 'external'; provider: string };
+  | { type: 'external'; provider: string }
+  | { type: 'branch'; name: string; protected: boolean }
+  | { type: 'workflow'; path: string }
+  | { type: 'repository'; owner: string; repo: string };
 
 /** Configuration for an external provider plugin */
 export interface ExternalProviderConfig {

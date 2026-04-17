@@ -230,7 +230,7 @@ export function fetchLocalPullRequests(cwd = hostRoot) {
   }
   try {
     const json = execSync(
-      'gh pr list --json number,title,body,state,labels,url,createdAt,updatedAt --state all --limit 200',
+      'gh pr list --json number,title,body,state,labels,url,createdAt,updatedAt,headRefName --state all --limit 200',
       { cwd, encoding: 'utf-8', timeout: 30000 },
     );
     const prs = JSON.parse(json);
@@ -246,6 +246,7 @@ export function fetchLocalPullRequests(cwd = hostRoot) {
       html_url: pr.url ?? '',
       created_at: pr.createdAt ?? '',
       updated_at: pr.updatedAt ?? '',
+      head_branch: pr.headRefName ?? '',
     }));
   } catch (err) {
     console.warn('[generate-manifest] Failed to fetch PRs:', err.message);
@@ -278,6 +279,67 @@ export function fetchLocalCommits(cwd = hostRoot) {
   } catch (err) {
     console.warn('[generate-manifest] Failed to fetch commits:', err.message);
     return [];
+  }
+}
+
+/**
+ * Fetch branches via gh CLI.
+ * @returns {Array}
+ */
+export function fetchLocalBranches(cwd = hostRoot) {
+  if (!isGhAvailable()) return [];
+  try {
+    const json = execSync(
+      'gh api repos/{owner}/{repo}/branches --paginate --jq "[.[] | {name, protected: .protected}]"',
+      { cwd, encoding: 'utf-8', timeout: 30000 },
+    );
+    return JSON.parse(json);
+  } catch {
+    // Fallback to git branch
+    try {
+      const raw = execSync('git branch -a --format="%(refname:short)|||%(upstream:track)"', { cwd, encoding: 'utf-8', timeout: 10000 });
+      return raw.trim().split('\n').filter(Boolean).map(line => {
+        const [name] = line.split('|||');
+        return { name: name.replace('origin/', ''), protected: name === 'main' || name === 'master' };
+      }).filter((b, i, arr) => arr.findIndex(x => x.name === b.name) === i);
+    } catch {
+      return [];
+    }
+  }
+}
+
+/**
+ * Fetch repository metadata via gh CLI.
+ * @returns {Object|null}
+ */
+export function fetchRepoMetadata(cwd = hostRoot) {
+  if (!isGhAvailable()) return null;
+  try {
+    const json = execSync(
+      'gh repo view --json name,description,url,homepageUrl,defaultBranchRef,stargazerCount,forkCount,isPrivate,repositoryTopics,primaryLanguage,languages,owner',
+      { cwd, encoding: 'utf-8', timeout: 15000 },
+    );
+    const data = JSON.parse(json);
+    return {
+      name: data.name ?? '',
+      description: data.description ?? '',
+      html_url: data.url ?? '',
+      homepage: data.homepageUrl ?? '',
+      default_branch: data.defaultBranchRef?.name ?? 'main',
+      stargazers_count: data.stargazerCount ?? 0,
+      forks_count: data.forkCount ?? 0,
+      private: data.isPrivate ?? false,
+      topics: (data.repositoryTopics ?? []).map(t => t.name ?? t),
+      primary_language: data.primaryLanguage?.name ?? '',
+      languages: (data.languages ?? []).map(l => ({ name: l.node?.name ?? l.name ?? l, size: l.size ?? 0 })),
+      owner: {
+        login: data.owner?.login ?? '',
+        avatar_url: data.owner?.avatarUrl ?? '',
+      },
+    };
+  } catch (err) {
+    console.warn('[generate-manifest] Failed to fetch repo metadata:', err.message);
+    return null;
   }
 }
 
@@ -436,6 +498,8 @@ export function generateManifest(root = hostRoot) {
     issues: fetchLocalIssues(root),
     pullRequests: fetchLocalPullRequests(root),
     commits: fetchLocalCommits(root),
+    branches: fetchLocalBranches(root),
+    repoMetadata: fetchRepoMetadata(root),
     nodemapRaw,
     nodemapFiles,
     nodemapDirs,
@@ -450,6 +514,8 @@ export function generateManifest(root = hostRoot) {
   console.log(`[generate-manifest] Issues: ${manifest.issues.length}`);
   console.log(`[generate-manifest] PRs: ${manifest.pullRequests.length}`);
   console.log(`[generate-manifest] Commits: ${manifest.commits.length}`);
+  console.log(`[generate-manifest] Branches: ${manifest.branches.length}`);
+  console.log(`[generate-manifest] Repo: ${manifest.repoMetadata?.name ?? 'not available'}`);
   console.log(`[generate-manifest] Nodemap: ${nodemapRaw ? `${Object.keys(nodemapFiles).length} files, ${Object.keys(nodemapDirs).length} dirs` : 'not found'}`);
 
   return manifest;

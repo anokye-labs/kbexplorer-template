@@ -350,6 +350,18 @@ function SourceBadge({ node, config }: { node: KBNode; config: KBConfig }) {
       label = `External · ${s.provider}`
       color = '#79C0FF'
       break
+    case 'branch':
+      label = `Branch · ${s.name}${s.protected ? ' 🛡️' : ''}`
+      color = '#a78bfa'
+      break
+    case 'workflow':
+      label = `Workflow · ${s.path.replace('.github/workflows/', '')}`
+      color = '#e3b341'
+      break
+    case 'repository':
+      label = `Repository · ${s.owner}/${s.repo}`
+      color = '#56d364'
+      break
     case 'section':
       label = 'Section'
       color = '#8b949e'
