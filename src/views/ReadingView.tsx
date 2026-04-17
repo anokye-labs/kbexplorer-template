@@ -330,7 +330,22 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
       }
     );
 
-    // 2. Convert markdown-generated <a href="node-id"> to hash-based graph navigation
+    // 2. Remap GitHub issue/PR URLs to graph nodes (skip "View on GitHub" external links)
+    result = result.replace(
+      /<a href="(https?:\/\/github\.com\/[^"]*?\/(issues|pull)\/(\d+))">([^<]*)<\/a>/g,
+      (match, url: string, type: string, num: string, text: string) => {
+        if (text.includes('↗') || text.includes('View on GitHub')) {
+          return `<a href="${url}" target="_blank" rel="noopener">${text}</a>`;
+        }
+        const nodeId = type === 'pull' ? `pr-${num}` : `issue-${num}`;
+        if (nodeIds.has(nodeId)) {
+          return `<a href="#/node/${encodeURIComponent(nodeId)}">${text}</a>`;
+        }
+        return match;
+      }
+    );
+
+    // 3. Convert markdown-generated <a href="node-id"> to hash-based graph navigation
     result = result.replace(
       /<a href="([^"#/][^"]*)">/g,
       (_match, target: string) => {
@@ -339,6 +354,12 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
         }
         return `<a href="${target}">`;
       }
+    );
+
+    // 4. Make external links open in new tab
+    result = result.replace(
+      /<a href="(https?:\/\/[^"]+)">/g,
+      '<a href="$1" target="_blank" rel="noopener">'
     );
 
     return result;
