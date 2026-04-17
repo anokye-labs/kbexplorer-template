@@ -40,6 +40,10 @@ Knowledge lives in many places. Source code in one repository, issues in another
 
 **kbexplorer** builds a [knowledge graph](wiki-knowledge-graph) overlay across these isolated islands of information, making the interconnections between them navigable for both humans and agents.
 
+## The interface
+
+See kbexplorer in action: the [constellation graph](ui-constellation) with its multi-tier edge importance, [three themes](ui-themes) (dark, light, sepia), [dock positions](ui-dock-layout) that rearrange the entire layout, different [node types](ui-node-types) from GitHub issues to Wikipedia articles, and the [card overview](ui-card-overview) for scanning the full knowledge base at a glance.
+
 ## How it works
 
 kbexplorer connects to multiple **node providers** — systems of record like GitHub, authored documentation, Wikipedia, organizational charts — and pulls their data into a unified graph. The [provider pipeline](local-loader) merges nodes from every source, and the [graph engine](graph-engine) discovers relationships: inline references, cross-links, shared identities, structural containment. What emerges is a [constellation](graph-network) where every node connects to the things that give it meaning.
@@ -61,10 +65,6 @@ The value isn't in any single system of record — it's in the connections betwe
 These relationships exist, but they're scattered across tools that don't talk to each other. kbexplorer surfaces them as typed, weighted edges in a navigable graph. The [HUD](hud) gives you layer toggles, cluster collapse, a detail slider, and multi-tier edge importance that fades distant connections while keeping your neighborhood sharp.
 
 kbexplorer enforces [graph constraints](design-decisions): no orphan nodes, every node within three hops of the hub, edges typed and weighted so the constellation is a legible map — not a hairball.
-
-## The interface
-
-See kbexplorer in action: the [constellation graph](ui-constellation) with its multi-tier edge importance, [three themes](ui-themes) (dark, light, sepia), [dock positions](ui-dock-layout) that rearrange the entire layout, different [node types](ui-node-types) from GitHub issues to Wikipedia articles, and the [card overview](ui-card-overview) for scanning the full knowledge base at a glance.
 
 ## Start exploring
 
