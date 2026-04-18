@@ -905,12 +905,17 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
 
       <div className={styles.hud} style={hudContainerStyle}>
         {collapsed ? (
-          <div className={styles.collapsedBar}>
+          <div
+            className={styles.collapsedBar}
+            onClick={isVertical ? () => handleCollapse(false) : undefined}
+            style={isVertical ? { cursor: 'pointer' } : undefined}
+            title={isVertical ? 'Click to expand' : undefined}
+          >
             <Button
               size="small"
               appearance="subtle"
               icon={expandIcon}
-              onClick={() => handleCollapse(false)}
+              onClick={(e) => { e.stopPropagation(); handleCollapse(false); }}
               title="Expand"
             />
             {!isVertical && (
@@ -950,13 +955,32 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   style={{
                     position: 'absolute',
                     top: 0,
-                    [dock === 'left' ? 'right' : 'left']: 0,
-                    width: 5,
+                    [dock === 'left' ? 'right' : 'left']: -4,
+                    width: 12,
                     height: '100%',
                     cursor: 'col-resize',
                     zIndex: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
-                />
+                >
+                  <div style={{
+                    width: 4,
+                    height: 32,
+                    borderRadius: 2,
+                    background: tokens.colorNeutralStroke2,
+                    opacity: 0.6,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    gap: 2,
+                  }}>
+                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
+                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
+                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
+                  </div>
+                </div>
 
                 {/* Live constellation graph */}
                 <div style={{ flex: `0 0 ${mapSplit}%`, minHeight: '20%', position: 'relative', overflow: 'hidden', paddingTop: 36 }}>

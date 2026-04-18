@@ -8,9 +8,13 @@ import {
   CardHeader,
   CounterBadge,
   Badge,
+  Button,
   makeStyles,
   tokens,
 } from '@fluentui/react-components';
+import {
+  ArrowLeftRegular,
+} from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 
@@ -119,6 +123,11 @@ export function OverviewView({ graph, config }: OverviewViewProps) {
 
   return (
     <div className={classes.root}>
+      <div style={{ marginBottom: tokens.spacingVerticalM }}>
+        <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
+          Home
+        </Button>
+      </div>
       <Title1 as="h1" className={classes.title}>{config.title}</Title1>
       {config.subtitle && (
         <Body1 className={classes.subtitle}>{config.subtitle}</Body1>

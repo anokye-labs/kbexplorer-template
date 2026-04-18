@@ -10,6 +10,7 @@ import {
 } from '@fluentui/react-components';
 import {
   ArrowLeftRegular,
+  GridRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
@@ -466,11 +467,14 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
         <NodeVisual node={node} mode={mode} surface="hero" source={source} />
       )}
 
-      {/* Back link — hide on homepage (it IS home) */}
+      {/* Navigation — hide on homepage (it IS home) */}
       {!isHomepage && (
-        <div className={styles.backLink}>
+        <div className={styles.backLink} style={{ display: 'flex', gap: 4 }}>
           <Button appearance="subtle" icon={<ArrowLeftRegular />} as="a" href="#/">
             Home
+          </Button>
+          <Button appearance="subtle" icon={<GridRegular />} as="a" href="#/overview">
+            Cards
           </Button>
         </div>
       )}
