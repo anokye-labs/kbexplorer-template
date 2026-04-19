@@ -950,15 +950,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             {/* Minimap — always mounted, one canvas element */}
             {isVertical ? (
               <>
-                {/* Sidebar resize handle — inside the sidebar edge */}
+                {/* Sidebar resize handle — visible grip on the border */}
                 <div
                   onPointerDown={handleResizeStart}
                   className="kbe-resize-handle"
                   style={{
                     position: 'absolute',
                     top: 0,
-                    [dock === 'left' ? 'right' : 'left']: 0,
-                    width: 12,
+                    [dock === 'left' ? 'right' : 'left']: -5,
+                    width: 10,
                     height: '100%',
                     cursor: 'col-resize',
                     zIndex: 10,
@@ -967,6 +967,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     justifyContent: 'center',
                   }}
                 >
+                  {/* Two vertical lines — classic resize affordance */}
                   <div style={{
                     display: 'flex',
                     gap: 3,
