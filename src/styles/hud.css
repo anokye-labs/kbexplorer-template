@@ -1,5 +1,13 @@
 /* hud.css — responsive overrides only (layout handled by makeStyles) */
 
+/* Resize handle — pill grip brightens on hover */
+.kbe-resize-handle > div {
+  transition: opacity 0.15s;
+}
+.kbe-resize-handle:hover > div {
+  opacity: 0.8 !important;
+}
+
 /* Tablet: reduce HUD height, hide minimap panel */
 @media (min-width: 769px) and (max-width: 1024px) {
   /* Minimap panel hides on tablet via parent container query — 
