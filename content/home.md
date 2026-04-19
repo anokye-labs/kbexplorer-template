@@ -42,6 +42,8 @@ Knowledge lives in many places. Source code in one repository, issues in another
 
 ## The interface
 
+![kbexplorer with sidebar graph, reading view, and cluster legend](screenshots/02-sidebar-graph-dark.png)
+
 See kbexplorer in action: the [constellation graph](ui-constellation) with its multi-tier edge importance, [three themes](ui-themes) (dark, light, sepia), [dock positions](ui-dock-layout) that rearrange the entire layout, different [node types](ui-node-types) from GitHub issues to Wikipedia articles, and the [card overview](ui-card-overview) for scanning the full knowledge base at a glance.
 
 ## How it works

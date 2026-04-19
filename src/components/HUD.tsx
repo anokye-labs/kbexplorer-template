@@ -698,19 +698,19 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     ...(dock === 'bottom' ? {
       bottom: 0, left: 0, right: 0,
       height: collapsed ? 40 : 148,
-      borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+      borderTop: `2px solid ${tokens.colorNeutralStroke1}`,
     } : dock === 'top' ? {
       top: 0, left: 0, right: 0,
       height: collapsed ? 40 : 148,
-      borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+      borderBottom: `2px solid ${tokens.colorNeutralStroke1}`,
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
       width: collapsed ? 40 : `${sidebarWidth}vw`,
-      borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
+      borderRight: `2px solid ${tokens.colorNeutralStroke1}`,
     } : {
       top: 0, right: 0, bottom: 0,
       width: collapsed ? 40 : `${sidebarWidth}vw`,
-      borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
+      borderLeft: `2px solid ${tokens.colorNeutralStroke1}`,
     }),
   };
 
