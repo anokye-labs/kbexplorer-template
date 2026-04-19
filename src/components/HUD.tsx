@@ -950,33 +950,19 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             {/* Minimap — always mounted, one canvas element */}
             {isVertical ? (
               <>
-                {/* Sidebar resize handle — visible grip on the border */}
+                {/* Sidebar resize handle — sits on the border */}
                 <div
                   onPointerDown={handleResizeStart}
-                  className="kbe-resize-handle"
                   style={{
                     position: 'absolute',
                     top: 0,
-                    [dock === 'left' ? 'right' : 'left']: -5,
-                    width: 10,
+                    [dock === 'left' ? 'right' : 'left']: -4,
+                    width: 4,
                     height: '100%',
                     cursor: 'col-resize',
                     zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                   }}
-                >
-                  {/* Two vertical lines — classic resize affordance */}
-                  <div style={{
-                    display: 'flex',
-                    gap: 3,
-                    height: 44,
-                  }}>
-                    <div style={{ width: 2, height: '100%', borderRadius: 1, background: '#aaa' }} />
-                    <div style={{ width: 2, height: '100%', borderRadius: 1, background: '#aaa' }} />
-                  </div>
-                </div>
+                />
 
                 {/* Live constellation graph */}
                 <div style={{ flex: `0 0 ${mapSplit}%`, minHeight: '20%', position: 'relative', overflow: 'hidden', paddingTop: 36 }}>
