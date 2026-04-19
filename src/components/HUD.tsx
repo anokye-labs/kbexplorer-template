@@ -703,15 +703,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     } : dock === 'top' ? {
       top: 0, left: 0, right: 0,
       height: collapsed ? 40 : 148,
-      borderBottom: `4px solid ${tokens.colorNeutralStroke1}`,
+      borderBottom: `6px solid ${tokens.colorNeutralStroke1}`,
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
       width: collapsed ? 40 : `${sidebarWidth}vw`,
-      borderRight: `4px solid ${tokens.colorNeutralStroke1}`,
+      borderRight: `6px solid ${tokens.colorNeutralStroke1}`,
     } : {
       top: 0, right: 0, bottom: 0,
       width: collapsed ? 40 : `${sidebarWidth}vw`,
-      borderLeft: `4px solid ${tokens.colorNeutralStroke1}`,
+      borderLeft: `6px solid ${tokens.colorNeutralStroke1}`,
     }),
   };
 
@@ -950,7 +950,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             {/* Minimap — always mounted, one canvas element */}
             {isVertical ? (
               <>
-                {/* Sidebar resize handle — inside the sidebar edge */}
+                {/* Sidebar resize handle — hit zone covers border edge, bars drawn well inside sidebar */}
                 <div
                   onPointerDown={handleResizeStart}
                   className="kbe-resize-handle"
@@ -958,22 +958,24 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     position: 'absolute',
                     top: 0,
                     [dock === 'left' ? 'right' : 'left']: 0,
-                    width: 12,
+                    width: 32,
                     height: '100%',
                     cursor: 'col-resize',
                     zIndex: 10,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    justifyContent: dock === 'left' ? 'flex-start' : 'flex-end',
+                    background: 'transparent',
                   }}
                 >
                   <div style={{
                     display: 'flex',
                     gap: 3,
                     height: 44,
+                    [dock === 'left' ? 'marginLeft' : 'marginRight']: 10,
                   }}>
-                    <div style={{ width: 2, height: '100%', borderRadius: 1, background: '#aaa' }} />
-                    <div style={{ width: 2, height: '100%', borderRadius: 1, background: '#aaa' }} />
+                    <div style={{ width: 2, height: '100%', borderRadius: 1, background: 'rgba(255,255,255,0.3)' }} />
+                    <div style={{ width: 2, height: '100%', borderRadius: 1, background: 'rgba(255,255,255,0.3)' }} />
                   </div>
                 </div>
 
