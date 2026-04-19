@@ -698,19 +698,20 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     ...(dock === 'bottom' ? {
       bottom: 0, left: 0, right: 0,
       height: collapsed ? 40 : 148,
-      borderTop: `2px solid ${tokens.colorNeutralStroke1}`,
+      borderTop: `4px solid ${tokens.colorNeutralStroke1}`,
+      cursor: collapsed ? undefined : 'row-resize',
     } : dock === 'top' ? {
       top: 0, left: 0, right: 0,
       height: collapsed ? 40 : 148,
-      borderBottom: `2px solid ${tokens.colorNeutralStroke1}`,
+      borderBottom: `4px solid ${tokens.colorNeutralStroke1}`,
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
       width: collapsed ? 40 : `${sidebarWidth}vw`,
-      borderRight: `2px solid ${tokens.colorNeutralStroke1}`,
+      borderRight: `4px solid ${tokens.colorNeutralStroke1}`,
     } : {
       top: 0, right: 0, bottom: 0,
       width: collapsed ? 40 : `${sidebarWidth}vw`,
-      borderLeft: `2px solid ${tokens.colorNeutralStroke1}`,
+      borderLeft: `4px solid ${tokens.colorNeutralStroke1}`,
     }),
   };
 
@@ -949,38 +950,19 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             {/* Minimap — always mounted, one canvas element */}
             {isVertical ? (
               <>
-                {/* Sidebar width resize handle */}
+                {/* Sidebar resize handle — sits on the border */}
                 <div
                   onPointerDown={handleResizeStart}
                   style={{
                     position: 'absolute',
                     top: 0,
                     [dock === 'left' ? 'right' : 'left']: -4,
-                    width: 12,
+                    width: 4,
                     height: '100%',
                     cursor: 'col-resize',
                     zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                   }}
-                >
-                  <div style={{
-                    width: 4,
-                    height: 32,
-                    borderRadius: 2,
-                    background: tokens.colorNeutralStroke2,
-                    opacity: 0.6,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: 2,
-                  }}>
-                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
-                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
-                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
-                  </div>
-                </div>
+                />
 
                 {/* Live constellation graph */}
                 <div style={{ flex: `0 0 ${mapSplit}%`, minHeight: '20%', position: 'relative', overflow: 'hidden', paddingTop: 36 }}>
