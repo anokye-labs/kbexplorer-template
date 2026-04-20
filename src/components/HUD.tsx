@@ -310,6 +310,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     return new Set<string>();
   });
   const resizeRef = useRef<{ startX: number; startW: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
 
   const [collapsed, setCollapsed] = useState(() => {
@@ -334,6 +335,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   // Sidebar resize drag
   const handleResizeStart = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
+    setIsDragging(true);
     resizeRef.current = { startX: e.clientX, startW: sidebarWidth };
     const onMove = (ev: PointerEvent) => {
       if (!resizeRef.current) return;
@@ -345,10 +347,10 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       setSidebarWidth(newW);
     };
     const onUp = () => {
+      setIsDragging(false);
       resizeRef.current = null;
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
-      try { localStorage.setItem('kbe-sidebar-w', String(sidebarWidth)); } catch { /* */ }
     };
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp);
@@ -380,6 +382,11 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     setActiveView(viewId);
     try { localStorage.setItem('kbe-view', viewId); } catch { /* */ }
   }, []);
+
+  // Persist sidebar width when it changes (covers drag end)
+  React.useEffect(() => {
+    try { localStorage.setItem('kbe-sidebar-w', String(sidebarWidth)); } catch { /* */ }
+  }, [sidebarWidth]);
 
   const toggleClusterCollapse = useCallback((clusterId: string) => {
     setCollapsedClusters(prev => {
@@ -694,7 +701,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   const contentDirection: 'column' | 'row' = isVertical ? 'column' : 'row';
 
   const hudContainerStyle: React.CSSProperties = {
-    transition: isVertical ? 'width 0.3s ease-out' : 'height 0.3s ease-out',
+    transition: isDragging ? 'none' : (isVertical ? 'width 0.3s ease-out' : 'height 0.3s ease-out'),
     ...(dock === 'bottom' ? {
       bottom: 0, left: 0, right: 0,
       height: collapsed ? 40 : 148,
@@ -956,7 +963,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   style={{
                     position: 'absolute',
                     top: 0,
-                    [dock === 'left' ? 'right' : 'left']: -4,
+                    [dock === 'left' ? 'right' : 'left']: -6,
                     width: 12,
                     height: '100%',
                     cursor: 'col-resize',
