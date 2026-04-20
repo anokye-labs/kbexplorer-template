@@ -706,11 +706,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     } : dock === 'left' ? {
       top: 0, left: 0, bottom: 0,
       width: collapsed ? 40 : `${sidebarWidth}vw`,
-      borderRight: `2px solid ${tokens.colorNeutralStroke1}`,
     } : {
       top: 0, right: 0, bottom: 0,
       width: collapsed ? 40 : `${sidebarWidth}vw`,
-      borderLeft: `2px solid ${tokens.colorNeutralStroke1}`,
     }),
   };
 
@@ -908,7 +906,10 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
           <div
             className={styles.collapsedBar}
             onClick={isVertical ? () => handleCollapse(false) : undefined}
-            style={isVertical ? { cursor: 'pointer' } : undefined}
+            style={{
+              ...(isVertical ? { cursor: 'pointer' } : undefined),
+              ...(isVertical ? { [dock === 'left' ? 'borderRight' : 'borderLeft']: `2px solid ${tokens.colorNeutralStroke1}` } : undefined),
+            }}
             title={isVertical ? 'Click to expand' : undefined}
           >
             <Button
@@ -963,14 +964,15 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    background: tokens.colorNeutralStroke1,
                   }}
                 >
                   <div style={{
                     width: 4,
                     height: 32,
                     borderRadius: 2,
-                    background: tokens.colorNeutralStroke2,
-                    opacity: 0.6,
+                    background: tokens.colorNeutralBackground1,
+                    opacity: 0.8,
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
