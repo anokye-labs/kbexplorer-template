@@ -963,8 +963,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   style={{
                     position: 'absolute',
                     top: 0,
-                    [dock === 'left' ? 'right' : 'left']: -6,
-                    width: 12,
+                    [dock === 'left' ? 'right' : 'left']: 0,
+                    width: 8,
                     height: '100%',
                     cursor: 'col-resize',
                     zIndex: 10,
