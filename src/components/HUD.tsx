@@ -957,39 +957,10 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             {/* Minimap — always mounted, one canvas element */}
             {isVertical ? (
               <>
-                {/* Sidebar width resize handle */}
-                <div
-                  onPointerDown={handleResizeStart}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    [dock === 'left' ? 'right' : 'left']: 0,
-                    width: 8,
-                    height: '100%',
-                    cursor: 'col-resize',
-                    zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: tokens.colorNeutralStroke1,
-                  }}
-                >
-                  <div style={{
-                    width: 4,
-                    height: 32,
-                    borderRadius: 2,
-                    background: tokens.colorNeutralBackground1,
-                    opacity: 0.8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: 2,
-                  }}>
-                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
-                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
-                    <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
-                  </div>
-                </div>
+                {/* Wrapper: handle on edge, content fills remaining space */}
+                <div style={{ display: 'flex', flexDirection: dock === 'left' ? 'row' : 'row-reverse', flex: 1, minHeight: 0 }}>
+                  {/* Sidebar content column */}
+                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, minHeight: 0 }}>
 
                 {/* Live constellation graph */}
                 <div style={{ flex: `0 0 ${mapSplit}%`, minHeight: '20%', position: 'relative', overflow: 'hidden', paddingTop: 36 }}>
@@ -1233,6 +1204,38 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                     <Button appearance={dock === 'right' ? 'primary' : 'subtle'} size="small" icon={<PanelRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
                     <Button appearance="subtle" size="small" icon={<PanelBottomRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
                     <Button appearance="subtle" size="small" icon={<PanelTopExpandRegular />} onClick={() => handleDockChange('top')} title="Dock top" />
+                  </div>
+                  </div>
+                  </div>
+
+                  {/* Sidebar width resize handle */}
+                  <div
+                    onPointerDown={handleResizeStart}
+                    style={{
+                      flexShrink: 0,
+                      width: 8,
+                      cursor: 'col-resize',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: tokens.colorNeutralStroke1,
+                    }}
+                  >
+                    <div style={{
+                      width: 4,
+                      height: 32,
+                      borderRadius: 2,
+                      background: tokens.colorNeutralBackground1,
+                      opacity: 0.8,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      gap: 2,
+                    }}>
+                      <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
+                      <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
+                      <div style={{ width: 4, height: 1, background: tokens.colorNeutralForeground3, borderRadius: 1 }} />
+                    </div>
                   </div>
                 </div>
               </>
