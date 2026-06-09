@@ -22,7 +22,7 @@
     "kb:generate": "kbexplorer generate"
   },
   "dependencies": {
-    "@fluentui/react-components": "^9.73.7",
+    "@fluentui/react-components": "^9.74.1",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",
     "gray-matter": "^4.0.3",
