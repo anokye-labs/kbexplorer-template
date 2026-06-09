@@ -26,3 +26,4 @@ dist-ssr
 .playwright-cli/
 test-results/
 playwright-report/
+.env.kbexplorer
