@@ -6,7 +6,6 @@ import {
   makeStyles,
   tokens,
   Title2,
-  Body1,
   Body1Strong,
   Caption1,
   Card,
@@ -20,7 +19,6 @@ import {
   BranchForkRegular,
   DocumentRegular,
   CodeRegular,
-  SparkleRegular,
   MapRegular,
 } from '@fluentui/react-icons'
 import type { KBGraph, KBConfig, KBNode } from '../types'
@@ -64,7 +62,7 @@ const useStyles = makeStyles({
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     cursor: 'pointer', fontSize: '0.85rem',
     transition: 'all 0.2s',
-    ':hover': { borderColor: tokens.colorNeutralForeground3 },
+    ':hover': { border: `1px solid ${tokens.colorNeutralForeground3}` },
   },
 
   providerCard: {

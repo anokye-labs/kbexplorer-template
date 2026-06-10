@@ -18,7 +18,6 @@ import {
   extractIssueRefs,
   splitIntoSections,
 } from '../engine';
-import { loadNodeMap } from './nodemap';
 import { ProviderRegistry } from './providers';
 import { FilesProvider } from './providers/files-provider';
 import { AuthoredProvider } from './providers/authored-provider';
