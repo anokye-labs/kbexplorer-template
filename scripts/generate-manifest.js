@@ -384,6 +384,54 @@ export function readNodemap(root) {
   return null;
 }
 
+// ── Structural discovery (F3 / #166–#167) ─────────────────
+
+/**
+ * Read the declarative structured-file node map (`node-map.yaml`) from the
+ * project root. Distinct from `nodemap.yaml` (which maps repo files → file
+ * nodes); this one maps structured files → typed JSON-LD nodes.
+ * @param {string} root
+ * @returns {string|null}
+ */
+export function readStructuredNodeMap(root) {
+  for (const name of ['node-map.yaml', 'node-map.yml']) {
+    const p = resolve(root, name);
+    if (existsSync(p)) {
+      try {
+        return readFileSync(p, 'utf-8');
+      } catch { /* continue */ }
+    }
+  }
+  return null;
+}
+
+/** Max size (bytes) of a structural file whose content is embedded. */
+const MAX_STRUCTURAL_FILE_SIZE = 256 * 1024;
+
+/**
+ * Collect the *content* of repo-structural files for the StructuralProvider:
+ * everything under `.github/**` plus any `CODEOWNERS` file. Returns a
+ * `path → content` map. Safe no-op (empty object) when none exist.
+ * @param {string} root - Repo root directory
+ * @param {Array<{path: string, type: string, size?: number}>} tree
+ * @returns {Record<string, string>}
+ */
+export function collectStructuralFiles(root, tree) {
+  const files = {};
+  const isStructural = (p) => p.startsWith('.github/') || /(^|\/)CODEOWNERS$/.test(p);
+  for (const entry of tree) {
+    if (entry.type !== 'blob') continue;
+    if (!isStructural(entry.path)) continue;
+    if (typeof entry.size === 'number' && entry.size > MAX_STRUCTURAL_FILE_SIZE) continue;
+    const abs = resolve(root, entry.path);
+    if (!existsSync(abs)) continue;
+    try {
+      files[entry.path] = readFileSync(abs, 'utf-8');
+    } catch { /* skip unreadable */ }
+  }
+  return files;
+}
+
 /**
  * Collect all files and directories referenced by nodemap entries.
  * @param {string} root - Repo root directory
@@ -489,6 +537,8 @@ export function generateManifest(root = hostRoot) {
   const tree = walkFileSystem(root);
   const nodemapRaw = readNodemap(root);
   const { nodemapFiles, nodemapDirs } = collectNodemapData(root, nodemapRaw, tree);
+  const structuredNodeMapRaw = readStructuredNodeMap(root);
+  const structuralFiles = collectStructuralFiles(root, tree);
 
   const manifest = {
     configRaw: readConfig(root, contentPath),
@@ -503,6 +553,8 @@ export function generateManifest(root = hostRoot) {
     nodemapRaw,
     nodemapFiles,
     nodemapDirs,
+    structuredNodeMapRaw,
+    structuralFiles,
     generatedAt: new Date().toISOString(),
   };
 
@@ -517,6 +569,7 @@ export function generateManifest(root = hostRoot) {
   console.log(`[generate-manifest] Branches: ${manifest.branches.length}`);
   console.log(`[generate-manifest] Repo: ${manifest.repoMetadata?.name ?? 'not available'}`);
   console.log(`[generate-manifest] Nodemap: ${nodemapRaw ? `${Object.keys(nodemapFiles).length} files, ${Object.keys(nodemapDirs).length} dirs` : 'not found'}`);
+  console.log(`[generate-manifest] Structural: ${Object.keys(structuralFiles).length} .github files${structuredNodeMapRaw ? ' + node-map.yaml' : ''}`);
 
   return manifest;
 }

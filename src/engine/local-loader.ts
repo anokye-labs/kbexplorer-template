@@ -23,6 +23,7 @@ import { ProviderRegistry } from './providers';
 import { FilesProvider } from './providers/files-provider';
 import { AuthoredProvider } from './providers/authored-provider';
 import { WorkProvider } from './providers/work-provider';
+import { StructuralProvider } from './providers/structural-provider';
 import { collectProviderNodes } from './orchestrator';
 import type { GHIssue, GHTreeItem } from '../api';
 
@@ -67,6 +68,8 @@ interface RepoManifest {
   nodemapRaw?: string | null;
   nodemapFiles?: Record<string, string>;
   nodemapDirs?: Record<string, Array<{ path: string; type: 'blob' | 'tree'; size?: number }>>;
+  structuredNodeMapRaw?: string | null;
+  structuralFiles?: Record<string, string>;
   generatedAt: string;
 }
 
@@ -348,6 +351,13 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
   registry.register(
     new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null),
   );
+
+  // ── Structural discovery (.github → repository node) ────
+  if (manifest.structuralFiles && Object.keys(manifest.structuralFiles).length > 0) {
+    registry.register(
+      new StructuralProvider(manifest.structuralFiles, manifest.structuredNodeMapRaw ?? null),
+    );
+  }
 
   // ── Register external providers from config ────────────
   if (config.providers && config.providers.length > 0) {

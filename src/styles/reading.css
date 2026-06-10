@@ -312,6 +312,80 @@
   font-style: italic;
 }
 
+/* ── Workflow / Action viewers (F3 structural nodes) ─── */
+
+.kb-workflow-name,
+.kb-action-name {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+.kb-action-description {
+  color: var(--colorNeutralForeground2);
+  margin: 0 0 0.75rem;
+}
+
+.kb-action-runs {
+  color: var(--colorNeutralForeground2);
+  margin: 0 0 1rem;
+}
+
+.kb-workflow-triggers,
+.kb-workflow-jobs,
+.kb-action-io {
+  margin-top: 1.25rem;
+}
+
+.kb-workflow-triggers .kb-structured-key,
+.kb-workflow-jobs .kb-structured-key,
+.kb-action-io .kb-structured-key {
+  display: block;
+  width: auto;
+  background: transparent;
+  border: none;
+  padding: 0 0 0.4rem;
+  font-size: 0.95em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--colorNeutralForeground3);
+}
+
+.kb-workflow-job {
+  border-left: 3px solid var(--colorBrandStroke2, var(--colorNeutralStroke2));
+  padding: 0.4rem 0 0.4rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.kb-workflow-job-head {
+  margin-bottom: 0.3rem;
+}
+
+.kb-workflow-runson {
+  color: var(--colorNeutralForeground3);
+  font-size: 0.9em;
+}
+
+.kb-workflow-steps {
+  margin: 0;
+  padding-left: 1.4em;
+  color: var(--colorNeutralForeground2);
+}
+
+.kb-workflow-step {
+  margin-bottom: 0.2rem;
+}
+
+.kb-action-required {
+  color: var(--colorPaletteRedForeground1, #e5484d);
+  font-weight: 700;
+}
+
+.kb-action-default {
+  color: var(--colorNeutralForeground3);
+  font-size: 0.9em;
+}
+
 /* ── Responsive layout ───────────────────────────────── */
 @media (min-width: 1025px) {
   .kb-prose {

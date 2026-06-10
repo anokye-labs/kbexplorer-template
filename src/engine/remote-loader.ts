@@ -35,6 +35,7 @@ import { ProviderRegistry } from './providers'
 import { FilesProvider } from './providers/files-provider'
 import { AuthoredProvider } from './providers/authored-provider'
 import { WorkProvider } from './providers/work-provider'
+import { StructuralProvider } from './providers/structural-provider'
 import { collectProviderNodes } from './orchestrator'
 
 export type ResolutionPreset = 'summary' | 'standard' | 'full'
@@ -46,7 +47,14 @@ interface FetchedData {
   readme: string | null
   commits: GHCommit[]
   authoredContent: Record<string, string>
+  structuralFiles: Record<string, string>
+  structuredNodeMapRaw: string | null
   config: KBConfig
+}
+
+/** Whether a repo path is a `.github` structural artifact or a CODEOWNERS file. */
+function isStructuralPath(path: string): boolean {
+  return path.startsWith('.github/') || /(^|\/)CODEOWNERS$/.test(path)
 }
 
 /**
@@ -68,6 +76,8 @@ async function fetchGitHubData(
   let pullRequests: GHIssue[] = []
   let commits: GHCommit[] = []
   let authoredContent: Record<string, string> = {}
+  let structuralFiles: Record<string, string> = {}
+  let structuredNodeMapRaw: string | null = null
 
   if (preset === 'standard' || preset === 'full') {
     const [treeResult, prResult] = await Promise.all([
@@ -92,13 +102,29 @@ async function fetchGitHubData(
         // Content directory may not exist
       }
     }
+
+    // Fetch `.github` structural artifacts + the declarative node-map.
+    try {
+      const structuralPaths = tree
+        .filter(item => item.type === 'blob' && isStructuralPath(item.path))
+        .map(item => item.path)
+      if (structuralPaths.length > 0) {
+        const files = await fetchFiles(source, structuralPaths)
+        for (const [path, content] of files) {
+          structuralFiles[path] = content
+        }
+      }
+      structuredNodeMapRaw = await fetchFile(source, 'node-map.yaml').catch(() => null)
+    } catch {
+      // `.github` may not exist — safe no-op.
+    }
   }
 
   if (preset === 'full') {
     commits = await fetchCommits(source).catch(() => [] as GHCommit[])
   }
 
-  return { issues, pullRequests, tree, readme, commits, authoredContent, config }
+  return { issues, pullRequests, tree, readme, commits, authoredContent, structuralFiles, structuredNodeMapRaw, config }
 }
 
 /**
@@ -142,6 +168,11 @@ export async function loadRemoteKnowledgeBase(
   }))
 
   registry.register(new WorkProvider(data.issues, shapedPRs, data.commits))
+
+  // ── Structural discovery (.github → repository node) ────
+  if (Object.keys(data.structuralFiles).length > 0) {
+    registry.register(new StructuralProvider(data.structuralFiles, data.structuredNodeMapRaw))
+  }
 
   // ── Register external providers from config ────────────
   if (config.providers && config.providers.length > 0) {

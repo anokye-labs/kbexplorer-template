@@ -1,0 +1,56 @@
+# node-map.yaml — declarative mapping of STRUCTURED files → typed JSON-LD nodes
+#
+# Feature F3 (#166). This is the "agile discovery" seam: as new structured
+# config kinds appear during a migration, add a rule here (by configuration)
+# instead of editing engine code. Each rule matches a file by `glob` and/or
+# `shape` (top-level keys the parsed object must contain), assigns a JSON-LD
+# `@type`, and optionally promotes selected fields + emits edges.
+#
+# Distinct from `nodemap.yaml` (which maps repo files into file/content nodes).
+# Built-in `.github` kinds (workflows, actions, dependabot, CODEOWNERS, issue/PR
+# templates, FUNDING) are classified directly by the StructuralProvider; rules
+# here govern any *other* structured config. When no rule matches, a heuristic
+# shape-inference fallback still produces a sensible typed node — so coverage is
+# never zero and this file is entirely optional.
+
+rules:
+  # GitHub "labeler" action config → a typed LabelerConfig node.
+  - id: labeler
+    glob: ".github/labeler.yml"
+    type: LabelerConfig
+    entityType: labeler-config
+    cluster: infra
+    emoji: Tag
+    edges:
+      - to: repo-meta
+        relation: structural
+        type: contains
+        description: Configures PR auto-labeling
+
+  # Renovate config (alternative to Dependabot) → a typed RenovateConfig node.
+  - id: renovate
+    glob: "**/renovate.json"
+    shape: [extends]
+    type: RenovateConfig
+    entityType: renovate-config
+    cluster: infra
+    emoji: ArrowSync
+    edges:
+      - to: repo-meta
+        relation: structural
+        type: contains
+        description: Configures dependency updates
+
+  # Release-please / release config → a typed ReleaseConfig node.
+  - id: release-config
+    glob: ".github/release.yml"
+    type: ReleaseConfig
+    entityType: release-config
+    cluster: infra
+    emoji: Rocket
+    titleFrom: name
+    edges:
+      - to: repo-meta
+        relation: structural
+        type: contains
+        description: Configures release notes
