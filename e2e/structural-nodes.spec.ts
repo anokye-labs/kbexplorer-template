@@ -13,11 +13,10 @@ const ART = 'e2e/artifacts';
 test.describe('Structural nodes (.github discovery → repository)', () => {
   test('workflow node renders WorkflowView and links to the repository node', async ({ page }) => {
     await page.goto('/#/node/gh-workflow-github-pages-yml', { timeout: 60000 });
-    await page.waitForTimeout(3000);
 
     // #168 — bespoke workflow viewer
     const view = page.locator('.kb-workflow-view');
-    await expect(view).toBeVisible({ timeout: 10000 });
+    await expect(view).toBeVisible({ timeout: 15000 });
     await expect(view).toContainText('Deploy to GitHub Pages');
     await expect(view.locator('.kb-workflow-triggers')).toContainText('Triggers');
     await expect(view.locator('.kb-workflow-jobs')).toContainText('Jobs');
@@ -36,16 +35,14 @@ test.describe('Structural nodes (.github discovery → repository)', () => {
 
     // Follow the structural edge to the repository node.
     await repoLink.click();
-    await page.waitForTimeout(1500);
     await expect(page).toHaveURL(/#\/node\/repo-meta$/);
   });
 
   test('dependabot config falls back to the generic structured viewer', async ({ page }) => {
     await page.goto('/#/node/gh-dependabot-dependabot-yml', { timeout: 60000 });
-    await page.waitForTimeout(3000);
 
     const view = page.locator('.kb-structured-view');
-    await expect(view).toBeVisible({ timeout: 10000 });
+    await expect(view).toBeVisible({ timeout: 15000 });
     await expect(page.getByText(/Entity · /i).first()).toBeVisible({ timeout: 10000 });
 
     // links back to the repository node too

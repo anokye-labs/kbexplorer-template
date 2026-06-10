@@ -54,6 +54,9 @@ function isStructuralPath(path: string): boolean {
   return path.startsWith('.github/') || /(^|\/)CODEOWNERS$/.test(path)
 }
 
+/** Skip oversized `.github` blobs (mirrors the local manifest cap). */
+const MAX_STRUCTURAL_FILE_SIZE = 256 * 1024
+
 /**
  * Fetch GitHub data according to a resolution preset.
  */
@@ -103,11 +106,17 @@ async function fetchGitHubData(
     // Fetch `.github` structural artifacts + the declarative node-map.
     try {
       const structuralPaths = tree
-        .filter(item => item.type === 'blob' && isStructuralPath(item.path))
+        .filter(item =>
+          item.type === 'blob' &&
+          isStructuralPath(item.path) &&
+          !(typeof item.size === 'number' && item.size > MAX_STRUCTURAL_FILE_SIZE),
+        )
         .map(item => item.path)
       if (structuralPaths.length > 0) {
         const files = await fetchFiles(source, structuralPaths)
         for (const [path, content] of files) {
+          // Guard again on content length for blobs whose tree size was absent.
+          if (content.length > MAX_STRUCTURAL_FILE_SIZE) continue
           structuralFiles[path] = content
         }
       }

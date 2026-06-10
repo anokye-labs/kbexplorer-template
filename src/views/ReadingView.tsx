@@ -571,8 +571,10 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
             .github → repository links (#167) are visible & navigable. Other
             node kinds are unaffected (graph data is unchanged either way). */}
         {node.provider === 'structural' && (() => {
+          const byId = new Map(graph.nodes.map(n => [n.id, n]));
           const related = (node.connections ?? [])
-            .map(conn => ({ conn, target: graph.nodes.find(n => n.id === conn.to) }))
+            .filter(conn => conn.relation === 'structural')
+            .map(conn => ({ conn, target: byId.get(conn.to) }))
             .filter(r => r.target !== undefined);
           if (related.length === 0) return null;
           return (

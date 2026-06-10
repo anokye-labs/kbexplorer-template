@@ -14,7 +14,7 @@
  * byte-identical for repos without a `.github` directory.
  */
 import yaml from 'yaml';
-import { marked } from 'marked';
+import { Marked, type Tokens } from 'marked';
 import type { GraphProvider, ProviderResult } from '../providers';
 import type { KBConfig, KBNode, NodeSource, Connection } from '../../types';
 import { buildJsonLd } from '../../types';
@@ -32,6 +32,28 @@ import {
 /** Default id of the repository node these structural nodes attach to. */
 const REPO_NODE_ID = 'repo-meta';
 const STRUCTURAL_CLUSTER = 'infra';
+
+/**
+ * Markdown → HTML for `.github` docs/templates. Unlike the app-wide renderer,
+ * this **escapes raw embedded HTML** (#168 review): markup committed under
+ * `.github/` (issue/PR templates, SECURITY.md, …) is treated as untrusted, so
+ * it can't inject script/markup into the DOM when the node is rendered via
+ * `dangerouslySetInnerHTML`.
+ */
+const escapeHtml = (s: string): string =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+const safeMarkdown = new Marked({
+  renderer: {
+    html(token: Tokens.HTML | Tokens.Tag): string {
+      return escapeHtml(token.text ?? '');
+    },
+  },
+});
+
+function renderSafeMarkdown(body: string): string {
+  return safeMarkdown.parse(body, { async: false }) as string;
+}
 
 // ── Type + viewer registration ─────────────────────────────
 
@@ -218,7 +240,7 @@ function buildMarkdownTemplateNode(
     (typeof data.about === 'string' && data.about) ||
     fileName(path);
   const hasData = Object.keys(data).length > 0;
-  const html = marked.parse(body, { async: false }) as string;
+  const html = renderSafeMarkdown(body);
   return buildStructuralNode({
     id: `gh-${entityType}-${slugify(fileName(path))}`,
     title,
@@ -331,7 +353,7 @@ function buildGenericConfigNode(
   // Markdown / prose `.github` doc (e.g. SUPPORT.md, SECURITY.md) → doc node.
   if (isMarkdown(path)) {
     const { data, body } = parseFrontmatter(content);
-    const html = marked.parse(body, { async: false }) as string;
+    const html = renderSafeMarkdown(body);
     const hasData = Object.keys(data).length > 0;
     return buildStructuralNode({
       id: `gh-doc-${slugify(fileName(path))}`,

@@ -20,15 +20,19 @@ function asRecord(v: unknown): Record<string, unknown> {
 }
 
 /** Normalise an action `inputs:`/`outputs:` map to a stable list. */
-export function extractIo(io: unknown): IoEntry[] {
+function extractIo(io: unknown): IoEntry[] {
   const map = asRecord(io);
   return Object.entries(map).map(([key, raw]) => {
     const entry = asRecord(raw);
+    const def = entry.default;
     return {
       key,
       description: typeof entry.description === 'string' ? entry.description : undefined,
       required: typeof entry.required === 'boolean' ? entry.required : undefined,
-      default: typeof entry.default === 'string' ? (entry.default as string) : undefined,
+      default:
+        typeof def === 'string' || typeof def === 'number' || typeof def === 'boolean'
+          ? String(def)
+          : undefined,
     };
   });
 }

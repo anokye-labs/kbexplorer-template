@@ -213,7 +213,9 @@ export function matchRule(
 function deriveId(file: StructuredFile, options?: ApplyOptions): string {
   if (options?.id) return options.id;
   const prefix = options?.idPrefix ?? 'cfg';
-  return `${prefix}-${slugify(baseName(file.path))}`;
+  // Slug the full path (not just the basename) so same-named files in different
+  // directories (e.g. `a/config.yml` vs `b/config.yml`) don't collide.
+  return `${prefix}-${slugify(file.path)}`;
 }
 
 function structuredSource(entityType: string, ref: string): NodeSource {

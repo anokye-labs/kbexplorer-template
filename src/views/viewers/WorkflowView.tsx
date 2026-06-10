@@ -27,7 +27,7 @@ function asRecord(v: unknown): Record<string, unknown> {
 }
 
 /** Normalise a workflow `on:` value (string | array | object) to event names. */
-export function extractTriggers(on: unknown): string[] {
+function extractTriggers(on: unknown): string[] {
   if (!on) return [];
   if (typeof on === 'string') return [on];
   if (Array.isArray(on)) return on.filter((e): e is string => typeof e === 'string');
@@ -36,7 +36,7 @@ export function extractTriggers(on: unknown): string[] {
 }
 
 /** Normalise a workflow `jobs:` map to a stable, render-friendly list. */
-export function extractJobs(jobs: unknown): WorkflowJob[] {
+function extractJobs(jobs: unknown): WorkflowJob[] {
   const map = asRecord(jobs);
   return Object.entries(map).map(([id, raw]) => {
     const job = asRecord(raw);
@@ -52,10 +52,20 @@ export function extractJobs(jobs: unknown): WorkflowJob[] {
     return {
       id,
       name: typeof job.name === 'string' ? job.name : undefined,
-      runsOn: typeof job['runs-on'] === 'string' ? (job['runs-on'] as string) : undefined,
+      runsOn: normaliseRunsOn(job['runs-on']),
       steps,
     };
   });
+}
+
+/** Normalise a job `runs-on` value (string | array | object) to a label. */
+function normaliseRunsOn(value: unknown): string | undefined {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    const labels = value.filter((v): v is string => typeof v === 'string');
+    return labels.length > 0 ? labels.join(', ') : undefined;
+  }
+  return undefined;
 }
 
 export function WorkflowView({ node }: ViewerProps) {
@@ -97,7 +107,7 @@ export function WorkflowView({ node }: ViewerProps) {
             {job.steps.length > 0 && (
               <ol className="kb-workflow-steps">
                 {job.steps.map((step, i) => (
-                  <li key={i} className="kb-workflow-step">
+                  <li key={`${step.uses ?? step.name ?? step.run ?? 'step'}#${i}`} className="kb-workflow-step">
                     {step.name ?? step.uses ?? (step.run ? step.run.split('\n')[0] : `Step ${i + 1}`)}
                     {step.uses && !step.name && <code className="kb-structured-code"> {step.uses}</code>}
                   </li>
