@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { KBNode } from '../../../types';
 import { resolveViewer, resetViewerRegistry, type ViewerComponent } from '../index';
+import { resetNodeTypeRegistry } from '../../../engine/node-types';
 import { registerContentModelTypes, CONTENT_MODEL_KINDS } from '../../../engine/content-model';
 import { SquadView } from '../SquadView';
 import { WorkstreamView } from '../WorkstreamView';
@@ -33,7 +34,10 @@ function render(view: ViewerComponent, node: KBNode): string {
   return renderToStaticMarkup(createElement(view, { node }));
 }
 
-afterEach(() => resetViewerRegistry());
+afterEach(() => {
+  resetViewerRegistry();
+  resetNodeTypeRegistry();
+});
 
 describe('spine viewers — rendering (T2.5 + T2.6 / #164, #165)', () => {
   it('SquadView renders mission, DRI and members', () => {
@@ -46,6 +50,13 @@ describe('spine viewers — rendering (T2.5 + T2.6 / #164, #165)', () => {
     expect(html).toContain('aokonkwo');
     expect(html).toContain('ada');
     expect(html).toContain('Squad');
+  });
+
+  it('SquadView omits Members/Knowledge rows when those arrays are empty', () => {
+    const html = render(SquadView, makeNode('squad', { name: 'Lonely Squad' }));
+    expect(html).toContain('Lonely Squad');
+    expect(html).not.toContain('Members');
+    expect(html).not.toContain('Knowledge areas');
   });
 
   it('WorkstreamView renders summary and priority alignment', () => {
@@ -78,6 +89,14 @@ describe('spine viewers — rendering (T2.5 + T2.6 / #164, #165)', () => {
     const html = render(CycleView, makeNode('cycle', { name: 'Cycle 2', start: '2026-01-05', end: '2026-03-27' }));
     expect(html).toContain('Cycle 2');
     expect(html).toContain('2026-01-05');
+    expect(html).toContain('dateTime="2026-01-05"');
+  });
+
+  it('CycleView omits Starts/Ends rows when dates are absent', () => {
+    const html = render(CycleView, makeNode('cycle', { name: 'Undated Cycle' }));
+    expect(html).toContain('Undated Cycle');
+    expect(html).not.toContain('Starts');
+    expect(html).not.toContain('Ends');
   });
 
   it('OrgView renders the charter', () => {

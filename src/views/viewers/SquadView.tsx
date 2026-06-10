@@ -27,8 +27,8 @@ export function SquadView({ node }: ViewerProps) {
         <tbody>
           <Row label="DRI">{dri && <code className="kb-structured-code">@{dri}</code>}</Row>
           <Row label="Delivers">{workstream}</Row>
-          <Row label="Members"><ScalarList items={members} /></Row>
-          <Row label="Knowledge areas"><ScalarList items={areas} /></Row>
+          <Row label="Members">{members.length ? <ScalarList items={members} /> : null}</Row>
+          <Row label="Knowledge areas">{areas.length ? <ScalarList items={areas} /> : null}</Row>
         </tbody>
       </table>
     </div>

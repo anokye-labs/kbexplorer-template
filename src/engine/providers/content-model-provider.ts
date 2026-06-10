@@ -10,6 +10,7 @@
  * so existing graphs (this repo has no content-model source) are unchanged.
  */
 import type { GraphProvider, ProviderResult } from '../providers';
+import type { KBConfig, KBNode } from '../../types';
 import type { ContentModelSource } from '../content-model';
 import {
   CONTENT_MODEL_PROVIDER,
@@ -29,7 +30,7 @@ export class ContentModelProvider implements GraphProvider {
     this.source = source ?? null;
   }
 
-  async resolve(): Promise<ProviderResult> {
+  async resolve(_config: KBConfig, _existingNodes: KBNode[]): Promise<ProviderResult> {
     if (!hasContentModelSource(this.source)) {
       return { nodes: [], edges: [] };
     }

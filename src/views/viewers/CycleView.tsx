@@ -19,8 +19,8 @@ export function CycleView({ node }: ViewerProps) {
       <h2 className="kb-entity-name">{name}</h2>
       <table className="kb-structured-table">
         <tbody>
-          <Row label="Starts"><time>{start}</time></Row>
-          <Row label="Ends"><time>{end}</time></Row>
+          <Row label="Starts">{start ? <time dateTime={start}>{start}</time> : null}</Row>
+          <Row label="Ends">{end ? <time dateTime={end}>{end}</time> : null}</Row>
         </tbody>
       </table>
     </div>
