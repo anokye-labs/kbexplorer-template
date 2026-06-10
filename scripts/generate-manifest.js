@@ -28,17 +28,24 @@ import yaml from 'yaml';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const kbRoot = resolve(__dirname, '..');
 
-// Detect if running as submodule
+// Detect if running as submodule / vendored install inside a host repo.
 function detectHostRoot() {
-  const parentRoot = resolve(kbRoot, '..', '..');
+  // Explicit override from the CLI wins.
+  if (process.env.VITE_KB_HOST_ROOT) {
+    const explicit = resolve(process.env.VITE_KB_HOST_ROOT);
+    if (existsSync(explicit)) return explicit;
+  }
+  // When this script lives at <host>/.kbexplorer/scripts/, kbRoot is
+  // <host>/.kbexplorer, so the host repo is exactly one level up.
+  const parentRoot = resolve(kbRoot, '..');
   try {
     const pkg = JSON.parse(readFileSync(resolve(kbRoot, 'package.json'), 'utf-8'));
-    if (pkg.name === 'kbexplorer') {
-      // Check if parent looks like a host repo
-      if (existsSync(resolve(parentRoot, '.git')) && existsSync(resolve(parentRoot, 'package.json'))) {
-        const parentPkg = JSON.parse(readFileSync(resolve(parentRoot, 'package.json'), 'utf-8'));
-        if (parentPkg.name !== 'kbexplorer') return parentRoot;
-      }
+    const isTemplatePkg = pkg.name === 'kbexplorer'
+      || pkg.name === 'kbexplorer-template'
+      || pkg.name === '@anokye-labs/kbexplorer-template';
+    if (!isTemplatePkg) return kbRoot; // self-hosted: use kbRoot itself
+    if (existsSync(resolve(parentRoot, '.git')) && existsSync(resolve(parentRoot, 'package.json'))) {
+      return parentRoot;
     }
   } catch { /* ignore */ }
   return kbRoot;
