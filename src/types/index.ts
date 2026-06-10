@@ -1,6 +1,29 @@
 /** Core data types for the kbexplorer knowledge graph. */
 
-export type DisplayMode = 'prose' | 'code' | 'file-list' | 'tree' | 'table' | 'diagram' | 'homepage' | 'gallery' | 'icon-detail' | 'repository';
+import { resolveNodeLayer } from '../engine/node-types/registry';
+
+/**
+ * How a node's content should be rendered.
+ *
+ * This is an **open** union: the listed values keep editor autocomplete, while
+ * `(string & {})` allows new display modes (and registry-driven `'entity'`
+ * viewers) to be introduced without editing this core type. `'entity'` is the
+ * escape hatch that routes a node to a viewer resolved from the viewer registry
+ * by its `entityType` / JSON-LD `@type`.
+ */
+export type KnownDisplayMode =
+  | 'prose'
+  | 'code'
+  | 'file-list'
+  | 'tree'
+  | 'table'
+  | 'diagram'
+  | 'homepage'
+  | 'gallery'
+  | 'icon-detail'
+  | 'repository'
+  | 'entity';
+export type DisplayMode = KnownDisplayMode | (string & {});
 
 /** A single entry in nodemap.yaml */
 export interface NodeMapEntry {
@@ -31,6 +54,22 @@ export interface NodeMap {
   nodes: NodeMapEntry[];
 }
 
+/**
+ * A JSON-LD envelope carried by a typed / structured node.
+ *
+ * `@id` should reuse the node's canonical `identity` URN so representations of
+ * the same real-world entity line up across providers. `@type` is the open
+ * node-type discriminator (a registry key such as `'person'` or `'team'`) and
+ * is NEVER derived from a file path. Additional LD properties may be carried as
+ * arbitrary keys.
+ */
+export interface JsonLd {
+  '@context'?: string | Record<string, unknown> | Array<string | Record<string, unknown>>;
+  '@id': string;
+  '@type': string | string[];
+  [key: string]: unknown;
+}
+
 /** A node in the knowledge graph. */
 export interface KBNode {
   id: string;
@@ -54,9 +93,38 @@ export interface KBNode {
   source: NodeSource;
   /** Which provider created this node */
   provider?: string;
+  /**
+   * Open node-type identifier — the registry key that selects this node's
+   * graph layer, default cluster and viewer (e.g. `'person'`, `'team'`).
+   * Additive: when absent the node behaves exactly as before.
+   */
+  entityType?: string;
+  /** JSON-LD envelope: `@context` / `@id` / `@type` plus arbitrary LD properties. */
+  jsonld?: JsonLd;
+  /** Arbitrary structured-data bag rendered by typed (or the generic) viewers. */
+  data?: Record<string, unknown>;
 }
 
-export type EdgeType =
+/**
+ * Build a JSON-LD envelope for a node, reusing its `identity` URN as `@id`.
+ * Additive helper — does not mutate the node.
+ */
+export function buildJsonLd(
+  node: Pick<KBNode, 'id' | 'identity'>,
+  type: string | string[],
+  data: Record<string, unknown> = {},
+  context: JsonLd['@context'] = 'https://schema.org',
+): JsonLd {
+  return {
+    '@context': context,
+    '@id': node.identity ?? `kg://node/${node.id}`,
+    '@type': type,
+    ...data,
+  };
+}
+
+/** Built-in edge types produced by the engine's structural/content analysis. */
+export type KnownEdgeType =
   | 'contains'
   | 'derived_from'
   | 'imports'
@@ -68,10 +136,35 @@ export type EdgeType =
   | 'closes'
   | 'related';
 
+/**
+ * Edge type discriminator.
+ *
+ * Open union: known types keep autocomplete while `(string & {})` lets new
+ * structural edge kinds exist without editing this core type. Visual styling
+ * and weights for arbitrary edges/relations are resolved via {@link getEdgeStyle}
+ * and {@link getEdgeWeight} rather than direct record lookups.
+ */
+export type EdgeType = KnownEdgeType | (string & {});
+
 export type EdgeSource = 'inline' | 'frontmatter' | 'inferred';
 
+/**
+ * The open relationship taxonomy carried by {@link KBEdge.relation}.
+ *
+ * These six relations come from the content model and are rendered in the
+ * legend data-drivenly. `relation` is an open string — unknown relations still
+ * render with a sensible default style.
+ */
+export type KnownRelation =
+  | 'leads'
+  | 'staffs'
+  | 'reports-to'
+  | 'structural'
+  | 'derived'
+  | 'deprecated';
+
 /** Default weights per edge type — higher = tighter layout clustering */
-export const EDGE_TYPE_WEIGHTS: Record<EdgeType, number> = {
+export const EDGE_TYPE_WEIGHTS: Record<KnownEdgeType, number> = {
   contains: 5.0,
   derived_from: 3.0,
   imports: 2.0,
@@ -92,7 +185,7 @@ export interface EdgeTypeStyle {
   label: string;
 }
 
-export const EDGE_TYPE_STYLES: Record<EdgeType, EdgeTypeStyle> = {
+export const EDGE_TYPE_STYLES: Record<KnownEdgeType, EdgeTypeStyle> = {
   contains:         { color: '#a0adb8', dashes: false,      width: 2,   label: 'Contains' },
   derived_from:     { color: '#e8a854', dashes: false,      width: 2,   label: 'Derived from' },
   imports:          { color: '#a78bfa', dashes: false,      width: 1.5, label: 'Imports' },
@@ -105,6 +198,53 @@ export const EDGE_TYPE_STYLES: Record<EdgeType, EdgeTypeStyle> = {
   related:          { color: '#8b949e', dashes: [3, 3],     width: 1.2, label: 'Related' },
 };
 
+/** Visual styles for the relation taxonomy (rendered data-drivenly in the legend). */
+export const RELATION_STYLES: Record<KnownRelation, EdgeTypeStyle> = {
+  leads:        { color: '#f0883e', dashes: false,     width: 2.5, label: 'Leads' },
+  staffs:       { color: '#3fb950', dashes: false,     width: 1.5, label: 'Staffs' },
+  'reports-to': { color: '#a371f7', dashes: false,     width: 1.8, label: 'Reports to' },
+  structural:   { color: '#a0adb8', dashes: false,     width: 2,   label: 'Structural' },
+  derived:      { color: '#e8a854', dashes: [6, 4],    width: 1.5, label: 'Derived' },
+  deprecated:   { color: '#8b949e', dashes: [2, 3],    width: 1.2, label: 'Deprecated' },
+};
+
+const DEFAULT_RELATION_STYLE: EdgeTypeStyle = { color: '#79c0ff', dashes: [2, 2], width: 1.5, label: 'Related' };
+
+/** Title-case an arbitrary relation/edge key for display in the legend. */
+function humanizeKey(key: string): string {
+  return key
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/**
+ * Resolve the visual style for an edge, data-drivenly.
+ *
+ * Precedence: explicit `relation` (taxonomy → known style; otherwise a default
+ * style with a humanized label) → known `type` style → `related` fallback.
+ * This is the single source of truth used by both the graph renderer and the
+ * legend so new relations show up without code edits.
+ */
+export function getEdgeStyle(edge: { type?: EdgeType; relation?: string }): EdgeTypeStyle {
+  if (edge.relation) {
+    const known = RELATION_STYLES[edge.relation as KnownRelation];
+    if (known) return known;
+    return { ...DEFAULT_RELATION_STYLE, label: humanizeKey(edge.relation) };
+  }
+  const t = (edge.type ?? 'related') as KnownEdgeType;
+  return EDGE_TYPE_STYLES[t] ?? EDGE_TYPE_STYLES.related;
+}
+
+/** The legend key for an edge — its relation when present, else its type. */
+export function getEdgeLegendKey(edge: { type?: EdgeType; relation?: string }): string {
+  return edge.relation ?? (edge.type as string) ?? 'related';
+}
+
+/** Resolve the layout weight for an edge type (open-safe). */
+export function getEdgeWeight(type: EdgeType | undefined): number {
+  return EDGE_TYPE_WEIGHTS[(type ?? 'related') as KnownEdgeType] ?? 1;
+}
+
 export type NodeLayer = 'file' | 'content' | 'work';
 
 export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string }> = {
@@ -113,13 +253,16 @@ export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string }
   work:    { label: 'Work',    color: '#d29922' },
 };
 
-/** Classify a node into a graph layer based on its source. */
+/**
+ * Classify a node into a graph layer.
+ *
+ * Registry-driven: resolution delegates to the node-type registry
+ * ({@link resolveNodeLayer}), which honors `entityType` first, then the
+ * `source.type`, falling back to `'file'`. Built-in source types are registered
+ * with their historical layer mapping so existing graphs classify identically.
+ */
 export function getNodeLayer(node: KBNode): NodeLayer {
-  const t = node.source.type;
-  if (t === 'authored' || t === 'readme' || t === 'derived') return 'content';
-  if (t === 'section') return 'content';
-  if (t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository') return 'work';
-  return 'file';
+  return resolveNodeLayer(node);
 }
 
 /** Check if a file node is a redundant content/ tree entry (has an authored counterpart). */
@@ -530,6 +673,8 @@ export interface Connection {
   description: string;
   source?: EdgeSource;
   weight?: number;
+  /** Optional relationship label from the relation taxonomy (carried onto the edge). */
+  relation?: string;
 }
 
 export interface Cluster {
@@ -553,6 +698,13 @@ export interface KBEdge {
   description: string;
   source: EdgeSource;
   weight: number;
+  /**
+   * Open relationship label from the relation taxonomy
+   * (leads | staffs | reports-to | structural | derived | deprecated, or any
+   * custom string). Drives legend + edge styling via {@link getEdgeStyle} when
+   * present; orthogonal to the structural `type`.
+   */
+  relation?: string;
 }
 
 /** Visual identity mode. */
@@ -582,7 +734,15 @@ export type NodeSource =
   | { type: 'external'; provider: string }
   | { type: 'branch'; name: string; protected: boolean }
   | { type: 'workflow'; path: string }
-  | { type: 'repository'; owner: string; repo: string };
+  | { type: 'repository'; owner: string; repo: string }
+  /**
+   * Generic, registry-driven source for typed/structured nodes. This is the
+   * open escape hatch: new node types reuse `structured` and identify
+   * themselves via `entityType` (a node-type registry key) instead of each
+   * requiring a bespoke `NodeSource` variant. `ref` optionally records the
+   * upstream record id the node was mapped from.
+   */
+  | { type: 'structured'; entityType: string; ref?: string };
 
 /** Configuration for an external provider plugin */
 export interface ExternalProviderConfig {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { KBGraph, KBConfig, SourceConfig } from '../types';
 import { detectLocalMode, loadLocalKnowledgeBase } from '../engine/local-loader';
 import { loadRemoteKnowledgeBase } from '../engine/remote-loader';
+import { isDemoEntitiesEnabled, injectDemoEntities } from '../engine/demo-entities';
 
 export type LoadingState =
   | { status: 'loading' }
@@ -33,7 +34,8 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
                 error: 'No content found in local manifest. Run `npm run prebuild` to regenerate.',
               });
             } else {
-              setState({ status: 'ready', graph, config });
+              const finalGraph = isDemoEntitiesEnabled() ? injectDemoEntities(graph) : graph;
+              setState({ status: 'ready', graph: finalGraph, config });
             }
           }
           return;
@@ -48,7 +50,8 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
               error: 'No content loaded. The GitHub API may be rate-limited — try again in a minute, or check your network.',
             });
           } else {
-            setState({ status: 'ready', graph, config });
+            const finalGraph = isDemoEntitiesEnabled() ? injectDemoEntities(graph) : graph;
+            setState({ status: 'ready', graph: finalGraph, config });
           }
         }
       } catch (err) {

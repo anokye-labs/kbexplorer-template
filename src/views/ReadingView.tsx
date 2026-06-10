@@ -17,6 +17,7 @@ import { NodeVisual } from '../components/NodeVisual';
 import { HomePageWidgets } from '../components/HomePageWidgets';
 import { ConstellationHero } from '../components/ConstellationHero';
 import { IconGallery } from '../components/IconGallery';
+import { resolveViewer } from './viewers';
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -305,9 +306,27 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
           <IconGallery />
         </div>
       );
+    case 'entity': {
+      const Viewer = resolveViewer(node);
+      return (
+        <div>
+          <Viewer node={node} />
+          {node.content?.trim() && (
+            <div className="kb-prose" style={{ marginTop: '1.5rem' }} dangerouslySetInnerHTML={{ __html: linkedHtml }} />
+          )}
+        </div>
+      );
+    }
     default:
       return <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />;
   }
+}
+
+function humanizeEntityType(t: string): string {
+  return t
+    .replace(/[-_]+/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 /** Describes where a node comes from — shown as a badge next to the cluster */
@@ -366,6 +385,10 @@ function SourceBadge({ node, config }: { node: KBNode; config: KBConfig }) {
     case 'section':
       label = 'Section'
       color = '#8b949e'
+      break
+    case 'structured':
+      label = `Entity · ${humanizeEntityType(s.entityType)}`
+      color = '#c0a3ff'
       break
     default:
       return null
