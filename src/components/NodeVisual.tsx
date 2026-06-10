@@ -2635,6 +2635,7 @@ import {
   ZoomOutRegular,
 } from '@fluentui/react-icons';
 
+// eslint-disable-next-line react-refresh/only-export-components -- icon-name map intentionally co-located with the node viewer it serves; extracting this 2,600-entry table would be a large, conflict-prone move with no runtime benefit (rule is HMR-only).
 export const FLUENT_ICONS: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
   AccessTime: AccessTimeRegular,
   AccessibilityCheckmark: AccessibilityCheckmarkRegular,
@@ -5267,8 +5268,9 @@ export const FLUENT_ICONS: Record<string, React.ComponentType<{ style?: React.CS
   ZoomOut: ZoomOutRegular,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- helper co-located with the node viewer; HMR-only rule, no runtime impact.
 export function isFluentIconName(value: string): boolean {
-  return FLUENT_ICONS.hasOwnProperty(value);
+  return Object.hasOwn(FLUENT_ICONS, value);
 }
 
 interface NodeVisualProps {
@@ -5416,6 +5418,7 @@ export function NodeVisual({ node, mode, surface, source, className, clusterColo
  * Get vis-network node configuration for a node based on visual mode.
  * Used by the graph view to configure node appearance.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- vis-network config builder co-located with the node viewer; HMR-only rule, no runtime impact.
 export function getVisNodeConfig(
   node: KBNode,
   mode: VisualMode,

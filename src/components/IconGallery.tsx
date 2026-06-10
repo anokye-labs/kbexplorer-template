@@ -8,7 +8,6 @@ import {
   tokens,
   SearchBox,
   Caption1,
-  Body1Strong,
   Badge,
   Card,
   Title2,
@@ -69,8 +68,8 @@ const useStyles = makeStyles({
     },
   },
   tileSvg: {
-    width: 32,
-    height: 32,
+    width: '32px',
+    height: '32px',
     marginBottom: '0.5rem',
     opacity: 0.85,
   },
@@ -112,8 +111,8 @@ const useStyles = makeStyles({
     marginBottom: '1.5rem',
   },
   detailSvgLarge: {
-    width: 80,
-    height: 80,
+    width: '80px',
+    height: '80px',
     flexShrink: 0,
   },
   detailMeta: {

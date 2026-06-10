@@ -25,11 +25,8 @@ import {
   loadConfig,
   extractClusters,
   buildGraph,
-  issueToNode,
   extractIssueRefs,
   splitIntoSections,
-  treeToNodes,
-  parseMarkdownFile,
 } from '../engine'
 import { ProviderRegistry } from './providers'
 import { FilesProvider } from './providers/files-provider'
@@ -75,8 +72,8 @@ async function fetchGitHubData(
   let tree: GHTreeItem[] = []
   let pullRequests: GHIssue[] = []
   let commits: GHCommit[] = []
-  let authoredContent: Record<string, string> = {}
-  let structuralFiles: Record<string, string> = {}
+  const authoredContent: Record<string, string> = {}
+  const structuralFiles: Record<string, string> = {}
   let structuredNodeMapRaw: string | null = null
 
   if (preset === 'standard' || preset === 'full') {
@@ -149,8 +146,8 @@ export async function loadRemoteKnowledgeBase(
     registry.register(new AuthoredProvider(
       data.authoredContent,
       null,  // no nodemap in remote mode (yet)
-      null,
-      null,
+      undefined,
+      undefined,
       async () => [],
     ))
   }

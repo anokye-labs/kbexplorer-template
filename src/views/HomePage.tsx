@@ -4,13 +4,11 @@
  * An editorial, observatory-style introduction that showcases the
  * knowledge graph before diving into individual nodes.
  */
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   makeStyles,
   tokens,
-  Title1,
   Title2,
-  Subtitle1,
   Body1,
   Caption1,
   Card,
@@ -22,14 +20,13 @@ import {
 import {
   MapRegular,
   GridRegular,
-  ArrowRightRegular,
   GlobeRegular,
   BranchForkRegular,
   DocumentRegular,
   CodeRegular,
   SparkleRegular,
 } from '@fluentui/react-icons'
-import type { KBGraph, KBConfig, KBNode, Cluster } from '../types'
+import type { KBGraph, KBConfig, KBNode } from '../types'
 import { NodeVisual } from '../components/NodeVisual'
 import { createGraphNetwork } from '../engine/createGraphNetwork'
 
@@ -182,12 +179,12 @@ const useStyles = makeStyles({
     cursor: 'pointer',
     transition: 'all 0.2s',
     ':hover': {
-      borderColor: tokens.colorNeutralForeground3,
+      border: `1px solid ${tokens.colorNeutralForeground3}`,
     },
   },
   clusterDot: {
-    width: 10,
-    height: 10,
+    width: '10px',
+    height: '10px',
     borderRadius: '50%',
     flexShrink: 0,
   },
