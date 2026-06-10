@@ -6,8 +6,8 @@ import { Network } from 'vis-network/standalone';
 import { DataSet } from 'vis-data';
 import { createNodeRenderer } from './nodeRenderer';
 import { getNodeDegrees } from './graph';
-import type { KBGraph, EdgeType } from '../types';
-import { EDGE_TYPE_STYLES } from '../types';
+import type { KBGraph } from '../types';
+import { getEdgeStyle } from '../types';
 
 const EDGE_COLOR = '#505050';
 const EDGE_HOVER_COLOR = '#5c5c5c';
@@ -152,11 +152,12 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const EDGE_FADED_COLOR = 'rgba(80,80,80,0.08)';
 
   /** Resolve the visual style for an edge type */
-  const edgeStyle = (type: EdgeType | undefined) => EDGE_TYPE_STYLES[type ?? 'related'] ?? EDGE_TYPE_STYLES.related;
+  /** Resolve the visual style for an edge (relation-aware, data-driven). */
+  const edgeStyle = (e: { type?: string; relation?: string }) => getEdgeStyle(e);
 
   const baseSpringLength = 250;
   const edgeData = graph.edges.map((e, i) => {
-    const style = edgeStyle(e.type);
+    const style = edgeStyle(e);
     const faded = effectiveEmphasis && !emphasizedIds.has(e.from) && !emphasizedIds.has(e.to);
     const nearFaded = effectiveEmphasis && !(emphasizedIds.has(e.from) && emphasizedIds.has(e.to));
     return {
@@ -179,7 +180,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const edges = new DataSet(edgeData);
 
   // Build an edge lookup for fast emphasis updates
-  const edgesByIndex = graph.edges.map((e, i) => ({ id: `e${i}`, from: e.from, to: e.to, type: e.type }));
+  const edgesByIndex = graph.edges.map((e, i) => ({ id: `e${i}`, from: e.from, to: e.to, type: e.type, relation: e.relation }));
 
   /** Dynamically update neighborhood emphasis without rebuilding the network. */
   const setEmphasis = (nodeId: string | null) => {
@@ -243,7 +244,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     // Tier 3: distant → nearly invisible
     const edgeUpdates: Record<string, unknown>[] = [];
     for (const ei of edgesByIndex) {
-      const style = edgeStyle(ei.type);
+      const style = edgeStyle(ei);
       if (!active) {
         // No focus — all edges at full style
         edgeUpdates.push({

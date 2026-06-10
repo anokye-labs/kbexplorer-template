@@ -32,8 +32,8 @@ import {
   PanelRightRegular,
   PanelTopExpandRegular,
 } from '@fluentui/react-icons';
-import type { KBGraph, KBConfig, KBNode, Theme, EdgeType } from '../types';
-import { EDGE_TYPE_STYLES, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
+import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
+import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
 import type { TrimResult } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
@@ -672,14 +672,27 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     return viewGraph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
   }, [graph, activeView]);
 
-  // Active edge types present in the graph
-  const activeEdgeTypes = React.useMemo(() => {
-    const types = new Set<EdgeType>();
-    for (const e of filteredGraph.edges) if (e.type) types.add(e.type);
-    return Array.from(types).sort((a, b) => {
-      const order: EdgeType[] = ['contains', 'derived_from', 'imports', 'references', 'cross_references', 'frontmatter', 'closes', 'modifies', 'mentions', 'related'];
-      return order.indexOf(a) - order.indexOf(b);
-    });
+  // Active edge/relation styles present in the graph — data-driven from the
+  // edges themselves so relation types (leads/staffs/reports-to/…) and any
+  // custom relations appear in the legend without code edits.
+  const activeEdgeStyles = React.useMemo(() => {
+    const seen = new Map<string, { key: string; label: string; style: ReturnType<typeof getEdgeStyle> }>();
+    for (const e of filteredGraph.edges) {
+      const key = getEdgeLegendKey(e);
+      if (seen.has(key)) continue;
+      const style = getEdgeStyle(e);
+      seen.set(key, { key, label: style.label, style });
+    }
+    // Relations first (in taxonomy order), then structural edge types.
+    const relationOrder = ['leads', 'staffs', 'reports-to', 'structural', 'derived', 'deprecated'];
+    const typeOrder = ['contains', 'derived_from', 'imports', 'references', 'cross_references', 'frontmatter', 'closes', 'modifies', 'mentions', 'related'];
+    const rank = (key: string) => {
+      const r = relationOrder.indexOf(key);
+      if (r >= 0) return r;
+      const t = typeOrder.indexOf(key);
+      return 100 + (t >= 0 ? t : typeOrder.length);
+    };
+    return Array.from(seen.values()).sort((a, b) => rank(a.key) - rank(b.key));
   }, [filteredGraph]);
 
   const navigateTo = useCallback((hash: string) => {
@@ -843,19 +856,18 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                   </div>
                 );
               })}
-              {activeEdgeTypes.length > 0 && (
+              {activeEdgeStyles.length > 0 && (
                 <>
                   <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 12px' }} />
-                  {activeEdgeTypes.map(t => {
-                    const s = EDGE_TYPE_STYLES[t];
+                  {activeEdgeStyles.map(({ key, label, style: s }) => {
                     return (
-                      <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 12px' }}>
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 12px' }}>
                         <svg width={18} height={8} style={{ flexShrink: 0 }}>
                           <line x1={0} y1={4} x2={18} y2={4}
                             stroke={s.color} strokeWidth={Math.max(s.width, 1.2)}
                             strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
                         </svg>
-                        <Caption1>{s.label}</Caption1>
+                        <Caption1>{label}</Caption1>
                       </div>
                     );
                   })}
@@ -1027,19 +1039,18 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
                         </div>
                       );
                     })}
-                    {activeEdgeTypes.length > 0 && (
+                    {activeEdgeStyles.length > 0 && (
                       <>
                         <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
-                        {activeEdgeTypes.map(t => {
-                          const s = EDGE_TYPE_STYLES[t];
+                        {activeEdgeStyles.map(({ key, label, style: s }) => {
                           return (
-                            <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                               <svg width={14} height={7} style={{ flexShrink: 0 }}>
                                 <line x1={0} y1={3.5} x2={14} y2={3.5}
                                   stroke={s.color} strokeWidth={Math.max(s.width, 1)}
                                   strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
                               </svg>
-                              <span style={{ color: tokens.colorNeutralForeground3 }}>{s.label}</span>
+                              <span style={{ color: tokens.colorNeutralForeground3 }}>{label}</span>
                             </div>
                           );
                         })}

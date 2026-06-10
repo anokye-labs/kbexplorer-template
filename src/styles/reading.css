@@ -204,6 +204,114 @@
   font-size: var(--prose-font-size, 14px);
 }
 
+/* ── Structured / entity viewer (generic fallback) ───── */
+
+.kb-structured-view {
+  max-width: var(--prose-max-width, 75%);
+  width: 100%;
+  margin: 0 auto;
+  font-size: var(--prose-font-size, 14px);
+  line-height: 1.5;
+  color: var(--colorNeutralForeground1);
+}
+
+.kb-structured-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--colorNeutralStroke2);
+}
+
+.kb-structured-type {
+  font-weight: 600;
+  font-size: 0.85em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2em 0.6em;
+  border-radius: 4px;
+  background: var(--colorBrandBackground2, var(--colorNeutralBackground3));
+  color: var(--colorBrandForeground1, var(--colorNeutralForeground1));
+}
+
+.kb-structured-id {
+  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.82em;
+  color: var(--colorNeutralForeground3);
+}
+
+.kb-structured-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.kb-structured-table .kb-structured-table {
+  margin: 0;
+}
+
+.kb-structured-key,
+.kb-structured-value {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--colorNeutralStroke2);
+  text-align: left;
+  vertical-align: top;
+}
+
+.kb-structured-key {
+  width: 30%;
+  font-weight: 600;
+  background: var(--colorNeutralBackground3);
+  color: var(--colorNeutralForeground2);
+}
+
+.kb-structured-list {
+  margin: 0;
+  padding-left: 1.25em;
+}
+
+.kb-structured-list li {
+  margin-bottom: 0.2rem;
+}
+
+.kb-structured-array {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kb-structured-array-item {
+  border-left: 3px solid var(--colorNeutralStroke2);
+  padding-left: 0.6rem;
+}
+
+.kb-structured-link {
+  color: var(--colorBrandForegroundLink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+
+.kb-structured-link:hover {
+  color: var(--colorBrandForegroundLinkHover);
+}
+
+.kb-structured-code {
+  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  background: var(--colorNeutralBackground3);
+  border: 1px solid var(--colorNeutralStroke2);
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.kb-structured-empty {
+  color: var(--colorNeutralForeground4);
+  font-style: italic;
+}
+
 /* ── Responsive layout ───────────────────────────────── */
 @media (min-width: 1025px) {
   .kb-prose {
