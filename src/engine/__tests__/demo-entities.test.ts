@@ -81,4 +81,21 @@ describe('demo-entities seam', () => {
     const result = injectDemoEntities(baseGraph());
     expect(result.clusters.filter(c => c.id === 'org')).toHaveLength(1);
   });
+
+  it('is collision-safe: returns the graph unchanged if a demo id already exists', () => {
+    const graph = baseGraph();
+    graph.nodes.push(makeNode('demo-person-ada', { entityType: 'person' }));
+    const before = graph.nodes.length;
+    const result = injectDemoEntities(graph);
+    // no duplicate ids appended; graph returned unchanged
+    expect(result.nodes).toHaveLength(before);
+    expect(result.nodes.filter(n => n.id === 'demo-person-ada')).toHaveLength(1);
+  });
+
+  it('double-injection is idempotent (no duplicate demo nodes)', () => {
+    const once = injectDemoEntities(baseGraph());
+    const twice = injectDemoEntities(once);
+    expect(twice.nodes.filter(n => n.id === 'demo-person-ben')).toHaveLength(1);
+    expect(twice.nodes).toHaveLength(once.nodes.length);
+  });
 });

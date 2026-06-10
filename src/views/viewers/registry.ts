@@ -19,8 +19,9 @@ function normalizeKey(key: string): string {
 
 /** Register a viewer for an `entityType` / JSON-LD `@type`. */
 export function registerViewer(entityType: string, viewer: ViewerComponent): void {
-  if (!entityType) return;
-  registry.set(normalizeKey(entityType), viewer);
+  const key = normalizeKey(entityType ?? '');
+  if (!key) return; // reject empty / whitespace-only keys
+  registry.set(key, viewer);
 }
 
 /** True if a bespoke viewer is registered for the given type. */
@@ -42,7 +43,8 @@ export function resetViewerRegistry(): void {
 /**
  * Resolve a viewer for a node. Resolution precedence:
  * 1. `node.entityType`
- * 2. JSON-LD `@type` (first entry when it is an array)
+ * 2. JSON-LD `@type` — when it is an array each entry is tried in order and the
+ *    first entry with a registered viewer wins.
  * 3. {@link GenericStructuredView} fallback.
  */
 export function resolveViewer(node: Pick<KBNode, 'entityType' | 'jsonld'>): ViewerComponent {

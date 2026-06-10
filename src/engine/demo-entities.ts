@@ -97,6 +97,13 @@ function relationEdge(from: string, to: string, relation: string, description: s
 export function injectDemoEntities(graph: KBGraph): KBGraph {
   registerDemoEntityTypes();
 
+  const DEMO_IDS = ['demo-team-atlas', 'demo-person-ada', 'demo-person-ben'];
+  // Guard against collisions / double-injection: if any fixed demo id already
+  // exists in the graph, skip injection and return it unchanged.
+  if (graph.nodes.some(n => DEMO_IDS.includes(n.id))) {
+    return graph;
+  }
+
   const team = entityNode(
     'demo-team-atlas',
     'Team Atlas',

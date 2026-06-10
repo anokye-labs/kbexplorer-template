@@ -57,6 +57,23 @@ describe('KBNode JSON-LD fields (T1.1)', () => {
     expect(ld['@type']).toEqual(['Person', 'Employee']);
   });
 
+  it('buildJsonLd: data cannot override the reserved LD keys (@id/@type/@context)', () => {
+    const ld = buildJsonLd(
+      { id: 'p1', identity: 'kg://person/p1' },
+      'Person',
+      {
+        '@id': 'kg://evil/override',
+        '@type': 'Robot',
+        '@context': 'https://evil.example',
+        name: 'Ada',
+      },
+    );
+    expect(ld['@id']).toBe('kg://person/p1');
+    expect(ld['@type']).toBe('Person');
+    expect(ld['@context']).toBe('https://schema.org');
+    expect(ld.name).toBe('Ada'); // non-reserved data still merges
+  });
+
   it('a node without the new fields behaves exactly as before', () => {
     const node = makeNode({ id: 'f1', source: { type: 'file', path: 'a.ts' } });
     expect(node.entityType).toBeUndefined();
@@ -107,8 +124,17 @@ describe('edge relation styling (T1.3)', () => {
     expect(getEdgeStyle({ type: 'imports' })).toEqual(EDGE_TYPE_STYLES.imports);
   });
 
-  it('falls back to "related" for unknown type and no relation', () => {
-    expect(getEdgeStyle({ type: 'mystery' })).toEqual(EDGE_TYPE_STYLES.related);
+  it('keeps the "related" visual style but a distinct humanized label for an unknown open type', () => {
+    const style = getEdgeStyle({ type: 'mystery' });
+    expect(style.color).toBe(EDGE_TYPE_STYLES.related.color);
+    expect(style.dashes).toEqual(EDGE_TYPE_STYLES.related.dashes);
+    expect(style.width).toBe(EDGE_TYPE_STYLES.related.width);
+    // label preserves the actual type so the legend can distinguish new edges
+    expect(style.label).toBe('Mystery');
+  });
+
+  it('an empty edge ({}) resolves to the plain "related" style', () => {
+    expect(getEdgeStyle({})).toEqual(EDGE_TYPE_STYLES.related);
   });
 
   it('legend key prefers relation, else type', () => {

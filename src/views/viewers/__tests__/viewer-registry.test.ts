@@ -51,6 +51,28 @@ describe('viewer registry (T1.4)', () => {
     expect(resolveViewer(node)).toBe(PersonView);
   });
 
+  it('tries each @type array entry in order; the first registered viewer wins', () => {
+    registerViewer('person', PersonView);
+    const node = makeNode({
+      id: 'p',
+      source: { type: 'structured', entityType: 'x' },
+      jsonld: { '@id': 'kg://p', '@type': ['unregistered-a', 'person', 'unregistered-b'] },
+    });
+    expect(resolveViewer(node)).toBe(PersonView);
+  });
+
+  it('rejects empty / whitespace-only keys', () => {
+    registerViewer('   ', PersonView);
+    registerViewer('', PersonView);
+    expect(getRegisteredViewers()).toHaveLength(0);
+    const node = makeNode({
+      id: 'w',
+      source: { type: 'structured', entityType: '   ' },
+      entityType: '   ',
+    });
+    expect(resolveViewer(node)).toBe(GenericStructuredView);
+  });
+
   it('matches keys case-insensitively', () => {
     registerViewer('Person', PersonView);
     const node = makeNode({ id: 'p', source: { type: 'structured', entityType: 'PERSON' }, entityType: 'PERSON' });

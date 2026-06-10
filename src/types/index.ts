@@ -108,6 +108,11 @@ export interface KBNode {
 /**
  * Build a JSON-LD envelope for a node, reusing its `identity` URN as `@id`.
  * Additive helper — does not mutate the node.
+ *
+ * The reserved LD keys (`@context` / `@id` / `@type`) are written LAST so that
+ * arbitrary `data` properties can never override them — this preserves the
+ * contract guarantee that `@id` reuses the identity URN and `@type` is never
+ * path-derived.
  */
 export function buildJsonLd(
   node: Pick<KBNode, 'id' | 'identity'>,
@@ -116,10 +121,10 @@ export function buildJsonLd(
   context: JsonLd['@context'] = 'https://schema.org',
 ): JsonLd {
   return {
+    ...data,
     '@context': context,
     '@id': node.identity ?? `kg://node/${node.id}`,
     '@type': type,
-    ...data,
   };
 }
 
@@ -221,9 +226,11 @@ function humanizeKey(key: string): string {
  * Resolve the visual style for an edge, data-drivenly.
  *
  * Precedence: explicit `relation` (taxonomy → known style; otherwise a default
- * style with a humanized label) → known `type` style → `related` fallback.
- * This is the single source of truth used by both the graph renderer and the
- * legend so new relations show up without code edits.
+ * style with a humanized label) → known `type` style → for an unknown (open)
+ * `type`, the neutral `related` visual style but with the actual type string
+ * humanized as the label so new edge kinds still render distinctly in the
+ * legend. This is the single source of truth used by both the graph renderer
+ * and the legend so new relations show up without code edits.
  */
 export function getEdgeStyle(edge: { type?: EdgeType; relation?: string }): EdgeTypeStyle {
   if (edge.relation) {
@@ -232,7 +239,12 @@ export function getEdgeStyle(edge: { type?: EdgeType; relation?: string }): Edge
     return { ...DEFAULT_RELATION_STYLE, label: humanizeKey(edge.relation) };
   }
   const t = (edge.type ?? 'related') as KnownEdgeType;
-  return EDGE_TYPE_STYLES[t] ?? EDGE_TYPE_STYLES.related;
+  const known = EDGE_TYPE_STYLES[t];
+  if (known) return known;
+  // Open/unknown edge type: keep the neutral `related` visual treatment but
+  // preserve the actual type string as a humanized label so F2/F3 relations are
+  // distinguishable in the data-driven legend.
+  return { ...EDGE_TYPE_STYLES.related, label: humanizeKey(edge.type as string) };
 }
 
 /** The legend key for an edge — its relation when present, else its type. */
