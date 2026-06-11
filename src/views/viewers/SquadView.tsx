@@ -1,6 +1,6 @@
 import type { ViewerProps } from './GenericStructuredView';
 import { EntityHeader, Row, ScalarList } from './spine-shared';
-import { dataOf, arrayField } from './spine-data';
+import { dataOf, arrayField, nativeTypeOf } from './spine-data';
 
 /**
  * Bespoke viewer for `squad` entities (F2 / T2.5 — #164).
@@ -20,7 +20,7 @@ export function SquadView({ node }: ViewerProps) {
 
   return (
     <div className="kb-structured-view kb-squad-view">
-      <EntityHeader label="Squad" id={node.jsonld?.['@id'] as string | undefined} />
+      <EntityHeader label="Squad" id={node.jsonld?.['@id'] as string | undefined} native={nativeTypeOf(node)} />
       <h2 className="kb-entity-name">{name}</h2>
       {mission && <p className="kb-entity-tagline">{mission}</p>}
       <table className="kb-structured-table">

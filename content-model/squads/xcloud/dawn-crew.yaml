@@ -1,0 +1,14 @@
+# Demo entity for cross-repo vocabulary mapping (#153).
+# A second repo (xcloud org) calls the same concept a "crew"; the shared
+# vocabulary unifies `crew` → the canonical `squad` kind. Night Owls (cell) and
+# Dawn Crew (crew) therefore unify under one type and share the
+# `personalization-discovery` workstream, while each keeps its native label.
+"@type": crew
+id: dawn-crew
+name: Dawn Crew
+mission: Early-shift streaming readiness
+members:
+  - ben
+workstream: personalization-discovery
+knowledgeAreas:
+  - streaming
