@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import type { Theme } from '../types';
 import {
   webDarkTheme,
   webLightTheme,
@@ -60,12 +61,28 @@ const sepiaTheme: FluentTheme = {
   colorSubtleBackgroundPressed: '#E5DBC2',
 };
 
-function readStored(): ThemeMode {
+/** Returns the user's explicitly stored theme, or null when none is saved. */
+export function readStoredRaw(): ThemeMode | null {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v && MODES.includes(v as ThemeMode)) return v as ThemeMode;
   } catch { /* ignore */ }
+  return null;
+}
+
+/**
+ * Resolves the initial theme mode. A theme the user explicitly saved always
+ * wins; otherwise fall back to config.theme.default, then to 'dark'.
+ */
+export function resolveInitialMode(configDefault?: Theme): ThemeMode {
+  const stored = readStoredRaw();
+  if (stored) return stored;
+  if (configDefault && MODES.includes(configDefault)) return configDefault;
   return 'dark';
+}
+
+function readStored(): ThemeMode {
+  return readStoredRaw() ?? 'dark';
 }
 
 const THEME_MAP: Record<ThemeMode, FluentTheme> = {
@@ -74,7 +91,12 @@ const THEME_MAP: Record<ThemeMode, FluentTheme> = {
   sepia: sepiaTheme,
 };
 
-export function useTheme(): [ThemeMode, FluentTheme, (t: ThemeMode) => void] {
+export function useTheme(): [
+  ThemeMode,
+  FluentTheme,
+  (t: ThemeMode) => void,
+  (configDefault?: Theme) => void,
+] {
   const [mode, setModeState] = useState<ThemeMode>(readStored);
 
   const setMode = useCallback((t: ThemeMode) => {
@@ -82,7 +104,17 @@ export function useTheme(): [ThemeMode, FluentTheme, (t: ThemeMode) => void] {
     localStorage.setItem(STORAGE_KEY, t);
   }, []);
 
-  return [mode, THEME_MAP[mode], setMode];
+  // Applies config.theme.default as the initial mode, but never overrides a
+  // theme the user has explicitly saved. Not persisted: a config default is
+  // not a user choice, so a later config change can still take effect.
+  const applyConfigDefault = useCallback((configDefault?: Theme) => {
+    if (readStoredRaw() !== null) return;
+    if (configDefault && MODES.includes(configDefault)) {
+      setModeState(configDefault);
+    }
+  }, []);
+
+  return [mode, THEME_MAP[mode], setMode, applyConfigDefault];
 }
 
 export function nextTheme(current: ThemeMode): ThemeMode {
