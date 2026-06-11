@@ -44,3 +44,18 @@ export type {
 export { WikipediaProvider } from './providers/wikipedia-provider';
 export { OrgChartProvider } from './providers/orgchart-provider';
 export { loadExternalProviders } from './plugin-loader';
+export {
+  canEditSource,
+  resolveSourceFile,
+  validateSourceContent,
+  repoCoordsFromConfig,
+  encodeRepoPath,
+  buildEditUrl,
+  buildNewFileUrl,
+  buildHandoffUrl,
+  buildUnifiedDiff,
+  patchFilename,
+  buildSourceEditHandoff,
+  normalizeNewlines,
+} from './source-edit';
+export type { RepoCoords, ValidationResult, SourceEditHandoff } from './source-edit';

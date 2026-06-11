@@ -18,6 +18,8 @@ import { HomePageWidgets } from '../components/HomePageWidgets';
 import { ConstellationHero } from '../components/ConstellationHero';
 import { IconGallery } from '../components/IconGallery';
 import { resolveViewer } from './viewers';
+import { SourceEditor } from './SourceEditor';
+import { canEditSource } from '../engine/source-edit';
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -527,6 +529,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
           <div className={styles.clusterBadge} style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             <Badge appearance="tint" color="informative">{cluster.name}</Badge>
             <SourceBadge node={node} config={config} />
+            {canEditSource(node) && <SourceEditor node={node} config={config} />}
           </div>
           <Title1>{node.title}</Title1>
         </header>

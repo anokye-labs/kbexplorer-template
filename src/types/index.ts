@@ -103,6 +103,33 @@ export interface KBNode {
   jsonld?: JsonLd;
   /** Arbitrary structured-data bag rendered by typed (or the generic) viewers. */
   data?: Record<string, unknown>;
+  /**
+   * The underlying **source-of-truth** entity file this node was projected from
+   * (F5 — #152). Present only for nodes backed by a writable YAML/JSON file in
+   * the content model. Lets the in-app editor load and edit the *real* file (not
+   * the JSON-LD projection, so F2's mappings stay pure & reversible) and hand the
+   * change off to GitHub's authenticated web UI as a pull request — no secrets,
+   * no git write from the browser. Absent for derived / README / structural
+   * nodes, which therefore expose no editor affordance (a safe no-op).
+   */
+  sourceFile?: NodeSourceFile;
+}
+
+/**
+ * Pointer to a node's writable source-of-truth file (F5 — #152).
+ *
+ * `path` is repo-relative (e.g. `content-model/people/ada.yaml`) so GitHub
+ * deep-links can be built from the configured repo coordinates; `raw` is the
+ * verbatim file text the editor edits; `format` selects the parser used to
+ * validate edits before any handoff.
+ */
+export interface NodeSourceFile {
+  /** Repo-relative path of the file, e.g. `content-model/people/ada.yaml`. */
+  path: string;
+  /** Verbatim file content — the editable source of truth. */
+  raw: string;
+  /** Parser format used to validate edits before the GitHub PR handoff. */
+  format: 'yaml' | 'json';
 }
 
 /**
