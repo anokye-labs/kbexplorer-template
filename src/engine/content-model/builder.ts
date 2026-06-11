@@ -220,14 +220,25 @@ class EdgeResolver {
   private edgeKeys = new Set<string>();
   private connKeys = new Set<string>();
   readonly stubs = new Map<string, KBNode>();
+  private readonly schema: ContentModelSchema;
+  private readonly index: Indexed;
+  private readonly nodeByUrn: Map<string, KBNode>;
+  private readonly ldContext: JsonLd['@context'];
+  private readonly diagnostics: Diagnostic[];
 
   constructor(
-    private schema: ContentModelSchema,
-    private index: Indexed,
-    private nodeByUrn: Map<string, KBNode>,
-    private ldContext: JsonLd['@context'],
-    private diagnostics: Diagnostic[],
-  ) {}
+    schema: ContentModelSchema,
+    index: Indexed,
+    nodeByUrn: Map<string, KBNode>,
+    ldContext: JsonLd['@context'],
+    diagnostics: Diagnostic[],
+  ) {
+    this.schema = schema;
+    this.index = index;
+    this.nodeByUrn = nodeByUrn;
+    this.ldContext = ldContext;
+    this.diagnostics = diagnostics;
+  }
 
   /** Resolve a reference to a target URN, lazily creating a stub when missing. */
   private resolve(targetKind: string, ref: string, mode: 'id' | 'alias'): string {
