@@ -22,6 +22,7 @@ import { registerType } from '../node-types';
 import { registerViewer } from '../../views/viewers';
 import { WorkflowView } from '../../views/viewers/WorkflowView';
 import { ActionView } from '../../views/viewers/ActionView';
+import { SkillView } from '../../views/viewers/SkillView';
 import {
   applyNodeMap,
   parseStructuredNodeMap,
@@ -64,6 +65,7 @@ function renderSafeMarkdown(body: string): string {
 export function registerStructuralTypes(): void {
   registerType({ id: 'workflow', label: 'Workflow', layer: 'work', cluster: STRUCTURAL_CLUSTER, relations: ['structural'], viewer: 'workflow', description: 'A GitHub Actions workflow.' });
   registerType({ id: 'github-action', label: 'Action', layer: 'work', cluster: STRUCTURAL_CLUSTER, relations: ['structural'], viewer: 'github-action', description: 'A composite or JS GitHub Action.' });
+  registerType({ id: 'skill', label: 'Skill', layer: 'work', cluster: STRUCTURAL_CLUSTER, relations: ['structural'], viewer: 'skill', description: 'A Copilot / agent skill (SKILL.md): when-to-use triggers + guidance.' });
   registerType({ id: 'issue-template', label: 'Issue Template', layer: 'work', cluster: STRUCTURAL_CLUSTER, relations: ['structural'], description: 'A GitHub issue template / form.' });
   registerType({ id: 'pr-template', label: 'PR Template', layer: 'work', cluster: STRUCTURAL_CLUSTER, relations: ['structural'], description: 'A pull-request template.' });
   registerType({ id: 'codeowners', label: 'CODEOWNERS', layer: 'work', cluster: STRUCTURAL_CLUSTER, relations: ['structural'], description: 'Code ownership rules.' });
@@ -74,6 +76,7 @@ export function registerStructuralTypes(): void {
 
   registerViewer('workflow', WorkflowView);
   registerViewer('github-action', ActionView);
+  registerViewer('skill', SkillView);
 }
 
 // ── Path classification ────────────────────────────────────
@@ -87,6 +90,9 @@ function isWorkflow(path: string): boolean {
 }
 function isAction(path: string): boolean {
   return /(^|\/)action\.ya?ml$/i.test(path);
+}
+function isSkill(path: string): boolean {
+  return /^\.github\/skills\/.+\/SKILL\.md$/i.test(path) || /(^|\/)[^/]+\.skill\.md$/i.test(path);
 }
 function isIssueTemplate(path: string): boolean {
   return /^\.github\/ISSUE_TEMPLATE\/.+/i.test(path) && !/\/config\.ya?ml$/i.test(path);
@@ -221,6 +227,30 @@ function buildActionNode(path: string, content: string, repoNodeId: string): KBN
     emoji: 'PuzzlePiece',
     data,
     ldProps: { name },
+    display: 'entity',
+    repoNodeId,
+  });
+}
+
+function buildSkillNode(path: string, content: string, repoNodeId: string): KBNode {
+  const { data, body } = parseFrontmatter(content);
+  const dirName = path.split('/').slice(-2, -1)[0] ?? fileName(path);
+  const name = (typeof data.name === 'string' && data.name) || dirName;
+  const html = renderSafeMarkdown(body);
+  const ldProps: Record<string, unknown> = { name };
+  if (typeof data.version === 'string') ldProps.version = data.version;
+  return buildStructuralNode({
+    id: `gh-skill-${slugify(name)}`,
+    title: name,
+    entityType: 'skill',
+    ldType: 'HowTo',
+    source: { type: 'structured', entityType: 'skill', ref: path },
+    identity: `urn:structural:${path}`,
+    emoji: 'BookOpenLightbulb',
+    data,
+    ldProps,
+    content: html,
+    rawContent: body,
     display: 'entity',
     repoNodeId,
   });
@@ -384,6 +414,7 @@ export function buildStructuralFileNode(
   if (typeof content !== 'string') return null;
   if (isWorkflow(path)) return buildWorkflowNode(path, content, repoNodeId);
   if (isAction(path)) return buildActionNode(path, content, repoNodeId);
+  if (isSkill(path)) return buildSkillNode(path, content, repoNodeId);
   if (isDependabot(path)) return buildDependabotNode(path, content, repoNodeId);
   if (isFunding(path)) return buildFundingNode(path, content, repoNodeId);
   if (isCodeowners(path)) return buildCodeownersNode(path, content, repoNodeId);

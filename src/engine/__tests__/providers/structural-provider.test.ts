@@ -4,6 +4,7 @@ import { resetNodeTypeRegistry, resolveType } from '../../node-types';
 import { resetViewerRegistry, resolveViewer } from '../../../views/viewers';
 import { WorkflowView } from '../../../views/viewers/WorkflowView';
 import { ActionView } from '../../../views/viewers/ActionView';
+import { SkillView } from '../../../views/viewers/SkillView';
 import { parseStructuredNodeMap } from '../../node-map';
 import type { KBConfig } from '../../../types';
 import { DEFAULT_CONFIG } from '../../../types';
@@ -142,6 +143,39 @@ describe('StructuralProvider', () => {
     expect(resolveType('github-action')?.cluster).toBe('infra');
     expect(resolveViewer({ entityType: 'workflow', jsonld: undefined })).toBe(WorkflowView);
     expect(resolveViewer({ entityType: 'github-action', jsonld: undefined })).toBe(ActionView);
+  });
+
+  it('discovers a .github/skills/**/SKILL.md as a skill node with a bespoke viewer', async () => {
+    const SKILL = `---
+name: kbexplorer
+description: Use when the user asks to set up or explore a knowledge base.
+version: 0.1.0
+---
+
+# kbexplorer
+
+Guidance body with a [link](https://example.com) and **bold** text.
+`;
+    const provider = new StructuralProvider({
+      '.github/skills/kbexplorer/SKILL.md': SKILL,
+    });
+    const { nodes } = await provider.resolve(config, []);
+
+    const skill = nodes.find(n => n.entityType === 'skill');
+    expect(skill, 'a skill node should be produced').toBeDefined();
+    expect(skill!.id).toBe('gh-skill-kbexplorer');
+    expect(skill!.title).toBe('kbexplorer');
+    expect(skill!.jsonld?.['@type']).toBe('HowTo');
+    expect(skill!.jsonld?.['version']).toBe('0.1.0');
+    expect(skill!.data?.description).toContain('set up or explore');
+    // body rendered to HTML on content; raw embedded HTML stays escaped
+    expect(skill!.content).toContain('<h1');
+    // linked to the repository node via a structural relation
+    const conn = skill!.connections.find(c => c.to === 'repo-meta');
+    expect(conn?.relation).toBe('structural');
+    // resolves to the bespoke SkillView
+    expect(resolveViewer({ entityType: 'skill', jsonld: undefined })).toBe(SkillView);
+    expect(resolveType('skill')?.cluster).toBe('infra');
   });
 
   it('honours a custom repo node id', async () => {

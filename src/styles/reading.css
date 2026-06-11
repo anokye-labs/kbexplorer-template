@@ -386,6 +386,53 @@
   font-size: 0.9em;
 }
 
+/* ── Skill viewer (SKILL.md under .github/skills) ───── */
+
+.kb-skill-name {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+.kb-skill-version {
+  align-self: center;
+  padding: 0.05rem 0.5rem;
+  border-radius: 1rem;
+  background: var(--colorBrandBackground2, var(--colorNeutralBackground3));
+  color: var(--colorBrandForeground2, var(--colorNeutralForeground2));
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.kb-skill-trigger {
+  margin-top: 1.25rem;
+}
+
+.kb-skill-trigger .kb-structured-key {
+  display: block;
+  width: auto;
+  background: transparent;
+  border: none;
+  padding: 0 0 0.4rem;
+  font-size: 0.95em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--colorNeutralForeground3);
+}
+
+.kb-skill-description {
+  margin: 0;
+  padding: 0.6rem 0.85rem;
+  border-left: 3px solid var(--colorBrandStroke2, var(--colorNeutralStroke2));
+  background: var(--colorNeutralBackground2);
+  color: var(--colorNeutralForeground2);
+  border-radius: 0 0.4rem 0.4rem 0;
+}
+
+.kb-skill-body {
+  margin-top: 1.5rem;
+}
+
 /* ── Responsive layout ───────────────────────────────── */
 @media (min-width: 1025px) {
   .kb-prose {
