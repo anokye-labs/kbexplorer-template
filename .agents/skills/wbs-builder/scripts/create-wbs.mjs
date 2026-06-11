@@ -63,7 +63,21 @@ async function gql(query, variables) {
     },
     body: JSON.stringify({ query, variables }),
   });
-  const json = await res.json();
+  // Surface HTTP-level failures (401/403, rate limits, 5xx/outage, HTML error
+  // pages) as concise errors instead of letting res.json() throw or return a
+  // non-GraphQL shape that fails confusingly downstream.
+  const text = await res.text();
+  if (!res.ok) {
+    const snippet = text.replace(/\s+/g, ' ').trim().slice(0, 200);
+    throw new Error(`GitHub GraphQL HTTP ${res.status} ${res.statusText}${snippet ? `: ${snippet}` : ''}`);
+  }
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    const snippet = text.replace(/\s+/g, ' ').trim().slice(0, 200);
+    throw new Error(`GitHub GraphQL returned non-JSON (HTTP ${res.status})${snippet ? `: ${snippet}` : ''}`);
+  }
   if (json.errors) throw new Error(JSON.stringify(json.errors));
   return json.data;
 }
@@ -75,6 +89,46 @@ if (!existsSync(DATA_PATH)) {
 }
 const { REPOS, KIND_TYPE_NAMES, ITEMS, DEPS } = await import(pathToFileURL(DATA_PATH).href);
 const KIND_NAME = KIND_TYPE_NAMES || { epic: 'Epic', feature: 'Feature', task: 'Task', bug: 'Bug' };
+
+// Validate the WBS definition upfront so misconfiguration fails with an
+// actionable message instead of a low-signal TypeError partway through a run.
+function validateWbs() {
+  const errs = [];
+  if (!REPOS || typeof REPOS !== 'object') errs.push('REPOS is missing or is not an object.');
+  if (!Array.isArray(ITEMS)) errs.push('ITEMS is missing or is not an array.');
+  const repoKeys = new Set(Object.keys(REPOS || {}));
+  const knownKinds = Object.keys(KIND_NAME).join(', ');
+  const itemKeys = new Set();
+
+  for (const [idx, it] of (Array.isArray(ITEMS) ? ITEMS : []).entries()) {
+    const where = `ITEMS[${idx}]${it && it.key ? ` (${it.key})` : ''}`;
+    if (!it || typeof it !== 'object') { errs.push(`${where}: not an object.`); continue; }
+    if (!it.key || typeof it.key !== 'string') errs.push(`${where}: missing string "key".`);
+    else if (itemKeys.has(it.key)) errs.push(`${where}: duplicate key "${it.key}".`);
+    else itemKeys.add(it.key);
+    if (!repoKeys.has(it.repo)) errs.push(`${where}: unknown repo "${it.repo}" (REPOS keys: ${[...repoKeys].join(', ') || 'none'}).`);
+    if (!KIND_NAME[it.kind]) errs.push(`${where}: unknown kind "${it.kind}" (KIND_TYPE_NAMES: ${knownKinds}).`);
+    if (typeof it.title !== 'string') errs.push(`${where}: "title" must be a string.`);
+    if (typeof it.body !== 'string') errs.push(`${where}: "body" must be a string.`);
+  }
+  for (const [idx, it] of (Array.isArray(ITEMS) ? ITEMS : []).entries()) {
+    if (it && it.parent && !itemKeys.has(it.parent)) {
+      errs.push(`ITEMS[${idx}]${it.key ? ` (${it.key})` : ''}: parent "${it.parent}" is not a known item key.`);
+    }
+  }
+  for (const [i, dep] of (Array.isArray(DEPS) ? DEPS : []).entries()) {
+    if (!Array.isArray(dep) || dep.length !== 2) { errs.push(`DEPS[${i}]: expected a [key, blockedByKey] pair.`); continue; }
+    const [key, by] = dep;
+    if (!itemKeys.has(key)) errs.push(`DEPS[${i}]: unknown item key "${key}".`);
+    if (!itemKeys.has(by)) errs.push(`DEPS[${i}]: unknown blocking key "${by}".`);
+  }
+
+  if (errs.length) {
+    console.error(`Invalid WBS data in ${DATA_PATH}:\n  - ${errs.join('\n  - ')}`);
+    process.exit(2);
+  }
+}
+validateWbs();
 
 const map = existsSync(MAP_PATH) ? JSON.parse(readFileSync(MAP_PATH, 'utf8')) : {};
 const save = () => writeFileSync(MAP_PATH, JSON.stringify(map, null, 2));
@@ -164,13 +218,19 @@ async function main() {
       const child = map[it.key], parent = map[it.parent];
       if (!child || !parent) { console.log(`MISS sub ${it.key} (create first)`); continue; }
       if (child.parentLinked) { console.log(`skip sub ${it.key}`); continue; }
+      if (child.subError) { console.log(`skip sub ${it.key} (prior error recorded; clear "subError" in ${MAP_PATH} to retry)`); continue; }
       if (DRY) { console.log(`DRY sub ${it.parent} <- ${it.key}`); continue; }
       try {
         await gql(ADD_SUB, { parent: parent.id, child: child.id });
+        delete child.subError;
         child.parentLinked = true; save();
         console.log(`sub ${it.parent} <- ${it.key}`);
       } catch (e) {
-        console.log(`ERR sub ${it.parent} <- ${it.key}: ${e.message}`);
+        // Cross-repo / permission rejections: persist a marker so we don't retry
+        // on every run, and add a prose "Part of #N" / "Relates to owner/repo#N"
+        // body link by hand instead (see SKILL.md). Clear "subError" to retry.
+        child.subError = `ERR:${e.message.slice(0, 120)}`; save();
+        console.log(`ERR sub ${it.parent} <- ${it.key}: ${e.message.slice(0, 160)} (recorded; clear subError to retry)`);
       }
     }
   }
