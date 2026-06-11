@@ -33,6 +33,7 @@ import { FilesProvider } from './providers/files-provider'
 import { AuthoredProvider } from './providers/authored-provider'
 import { WorkProvider } from './providers/work-provider'
 import { StructuralProvider } from './providers/structural-provider'
+import { ContentModelProvider } from './providers/content-model-provider'
 import { collectProviderNodes } from './orchestrator'
 
 export type ResolutionPreset = 'summary' | 'standard' | 'full'
@@ -179,6 +180,11 @@ export async function loadRemoteKnowledgeBase(
   if (Object.keys(data.structuralFiles).length > 0) {
     registry.register(new StructuralProvider(data.structuralFiles, data.structuredNodeMapRaw))
   }
+
+  // Content-model spine (F2). The sunset content-model source is not fetched at
+  // runtime yet; register as a safe no-op so the wiring is in place and output
+  // stays byte-identical until a remote content-model fetch path lands.
+  registry.register(new ContentModelProvider(null))
 
   // ── Register external providers from config ────────────
   if (config.providers && config.providers.length > 0) {

@@ -524,6 +524,48 @@ export function collectNodemapData(root, nodemapRaw, tree) {
   return { nodemapFiles, nodemapDirs };
 }
 
+// ── Content Model (F2) ─────────────────────────────────────
+
+/**
+ * Read a `content-model/` directory (schema files + entity files) into a flat
+ * `{ root, files }` source consumed by the ContentModelProvider. Returns null
+ * when the directory is absent or empty, so the provider stays a safe no-op.
+ * @param {string} root - Project root
+ * @param {string} [dirName='content-model'] - Content-model directory name
+ * @returns {{ root: string, files: Record<string,string> } | null}
+ */
+export function readContentModel(root, dirName = 'content-model') {
+  const baseDir = resolve(root, dirName);
+  if (!existsSync(baseDir)) return null;
+
+  const files = {};
+  function walk(dir) {
+    let entries;
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue;
+      const abs = resolve(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(abs);
+      } else {
+        const rel = relative(baseDir, abs).split('\\').join('/');
+        try {
+          files[rel] = readFileSync(abs, 'utf-8');
+        } catch {
+          console.warn(`[generate-manifest] Failed to read ${abs}`);
+        }
+      }
+    }
+  }
+  walk(baseDir);
+
+  return Object.keys(files).length > 0 ? { root: dirName, files } : null;
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 export function generateManifest(root = hostRoot) {
@@ -555,6 +597,7 @@ export function generateManifest(root = hostRoot) {
     nodemapDirs,
     structuredNodeMapRaw,
     structuralFiles,
+    contentModel: readContentModel(root),
     generatedAt: new Date().toISOString(),
   };
 
@@ -570,6 +613,7 @@ export function generateManifest(root = hostRoot) {
   console.log(`[generate-manifest] Repo: ${manifest.repoMetadata?.name ?? 'not available'}`);
   console.log(`[generate-manifest] Nodemap: ${nodemapRaw ? `${Object.keys(nodemapFiles).length} files, ${Object.keys(nodemapDirs).length} dirs` : 'not found'}`);
   console.log(`[generate-manifest] Structural: ${Object.keys(structuralFiles).length} .github files${structuredNodeMapRaw ? ' + node-map.yaml' : ''}`);
+  console.log(`[generate-manifest] Content model: ${manifest.contentModel ? `${Object.keys(manifest.contentModel.files).length} files` : 'not found'}`);
 
   return manifest;
 }

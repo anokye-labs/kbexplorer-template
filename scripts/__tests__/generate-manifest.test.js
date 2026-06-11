@@ -8,6 +8,7 @@ import {
   readConfig,
   readReadme,
   fetchLocalCommits,
+  readContentModel,
 } from '../generate-manifest.js';
 
 const FIXTURES = resolve(import.meta.dirname, '__fixtures__');
@@ -33,6 +34,39 @@ beforeAll(() => {
 
 afterAll(() => {
   rmSync(FIXTURES, { recursive: true, force: true });
+});
+
+// ── readContentModel ───────────────────────────────────────
+
+describe('readContentModel (T2.4 / #163)', () => {
+  it('returns null when no content-model directory exists', () => {
+    expect(readContentModel(FIXTURES)).toBeNull();
+  });
+
+  it('reads a content-model tree into a flat { root, files } source', () => {
+    const cmDir = resolve(FIXTURES, 'content-model');
+    mkdirSync(resolve(cmDir, 'schema'), { recursive: true });
+    mkdirSync(resolve(cmDir, 'people'), { recursive: true });
+    writeFileSync(resolve(cmDir, 'teamops.yaml'), 'authority: xbox.com\ndefaultOrg: personalization');
+    writeFileSync(resolve(cmDir, 'schema', 'edges.yaml'), 'edges: {}');
+    writeFileSync(resolve(cmDir, 'people', 'ada.yaml'), '"@type": person\nid: ada');
+
+    const source = readContentModel(FIXTURES);
+    expect(source).not.toBeNull();
+    expect(source.root).toBe('content-model');
+    expect(source.files['teamops.yaml']).toContain('authority: xbox.com');
+    expect(source.files['schema/edges.yaml']).toBe('edges: {}');
+    expect(source.files['people/ada.yaml']).toContain('@type');
+
+    rmSync(cmDir, { recursive: true, force: true });
+  });
+
+  it('returns null for an empty content-model directory', () => {
+    const cmDir = resolve(FIXTURES, 'content-model-empty');
+    mkdirSync(cmDir, { recursive: true });
+    expect(readContentModel(FIXTURES, 'content-model-empty')).toBeNull();
+    rmSync(cmDir, { recursive: true, force: true });
+  });
 });
 
 // ── walkFileSystem ─────────────────────────────────────────
@@ -171,5 +205,6 @@ describe('generateManifest (integration)', () => {
     expect(Array.isArray(manifest.issues)).toBe(true);
     expect(Array.isArray(manifest.pullRequests)).toBe(true);
     expect(Array.isArray(manifest.commits)).toBe(true);
+    expect(manifest.contentModel).toBeNull();
   });
 });
