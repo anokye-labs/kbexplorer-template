@@ -1,0 +1,44 @@
+{
+  "id": "kg://person/jane",
+  "title": "Jane Doe",
+  "identity": "kg://person/jane",
+  "cluster": "org",
+  "display": "entity",
+  "derived": true,
+  "provider": "derived",
+  "content": "",
+  "rawContent": "",
+  "entityType": "person",
+  "source": { "type": "derived", "generator": "kbexplorer-cli@derive" },
+  "data": {
+    "name": "Jane Doe",
+    "role": "Staff Engineer",
+    "email": "jane@example.com",
+    "team": "Platform",
+    "manager": "Sam Rivera"
+  },
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@id": "kg://person/jane",
+    "@type": "Person",
+    "name": "Jane Doe"
+  },
+  "connections": [
+    {
+      "to": "kg://person/sam",
+      "type": "related",
+      "relation": "reports-to",
+      "description": "Jane reports to Sam",
+      "source": "inferred",
+      "weight": 1
+    },
+    {
+      "to": "kg://squad/platform-core",
+      "type": "related",
+      "relation": "leads",
+      "description": "Jane leads Platform Core",
+      "source": "inferred",
+      "weight": 1
+    }
+  ]
+}

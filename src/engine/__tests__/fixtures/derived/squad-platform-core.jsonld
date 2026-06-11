@@ -1,0 +1,37 @@
+{
+  "id": "kg://squad/platform-core",
+  "title": "Platform Core",
+  "identity": "kg://squad/platform-core",
+  "cluster": "org",
+  "display": "entity",
+  "derived": true,
+  "provider": "derived",
+  "content": "",
+  "rawContent": "",
+  "entityType": "squad",
+  "source": { "type": "derived", "generator": "kbexplorer-cli@derive" },
+  "data": {
+    "name": "Platform Core",
+    "mission": "Owns the shared platform runtime",
+    "dri": "jane",
+    "workstream": "Platform",
+    "members": ["Jane Doe", "Sam Rivera"],
+    "knowledgeAreas": ["runtime", "observability"]
+  },
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@id": "kg://squad/platform-core",
+    "@type": "Squad",
+    "name": "Platform Core"
+  },
+  "connections": [
+    {
+      "to": "kg://person/jane",
+      "type": "related",
+      "relation": "staffs",
+      "description": "Platform Core staffs Jane",
+      "source": "inferred",
+      "weight": 1
+    }
+  ]
+}

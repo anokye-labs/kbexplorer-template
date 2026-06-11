@@ -1,9 +1,9 @@
 /**
  * Demo-entities seam (off by default).
  *
- * Injects a small set of `person` / `team` entity nodes — wired with the
- * relation taxonomy (leads | staffs | reports-to) — so the open node-type
- * foundation can be exercised end-to-end (entity viewer, SourceBadge, relation
+ * Injects a small set of `person` / `squad` / `team` entity nodes — wired with
+ * the relation taxonomy (leads | staffs | reports-to) — so the open node-type
+ * foundation can be exercised end-to-end (entity viewers, SourceBadge, relation
  * legend) without polluting real knowledge graphs.
  *
  * Enabled by `?demo=entities` in the URL or `localStorage['kbe-demo-entities']`
@@ -14,6 +14,7 @@ import { buildJsonLd } from '../types';
 import { registerType } from './node-types';
 import { registerViewer } from '../views/viewers';
 import { PersonView } from '../views/viewers/PersonView';
+import { SquadView } from '../views/viewers/SquadView';
 
 const DEMO_CLUSTER: Cluster = { id: 'org', name: 'Organization', color: '#c0a3ff' };
 
@@ -38,7 +39,7 @@ export function isDemoEntitiesEnabled(): boolean {
   return false;
 }
 
-/** Register the `person` / `team` node types + the bespoke person viewer. Idempotent. */
+/** Register the `person` / `squad` / `team` node types + bespoke viewers. Idempotent. */
 export function registerDemoEntityTypes(): void {
   registerType({
     id: 'person',
@@ -50,6 +51,15 @@ export function registerDemoEntityTypes(): void {
     description: 'An individual contributor or manager.',
   });
   registerType({
+    id: 'squad',
+    label: 'Squad',
+    layer: 'work',
+    cluster: DEMO_CLUSTER.id,
+    relations: ['staffs', 'leads'],
+    viewer: 'squad',
+    description: 'A squad that staffs people, is led by a DRI and delivers a workstream.',
+  });
+  registerType({
     id: 'team',
     label: 'Team',
     layer: 'work',
@@ -58,6 +68,7 @@ export function registerDemoEntityTypes(): void {
     description: 'A squad / team that staffs people and is led by a person.',
   });
   registerViewer('person', PersonView);
+  registerViewer('squad', SquadView);
 }
 
 function entityNode(
@@ -97,7 +108,7 @@ function relationEdge(from: string, to: string, relation: string, description: s
 export function injectDemoEntities(graph: KBGraph): KBGraph {
   registerDemoEntityTypes();
 
-  const DEMO_IDS = ['demo-team-atlas', 'demo-person-ada', 'demo-person-ben'];
+  const DEMO_IDS = ['demo-team-atlas', 'demo-squad-orbit', 'demo-person-ada', 'demo-person-ben'];
   // Guard against collisions / double-injection: if any fixed demo id already
   // exists in the graph, skip injection and return it unchanged.
   if (graph.nodes.some(n => DEMO_IDS.includes(n.id))) {
@@ -109,6 +120,20 @@ export function injectDemoEntities(graph: KBGraph): KBGraph {
     'Team Atlas',
     'team',
     { name: 'Team Atlas', mission: 'Owns the knowledge-graph engine', size: 4 },
+    'Organization',
+  );
+  const squad = entityNode(
+    'demo-squad-orbit',
+    'Squad Orbit',
+    'squad',
+    {
+      name: 'Squad Orbit',
+      mission: 'Delivers the discovery & search experience',
+      dri: 'ada',
+      workstream: 'Discovery',
+      members: ['Ada Okonkwo', 'Ben Carter'],
+      knowledgeAreas: ['search', 'ranking', 'graph-ui'],
+    },
     'Organization',
   );
   const lead = entityNode(
@@ -126,13 +151,17 @@ export function injectDemoEntities(graph: KBGraph): KBGraph {
     'Person',
   );
 
-  const newNodes: KBNode[] = [team, lead, ic];
+  const newNodes: KBNode[] = [team, squad, lead, ic];
 
   const newEdges: KBEdge[] = [
     relationEdge(lead.id, team.id, 'leads', 'Ada leads Team Atlas'),
     relationEdge(team.id, lead.id, 'staffs', 'Team Atlas staffs Ada'),
     relationEdge(team.id, ic.id, 'staffs', 'Team Atlas staffs Ben'),
     relationEdge(ic.id, lead.id, 'reports-to', 'Ben reports to Ada'),
+    relationEdge(squad.id, lead.id, 'staffs', 'Squad Orbit staffs Ada'),
+    relationEdge(squad.id, ic.id, 'staffs', 'Squad Orbit staffs Ben'),
+    relationEdge(lead.id, squad.id, 'leads', 'Ada (DRI) leads Squad Orbit'),
+    relationEdge(team.id, squad.id, 'structural', 'Team Atlas → Squad Orbit'),
   ];
 
   // Anchor the demo subgraph to an existing hub so it is reachable in the graph.

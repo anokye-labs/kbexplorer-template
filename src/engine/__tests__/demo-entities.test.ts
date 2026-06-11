@@ -35,18 +35,30 @@ describe('demo-entities seam', () => {
     expect(isDemoEntitiesEnabled()).toBe(false);
   });
 
-  it('appends person/team entity nodes without mutating the original graph', () => {
+  it('appends person/squad/team entity nodes without mutating the original graph', () => {
     const graph = baseGraph();
     const originalNodeCount = graph.nodes.length;
     const result = injectDemoEntities(graph);
 
     expect(graph.nodes).toHaveLength(originalNodeCount); // original untouched
-    expect(result.nodes.length).toBe(originalNodeCount + 3);
+    expect(result.nodes.length).toBe(originalNodeCount + 4);
 
     const ids = result.nodes.map(n => n.id);
     expect(ids).toContain('demo-team-atlas');
+    expect(ids).toContain('demo-squad-orbit');
     expect(ids).toContain('demo-person-ada');
     expect(ids).toContain('demo-person-ben');
+  });
+
+  it('renders the squad through the squad entity type + SquadView data shape', () => {
+    const result = injectDemoEntities(baseGraph());
+    const squad = result.nodes.find(n => n.id === 'demo-squad-orbit')!;
+    expect(squad.display).toBe('entity');
+    expect(squad.entityType).toBe('squad');
+    expect(squad.source.type).toBe('structured');
+    expect(squad.jsonld?.['@id']).toBe(squad.identity);
+    expect(squad.data?.dri).toBe('ada');
+    expect(squad.data?.members).toEqual(['Ada Okonkwo', 'Ben Carter']);
   });
 
   it('marks entity nodes with display=entity, structured source, jsonld and data', () => {

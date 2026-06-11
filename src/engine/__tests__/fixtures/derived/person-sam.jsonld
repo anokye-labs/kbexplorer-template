@@ -1,0 +1,26 @@
+{
+  "id": "kg://person/sam",
+  "title": "Sam Rivera",
+  "identity": "kg://person/sam",
+  "cluster": "org",
+  "display": "entity",
+  "derived": true,
+  "provider": "derived",
+  "content": "",
+  "rawContent": "",
+  "entityType": "person",
+  "source": { "type": "derived", "generator": "kbexplorer-cli@derive" },
+  "data": {
+    "name": "Sam Rivera",
+    "role": "Engineering Manager",
+    "email": "sam@example.com",
+    "team": "Platform"
+  },
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@id": "kg://person/sam",
+    "@type": "Person",
+    "name": "Sam Rivera"
+  },
+  "connections": []
+}

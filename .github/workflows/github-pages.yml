@@ -14,9 +14,15 @@ permissions:
   pages: write
   id-token: write
 
+# Scope concurrency per-ref so PR `test` runs don't cancel each other (a single
+# global `pages` group with cancel-in-progress:true killed sibling/main runs
+# mid-flight). PR runs supersede older runs of the SAME PR (saves CI minutes);
+# different refs never cancel one another. Pushes to main (the only ref that
+# deploys) use a distinct group with cancel-in-progress:false, so Pages deploys
+# serialize and are never cancelled mid-deployment — preserving the deploy contract.
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -44,6 +50,9 @@ jobs:
 
       - name: Validate graph
         run: npm run validate
+
+      - name: Check manifest drift (idempotency)
+        run: npm run validate:drift
 
       - name: Assess graph quality
         run: node scripts/assess-graph.js --gate
