@@ -63,3 +63,9 @@ Before building or evolving any feature that touches an external service, read `
 ## Content Derivation
 The content in `content/` is machine-derived from the repo's systems of record.
 For the full evaluation pipeline (worktree experiment, quality assessment, comparison), read [`DERIVATION.md`](DERIVATION.md).
+
+## Skills
+
+Repo-local skills live under `.agents/skills/`.
+
+- **wbs-builder** ([`.agents/skills/wbs-builder/SKILL.md`](.agents/skills/wbs-builder/SKILL.md)) — when asked to plan a program in GitHub (e.g. "create a WBS", "break this epic into issues", "scaffold the Epic → Feature → Task hierarchy"), use this skill to materialize real GitHub issues with native issue **types**, parent/child **sub-issues**, and **blocked-by** dependency edges via the GraphQL API, before any implementation begins. It ships a resumable runner (`scripts/create-wbs.mjs`) and an authoring guide (`references/wbs-authoring.md`). **Issue-type IDs are org-scoped — the runner discovers repo and type IDs at runtime by name and never assumes another org's IDs.**
