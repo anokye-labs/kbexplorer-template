@@ -9,7 +9,7 @@
 
 /* Headings — scale proportionally with prose font size */
 .kb-prose h1 {
-  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--kbe-font-heading, 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif);
   font-size: 1.65em;
   font-weight: 600;
   margin: 2.5rem 0 1rem;
@@ -18,7 +18,7 @@
 }
 
 .kb-prose h2 {
-  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--kbe-font-heading, 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif);
   font-size: 1.35em;
   font-weight: 600;
   margin: 2rem 0 0.75rem;
@@ -27,7 +27,7 @@
 }
 
 .kb-prose h3 {
-  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--kbe-font-heading, 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif);
   font-size: 1.12em;
   font-weight: 600;
   margin: 1.5rem 0 0.5rem;
@@ -36,7 +36,7 @@
 }
 
 .kb-prose h4 {
-  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--kbe-font-heading, 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif);
   font-size: 1em;
   font-weight: 600;
   margin: 1.5rem 0 0.5rem;
@@ -80,7 +80,7 @@
 
 /* Code — Fluent neutral background + border radius */
 .kb-prose code {
-  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--kbe-font-mono, 'Cascadia Code', 'Cascadia Mono', Consolas, monospace);
   font-size: 0.88em;
   padding: 0.15em 0.4em;
   background: var(--colorNeutralBackground3);
@@ -166,7 +166,7 @@
 /* ── Display mode styles ─────────────────────────────── */
 
 .kb-code-display {
-  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--kbe-font-mono, 'Cascadia Code', 'Cascadia Mono', Consolas, monospace);
   font-size: var(--prose-font-size, 14px);
   line-height: 1.5;
   padding: 1rem 1.25rem;
@@ -188,7 +188,7 @@
 }
 
 .kb-tree-display {
-  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--kbe-font-mono, 'Cascadia Code', 'Cascadia Mono', Consolas, monospace);
   font-size: var(--prose-font-size, 14px);
   line-height: 1.6;
   padding: 1rem 1.25rem;
@@ -237,7 +237,7 @@
 }
 
 .kb-structured-id {
-  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--kbe-font-mono, 'Cascadia Code', 'Cascadia Mono', Consolas, monospace);
   font-size: 0.82em;
   color: var(--colorNeutralForeground3);
 }
@@ -298,7 +298,7 @@
 }
 
 .kb-structured-code {
-  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--kbe-font-mono, 'Cascadia Code', 'Cascadia Mono', Consolas, monospace);
   font-size: 0.85em;
   padding: 0.1em 0.35em;
   background: var(--colorNeutralBackground3);

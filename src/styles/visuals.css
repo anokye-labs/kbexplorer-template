@@ -105,7 +105,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--kbe-font-body, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif);
   font-weight: 600;
   color: var(--colorNeutralForeground2, #d6d6d6);
   background: var(--colorNeutralBackground3, #2e2e2e);
