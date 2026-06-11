@@ -9,9 +9,6 @@ import { getNodeDegrees } from './graph';
 import type { KBGraph } from '../types';
 import { getEdgeStyle } from '../types';
 
-const EDGE_COLOR = '#505050';
-const EDGE_HOVER_COLOR = '#5c5c5c';
-
 export interface GraphNetworkOptions {
   container: HTMLElement;
   graph: KBGraph;

@@ -348,7 +348,6 @@ test.describe('Visual Validation', () => {
     // Click a link in the prose
     const proseLink = page.locator('.kb-prose a[href*="#/node/"]').first()
     if (await proseLink.count() > 0) {
-      const href = await proseLink.getAttribute('href')
       await proseLink.click()
       await page.waitForTimeout(2000)
       expect(page.url()).toContain('#/node/')
