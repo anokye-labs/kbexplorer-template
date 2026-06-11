@@ -24,15 +24,17 @@ const FONT_VARS: Record<keyof FontConfig, string> = {
  */
 export function applyThemeFonts(
   font: KBConfig['theme']['font'] | undefined,
-  root: FontStyleTarget = document.documentElement,
+  root?: FontStyleTarget,
 ): void {
+  const target = root ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
+  if (!target) return;
   (Object.keys(FONT_VARS) as (keyof FontConfig)[]).forEach(key => {
     const value = font?.[key];
     const cssVar = FONT_VARS[key];
     if (value) {
-      root.style.setProperty(cssVar, value);
+      target.style.setProperty(cssVar, value);
     } else {
-      root.style.removeProperty(cssVar);
+      target.style.removeProperty(cssVar);
     }
   });
 }

@@ -51,4 +51,18 @@ describe('applyThemeFonts', () => {
 
     expect(props.size).toBe(0);
   });
+
+  it('is a safe no-op without a DOM (no root and no document)', () => {
+    const hadDocument = 'document' in globalThis;
+    const original = (globalThis as { document?: unknown }).document;
+    // Simulate a non-browser environment (Node without jsdom).
+    delete (globalThis as { document?: unknown }).document;
+    try {
+      expect(() => applyThemeFonts({ heading: "'X', serif" })).not.toThrow();
+    } finally {
+      if (hadDocument) {
+        (globalThis as { document?: unknown }).document = original;
+      }
+    }
+  });
 });
