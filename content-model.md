@@ -4,6 +4,28 @@
 >
 > Captures the state of branch `hsomu-microsoft/graph-as-navigation` (PR #159) at HEAD `29dd00a2`, after rebase onto the Multi-Org Digital Twin base (PR #155, `dc36fb65`).
 
+> [!NOTE]
+> **Historical / upstream reference — not a literal spec of this repo's shipped sample.**
+> This document mirrors the content-model spec from the upstream (now sunsetting)
+> source repo and uses *its* layout and field names: a root-level `/teamops.yaml`,
+> a `/schema/` tree, and identity keys `scheme` / `org` / `passthrough_schemes`.
+> The **shipped, runnable sample in this template** lives under
+> [`content-model/`](content-model/), and the **implemented parser**
+> ([`src/engine/content-model/schema-reader.ts`](src/engine/content-model/schema-reader.ts))
+> diverges from the text below in two load-bearing ways:
+>
+> - Identity is read as `identity.authority` + `identity.defaultOrg` (with
+>   `identity.org` as a fallback), **not** `identity.scheme` / `identity.org` /
+>   `passthrough_schemes`.
+> - Every `kg://` URN base is derived from the `@context` in
+>   [`content-model/index/context.jsonld`](content-model/index/context.jsonld),
+>   **not** from a `scheme` / `passthrough_schemes` block in `teamops.yaml`.
+>
+> For the authoritative, implemented contract see
+> [`src/engine/content-model/README.md`](src/engine/content-model/README.md).
+> Treat the paths and field names below as illustrative of the model's *shape*,
+> not as literal paths or keys in this repository.
+
 ---
 
 ## 1. Three layers, one identity

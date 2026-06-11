@@ -155,6 +155,8 @@ version: 0.1.0
 # kbexplorer
 
 Guidance body with a [link](https://example.com) and **bold** text.
+
+A [dangerous link](javascript:alert(1)) plus raw <script>alert('xss')</script> markup.
 `;
     const provider = new StructuralProvider({
       '.github/skills/kbexplorer/SKILL.md': SKILL,
@@ -168,8 +170,13 @@ Guidance body with a [link](https://example.com) and **bold** text.
     expect(skill!.jsonld?.['@type']).toBe('HowTo');
     expect(skill!.jsonld?.['version']).toBe('0.1.0');
     expect(skill!.data?.description).toContain('set up or explore');
-    // body rendered to HTML on content; raw embedded HTML stays escaped
+    // body rendered to HTML on content
     expect(skill!.content).toContain('<h1');
+    // raw embedded HTML is escaped, never emitted as live markup (XSS-safe)
+    expect(skill!.content).toContain('&lt;script');
+    expect(skill!.content).not.toContain('<script>');
+    // dangerous link URLs (javascript:/data:/vbscript:) are neutralized
+    expect(skill!.content).not.toContain('javascript:');
     // linked to the repository node via a structural relation
     const conn = skill!.connections.find(c => c.to === 'repo-meta');
     expect(conn?.relation).toBe('structural');

@@ -7,7 +7,9 @@ import type { ViewerProps } from './GenericStructuredView';
  * A skill's most load-bearing field is its **when-to-use** trigger description
  * (what makes an agent reach for it), so that is surfaced first, followed by the
  * rendered guidance body. SSR-safe: the body HTML is produced by the provider's
- * raw-HTML-escaping markdown renderer before it ever reaches the DOM.
+ * markdown renderer, which escapes raw embedded HTML and neutralizes
+ * script-executing link/image URLs (`javascript:`/`data:`/`vbscript:`) before it
+ * ever reaches the DOM via `dangerouslySetInnerHTML`.
  */
 
 function asRecord(v: unknown): Record<string, unknown> {

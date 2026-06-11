@@ -14,7 +14,7 @@
  * byte-identical for repos without a `.github` directory.
  */
 import yaml from 'yaml';
-import { Marked, type Tokens } from 'marked';
+import { Marked, type Token, type Tokens } from 'marked';
 import type { GraphProvider, ProviderResult } from '../providers';
 import type { KBConfig, KBNode, NodeSource, Connection } from '../../types';
 import { buildJsonLd } from '../../types';
@@ -44,11 +44,28 @@ const STRUCTURAL_CLUSTER = 'infra';
 const escapeHtml = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+/**
+ * URL schemes that can execute script when used as a link/image target. Markdown
+ * such as `[x](javascript:alert(1))` would otherwise render a clickable
+ * `javascript:` href once the body is injected via `dangerouslySetInnerHTML`.
+ */
+const DANGEROUS_URL_SCHEME = /^\s*(?:javascript|data|vbscript):/i;
+
 const safeMarkdown = new Marked({
   renderer: {
     html(token: Tokens.HTML | Tokens.Tag): string {
       return escapeHtml(token.text ?? '');
     },
+  },
+  // Neutralize dangerous link/image URLs before they reach the renderer, so the
+  // generated HTML can never carry a script-executing href/src.
+  walkTokens(token: Token): void {
+    if (token.type === 'link' || token.type === 'image') {
+      const t = token as Tokens.Link | Tokens.Image;
+      if (typeof t.href === 'string' && DANGEROUS_URL_SCHEME.test(t.href)) {
+        t.href = '';
+      }
+    }
   },
 });
 
@@ -234,8 +251,13 @@ function buildActionNode(path: string, content: string, repoNodeId: string): KBN
 
 function buildSkillNode(path: string, content: string, repoNodeId: string): KBNode {
   const { data, body } = parseFrontmatter(content);
-  const dirName = path.split('/').slice(-2, -1)[0] ?? fileName(path);
-  const name = (typeof data.name === 'string' && data.name) || dirName;
+  // `.github/skills/<name>/SKILL.md` is named for its directory; a loose
+  // `*.skill.md` file is named for its filename (sans the `.skill.md` suffix),
+  // so a path like `docs/foo.skill.md` doesn't get titled after `docs`.
+  const defaultName = /\/SKILL\.md$/i.test(path)
+    ? (path.split('/').slice(-2, -1)[0] ?? fileName(path))
+    : fileName(path).replace(/\.skill\.md$/i, '');
+  const name = (typeof data.name === 'string' && data.name) || defaultName;
   const html = renderSafeMarkdown(body);
   const ldProps: Record<string, unknown> = { name };
   if (typeof data.version === 'string') ldProps.version = data.version;
