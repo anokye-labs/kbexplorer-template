@@ -30,7 +30,7 @@ connections:
     description: Icon gallery display mode
 ---
 
-Every node in kbexplorer comes from a **provider** — a system of record that feeds data into the knowledge graph. Each node carries a `source` (a [`NodeSource`](type-system) discriminated union) and a `display` mode; together they decide the badge shown beside the title and which view renders the body. Both are **open** unions (`KnownDisplayMode | (string & {})`), so new kinds of nodes slot in without editing the core types in `src/types/index.ts`.
+Every node in kbexplorer comes from a **provider** — a system of record that feeds data into the knowledge graph. Each node carries a `source` (a [`NodeSource`](type-system) value) and a `display` mode; together they decide the badge shown beside the title and which view renders the body. The two types take different approaches to extensibility in `src/types/index.ts`: `DisplayMode` is an **open** union (`KnownDisplayMode | (string & {})`), so a brand-new display mode needs no core edit, while `NodeSource` is a **closed** discriminated union — but it carries a generic `structured` variant that acts as the escape hatch for new typed nodes, so they rarely need a new variant either.
 
 ## Source badges at a glance
 
@@ -65,7 +65,7 @@ Wikipedia articles and other external sources show the provider name (`source.ty
 
 ## Icon gallery
 
-A special display mode (`display: 'gallery'` / `'icon-detail'`) renders the Fluent icon library as a searchable, tiled grid — thousands of icon families browseable within the graph.
+A special display mode (`display: 'gallery'` / `'icon-detail'`) renders the Fluent icon library as a searchable, tiled grid — thousands of icon families browsable within the graph.
 
 ## Typed (structured) nodes and the viewer registry
 
@@ -100,7 +100,7 @@ Most "new" node types never add a bespoke `NodeSource` variant. Instead they reu
 | `org` | `OrgView` | content model |
 | `workflow` | `WorkflowView` | [structural](structural-nodes) |
 | `github-action` | `ActionView` | structural |
-| `skill` | `SkillView` | structural |
+| `skill` | `SkillView` | structural — *lands in [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180); not yet registered on `main`* |
 | `dependabot` · `funding` · `codeowners` · `templates` · `docs` | `GenericStructuredView` | structural |
 
-The viewer registry keyed by `@type`, the `structured` source, and the `'entity'` display mode are the three open seams that let the [node-type engine](node-types) grow new types as pure data + a renderer — no edits to the core unions required.
+The viewer registry keyed by `@type`, the `structured` source variant, and the `'entity'` display mode are the three open seams that let the [node-type engine](node-types) grow new types as pure data + a renderer. Of the rows above, the `skill` → `SkillView` binding is the one that is **not yet on `main`** — it ships with the engine work in [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180), and this page is written to land alongside it.

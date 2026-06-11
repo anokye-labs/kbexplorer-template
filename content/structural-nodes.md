@@ -41,13 +41,15 @@ Path classifiers in `structural-provider.ts` route each `.github` file to a per-
 |--------------|--------------|-----------------|--------|
 | `.github/workflows/*.yml` | `workflow` | `Workflow` | WorkflowView |
 | `**/action.yml` | `github-action` | `SoftwareApplication` | ActionView |
-| `.github/skills/**/SKILL.md`, `*.skill.md` | `skill` | `HowTo` | SkillView |
+| `.github/skills/**/SKILL.md`, `*.skill.md` | `skill` | `HowTo` | SkillView † |
 | `.github/ISSUE_TEMPLATE/**` | `issue-template` | `CreativeWork` | generic |
 | `PULL_REQUEST_TEMPLATE.md` | `pr-template` | `CreativeWork` | generic |
 | `CODEOWNERS` | `codeowners` | `StructuredConfig` | generic |
 | `.github/dependabot.yml` | `dependabot-config` | `DependabotConfig` | generic |
 | `.github/FUNDING.yml` | `funding-config` | `StructuredConfig` | generic |
 | other `.github` config / docs | `github-config` / `structured-config` | varies | generic |
+
+† The `skill` classifier and its `SkillView` are **not yet on `main`** — they ship with [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180). This page documents them so it can land alongside that engine work; everything else in the table is live today.
 
 Anything that doesn't match a dedicated classifier falls through to `buildGenericConfigNode()`, which first tries the declarative [node map](node-mapping) (`node-map.yaml`) plus a heuristic structured mapper, then treats prose markdown (`SECURITY.md`, `SUPPORT.md`, …) as a documentation node.
 
@@ -57,7 +59,7 @@ flowchart TD
   R(("repo-meta")):::repo
   WF["workflow<br/>WorkflowView"] -- structural --> R
   AC["github-action<br/>ActionView"] -- structural --> R
-  SK["skill<br/>SkillView"] -- structural --> R
+  SK["skill (PR #180)<br/>SkillView"] -- structural --> R
   IT["issue-template"] -- structural --> R
   PR["pr-template"] -- structural --> R
   CO["codeowners"] -- structural --> R
@@ -66,13 +68,13 @@ flowchart TD
   classDef repo fill:#5A98A8,stroke:#79c0ff,color:#0d1117;
 ```
 
-## The new `skill` node
+## The `skill` node (lands in PR #180)
 
-The newest structural type is `skill` — a Copilot / agent `SKILL.md` discovered under `.github/skills/**` (or any `*.skill.md`). `buildSkillNode()` parses the file's frontmatter, derives the name from the `name` field or the skill's directory, renders the guidance body to safe HTML, and emits an `entityType: 'skill'` node with JSON-LD `@type: 'HowTo'`. Its bespoke `SkillView` (`src/views/viewers/SkillView.tsx`) leads with the skill's most load-bearing field — the **when-to-use trigger** (`description`) that tells an agent when to reach for it — followed by the rendered body. The type and viewer are wired in `registerStructuralTypes()` exactly like `workflow` and `github-action`, with no change to any core union.
+The next structural type is `skill` — a Copilot / agent `SKILL.md` discovered under `.github/skills/**` (or any `*.skill.md`). It is **not yet on `main`**; the classifier, builder, and viewer below ship with [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180), and this section documents the behavior that PR introduces. There, `buildSkillNode()` parses the file's frontmatter, derives the name from the `name` field or the skill's directory, renders the guidance body to safe HTML, and emits an `entityType: 'skill'` node with JSON-LD `@type: 'HowTo'`. Its bespoke `SkillView` (`src/views/viewers/SkillView.tsx`) leads with the skill's most load-bearing field — the **when-to-use trigger** (`description`) that tells an agent when to reach for it — followed by the rendered body. The type and viewer are wired in `registerStructuralTypes()` exactly like `workflow` and `github-action`, with no change to any core union.
 
 ## Bespoke viewers
 
-`registerStructuralTypes()` binds `workflow → WorkflowView`, `github-action → ActionView`, and `skill → SkillView`; every other structural kind uses `GenericStructuredView`, which renders any `data` / `jsonld` payload as a nested table/tree. The viewer-registry resolution rules are shared with the content-model spine — see [node types](node-types) and [UI node types](ui-node-types).
+On `main` today, `registerStructuralTypes()` binds `workflow → WorkflowView` and `github-action → ActionView`; [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180) adds the `skill → SkillView` binding. Every other structural kind uses `GenericStructuredView`, which renders any `data` / `jsonld` payload as a nested table/tree. The viewer-registry resolution rules are shared with the content-model spine — see [node types](node-types) and [UI node types](ui-node-types).
 
 ## Untrusted-markup escaping
 
