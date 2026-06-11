@@ -128,6 +128,17 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingVerticalXS,
   },
+  relations: {
+    marginTop: tokens.spacingVerticalL,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXS,
+  },
+  relationsTitle: {
+    color: tokens.colorNeutralForeground3,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  },
   // responsive — desktop sidebar
   '@media (min-width: 1025px)': {
     body: {
@@ -547,6 +558,41 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
                           )}
                         </div>
                         <span style={{ width: 3, height: 24, borderRadius: 2, background: childCluster.color, flexShrink: 0 }} />
+                      </div>
+                    </Card>
+                  </a>
+                );
+              })}
+            </div>
+          );
+        })()}
+
+        {/* Structural relations — scoped to structural-provider nodes so the
+            .github → repository links (#167) are visible & navigable. Other
+            node kinds are unaffected (graph data is unchanged either way). */}
+        {node.provider === 'structural' && (() => {
+          const byId = new Map(graph.nodes.map(n => [n.id, n]));
+          const related = (node.connections ?? [])
+            .filter(conn => conn.relation === 'structural')
+            .map(conn => ({ conn, target: byId.get(conn.to) }))
+            .filter(r => r.target !== undefined);
+          if (related.length === 0) return null;
+          return (
+            <div className={styles.relations} data-testid="structural-relations">
+              <Caption1 className={styles.relationsTitle}>Related structure</Caption1>
+              {related.map(({ conn, target }) => {
+                const t = target!;
+                const targetCluster = findCluster(config, graph.clusters, t.cluster);
+                return (
+                  <a key={t.id} href={`#/node/${encodeURIComponent(t.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Card appearance="subtle" size="small" style={{ marginBottom: 4 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
+                        <NodeVisual node={t} mode={config.visuals.mode} surface="hud-thumb" source={config.source} clusterColor={targetCluster.color} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <Body1Strong style={{ display: 'block' }}>{t.title}</Body1Strong>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>{conn.description}</Caption1>
+                        </div>
+                        <span style={{ width: 3, height: 24, borderRadius: 2, background: targetCluster.color, flexShrink: 0 }} />
                       </div>
                     </Card>
                   </a>

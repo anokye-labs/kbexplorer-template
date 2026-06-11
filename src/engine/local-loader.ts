@@ -22,6 +22,7 @@ import { ProviderRegistry } from './providers';
 import { FilesProvider } from './providers/files-provider';
 import { AuthoredProvider } from './providers/authored-provider';
 import { WorkProvider } from './providers/work-provider';
+import { StructuralProvider } from './providers/structural-provider';
 import { ContentModelProvider } from './providers/content-model-provider';
 import { collectProviderNodes } from './orchestrator';
 import type { GHIssue, GHTreeItem } from '../api';
@@ -68,6 +69,8 @@ interface RepoManifest {
   nodemapRaw?: string | null;
   nodemapFiles?: Record<string, string>;
   nodemapDirs?: Record<string, Array<{ path: string; type: 'blob' | 'tree'; size?: number }>>;
+  structuredNodeMapRaw?: string | null;
+  structuralFiles?: Record<string, string>;
   /**
    * Optional content-model source (F2): schema files + entity files keyed by
    * path relative to a `content-model/` root. Absent (null) in repos without a
@@ -355,6 +358,13 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
   registry.register(
     new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null),
   );
+
+  // ── Structural discovery (.github → repository node) ────
+  if (manifest.structuralFiles && Object.keys(manifest.structuralFiles).length > 0) {
+    registry.register(
+      new StructuralProvider(manifest.structuralFiles, manifest.structuredNodeMapRaw ?? null),
+    );
+  }
 
   // Content-model spine (F2). Safe no-op when the manifest carries no
   // content-model source — emits nothing and leaves existing output unchanged.

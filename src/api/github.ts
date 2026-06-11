@@ -8,7 +8,7 @@ import type { SourceConfig } from '../types';
 
 const CACHE_PREFIX = 'kbe:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const CACHE_VERSION = 14; // bump to invalidate all cached data (14: content-model ingestion adds structured spine nodes/edges)
+const CACHE_VERSION = 15; // bump to invalidate all cached data (15: F3 structural nodes + node-map JSON-LD merged with content-model spine ingestion; 13: KBNode JSON-LD fields + KBEdge.relation)
 
 // Clear stale cache from older versions
 try {

@@ -28,6 +28,19 @@ export { orchestrate, collectProviderNodes } from './orchestrator';
 export { WorkProvider } from './providers/work-provider';
 export { AuthoredProvider } from './providers/authored-provider';
 export { FilesProvider } from './providers/files-provider';
+export { StructuralProvider, registerStructuralTypes } from './providers/structural-provider';
+export {
+  applyNodeMap,
+  inferStructuredNode,
+  parseStructuredNodeMap,
+  parseStructuredContent,
+  reconstructSource,
+} from './node-map';
+export type {
+  StructuredFile,
+  StructuredNodeMap,
+  NodeMapRule,
+} from './node-map';
 export { WikipediaProvider } from './providers/wikipedia-provider';
 export { OrgChartProvider } from './providers/orgchart-provider';
 export { loadExternalProviders } from './plugin-loader';

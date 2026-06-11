@@ -32,6 +32,7 @@ import { ProviderRegistry } from './providers'
 import { FilesProvider } from './providers/files-provider'
 import { AuthoredProvider } from './providers/authored-provider'
 import { WorkProvider } from './providers/work-provider'
+import { StructuralProvider } from './providers/structural-provider'
 import { ContentModelProvider } from './providers/content-model-provider'
 import { collectProviderNodes } from './orchestrator'
 
@@ -44,8 +45,18 @@ interface FetchedData {
   readme: string | null
   commits: GHCommit[]
   authoredContent: Record<string, string>
+  structuralFiles: Record<string, string>
+  structuredNodeMapRaw: string | null
   config: KBConfig
 }
+
+/** Whether a repo path is a `.github` structural artifact or a CODEOWNERS file. */
+function isStructuralPath(path: string): boolean {
+  return path.startsWith('.github/') || /(^|\/)CODEOWNERS$/.test(path)
+}
+
+/** Skip oversized `.github` blobs (mirrors the local manifest cap). */
+const MAX_STRUCTURAL_FILE_SIZE = 256 * 1024
 
 /**
  * Fetch GitHub data according to a resolution preset.
@@ -66,6 +77,8 @@ async function fetchGitHubData(
   let pullRequests: GHIssue[] = []
   let commits: GHCommit[] = []
   const authoredContent: Record<string, string> = {}
+  const structuralFiles: Record<string, string> = {}
+  let structuredNodeMapRaw: string | null = null
 
   if (preset === 'standard' || preset === 'full') {
     const [treeResult, prResult] = await Promise.all([
@@ -90,13 +103,35 @@ async function fetchGitHubData(
         // Content directory may not exist
       }
     }
+
+    // Fetch `.github` structural artifacts + the declarative node-map.
+    try {
+      const structuralPaths = tree
+        .filter(item =>
+          item.type === 'blob' &&
+          isStructuralPath(item.path) &&
+          !(typeof item.size === 'number' && item.size > MAX_STRUCTURAL_FILE_SIZE),
+        )
+        .map(item => item.path)
+      if (structuralPaths.length > 0) {
+        const files = await fetchFiles(source, structuralPaths)
+        for (const [path, content] of files) {
+          // Guard again on content length for blobs whose tree size was absent.
+          if (content.length > MAX_STRUCTURAL_FILE_SIZE) continue
+          structuralFiles[path] = content
+        }
+      }
+      structuredNodeMapRaw = await fetchFile(source, 'node-map.yaml').catch(() => null)
+    } catch {
+      // `.github` may not exist — safe no-op.
+    }
   }
 
   if (preset === 'full') {
     commits = await fetchCommits(source).catch(() => [] as GHCommit[])
   }
 
-  return { issues, pullRequests, tree, readme, commits, authoredContent, config }
+  return { issues, pullRequests, tree, readme, commits, authoredContent, structuralFiles, structuredNodeMapRaw, config }
 }
 
 /**
@@ -140,6 +175,11 @@ export async function loadRemoteKnowledgeBase(
   }))
 
   registry.register(new WorkProvider(data.issues, shapedPRs, data.commits))
+
+  // ── Structural discovery (.github → repository node) ────
+  if (Object.keys(data.structuralFiles).length > 0) {
+    registry.register(new StructuralProvider(data.structuralFiles, data.structuredNodeMapRaw))
+  }
 
   // Content-model spine (F2). The sunset content-model source is not fetched at
   // runtime yet; register as a safe no-op so the wiring is in place and output
