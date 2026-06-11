@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { FluentProvider } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
@@ -26,9 +26,15 @@ function useCurrentNodeId(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void }) {
+function Explorer({ themeMode, setThemeMode, applyConfigDefault }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfigDefault: (configDefault?: import('./types').Theme) => void }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
+
+  useEffect(() => {
+    if (state.status === 'ready') {
+      applyConfigDefault(state.config.theme.default);
+    }
+  }, [state, applyConfigDefault]);
 
   const [hudCollapsed, setHudCollapsed] = useState(() => {
     try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
@@ -79,12 +85,12 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
 }
 
 function App() {
-  const [themeMode, fluentTheme, setThemeMode] = useTheme();
+  const [themeMode, fluentTheme, setThemeMode, applyConfigDefault] = useTheme();
 
   return (
     <FluentProvider theme={fluentTheme} style={{ minHeight: '100vh' }}>
       <HashRouter>
-        <Explorer themeMode={themeMode} setThemeMode={setThemeMode} />
+        <Explorer themeMode={themeMode} setThemeMode={setThemeMode} applyConfigDefault={applyConfigDefault} />
       </HashRouter>
     </FluentProvider>
   );
