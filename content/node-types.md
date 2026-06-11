@@ -120,7 +120,7 @@ The [repo-structural provider](structural-nodes) registers via `registerStructur
 |--------------|--------|--------|
 | `workflow` | WorkflowView | `.github/workflows/*.yml` |
 | `github-action` | ActionView | `action.yml` |
-| `skill` | SkillView | `SKILL.md` — *lands in [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180); not yet registered on `main`* |
+| `skill` | SkillView | `SKILL.md` (newest addition) |
 | `issue-template` | generic | `.github/ISSUE_TEMPLATE/**` |
 | `pr-template` | generic | `PULL_REQUEST_TEMPLATE.md` |
 | `codeowners` | generic | `CODEOWNERS` |
@@ -128,7 +128,7 @@ The [repo-structural provider](structural-nodes) registers via `registerStructur
 | `funding-config` | generic | `.github/FUNDING.yml` |
 | `github-config` / `structured-config` | generic | other `.github` config / docs |
 
-Each row was added with a single `registerType()` + optional `registerViewer()` call — no new `DisplayMode`, `EdgeType`, or `NodeSource` variant was needed. `DisplayMode` and `EdgeType` are open unions (`Known… | (string & {})`), so they extend without a core edit; `NodeSource` is a *closed* discriminated union, but its generic `structured` variant (`{ type: 'structured'; entityType: string; ref?: string }`) is the shared escape hatch every typed node reuses — which is the whole point of the design. (The `skill` row above is documented here but registered by [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180), not yet on `main`.)
+Each row was added with a single `registerType()` + optional `registerViewer()` call — no new `DisplayMode`, `EdgeType`, or `NodeSource` variant was needed. `DisplayMode` and `EdgeType` are open unions (`Known… | (string & {})`), so they extend without a core edit; `NodeSource` is a *closed* discriminated union, but its generic `structured` variant (`{ type: 'structured'; entityType: string; ref?: string }`) is the shared escape hatch every typed node reuses — which is the whole point of the design.
 
 ## Where to go next
 

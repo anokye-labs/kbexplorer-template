@@ -100,7 +100,7 @@ Most "new" node types never add a bespoke `NodeSource` variant. Instead they reu
 | `org` | `OrgView` | content model |
 | `workflow` | `WorkflowView` | [structural](structural-nodes) |
 | `github-action` | `ActionView` | structural |
-| `skill` | `SkillView` | structural — *lands in [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180); not yet registered on `main`* |
+| `skill` | `SkillView` | structural |
 | `dependabot` · `funding` · `codeowners` · `templates` · `docs` | `GenericStructuredView` | structural |
 
-The viewer registry keyed by `@type`, the `structured` source variant, and the `'entity'` display mode are the three open seams that let the [node-type engine](node-types) grow new types as pure data + a renderer. Of the rows above, the `skill` → `SkillView` binding is the one that is **not yet on `main`** — it ships with the engine work in [PR #180](https://github.com/anokye-labs/kbexplorer-template/pull/180), and this page is written to land alongside it.
+The viewer registry keyed by `@type`, the `structured` source variant, and the `'entity'` display mode are the three open seams that let the [node-type engine](node-types) grow new types as pure data + a renderer — no edits to the core unions required.
