@@ -22,8 +22,10 @@ import { ProviderRegistry } from './providers';
 import { FilesProvider } from './providers/files-provider';
 import { AuthoredProvider } from './providers/authored-provider';
 import { WorkProvider } from './providers/work-provider';
+import { ContentModelProvider } from './providers/content-model-provider';
 import { collectProviderNodes } from './orchestrator';
 import type { GHIssue, GHTreeItem } from '../api';
+import type { ContentModelSource } from './content-model';
 
 // ── Manifest Types ─────────────────────────────────────────
 
@@ -66,6 +68,12 @@ interface RepoManifest {
   nodemapRaw?: string | null;
   nodemapFiles?: Record<string, string>;
   nodemapDirs?: Record<string, Array<{ path: string; type: 'blob' | 'tree'; size?: number }>>;
+  /**
+   * Optional content-model source (F2): schema files + entity files keyed by
+   * path relative to a `content-model/` root. Absent (null) in repos without a
+   * content model — the ContentModelProvider is then a safe no-op.
+   */
+  contentModel?: ContentModelSource | null;
   generatedAt: string;
 }
 
@@ -347,6 +355,10 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
   registry.register(
     new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null),
   );
+
+  // Content-model spine (F2). Safe no-op when the manifest carries no
+  // content-model source — emits nothing and leaves existing output unchanged.
+  registry.register(new ContentModelProvider(manifest.contentModel ?? null));
 
   // ── Register external providers from config ────────────
   if (config.providers && config.providers.length > 0) {
