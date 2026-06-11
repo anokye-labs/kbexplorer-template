@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, Navigate, useParams, useLocation } from 'rea
 import { FluentProvider } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme } from './hooks/useTheme';
+import { useThemeFonts } from './hooks/useThemeFonts';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
 import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
@@ -41,6 +42,8 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
     state.status === 'ready' ? state.graph : null,
     setThemeMode as (t: import('./types').Theme) => void,
   );
+
+  useThemeFonts(state.status === 'ready' ? state.config.theme.font : undefined);
 
   if (state.status === 'loading') return <LoadingScreen />;
   if (state.status === 'error') return <ErrorScreen message={state.error} />;
