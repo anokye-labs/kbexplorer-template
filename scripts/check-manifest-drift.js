@@ -79,12 +79,40 @@ const PARITY_FIELDS = [
   'contentModel',
 ];
 
+/**
+ * Canonicalize a value so comparison is insensitive to incidental ordering:
+ * object keys are sorted recursively and arrays are sorted by their canonical
+ * JSON form. The upstream `generate-manifest` helpers enumerate directories via
+ * `readdirSync` without sorting, so raw `readdir` order can differ across
+ * filesystems/OSes. Canonicalizing before stringifying means only *content*
+ * differences register as drift — pure ordering variance never produces a false
+ * positive. Any added/removed/changed entry still changes the canonical JSON, so
+ * real drift is preserved.
+ */
+function canonicalize(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map(canonicalize)
+      .map(v => [JSON.stringify(v), v])
+      .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+      .map(pair => pair[1]);
+  }
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      out[key] = canonicalize(value[key]);
+    }
+    return out;
+  }
+  return value;
+}
+
 function main() {
   const root = process.argv[2] ? resolve(process.argv[2]) : repoRoot;
 
   // ── Check 1: idempotency ────────────────────────────────────
-  const first = JSON.stringify(buildSourceDerived(root), null, 2);
-  const second = JSON.stringify(buildSourceDerived(root), null, 2);
+  const first = JSON.stringify(canonicalize(buildSourceDerived(root)), null, 2);
+  const second = JSON.stringify(canonicalize(buildSourceDerived(root)), null, 2);
 
   if (first !== second) {
     console.error('[drift] FAIL — source-derived assembly is NON-deterministic across re-runs.');
@@ -104,7 +132,7 @@ function main() {
   console.log('[drift] OK — source-derived manifest is byte-identical across re-runs (idempotent).');
 
   // ── Check 2: on-disk parity (best-effort) ───────────────────
-  const manifestPath = resolve(repoRoot, 'src', 'generated', 'repo-manifest.json');
+  const manifestPath = resolve(root, 'src', 'generated', 'repo-manifest.json');
   if (!existsSync(manifestPath)) {
     console.log('[drift] No on-disk manifest found — skipping parity check (idempotency already verified).');
     process.exit(0);
@@ -121,7 +149,9 @@ function main() {
   const fresh = buildSourceDerived(root);
   const drifted = [];
   for (const field of PARITY_FIELDS) {
-    if (JSON.stringify(onDisk[field]) !== JSON.stringify(fresh[field])) {
+    if (
+      JSON.stringify(canonicalize(onDisk[field])) !== JSON.stringify(canonicalize(fresh[field]))
+    ) {
       drifted.push(field);
     }
   }

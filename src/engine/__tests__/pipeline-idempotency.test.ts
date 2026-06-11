@@ -19,6 +19,7 @@ import { buildContentModel } from '../content-model';
 import { ContentModelProvider } from '../providers/content-model-provider';
 import { StructuralProvider } from '../providers/structural-provider';
 import { resetNodeTypeRegistry } from '../node-types';
+import { resetViewerRegistry } from '../../views/viewers';
 import { loadFixtureSource } from '../content-model/__tests__/fixtures';
 
 const config = { clusters: {} } as unknown as KBConfig;
@@ -53,7 +54,11 @@ class BaselineProvider implements GraphProvider {
 }
 
 afterEach(() => {
+  // StructuralProvider / content-model registration also register bespoke viewers
+  // (WorkflowView/ActionView/…); reset both registries so nothing leaks across tests
+  // and the overall vitest run stays order-independent.
   resetNodeTypeRegistry();
+  resetViewerRegistry();
 });
 
 describe('content-model builder idempotency (#170)', () => {

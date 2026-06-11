@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 import type { KBNode, Cluster } from '../../types';
 import { buildGraph } from '../graph';
 import { resolveType, resetNodeTypeRegistry } from '../node-types';
-import { resolveViewer } from '../../views/viewers';
+import { resolveViewer, resetViewerRegistry } from '../../views/viewers';
 import { registerContentModelTypes } from '../content-model';
 import { PersonView } from '../../views/viewers/PersonView';
 import { SquadView } from '../../views/viewers/SquadView';
@@ -45,7 +45,10 @@ describe('derived-artifact render proof (cross-repo, F8 gap)', () => {
     registerContentModelTypes();
   });
   afterAll(() => {
+    // registerContentModelTypes() populates both the node-type and viewer
+    // registries; reset both so viewer registrations don't leak into other tests.
     resetNodeTypeRegistry();
+    resetViewerRegistry();
   });
 
   it('every artifact honors the F1 JSON-LD identity contract (@id === identity URN)', () => {
