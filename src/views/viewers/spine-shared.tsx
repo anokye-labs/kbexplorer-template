@@ -8,10 +8,18 @@ import type { ReactNode } from 'react';
  */
 
 /** A header strip showing the entity kind label and its JSON-LD `@id`. */
-export function EntityHeader({ label, id }: { label: string; id?: string }) {
+export function EntityHeader({ label, id, native }: { label: string; id?: string; native?: string }) {
   return (
     <div className="kb-structured-header">
       <span className="kb-structured-type" title="JSON-LD @type">{label}</span>
+      {native && native.toLowerCase() !== label.toLowerCase() && (
+        <span
+          className="kb-structured-native"
+          title={`Native term — this repo calls it "${native}", unified to the canonical type`}
+        >
+          {native}
+        </span>
+      )}
       {id && <code className="kb-structured-id" title="JSON-LD @id">{id}</code>}
     </div>
   );

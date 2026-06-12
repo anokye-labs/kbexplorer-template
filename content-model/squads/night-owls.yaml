@@ -1,0 +1,13 @@
+# Demo entity for cross-repo vocabulary mapping (#153).
+# This repo calls a team a "cell"; the shared vocabulary (index/vocabulary.jsonld)
+# unifies `cell` → the canonical `squad` kind, so it joins the squad cluster and
+# uses SquadView — while keeping "cell" as its native label.
+"@type": cell
+id: night-owls
+name: Night Owls
+mission: After-hours reliability coverage
+members:
+  - ada
+workstream: personalization-discovery
+knowledgeAreas:
+  - reliability
