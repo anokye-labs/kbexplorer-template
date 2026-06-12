@@ -32,6 +32,7 @@ import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
 import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
 import type { TrimResult } from '../types';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
+import { resolveImageUrl } from '../api';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
 import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
 
@@ -138,6 +139,13 @@ const useStyles= makeStyles({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  brandLogo: {
+    display: 'block',
+    width: 'auto',
+    maxHeight: tokens.lineHeightHero700,
+    maxWidth: '40vw',
+    objectFit: 'contain',
   },
   placeholder: {
     color: tokens.colorNeutralForeground3,
@@ -767,6 +775,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   );
 
   const nodeTitle = currentNode?.title ?? config.title;
+  const brandLogoUrl = config.branding?.logo
+    ? resolveImageUrl(config.source, config.branding.logo)
+    : null;
 
   return (
     <>
@@ -937,6 +948,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             {!isVertical && (
               <>
                 <div className={styles.currentNode} style={{ justifyContent: 'center' }}>
+                  {brandLogoUrl && (
+                    <img className={styles.brandLogo} src={brandLogoUrl} alt="" />
+                  )}
                   {currentNode?.emoji && isFluentIconName(currentNode.emoji) ? (
                     (() => { const Icon = FLUENT_ICONS[currentNode.emoji]; return <Icon style={{ fontSize: 20 }} />; })()
                   ) : (
