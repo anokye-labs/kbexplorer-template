@@ -237,7 +237,7 @@ export function useTheme(): [
   ThemeMode,
   FluentTheme,
   (t: ThemeMode) => void,
-  (theme?: KBConfig['theme']) => void,
+  (theme?: KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => void,
   () => void,
 ] {
   const [mode, setModeState] = useState<ThemeMode>(() => readStored());
@@ -254,8 +254,13 @@ export function useTheme(): [
   // theme that was removed) is ignored and we fall back to config.theme.default
   // then 'dark'. The default is not persisted, so a later config change can
   // still take effect.
-  const applyConfig = useCallback((theme?: KBConfig['theme']) => {
-    const map = buildThemeMap(theme);
+  //
+  // `moduleThemes` (T5.3) are fully-built Fluent themes resolved from a custom
+  // host JS module (config.theme.moduleUrl). They are the MOST SPECIFIC escape
+  // hatch, so they are spread LAST and override built-ins/config themes of the
+  // same name. Absent/empty ⇒ the map equals the config-only result (no-op).
+  const applyConfig = useCallback((theme?: KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => {
+    const map = { ...buildThemeMap(theme), ...(moduleThemes ?? {}) };
     setThemeMap(map);
     const modes = modesForMap(map);
     const stored = readStoredRaw(modes);
