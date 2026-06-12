@@ -31,7 +31,7 @@ function useCurrentNodeId(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, cycleTheme }: { themeMode: import('./hooks/useTheme').ThemeMode; fluentTheme: FluentTheme; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => void; cycleTheme: () => void }) {
+function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, cycleTheme, availableThemes }: { themeMode: import('./hooks/useTheme').ThemeMode; fluentTheme: FluentTheme; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => void; cycleTheme: () => void; availableThemes: import('./hooks/useTheme').ThemeMode[] }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
 
@@ -111,7 +111,8 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
           currentNodeId={currentNodeId}
           theme={themeMode}
           isDark={isDark}
-          onThemeChange={setThemeMode as (t: import('./types').Theme) => void}
+          availableThemes={availableThemes}
+          onThemeChange={setThemeMode}
           onCollapsedChange={setHudCollapsed}
           onDockChange={setHudDock}
         />
@@ -120,13 +121,13 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
 }
 
 function App() {
-  const [themeMode, fluentTheme, setThemeMode, applyConfig, cycleTheme] = useTheme();
+  const [themeMode, fluentTheme, setThemeMode, applyConfig, cycleTheme, availableThemes] = useTheme();
   const isDark = isDarkTheme(fluentTheme);
 
   return (
     <FluentProvider theme={fluentTheme} style={{ minHeight: '100vh' }}>
       <HashRouter>
-        <Explorer themeMode={themeMode} fluentTheme={fluentTheme} isDark={isDark} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} />
+        <Explorer themeMode={themeMode} fluentTheme={fluentTheme} isDark={isDark} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} availableThemes={availableThemes} />
       </HashRouter>
     </FluentProvider>
   );
