@@ -4,13 +4,15 @@ import { DEFAULT_CONFIG } from '../index';
 import type { KBConfig } from '../index';
 
 // Mirrors the parse + shallow-merge that loadConfig() performs in
-// src/engine/parser.ts, without the network fetch. Validates that the
-// additive theme.brand / theme.tokens / theme.themes fields round-trip
-// from config.yaml into a typed KBConfig with the expected shapes.
+// src/engine/parser.ts (including the final `source` injection), without the
+// network fetch. Validates that the additive theme.brand / theme.tokens /
+// theme.themes fields round-trip from config.yaml into a typed KBConfig with
+// the expected shapes.
 
 function parseConfigYaml(raw: string): KBConfig {
+  const source = DEFAULT_CONFIG.source;
   const parsed = yaml.parse(raw) as Partial<KBConfig>;
-  return { ...DEFAULT_CONFIG, ...parsed };
+  return { ...DEFAULT_CONFIG, ...parsed, source };
 }
 
 describe('KBConfig.theme schema (brand, tokens, themes)', () => {
@@ -90,7 +92,9 @@ theme:
         "160": "#FBF3E2"
 `);
     const themes = config.theme.themes!;
-    expect(Object.keys(themes)).toEqual(['ocean', 'parchment']);
+    expect(Object.keys(themes)).toHaveLength(2);
+    expect(themes).toHaveProperty('ocean');
+    expect(themes).toHaveProperty('parchment');
 
     expect(themes.ocean.base).toBe('dark');
     expect(themes.ocean.brand).toBe('#1B6CA8');
