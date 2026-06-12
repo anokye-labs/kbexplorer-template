@@ -35,6 +35,7 @@ import { WorkProvider } from './providers/work-provider'
 import { StructuralProvider } from './providers/structural-provider'
 import { ContentModelProvider } from './providers/content-model-provider'
 import { collectProviderNodes } from './orchestrator'
+import { applyExternalThemeFile } from '../theme/externalTheme'
 
 export type ResolutionPreset = 'summary' | 'standard' | 'full'
 
@@ -67,11 +68,25 @@ async function fetchGitHubData(
 ): Promise<FetchedData> {
   const config = await loadConfig(source)
 
+  // F5/T5.1: merge a dedicated host-repo theme file (config.theme.themesFile)
+  // into the theme block before the THEME_MAP is built. Fetched like config.yaml
+  // (repo-relative path via fetchFile); a missing/malformed file is a no-op.
+  // Since applyExternalThemeFile is no-throw/no-op on failure, fetch it in
+  // parallel with issues/README rather than adding a serial round-trip.
+  const themeFilePromise = config.theme?.themesFile
+    ? applyExternalThemeFile(config.theme, p => fetchFile(source, p))
+    : null
+
   // All presets fetch issues + README
-  const [issues, readme] = await Promise.all([
+  const [issues, readme, mergedTheme] = await Promise.all([
     fetchIssues(source).catch(() => [] as GHIssue[]),
     fetchFile(source, 'README.md').catch(() => null),
+    themeFilePromise,
   ])
+
+  if (mergedTheme) {
+    config.theme = mergedTheme
+  }
 
   let tree: GHTreeItem[] = []
   let pullRequests: GHIssue[] = []
