@@ -4,6 +4,7 @@ import { FluentProvider } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme } from './hooks/useTheme';
 import { useThemeFonts } from './hooks/useThemeFonts';
+import { useFavicon } from './hooks/useFavicon';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
 import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
@@ -50,6 +51,8 @@ function Explorer({ themeMode, setThemeMode, applyConfigDefault }: { themeMode: 
   );
 
   useThemeFonts(state.status === 'ready' ? state.config.theme.font : undefined);
+
+  useFavicon(state.status === 'ready' ? state.config : undefined);
 
   if (state.status === 'loading') return <LoadingScreen />;
   if (state.status === 'error') return <ErrorScreen message={state.error} />;

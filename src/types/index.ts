@@ -768,10 +768,16 @@ export type NodeSource =
    */
   | { type: 'structured'; entityType: string; ref?: string };
 
-/** Optional site branding assets (logo, etc.). All fields optional/additive. */
+/** Optional site branding assets (logo, favicon, etc.). All fields optional/additive. */
 export interface BrandingConfig {
   /** Repo-relative path to a logo image, resolved via resolveImageUrl(). */
   logo?: string;
+  /**
+   * Repo-relative path to a favicon image, resolved via resolveImageUrl() and
+   * swapped into the document's <link rel="icon"> at runtime. When unset, the
+   * static /favicon.svg from index.html is left untouched.
+   */
+  favicon?: string;
 }
 
 /** Configuration for an external provider plugin */
@@ -927,6 +933,8 @@ export const DEFAULT_CONFIG: KBConfig = {
     sparkAnimation: false,
   },
   // branding omitted by default — host repos may set branding.logo (a repo-relative
-  // image path) to render a logo on the HomePage hero and HUD header. Text title is
-  // used as the graceful fallback when no logo is configured.
+  // image path) to render a logo on the HomePage hero and HUD header, and
+  // branding.favicon (a repo-relative image path) to swap the document favicon at
+  // runtime. Text title and the static /favicon.svg are used as graceful fallbacks
+  // when no logo / favicon is configured.
 };
