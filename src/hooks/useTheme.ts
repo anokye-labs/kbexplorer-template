@@ -106,13 +106,17 @@ const RAMP_STOPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140,
  * partial) into a complete Fluent `BrandVariants`. A complete ramp is used
  * verbatim; a partial ramp has its gaps filled by carrying the nearest
  * provided neighbor (forward, then backward) so every stop is defined.
+ * Returns `undefined` for an empty ramp (no stops provided) so callers can
+ * ignore an invalid brand rather than feed an incomplete ramp into
+ * `createDarkTheme`/`createLightTheme`.
  */
-function rampToBrandVariants(ramp: FluentBrandRamp): BrandVariants {
+function rampToBrandVariants(ramp: FluentBrandRamp): BrandVariants | undefined {
   const out: Record<number, string> = {};
   for (const stop of RAMP_STOPS) {
     const value = ramp[String(stop) as FluentBrandRampKey];
     if (value) out[stop] = value;
   }
+  if (Object.keys(out).length === 0) return undefined;
   let last: string | undefined;
   for (const stop of RAMP_STOPS) {
     if (out[stop]) last = out[stop];
@@ -127,9 +131,18 @@ function rampToBrandVariants(ramp: FluentBrandRamp): BrandVariants {
   return out as BrandVariants;
 }
 
-/** Resolve a config brand value (seed hex or ramp object) to BrandVariants. */
-function resolveBrandVariants(brand: string | FluentBrandRamp): BrandVariants {
-  return typeof brand === 'string' ? generateBrandVariants(brand) : rampToBrandVariants(brand);
+/**
+ * Resolve a config brand value (seed hex or ramp object) to BrandVariants.
+ * Returns `undefined` for an invalid hex seed or an empty ramp so a bad
+ * `config.theme.brand` is ignored (config.yaml is merged without validation)
+ * instead of crashing the app.
+ */
+function resolveBrandVariants(brand: string | FluentBrandRamp): BrandVariants | undefined {
+  try {
+    return typeof brand === 'string' ? generateBrandVariants(brand) : rampToBrandVariants(brand);
+  } catch {
+    return undefined;
+  }
 }
 
 /** Spread arbitrary token overrides over a Theme so explicit values win. */
@@ -144,12 +157,14 @@ function applyTokens(base: FluentTheme, tokens?: Partial<Record<string, string>>
  * - Starts from the three built-ins (dark/light/sepia).
  * - A global `theme.brand` regenerates the dark/light base themes via
  *   `createDarkTheme`/`createLightTheme`; `theme.tokens` are then spread on top.
- * - Each `theme.themes.<name>` entry becomes a selectable theme keyed by name,
- *   derived from its `base` ('dark'→createDarkTheme, 'light'→createLightTheme,
- *   default 'dark'), its `brand`, and its `tokens`.
+ * - Each `theme.themes.<name>` entry is registered under its name (built-in
+ *   names dark/light/sepia are reserved and skipped with a warning), derived
+ *   from its `base` ('dark'→createDarkTheme, 'light'→createLightTheme, default
+ *   'dark'), its `brand`, and its `tokens`.
  *
- * With no brand/tokens/themes configured the result equals BUILTIN_THEME_MAP
- * (same object references), so behavior is unchanged.
+ * With no brand/tokens/themes configured the dark/light/sepia entries reuse the
+ * built-in theme object references, so behavior is unchanged. (The returned map
+ * is always a fresh object literal — only its theme *values* are shared.)
  */
 export function buildThemeMap(theme?: KBConfig['theme']): Record<string, FluentTheme> {
   const globalVariants = theme?.brand ? resolveBrandVariants(theme.brand) : undefined;
@@ -162,6 +177,12 @@ export function buildThemeMap(theme?: KBConfig['theme']): Record<string, FluentT
 
   if (theme?.themes) {
     for (const [key, def] of Object.entries(theme.themes)) {
+      if ((MODES as string[]).includes(key)) {
+        console.warn(
+          `[useTheme] Ignoring config theme "${key}": that name is reserved for a built-in theme.`,
+        );
+        continue;
+      }
       const base = def.base ?? 'dark';
       const variants = def.brand ? resolveBrandVariants(def.brand) : undefined;
       let baseTheme: FluentTheme;

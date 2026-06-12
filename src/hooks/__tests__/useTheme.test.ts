@@ -85,4 +85,24 @@ describe('buildThemeMap', () => {
     // Sepia is the curated reading theme with its warm paper background.
     expect(map.sepia.colorNeutralBackground1).toBe('#F5ECD7');
   });
+
+  it('ignores an invalid brand seed instead of crashing', () => {
+    const map = buildThemeMap({ default: 'dark', brand: 'not-a-color' });
+    expect(map.dark).toBe(webDarkTheme);
+    expect(map.light).toBe(webLightTheme);
+  });
+
+  it('ignores an empty brand ramp object', () => {
+    const map = buildThemeMap({ default: 'dark', brand: {} });
+    expect(map.dark).toBe(webDarkTheme);
+  });
+
+  it('does not let a custom theme overwrite a reserved built-in key', () => {
+    const map = buildThemeMap({
+      default: 'dark',
+      themes: { dark: { brand: '#FF0000' } },
+    });
+    // The reserved 'dark' built-in is preserved, not replaced by the config theme.
+    expect(map.dark).toBe(webDarkTheme);
+  });
 });
