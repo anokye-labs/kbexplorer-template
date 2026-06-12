@@ -725,6 +725,18 @@ export type VisualMode = 'sprites' | 'heroes' | 'emoji' | 'none';
 /** Theme preference. */
 export type Theme = 'dark' | 'light' | 'sepia';
 
+/** The 16 stop keys of a Fluent brand color ramp ("10".."160"). */
+export type FluentBrandRampKey =
+  | '10' | '20' | '30' | '40' | '50' | '60' | '70' | '80'
+  | '90' | '100' | '110' | '120' | '130' | '140' | '150' | '160';
+
+/**
+ * A Fluent brand color ramp keyed by stop ("10".."160"). Typed as `Partial`
+ * so configs may omit stops, but keys are constrained to the 16 valid slots
+ * (arbitrary keys won't type-check). A complete ramp supplies all 16.
+ */
+export type FluentBrandRamp = Partial<Record<FluentBrandRampKey, string>>;
+
 /** Content source configuration. */
 export interface SourceConfig {
   owner: string;
@@ -812,6 +824,36 @@ export interface KBConfig {
       body?: string;
       mono?: string;
     };
+    /**
+     * Global brand color override. Two accepted forms:
+     *   1. A single seed hex string (e.g. "#4A9CC8") — used to generate a full
+     *      Fluent brand ramp via `createDarkTheme`/`createLightTheme`.
+     *   2. A Fluent ramp object keyed by stop ("10".."160"); a complete ramp
+     *      supplies all 16 stops (e.g. { "10": "#020305", ..., "160": "#EAF3F8" })
+     *      and is used verbatim.
+     * Schema only for now; wiring happens in T2.2.
+     */
+    brand?: string | FluentBrandRamp;
+    /**
+     * Arbitrary Fluent design-token overrides (token name → CSS value),
+     * applied on top of the active base theme. Example:
+     *   { colorNeutralBackground1: "#101418", borderRadiusMedium: "8px" }
+     * Schema only for now; wiring happens in T2.2.
+     */
+    tokens?: Partial<Record<string, string>>;
+    /**
+     * Named custom theme variants. Each variant may specify its own brand
+     * (seed hex or ramp), token overrides, and the base theme it derives from
+     * ('dark' or 'light'). Schema only for now; wiring happens in T2.2.
+     */
+    themes?: Record<
+      string,
+      {
+        brand?: string | FluentBrandRamp;
+        tokens?: Partial<Record<string, string>>;
+        base?: 'dark' | 'light';
+      }
+    >;
   };
   graph: {
     physics: boolean;
@@ -875,6 +917,9 @@ export const DEFAULT_CONFIG: KBConfig = {
       body: "'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
       mono: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
     },
+    // brand / tokens / themes are optional, additive overrides (see KBConfig.theme).
+    // Left unset by default so the built-in dark/light/sepia themes are unchanged.
+    // Wiring into useTheme/THEME_MAP happens in T2.2.
   },
   graph: {
     physics: true,
