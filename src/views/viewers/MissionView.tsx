@@ -1,6 +1,6 @@
 import type { ViewerProps } from './GenericStructuredView';
 import { EntityHeader, Row, Pill } from './spine-shared';
-import { dataOf, arrayField } from './spine-data';
+import { dataOf, arrayField, nativeTypeOf } from './spine-data';
 
 interface Metric { name?: string; target?: unknown; current?: unknown }
 interface Milestone { name?: string; done?: boolean }
@@ -23,7 +23,7 @@ export function MissionView({ node }: ViewerProps) {
 
   return (
     <div className="kb-structured-view kb-mission-view">
-      <EntityHeader label="Mission" id={node.jsonld?.['@id'] as string | undefined} />
+      <EntityHeader label="Mission" id={node.jsonld?.['@id'] as string | undefined} native={nativeTypeOf(node)} />
       <h2 className="kb-entity-name">{name}</h2>
       <div className="kb-pill-row">
         {status && <Pill value={status} />}

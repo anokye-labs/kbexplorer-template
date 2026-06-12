@@ -1,0 +1,6 @@
+{
+  "@context": {
+    "cell": "squad",
+    "crew": { "@id": "squad" }
+  }
+}

@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
-import { FluentProvider } from '@fluentui/react-components';
+import { FluentProvider, type Theme as FluentTheme } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
-import { useTheme } from './hooks/useTheme';
+import { useTheme, isDarkTheme } from './hooks/useTheme';
+import { useThemeFonts } from './hooks/useThemeFonts';
+import { useFavicon } from './hooks/useFavicon';
+import { useCssOverride, isAbsoluteUrl } from './hooks/useCssOverride';
+import { loadThemeModule, applyThemeModuleInOrder } from './theme/themeModule';
+import { resolveImageUrl } from './api';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
 import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
@@ -15,9 +20,9 @@ import './styles/visuals.css';
 import './styles/reading.css';
 import './styles/responsive.css';
 
-function ReadingRoute({ graph, config }: { graph: import('./types').KBGraph; config: import('./types').KBConfig }) {
+function ReadingRoute({ graph, config, theme }: { graph: import('./types').KBGraph; config: import('./types').KBConfig; theme: FluentTheme }) {
   const { id } = useParams<{ id: string }>();
-  return <ReadingView graph={graph} config={config} nodeId={id ?? ''} />;
+  return <ReadingView graph={graph} config={config} nodeId={id ?? ''} theme={theme} />;
 }
 
 function useCurrentNodeId(): string | null {
@@ -26,9 +31,38 @@ function useCurrentNodeId(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void }) {
+function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, cycleTheme }: { themeMode: import('./hooks/useTheme').ThemeMode; fluentTheme: FluentTheme; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => void; cycleTheme: () => void }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
+
+  useEffect(() => {
+    if (state.status !== 'ready') return;
+    const theme = state.config.theme;
+    const moduleUrl = theme?.moduleUrl;
+    // No module configured: pure no-op — just build the config-only THEME_MAP,
+    // keeping the security-sensitive dynamic import strictly opt-in.
+    if (!moduleUrl) {
+      applyConfig(theme);
+      return;
+    }
+    // T5.3: a host repo opted into a custom JS theme module. Resolve a
+    // repo-relative path like other host assets (in remote mode this is a
+    // cross-origin raw host URL); an absolute URL is used verbatim.
+    // applyThemeModuleInOrder applies the config-only map IMMEDIATELY, then
+    // re-applies the merged map once the import lands — so the UI never lingers
+    // on the built-in map, and a slow/failed import is a safe no-op.
+    let cancelled = false;
+    const url = isAbsoluteUrl(moduleUrl) ? moduleUrl : resolveImageUrl(state.config.source, moduleUrl);
+    const guardedApply = (t?: import('./types').KBConfig['theme'], m?: Record<string, FluentTheme>) => {
+      if (!cancelled) applyConfig(t, m);
+    };
+    void applyThemeModuleInOrder(
+      theme,
+      () => loadThemeModule(url, { name: theme.moduleThemeName }),
+      guardedApply,
+    );
+    return () => { cancelled = true; };
+  }, [state, applyConfig]);
 
   const [hudCollapsed, setHudCollapsed] = useState(() => {
     try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
@@ -39,8 +73,14 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
 
   useKeyboardNav(
     state.status === 'ready' ? state.graph : null,
-    setThemeMode as (t: import('./types').Theme) => void,
+    cycleTheme,
   );
+
+  useThemeFonts(state.status === 'ready' ? state.config.theme.font : undefined);
+
+  useFavicon(state.status === 'ready' ? state.config : undefined);
+
+  useCssOverride(state.status === 'ready' ? state.config : undefined);
 
   if (state.status === 'loading') return <LoadingScreen />;
   if (state.status === 'error') return <ErrorScreen message={state.error} />;
@@ -61,7 +101,7 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
           <Route path="/" element={<Navigate to="/node/home" replace />} />
           <Route path="/node/home" element={<HomePage graph={graph} config={config} />} />
           <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
-          <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} />} />
+          <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} theme={fluentTheme} />} />
           <Route path="*" element={<Navigate to="/node/home" replace />} />
         </Routes>
       </div>
@@ -70,6 +110,7 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
           config={config}
           currentNodeId={currentNodeId}
           theme={themeMode}
+          isDark={isDark}
           onThemeChange={setThemeMode as (t: import('./types').Theme) => void}
           onCollapsedChange={setHudCollapsed}
           onDockChange={setHudDock}
@@ -79,12 +120,13 @@ function Explorer({ themeMode, setThemeMode }: { themeMode: import('./hooks/useT
 }
 
 function App() {
-  const [themeMode, fluentTheme, setThemeMode] = useTheme();
+  const [themeMode, fluentTheme, setThemeMode, applyConfig, cycleTheme] = useTheme();
+  const isDark = isDarkTheme(fluentTheme);
 
   return (
     <FluentProvider theme={fluentTheme} style={{ minHeight: '100vh' }}>
       <HashRouter>
-        <Explorer themeMode={themeMode} setThemeMode={setThemeMode} />
+        <Explorer themeMode={themeMode} fluentTheme={fluentTheme} isDark={isDark} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} />
       </HashRouter>
     </FluentProvider>
   );

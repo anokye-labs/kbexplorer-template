@@ -1,6 +1,6 @@
 import type { ViewerProps } from './GenericStructuredView';
 import { EntityHeader, Row } from './spine-shared';
-import { dataOf } from './spine-data';
+import { dataOf, nativeTypeOf } from './spine-data';
 
 /**
  * Bespoke viewer for `workstream` entities (F2 / T2.6 — #165).
@@ -15,7 +15,7 @@ export function WorkstreamView({ node }: ViewerProps) {
 
   return (
     <div className="kb-structured-view kb-workstream-view">
-      <EntityHeader label="Workstream" id={node.jsonld?.['@id'] as string | undefined} />
+      <EntityHeader label="Workstream" id={node.jsonld?.['@id'] as string | undefined} native={nativeTypeOf(node)} />
       <h2 className="kb-entity-name">{name}</h2>
       {summary && <p className="kb-entity-tagline">{summary}</p>}
       <table className="kb-structured-table">

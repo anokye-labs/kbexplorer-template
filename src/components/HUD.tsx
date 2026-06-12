@@ -31,7 +31,9 @@ import {
 import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
 import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
 import type { TrimResult } from '../types';
+import type { ThemeMode } from '../hooks/useTheme';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
+import { resolveImageUrl } from '../api';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
 import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
 
@@ -41,7 +43,13 @@ interface HUDProps {
   graph: KBGraph;
   config: KBConfig;
   currentNodeId: string | null;
-  theme: Theme;
+  theme: ThemeMode;
+  /**
+   * Whether the active theme renders on a dark background. Derived from the
+   * resolved Fluent theme (not the mode string) so config themes — which may
+   * carry any key — drive minimap edge/highlight contrast correctly.
+   */
+  isDark: boolean;
   onThemeChange: (theme: Theme) => void;
   onCollapsedChange?: (collapsed: boolean) => void;
   onDockChange?: (dock: DockPosition) => void;
@@ -138,6 +146,13 @@ const useStyles= makeStyles({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  brandLogo: {
+    display: 'block',
+    width: 'auto',
+    maxHeight: tokens.lineHeightHero700,
+    maxWidth: '40vw',
+    objectFit: 'contain',
   },
   placeholder: {
     color: tokens.colorNeutralForeground3,
@@ -263,7 +278,7 @@ const useStyles= makeStyles({
   },
 });
 
-export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
+export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
   const styles = useStyles();
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [canvasMountKey, setCanvasMountKey] = useState(0);
@@ -456,8 +471,8 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     const posMap = minimapPositions;
     if (posMap.size === 0) return;
 
-    const edgeColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.12)';
-    const highlightColor = theme === 'dark' ? HIGHLIGHT_COLOR_DARK : HIGHLIGHT_COLOR_LIGHT;
+    const edgeColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.12)';
+    const highlightColor = isDark ? HIGHLIGHT_COLOR_DARK : HIGHLIGHT_COLOR_LIGHT;
 
     const dpr = window.devicePixelRatio || 1;
     const W = canvas.clientWidth || 120;
@@ -549,7 +564,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       ctx.lineWidth = isCurrent ? 1.5 : 0.8;
       ctx.stroke();
     }
-  }, [filteredGraph, currentNodeId, theme, dock, minimapPositions, canvasMountKey]);
+  }, [filteredGraph, currentNodeId, isDark, dock, minimapPositions, canvasMountKey]);
 
   useEffect(() => { const t = setTimeout(() => drawMinimap(), 50); return () => clearTimeout(t); }, [drawMinimap]);
 
@@ -560,7 +575,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
     const { network, setEmphasis: overlaySetEmphasis } = createGraphNetwork({
       container: overlayRef.current,
       graph: filteredGraph,
-      isDark: theme === 'dark',
+      isDark,
       onNodeClick: (id) => {
         setMapExpanded(false);
         window.location.hash = `/node/${encodeURIComponent(id)}`;
@@ -607,7 +622,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       }
       const { network, nodes: visNodes, setEmphasis } = createGraphNetwork({
         container: sidebarGraphRef.current,
-        graph: filteredGraph,        isDark: theme === 'dark',
+        graph: filteredGraph,        isDark,
         onNodeClick: (id) => {
           window.location.hash = `/node/${encodeURIComponent(id)}`;
         },
@@ -640,7 +655,7 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVertical, collapsed, filteredGraph, theme]);
+  }, [isVertical, collapsed, filteredGraph, isDark]);
 
   // Update selection + focus + neighborhood emphasis when currentNodeId changes (no rebuild)
   useEffect(() => {
@@ -767,6 +782,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
   );
 
   const nodeTitle = currentNode?.title ?? config.title;
+  const brandLogoUrl = config.branding?.logo
+    ? resolveImageUrl(config.source, config.branding.logo)
+    : null;
 
   return (
     <>
@@ -937,6 +955,9 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
             {!isVertical && (
               <>
                 <div className={styles.currentNode} style={{ justifyContent: 'center' }}>
+                  {brandLogoUrl && (
+                    <img className={styles.brandLogo} src={brandLogoUrl} alt="" />
+                  )}
                   {currentNode?.emoji && isFluentIconName(currentNode.emoji) ? (
                     (() => { const Icon = FLUENT_ICONS[currentNode.emoji]; return <Icon style={{ fontSize: 20 }} />; })()
                   ) : (
