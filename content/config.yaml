@@ -1,6 +1,17 @@
 title: "kbexplorer"
 subtitle: "Interactive Knowledge Base Explorer"
 
+theme:
+  default: dark
+  # Load named themes from a dedicated host-repo file (F5 / T5.1). Fetched at
+  # runtime like this config and merged into the THEME_MAP; the external file
+  # wins over the inline `themes` below for same-named keys (e.g. `ocean`).
+  themesFile: content/themes/extra-themes.yaml
+  themes:
+    ocean:
+      base: dark
+      brand: "#1B6CA8"
+
 clusters:
   engine:
     name: "Engine"

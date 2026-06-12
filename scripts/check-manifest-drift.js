@@ -40,6 +40,7 @@ import {
   collectStructuralFiles,
   collectNodemapData,
   readContentModel,
+  readThemeFile,
 } from './generate-manifest.js';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -52,8 +53,10 @@ function buildSourceDerived(root) {
   const tree = walkFileSystem(root);
   const nodemapRaw = readNodemap(root);
   const { nodemapFiles, nodemapDirs } = collectNodemapData(root, nodemapRaw, tree);
+  const configRaw = readConfig(root, contentPath);
   return {
-    configRaw: readConfig(root, contentPath),
+    configRaw,
+    themeFileRaw: readThemeFile(root, configRaw),
     authoredContent: readAuthoredContent(contentDir, contentPath),
     tree,
     readme: readReadme(root),
@@ -69,6 +72,7 @@ function buildSourceDerived(root) {
 /** Fields safe to compare against an on-disk manifest (no self-reference). */
 const PARITY_FIELDS = [
   'configRaw',
+  'themeFileRaw',
   'authoredContent',
   'readme',
   'nodemapRaw',

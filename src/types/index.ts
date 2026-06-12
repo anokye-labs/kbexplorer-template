@@ -921,6 +921,23 @@ export interface KBConfig {
         base?: 'dark' | 'light';
       }
     >;
+    /**
+     * Optional repo-relative path to a *dedicated theme file* in the HOST repo
+     * (e.g. "content/themes/extra.yaml" or ".kbe/theme.yaml"). It is fetched at
+     * runtime exactly like config.yaml (same source/auth, and from the local
+     * manifest in local mode) and parsed to the SAME shape as `config.theme`
+     * (optional top-level `default` / `brand` / `tokens`, plus a `themes` map of
+     * named variants). Its contents are merged into the dynamic THEME_MAP so a
+     * host repo can define or override named themes WITHOUT editing the
+     * `.kbexplorer` submodule or inlining everything here.
+     *
+     * Precedence: the external file WINS over the inline `config.theme` for
+     * same-named theme keys and for top-level brand/tokens/default (it is the
+     * more specific escape hatch). Unset ⇒ no fetch and a pure no-op fallback;
+     * a missing/unreachable/malformed file is ignored (warning only) and the
+     * THEME_MAP equals the config-only result.
+     */
+    themesFile?: string;
   };
   graph: {
     physics: boolean;
@@ -990,7 +1007,10 @@ export const DEFAULT_CONFIG: KBConfig = {
     },
     // brand / tokens / themes are optional, additive overrides (see KBConfig.theme).
     // Left unset by default so the built-in dark/light/sepia themes are unchanged.
-    // Wiring into useTheme/THEME_MAP happens in T2.2.
+    // themesFile (also unset by default) may point at a dedicated theme file in the
+    // host repo (e.g. "content/themes/extra.yaml"); when set it is fetched at runtime
+    // like config.yaml and its named themes are merged into the THEME_MAP, overriding
+    // any inline theme.themes of the same name. Unset ⇒ no fetch, no behavior change.
   },
   graph: {
     physics: true,

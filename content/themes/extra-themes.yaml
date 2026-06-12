@@ -1,0 +1,26 @@
+# External theme file (F5 / T5.1, issue #199).
+#
+# Referenced by content/config.yaml via `theme.themesFile`. It is fetched at
+# runtime exactly like config.yaml and merged into the dynamic THEME_MAP, so a
+# host repo can define or override named themes WITHOUT editing the .kbexplorer
+# submodule or inlining everything into config.yaml.
+#
+# Same shape as config.theme: an optional top-level default / brand / tokens,
+# plus a `themes` map of named variants (each with brand / tokens / base).
+# Precedence: this file WINS over inline config.theme for same-named keys.
+themes:
+  # A theme defined ONLY here (absent from config.theme.themes) — proves the
+  # external file can introduce brand-new selectable themes into the cycle.
+  forest:
+    base: dark
+    brand: "#2E7D32"
+    tokens:
+      colorNeutralBackground1: "#0B1A0B"
+      colorNeutralBackground2: "#10240F"
+
+  # Same name as an inline config theme (ocean) — the external entry is
+  # field-merged over the inline one (its brand is kept, these tokens win),
+  # demonstrating override precedence for same-named keys.
+  ocean:
+    tokens:
+      colorNeutralBackground1: "#001324"
