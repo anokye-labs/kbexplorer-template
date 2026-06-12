@@ -99,6 +99,19 @@ describe('readThemeFile (T5.1 / #199)', () => {
     const configRaw = 'theme:\n  themesFile: content/themes/missing.yaml';
     expect(readThemeFile(FIXTURES, configRaw)).toBeNull();
   });
+
+  it('rejects path traversal and absolute paths (stays inside repo root)', () => {
+    // A traversal that escapes the repo root must be refused even if it resolves
+    // to a real file, so secrets outside the project can't be embedded.
+    writeFileSync(resolve(FIXTURES, '..', '__outside-theme.yaml'), 'themes:\n  evil: {}');
+    try {
+      expect(readThemeFile(FIXTURES, 'theme:\n  themesFile: ../__outside-theme.yaml')).toBeNull();
+      const abs = resolve(FIXTURES, '..', '__outside-theme.yaml');
+      expect(readThemeFile(FIXTURES, `theme:\n  themesFile: ${abs}`)).toBeNull();
+    } finally {
+      rmSync(resolve(FIXTURES, '..', '__outside-theme.yaml'), { force: true });
+    }
+  });
 });
 
 // ── walkFileSystem ─────────────────────────────────────────

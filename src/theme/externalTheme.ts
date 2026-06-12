@@ -8,9 +8,11 @@
  * the pre-built manifest in local mode), parsed here, and merged into the
  * config's theme block before `buildThemeMap`/`applyConfig` consume it.
  *
- * Everything here is pure and side-effect free (aside from a single `console.warn`
- * on a failed load), so the parse/merge helpers are unit-testable in the node
- * vitest environment without any DOM or React rendering. The async `loadExternalTheme`
+ * Everything here is pure and side-effect free aside from a few diagnostic
+ * `console.warn`s: `loadExternalTheme` warns when a configured file fails to
+ * fetch, and `parseExternalTheme` warns on parse errors or an invalid shape.
+ * The parse/merge helpers are unit-testable in the node vitest environment
+ * without any DOM or React rendering. The async `loadExternalTheme`
  * takes its fetch function as a parameter so it can be tested against a mock.
  *
  * T5.3 (#201, custom JS theme-module loader) builds on this same flow, so the

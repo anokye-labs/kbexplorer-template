@@ -13,7 +13,7 @@
  * Zero external dependencies — uses only node: built-ins + gh CLI.
  */
 
-import { resolve, dirname, relative, extname, basename } from 'node:path';
+import { resolve, dirname, relative, extname, basename, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   readFileSync,
@@ -175,7 +175,13 @@ export function readThemeFile(root, configRaw) {
   }
   const themesFile = parsed?.theme?.themesFile;
   if (!themesFile || typeof themesFile !== 'string') return null;
+  // Security: only allow repo-root-relative paths that stay inside the repo. An
+  // absolute path or a value like "../../.ssh/id_rsa" would otherwise read files
+  // outside the project and embed them into the generated manifest.
+  if (isAbsolute(themesFile)) return null;
   const p = resolve(root, themesFile);
+  const rel = relative(root, p);
+  if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return null;
   if (!existsSync(p)) return null;
   try {
     return readFileSync(p, 'utf-8');
