@@ -8,7 +8,7 @@ import type { SourceConfig } from '../types';
 
 const CACHE_PREFIX = 'kbe:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const CACHE_VERSION = 17; // bump to invalidate all cached data (17: cross-repo vocabulary/synonym mapping (#153) — alias @type canonicalized to its kind + `jsonld.nativeType` preserving the repo's native term; 16: skill node type — .github/skills/**/SKILL.md → SkillView; 15: F3 structural nodes + node-map JSON-LD merged with content-model spine ingestion; 13: KBNode JSON-LD fields + KBEdge.relation)
+const CACHE_VERSION = 18; // bump to invalidate all cached data (18: cross-repo vocabulary/synonym mapping (#153) — alias @type canonicalized to its kind + `jsonld.nativeType` preserving the repo's native term; 17: F1 config-driven appearance — theme.default initial mode + theme.font.* CSS vars now affect cached render; 16: skill node type — .github/skills/**/SKILL.md → SkillView; 15: F3 structural nodes + node-map JSON-LD merged with content-model spine ingestion; 13: KBNode JSON-LD fields + KBEdge.relation)
 
 // Clear stale cache from older versions
 try {
