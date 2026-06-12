@@ -17,6 +17,7 @@ import {
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
+import { clusterTokenStyle } from '../theme/clusterTokens';
 
 export interface OverviewViewProps {
   graph: KBGraph;
@@ -137,7 +138,11 @@ export function OverviewView({ graph, config }: OverviewViewProps) {
       </Caption1>
 
       {groups.map(({ cluster, nodes }) => (
-        <section key={cluster.id} className={classes.cluster}>
+        <section
+          key={cluster.id}
+          className={classes.cluster}
+          style={clusterTokenStyle(cluster.tokens)}
+        >
           <div className={classes.clusterHeader}>
             <span
               className={classes.clusterDot}

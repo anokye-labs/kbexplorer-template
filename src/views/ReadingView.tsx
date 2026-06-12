@@ -14,6 +14,7 @@ import {
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
+import { clusterTokenStyle } from '../theme/clusterTokens';
 import { HomePageWidgets } from '../components/HomePageWidgets';
 import { ConstellationHero } from '../components/ConstellationHero';
 import { IconGallery } from '../components/IconGallery';
@@ -31,6 +32,7 @@ function findCluster(config: KBConfig, clusters: Cluster[], clusterId: string) {
   return {
     name: meta?.name ?? cluster?.name ?? clusterId,
     color: meta?.color ?? cluster?.color ?? '#888',
+    tokens: meta?.tokens ?? cluster?.tokens,
   };
 }
 
@@ -515,7 +517,10 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
 
       {/* Header — skip for homepage (ConstellationHero handles it) */}
       {!isHomepage && (
-        <header className={`${styles.header} ${showHero ? styles.headerHero : ''}`}>
+        <header
+          className={`${styles.header} ${showHero ? styles.headerHero : ''}`}
+          style={clusterTokenStyle(cluster.tokens)}
+        >
           <div className={styles.headerVisual}>
             {!showHero && (mode === 'sprites' && node.sprite) && (
               <NodeVisual node={node} mode={mode} surface="header" source={source} clusterColor={cluster.color} />
