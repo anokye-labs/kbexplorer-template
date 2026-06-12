@@ -42,7 +42,17 @@ export function repoCoordsFromConfig(config: Pick<KBConfig, 'source'>): RepoCoor
  */
 export function canEditSource(node: Pick<KBNode, 'sourceFile'>): boolean {
   const f = node.sourceFile;
-  return !!f && typeof f.path === 'string' && f.path.trim().length > 0 && typeof f.raw === 'string';
+  return (
+    !!f &&
+    typeof f.path === 'string' &&
+    f.path.trim().length > 0 &&
+    typeof f.raw === 'string' &&
+    // Validate the runtime `format` too: cached/loaded data could carry a
+    // missing or unknown format, which would later crash the editor
+    // (`format.toUpperCase()`) or mis-dispatch validation. An invalid shape
+    // simply exposes no affordance — a safe no-op.
+    (f.format === 'yaml' || f.format === 'json')
+  );
 }
 
 /** Return a node's source-of-truth file pointer, or `null` when it has none. */
@@ -147,10 +157,27 @@ function splitLines(text: string): string[] {
   return lines;
 }
 
+/**
+ * Above this line count on either side we skip the O(m·n) LCS table (which
+ * would cost megabytes and stall the render path) and fall back to a coarse
+ * "replace everything" diff. Entity files are tiny, so the precise LCS path is
+ * the norm; only a pathologically large file ever trips the guard.
+ */
+const MAX_DIFF_LINES = 5000;
+
 /** Longest-common-subsequence line diff (sufficient for small entity files). */
 function diffLines(a: string[], b: string[]): DiffOp[] {
   const m = a.length;
   const n = b.length;
+  // Size guard: an O(m·n) DP table is fine for small entity files but would
+  // blow up time/memory on a large one. Emit a valid (if coarse) replace-all
+  // diff instead of allocating the table.
+  if (m > MAX_DIFF_LINES || n > MAX_DIFF_LINES) {
+    const coarse: DiffOp[] = [];
+    for (const line of a) coarse.push({ type: '-', line });
+    for (const line of b) coarse.push({ type: '+', line });
+    return coarse;
+  }
   const dp: number[][] = Array.from({ length: m + 1 }, () => new Array<number>(n + 1).fill(0));
   for (let i = m - 1; i >= 0; i--) {
     for (let j = n - 1; j >= 0; j--) {
@@ -181,12 +208,17 @@ function diffLines(a: string[], b: string[]): DiffOp[] {
 /**
  * Build a git-style unified diff for the change, suitable for downloading as a
  * `.patch`. Returns an empty string when nothing changed.
+ *
+ * Pass `isNew` for a file that does not yet exist in the repo so the patch uses
+ * the git new-file headers (`new file mode` + `--- /dev/null`); a patch with
+ * `--- a/<path>` for a non-existent file would fail to apply.
  */
 export function buildUnifiedDiff(
   path: string,
   oldText: string,
   newText: string,
   context = 3,
+  isNew = false,
 ): string {
   if (oldText === newText) return '';
   const a = splitLines(oldText);
@@ -267,7 +299,9 @@ export function buildUnifiedDiff(
     hunks.push(`@@ -${oldStart},${oldCount} +${newStart},${newCount} @@\n${body.join('\n')}`);
   }
 
-  const header = `diff --git a/${path} b/${path}\n--- a/${path}\n+++ b/${path}\n`;
+  const fromPath = isNew ? '/dev/null' : `a/${path}`;
+  const newFileLine = isNew ? 'new file mode 100644\n' : '';
+  const header = `diff --git a/${path} b/${path}\n${newFileLine}--- ${fromPath}\n+++ b/${path}\n`;
   return `${header}${hunks.join('\n')}\n`;
 }
 
@@ -317,7 +351,7 @@ export function buildSourceEditHandoff(
     url: buildHandoffUrl(coords, file.path, next, exists),
     editUrl: buildEditUrl(coords, file.path),
     newFileUrl: buildNewFileUrl(coords, file.path, next),
-    patch: buildUnifiedDiff(file.path, base, next),
+    patch: buildUnifiedDiff(file.path, base, next, 3, !exists),
     patchName: patchFilename(file.path),
   };
 }

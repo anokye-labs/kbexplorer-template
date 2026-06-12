@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import {
   makeStyles,
+  mergeClasses,
   tokens,
   Button,
   Dialog,
@@ -76,6 +77,18 @@ const useStyles = makeStyles({
     fontFamily: tokens.fontFamilyMonospace,
     fontSize: tokens.fontSizeBase200,
     whiteSpace: 'pre',
+  },
+  diffCode: {
+    // `<code>` carries the diff lines as phrasing content inside `<pre>` (a
+    // `<div>` here would be invalid HTML). It fills the box and inherits the
+    // monospace + pre-whitespace from the container.
+    display: 'block',
+    fontFamily: 'inherit',
+  },
+  diffLine: {
+    // Block-level spans keep each diff line on its own row while remaining
+    // valid phrasing content inside `<code>`.
+    display: 'block',
   },
   diffAdd: { color: tokens.colorPaletteGreenForeground1 },
   diffDel: { color: tokens.colorPaletteRedForeground1 },
@@ -235,9 +248,13 @@ export function SourceEditor({ node, config }: SourceEditorProps) {
 
             {validation.ok && handoff?.changed && handoff.patch && (
               <pre className={styles.diff} data-testid="source-diff">
-                {handoff.patch.split('\n').map((line, i) => (
-                  <div key={i} className={diffLineClass(line, styles)}>{line || '\u00a0'}</div>
-                ))}
+                <code className={styles.diffCode}>
+                  {handoff.patch.split('\n').map((line, i) => (
+                    <span key={i} className={mergeClasses(styles.diffLine, diffLineClass(line, styles))}>
+                      {line || '\u00a0'}
+                    </span>
+                  ))}
+                </code>
               </pre>
             )}
 

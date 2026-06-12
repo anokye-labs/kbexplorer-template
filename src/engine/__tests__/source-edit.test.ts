@@ -170,6 +170,20 @@ describe('source-edit — no affordance without a writable source (F5 / #152)', 
     expect(canEditSource({ sourceFile: { path: 'a.yaml', format: 'yaml' } as NodeSourceFile })).toBe(false);
   });
 
+  it('canEditSource is false when the runtime format is missing or unknown', () => {
+    // Cached/loaded data could carry an invalid `format`; an invalid shape must
+    // expose no affordance rather than crash the editor later.
+    expect(canEditSource({ sourceFile: { path: 'a.yaml', raw: 'x' } as unknown as NodeSourceFile })).toBe(false);
+    expect(
+      canEditSource({ sourceFile: { path: 'a.txt', raw: 'x', format: 'txt' } as unknown as NodeSourceFile }),
+    ).toBe(false);
+    expect(resolveSourceFile({ sourceFile: { path: 'a.yaml', raw: 'x', format: 'xml' } as unknown as NodeSourceFile }))
+      .toBeNull();
+    // a well-formed pointer with a known format is still editable
+    expect(canEditSource(nodeWith({ path: 'a.yaml', raw: 'x', format: 'yaml' }))).toBe(true);
+    expect(canEditSource(nodeWith({ path: 'a.json', raw: '{}', format: 'json' }))).toBe(true);
+  });
+
   it('a README-style node (no sourceFile) is not editable', () => {
     const readme: KBNode = {
       id: 'readme', title: 'README', cluster: 'docs', content: '', rawContent: '',
@@ -199,5 +213,39 @@ describe('source-edit — unified diff (F5 / #152)', () => {
 
   it('returns an empty patch when nothing changed', () => {
     expect(buildUnifiedDiff('a.yaml', 'x\n', 'x\n')).toBe('');
+  });
+
+  it('uses git new-file headers (/dev/null + new file mode) when isNew is set', () => {
+    const patch = buildUnifiedDiff('content-model/people/zoe.yaml', '', 'id: zoe\nname: Zoe\n', 3, true);
+    expect(patch).toContain('diff --git a/content-model/people/zoe.yaml b/content-model/people/zoe.yaml');
+    expect(patch).toContain('new file mode 100644');
+    expect(patch).toContain('--- /dev/null');
+    expect(patch).toContain('+++ b/content-model/people/zoe.yaml');
+    // a brand-new file is all additions, anchored at -0,0
+    expect(patch).toMatch(/@@ -0,0 \+1,\d+ @@/);
+    expect(patch).toContain('+id: zoe');
+    expect(patch).not.toContain('--- a/content-model/people/zoe.yaml');
+  });
+
+  it('a NEW-file handoff (exists=false) produces a git-applicable new-file patch', () => {
+    const file: NodeSourceFile = { path: 'content-model/people/zoe.yaml', raw: '', format: 'yaml' };
+    const handoff = buildSourceEditHandoff(COORDS, file, 'id: zoe\nname: Zoe\n', false);
+    expect(handoff.exists).toBe(false);
+    expect(handoff.url).toBe(buildNewFileUrl(COORDS, file.path, 'id: zoe\nname: Zoe\n'));
+    expect(handoff.patch).toContain('--- /dev/null');
+    expect(handoff.patch).toContain('new file mode 100644');
+  });
+
+  it('falls back to a coarse replace-all diff above the LCS size guard', () => {
+    // Pathologically large inputs must not allocate an O(m·n) DP table; the
+    // result is still a valid patch (all old lines removed, all new lines added).
+    const before = Array.from({ length: 6000 }, (_, i) => `old-${i}`).join('\n') + '\n';
+    const after = Array.from({ length: 6000 }, (_, i) => `new-${i}`).join('\n') + '\n';
+    const patch = buildUnifiedDiff('big.yaml', before, after);
+    expect(patch).toContain('--- a/big.yaml');
+    expect(patch).toContain('+++ b/big.yaml');
+    expect(patch).toContain('-old-0');
+    expect(patch).toContain('+new-0');
+    expect(patch).toMatch(/@@ -\d+,\d+ \+\d+,\d+ @@/);
   });
 });
