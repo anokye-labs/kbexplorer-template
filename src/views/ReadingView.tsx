@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   makeStyles,
   tokens,
@@ -15,6 +16,9 @@ import {
 import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 import { clusterTokenStyle } from '../theme/clusterTokens';
+import { pageThemeStyle } from '../theme/pageTheme';
+import { buildThemeMap } from '../hooks/useTheme';
+import type { Theme as FluentTheme } from '@fluentui/react-components';
 import { HomePageWidgets } from '../components/HomePageWidgets';
 import { ConstellationHero } from '../components/ConstellationHero';
 import { IconGallery } from '../components/IconGallery';
@@ -24,6 +28,8 @@ interface ReadingViewProps {
   graph: KBGraph;
   config: KBConfig;
   nodeId: string;
+  /** Active resolved Fluent theme; the base that per-page deltas layer onto. */
+  theme?: FluentTheme;
 }
 
 function findCluster(config: KBConfig, clusters: Cluster[], clusterId: string) {
@@ -418,9 +424,13 @@ function SourceBadge({ node, config }: { node: KBNode; config: KBConfig }) {
   )
 }
 
-export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
+export function ReadingView({ graph, config, nodeId, theme }: ReadingViewProps) {
   const styles = useStyles();
   const node = graph.nodes.find(n => n.id === nodeId);
+
+  // Runtime theme map (built-ins + config themes) for resolving a node's
+  // optional named per-page theme. Rebuilt only when config.theme changes.
+  const themeMap = useMemo(() => buildThemeMap(config.theme), [config.theme]);
 
   // Build set of valid node IDs for linkification
   const nodeIds = new Set(graph.nodes.map(n => n.id));
@@ -493,11 +503,17 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
   const source = config.source;
   const cluster = findCluster(config, graph.clusters, node.cluster);
 
+  // Per-page theme deltas (scoped CSS vars). Empty when the node declares no
+  // page theme, so unthemed pages render with the global theme untouched. The
+  // container is keyed by node id so navigating to another node remounts it,
+  // automatically restoring the global theme (no leakage, root unchanged).
+  const pageStyle = theme ? pageThemeStyle(theme, node.pageTheme, themeMap) : {};
+
   const showHero = mode === 'heroes' && !!node.image;
   const isHomepage = node.display === 'homepage';
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} style={pageStyle} data-page-themed={node.pageTheme ? 'true' : undefined}>
       {/* Hero image */}
       {showHero && (
         <NodeVisual node={node} mode={mode} surface="hero" source={source} />
@@ -519,7 +535,7 @@ export function ReadingView({ graph, config, nodeId }: ReadingViewProps) {
       {!isHomepage && (
         <header
           className={`${styles.header} ${showHero ? styles.headerHero : ''}`}
-          style={clusterTokenStyle(cluster.tokens)}
+          style={{ ...clusterTokenStyle(cluster.tokens), ...pageStyle }}
         >
           <div className={styles.headerVisual}>
             {!showHero && (mode === 'sprites' && node.sprite) && (

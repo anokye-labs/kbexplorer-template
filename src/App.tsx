@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
-import { FluentProvider } from '@fluentui/react-components';
+import { FluentProvider, type Theme as FluentTheme } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme, isDarkTheme } from './hooks/useTheme';
 import { useThemeFonts } from './hooks/useThemeFonts';
@@ -17,9 +17,9 @@ import './styles/visuals.css';
 import './styles/reading.css';
 import './styles/responsive.css';
 
-function ReadingRoute({ graph, config }: { graph: import('./types').KBGraph; config: import('./types').KBConfig }) {
+function ReadingRoute({ graph, config, theme }: { graph: import('./types').KBGraph; config: import('./types').KBConfig; theme: FluentTheme }) {
   const { id } = useParams<{ id: string }>();
-  return <ReadingView graph={graph} config={config} nodeId={id ?? ''} />;
+  return <ReadingView graph={graph} config={config} nodeId={id ?? ''} theme={theme} />;
 }
 
 function useCurrentNodeId(): string | null {
@@ -28,7 +28,7 @@ function useCurrentNodeId(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function Explorer({ themeMode, isDark, setThemeMode, applyConfig, cycleTheme }: { themeMode: import('./hooks/useTheme').ThemeMode; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme']) => void; cycleTheme: () => void }) {
+function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, cycleTheme }: { themeMode: import('./hooks/useTheme').ThemeMode; fluentTheme: FluentTheme; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme']) => void; cycleTheme: () => void }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
 
@@ -73,7 +73,7 @@ function Explorer({ themeMode, isDark, setThemeMode, applyConfig, cycleTheme }: 
           <Route path="/" element={<Navigate to="/node/home" replace />} />
           <Route path="/node/home" element={<HomePage graph={graph} config={config} />} />
           <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
-          <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} />} />
+          <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} theme={fluentTheme} />} />
           <Route path="*" element={<Navigate to="/node/home" replace />} />
         </Routes>
       </div>
@@ -98,7 +98,7 @@ function App() {
   return (
     <FluentProvider theme={fluentTheme} style={{ minHeight: '100vh' }}>
       <HashRouter>
-        <Explorer themeMode={themeMode} isDark={isDark} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} />
+        <Explorer themeMode={themeMode} fluentTheme={fluentTheme} isDark={isDark} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} />
       </HashRouter>
     </FluentProvider>
   );
