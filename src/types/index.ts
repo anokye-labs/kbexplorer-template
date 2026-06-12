@@ -103,6 +103,39 @@ export interface KBNode {
   jsonld?: JsonLd;
   /** Arbitrary structured-data bag rendered by typed (or the generic) viewers. */
   data?: Record<string, unknown>;
+  /**
+   * Optional per-page theming declared in this node's frontmatter. When present
+   * its deltas restyle ONLY this node's page (scoped CSS vars in ReadingView);
+   * the global theme and document root are never mutated. Absent → no change.
+   */
+  pageTheme?: PageTheme;
+}
+
+/**
+ * Per-page (per-node) theme overrides, parsed from a node's frontmatter.
+ *
+ * All three fields are optional and additive — an absent/empty `PageTheme`
+ * leaves the page rendering with the active global theme. When applied, the
+ * layering order is: named `theme` (lowest) → `accent` brand recolor →
+ * `tokens` (highest), so explicit token deltas always win. Page-level deltas
+ * also win over cluster-level deltas (T4.1) for any overlapping token.
+ */
+export interface PageTheme {
+  /**
+   * Brand seed/accent color (hex, e.g. "#C04040"). Generates a Fluent brand
+   * ramp and recolors only the brand-family tokens on top of the active theme.
+   */
+  accent?: string;
+  /**
+   * Arbitrary Fluent design-token deltas (token name → CSS value). Highest
+   * precedence within the page; same shape as `theme.tokens` / cluster tokens.
+   */
+  tokens?: Partial<Record<string, string>>;
+  /**
+   * Named theme key (`config.theme.themes.<name>` or a built-in dark/light/
+   * sepia) whose tokens become the page's base before accent/tokens layer on.
+   */
+  theme?: string;
 }
 
 /**
@@ -693,6 +726,13 @@ export interface Cluster {
   id: string;
   name: string;
   color: string;
+  /**
+   * Optional cluster-scoped Fluent token overrides (token name → CSS value),
+   * carried from `config.clusters.<id>.tokens`. Applied only on cluster-scoped
+   * surfaces (cards, badges, reading header) as scoped CSS variables; the
+   * global theme is never mutated. Same shape as `theme.tokens`.
+   */
+  tokens?: Partial<Record<string, string>>;
 }
 
 /** Computed graph data, ready for visualization. */
@@ -725,6 +765,18 @@ export type VisualMode = 'sprites' | 'heroes' | 'emoji' | 'none';
 /** Theme preference. */
 export type Theme = 'dark' | 'light' | 'sepia';
 
+/** The 16 stop keys of a Fluent brand color ramp ("10".."160"). */
+export type FluentBrandRampKey =
+  | '10' | '20' | '30' | '40' | '50' | '60' | '70' | '80'
+  | '90' | '100' | '110' | '120' | '130' | '140' | '150' | '160';
+
+/**
+ * A Fluent brand color ramp keyed by stop ("10".."160"). Typed as `Partial`
+ * so configs may omit stops, but keys are constrained to the 16 valid slots
+ * (arbitrary keys won't type-check). A complete ramp supplies all 16.
+ */
+export type FluentBrandRamp = Partial<Record<FluentBrandRampKey, string>>;
+
 /** Content source configuration. */
 export interface SourceConfig {
   owner: string;
@@ -756,6 +808,31 @@ export type NodeSource =
    */
   | { type: 'structured'; entityType: string; ref?: string };
 
+/** Optional site branding assets (logo, favicon, etc.). All fields optional/additive. */
+export interface BrandingConfig {
+  /** Repo-relative path to a logo image, resolved via resolveImageUrl(). */
+  logo?: string;
+  /**
+   * Repo-relative path to a favicon image, resolved via resolveImageUrl() and
+   * swapped into the document's <link rel="icon"> at runtime. When unset, the
+   * static /favicon.svg from index.html is left untouched.
+   */
+  favicon?: string;
+  /**
+   * Repo-relative path (or absolute URL) to a raw CSS file injected as the LAST
+   * <link rel="stylesheet"> in <head> at runtime. Repo-relative paths are
+   * resolved via resolveImageUrl() (same host-repo asset path the logo/favicon
+   * use); absolute URLs (http(s):// or protocol-relative //) are used verbatim.
+   * This is the "raw escape hatch" (Option C): host repos can override
+   * --colorNeutral*, --colorBrand*, and --kbe-* CSS variables (and any other
+   * surface) the structured token system can't express — without touching the
+   * .kbexplorer submodule. Injected after FluentProvider/app styles so its
+   * declarations win the cascade. When unset, nothing is injected and any
+   * previously injected sheet is removed.
+   */
+  css?: string;
+}
+
 /** Configuration for an external provider plugin */
 export interface ExternalProviderConfig {
   /** Provider type identifier */
@@ -775,7 +852,21 @@ export interface KBConfig {
   author?: string;
   date?: string;
   source: SourceConfig;
-  clusters: Record<string, { name: string; color: string }>;
+  clusters: Record<
+    string,
+    {
+      name: string;
+      color: string;
+      /**
+       * Optional cluster-scoped Fluent design-token overrides (token name → CSS
+       * value), reusing the same shape as `theme.tokens`. Applied only to
+       * cluster-scoped surfaces (node cards, badges, the reading header for
+       * nodes in this cluster) as scoped CSS variables — the global
+       * dark/light/sepia/config themes are unaffected. Additive and optional.
+       */
+      tokens?: Partial<Record<string, string>>;
+    }
+  >;
   visuals: {
     mode: VisualMode;
     fallback: VisualMode;
@@ -800,6 +891,81 @@ export interface KBConfig {
       body?: string;
       mono?: string;
     };
+    /**
+     * Global brand color override. Two accepted forms:
+     *   1. A single seed hex string (e.g. "#4A9CC8") — used to generate a full
+     *      Fluent brand ramp via `createDarkTheme`/`createLightTheme`.
+     *   2. A Fluent ramp object keyed by stop ("10".."160"); a complete ramp
+     *      supplies all 16 stops (e.g. { "10": "#020305", ..., "160": "#EAF3F8" })
+     *      and is used verbatim.
+     * Schema only for now; wiring happens in T2.2.
+     */
+    brand?: string | FluentBrandRamp;
+    /**
+     * Arbitrary Fluent design-token overrides (token name → CSS value),
+     * applied on top of the active base theme. Example:
+     *   { colorNeutralBackground1: "#101418", borderRadiusMedium: "8px" }
+     * Schema only for now; wiring happens in T2.2.
+     */
+    tokens?: Partial<Record<string, string>>;
+    /**
+     * Named custom theme variants. Each variant may specify its own brand
+     * (seed hex or ramp), token overrides, and the base theme it derives from
+     * ('dark' or 'light'). Schema only for now; wiring happens in T2.2.
+     */
+    themes?: Record<
+      string,
+      {
+        brand?: string | FluentBrandRamp;
+        tokens?: Partial<Record<string, string>>;
+        base?: 'dark' | 'light';
+      }
+    >;
+    /**
+     * Optional repo-relative path to a *dedicated theme file* in the HOST repo
+     * (e.g. "content/themes/extra.yaml" or ".kbe/theme.yaml"). It is fetched at
+     * runtime exactly like config.yaml (same source/auth, and from the local
+     * manifest in local mode) and parsed to the SAME shape as `config.theme`
+     * (optional top-level `default` / `brand` / `tokens`, plus a `themes` map of
+     * named variants). Its contents are merged into the dynamic THEME_MAP so a
+     * host repo can define or override named themes WITHOUT editing the
+     * `.kbexplorer` submodule or inlining everything here.
+     *
+     * Precedence: the external file WINS over the inline `config.theme` for
+     * same-named theme keys and for top-level brand/tokens/default (it is the
+     * more specific escape hatch). Unset ⇒ no fetch and a pure no-op fallback;
+     * a missing/unreachable/malformed file is ignored (warning only) and the
+     * THEME_MAP equals the config-only result.
+     */
+    themesFile?: string;
+    /**
+     * Optional path/URL to a custom ESM **JavaScript module** in the HOST repo
+     * that exports a fully-built Fluent `Theme` (named export `theme`, a
+     * `themes` record of name → Theme, or a default export), OR a
+     * `BrandVariants` ramp / seed hex (export `brandVariants` / `brand` / `seed`,
+     * with optional `base: 'dark' | 'light'`) that kbexplorer turns into a Theme
+     * via `generateBrandVariants`. The module is dynamically `import()`ed at
+     * runtime and its theme(s) registered into the dynamic THEME_MAP so they are
+     * selectable and cyclable. This is the most powerful theming escape hatch —
+     * full programmatic control without editing the `.kbexplorer` submodule.
+     *
+     * ⚠️ SECURITY: setting this dynamically `import()`s and EXECUTES
+     * host-provided JavaScript in the page. It is therefore an EXPLICIT,
+     * off-by-default opt-in — unset ⇒ no import and a pure no-op. A repo-relative
+     * path is resolved like other host assets; an absolute `http(s)://` (or
+     * protocol-relative `//`) URL is used verbatim. Self-host the module in the
+     * same repo you already trust and tighten your CSP `script-src` /
+     * `connect-src` accordingly — see the theming docs' CSP note. Any failure
+     * (network, bad module, wrong shape) logs a single warning and is a no-op
+     * (THEME_MAP unchanged), exactly like the custom-provider plugin stub.
+     */
+    moduleUrl?: string;
+    /**
+     * Name to register a single (unnamed) module-provided theme under so it
+     * appears in the cycle/selector. Defaults to `"custom"`. Ignored when the
+     * module exports a `themes` record (those keys are used) or its own `name`.
+     */
+    moduleThemeName?: string;
   };
   graph: {
     physics: boolean;
@@ -812,6 +978,7 @@ export interface KBConfig {
     keyboardNav: boolean;
     sparkAnimation: boolean;
   };
+  branding?: BrandingConfig;
   providers?: ExternalProviderConfig[];
   bluf?: {
     audio?: string;
@@ -842,6 +1009,10 @@ export const DEFAULT_CONFIG: KBConfig = {
   author: 'Anokye Labs',
   source: resolveDefaultSource(),
   clusters: {
+    // Each cluster may also carry an optional `tokens` delta (Fluent token name
+    // → CSS value, same shape as theme.tokens) to shift only that cluster's
+    // scoped surfaces (cards/badges/reading header). Omitted here so defaults
+    // inherit the active global theme unchanged.
     feature: { name: 'Feature', color: '#4A9CC8' },
     task: { name: 'Task', color: '#8CB050' },
     bug: { name: 'Bug', color: '#C04040' },
@@ -862,6 +1033,18 @@ export const DEFAULT_CONFIG: KBConfig = {
       body: "'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
       mono: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
     },
+    // brand / tokens / themes are optional, additive overrides (see KBConfig.theme).
+    // Left unset by default so the built-in dark/light/sepia themes are unchanged.
+    // themesFile (also unset by default) may point at a dedicated theme file in the
+    // host repo (e.g. "content/themes/extra.yaml"); when set it is fetched at runtime
+    // like config.yaml and its named themes are merged into the THEME_MAP, overriding
+    // any inline theme.themes of the same name. Unset ⇒ no fetch, no behavior change.
+    // moduleUrl (T5.3, also unset by default) is the most powerful escape hatch: a
+    // SECURITY-sensitive opt-in that dynamically import()s a host-provided ESM JS
+    // module exporting a Fluent Theme / BrandVariants and registers it into the
+    // THEME_MAP. Off by default ⇒ no import, pure no-op. Only set it for a module you
+    // trust (ideally self-hosted in this repo) and tighten CSP accordingly — see the
+    // theming docs' CSP note.
   },
   graph: {
     physics: true,
@@ -874,4 +1057,12 @@ export const DEFAULT_CONFIG: KBConfig = {
     keyboardNav: true,
     sparkAnimation: false,
   },
+  // branding omitted by default — host repos may set branding.logo (a repo-relative
+  // image path) to render a logo on the HomePage hero and HUD header, and
+  // branding.favicon (a repo-relative image path) to swap the document favicon at
+  // runtime, and branding.css (a repo-relative path or URL) to inject a raw CSS
+  // override sheet last in <head> for full control over --colorNeutral*/
+  // --colorBrand*/--kbe-* variables. Text title and the static /favicon.svg are
+  // used as graceful fallbacks; branding.css is unset by default so nothing is
+  // injected.
 };

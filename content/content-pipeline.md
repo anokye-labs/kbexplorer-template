@@ -16,7 +16,7 @@ Sources → Providers → Parser → Nodes → Graph Engine → KBGraph → View
 ```
 
 1. **Sources** — GitHub API, local manifest, authored markdown, `nodemap.yaml`
-2. **[Providers](providers-overview)** — [authored](authored-provider), [files](files-provider), [work](work-provider) adapters normalize sources into `KBNode[]`
+2. **[Providers](providers-overview)** — [authored](authored-provider), [files](files-provider), [work](work-provider), the [content-model](content-model-ingestion) and [structural](structural-nodes) adapters normalize sources into `KBNode[]`
 3. **[Parser](parser)** — extracts frontmatter, inline links, cross-references
 4. **[Graph Engine](graph-engine)** — computes edges, clusters, related nodes, degree maps
 5. **Views** — [overview](overview-view), [reading](reading-view), graph render the final `KBGraph`
@@ -40,6 +40,10 @@ Edges emerge from multiple points in the pipeline:
 - Parent-child containment (structural, from [graph engine](graph-engine))
 
 The [typed edges spec](typed-edges) categorizes and weights these edge sources.
+
+## Node types in the pipeline
+
+Providers don't just emit generic nodes — they emit **typed** ones. The open [node-type engine](node-types) lets a provider tag a `KBNode` with an `entityType` so it renders through a bespoke viewer. Two providers feed it today: [content-model ingestion](content-model-ingestion) turns a JSON-LD content model into the org spine (person, squad, workstream, …), and the [structural nodes](structural-nodes) provider maps `.github` config and the `skill` type into the graph. The [node types & sources](ui-node-types) page covers how each one is badged and rendered.
 
 ## Content Derivation
 

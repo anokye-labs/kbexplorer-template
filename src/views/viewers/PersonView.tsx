@@ -1,4 +1,6 @@
 import type { ViewerProps } from './GenericStructuredView';
+import { EntityHeader } from './spine-shared';
+import { nativeTypeOf } from './spine-data';
 
 /** Render a simple key/value row when the value is present. */
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -26,15 +28,11 @@ export function PersonView({ node }: ViewerProps) {
   const manager = d.manager as string | undefined;
   const team = d.team as string | undefined;
   const areas = Array.isArray(d.knowledgeAreas) ? (d.knowledgeAreas as unknown[]) : [];
+  const native = nativeTypeOf(node);
 
   return (
     <div className="kb-structured-view kb-person-view">
-      <div className="kb-structured-header">
-        <span className="kb-structured-type" title="JSON-LD @type">Person</span>
-        {node.jsonld?.['@id'] && (
-          <code className="kb-structured-id">{node.jsonld['@id']}</code>
-        )}
-      </div>
+      <EntityHeader label="Person" id={node.jsonld?.['@id'] as string | undefined} native={native} />
       <h2 className="kb-person-name">{name}</h2>
       {role && <p className="kb-person-role">{role}</p>}
       <table className="kb-structured-table">

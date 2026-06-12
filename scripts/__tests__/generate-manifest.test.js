@@ -9,6 +9,7 @@ import {
   readReadme,
   fetchLocalCommits,
   readContentModel,
+  readThemeFile,
 } from '../generate-manifest.js';
 
 const FIXTURES = resolve(import.meta.dirname, '__fixtures__');
@@ -66,6 +67,50 @@ describe('readContentModel (T2.4 / #163)', () => {
     mkdirSync(cmDir, { recursive: true });
     expect(readContentModel(FIXTURES, 'content-model-empty')).toBeNull();
     rmSync(cmDir, { recursive: true, force: true });
+  });
+});
+
+// ── readThemeFile (T5.1 / #199) ────────────────────────────
+
+describe('readThemeFile (T5.1 / #199)', () => {
+  it('returns null when config has no theme.themesFile', () => {
+    expect(readThemeFile(FIXTURES, 'title: "Test KB"\nclusters: {}')).toBeNull();
+  });
+
+  it('returns null for null/unparseable config', () => {
+    expect(readThemeFile(FIXTURES, null)).toBeNull();
+    expect(readThemeFile(FIXTURES, 'themes: {oops: ')).toBeNull();
+  });
+
+  it('reads the repo-relative theme file referenced by theme.themesFile', () => {
+    mkdirSync(resolve(FIXTURES, 'content', 'themes'), { recursive: true });
+    writeFileSync(
+      resolve(FIXTURES, 'content', 'themes', 'extra.yaml'),
+      'themes:\n  forest:\n    brand: "#2E7D32"',
+    );
+    const configRaw = 'theme:\n  default: dark\n  themesFile: content/themes/extra.yaml';
+    const raw = readThemeFile(FIXTURES, configRaw);
+    expect(raw).toContain('forest');
+    expect(raw).toContain('#2E7D32');
+    rmSync(resolve(FIXTURES, 'content', 'themes'), { recursive: true, force: true });
+  });
+
+  it('returns null when the referenced theme file does not exist', () => {
+    const configRaw = 'theme:\n  themesFile: content/themes/missing.yaml';
+    expect(readThemeFile(FIXTURES, configRaw)).toBeNull();
+  });
+
+  it('rejects path traversal and absolute paths (stays inside repo root)', () => {
+    // A traversal that escapes the repo root must be refused even if it resolves
+    // to a real file, so secrets outside the project can't be embedded.
+    writeFileSync(resolve(FIXTURES, '..', '__outside-theme.yaml'), 'themes:\n  evil: {}');
+    try {
+      expect(readThemeFile(FIXTURES, 'theme:\n  themesFile: ../__outside-theme.yaml')).toBeNull();
+      const abs = resolve(FIXTURES, '..', '__outside-theme.yaml');
+      expect(readThemeFile(FIXTURES, `theme:\n  themesFile: ${abs}`)).toBeNull();
+    } finally {
+      rmSync(resolve(FIXTURES, '..', '__outside-theme.yaml'), { force: true });
+    }
   });
 });
 

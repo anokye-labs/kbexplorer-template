@@ -1,16 +1,15 @@
 import { useEffect } from 'react';
-import type { KBGraph, Theme } from '../types';
-import { nextTheme, type ThemeMode } from './useTheme';
+import type { KBGraph } from '../types';
 
 /**
  * Global keyboard shortcuts.
  *
- * t        → cycle theme
+ * t        → cycle theme (built-ins + config themes, via the live theme map)
  * ←/→      → prev/next node (reading view)
  */
 export function useKeyboardNav(
   graph: KBGraph | null,
-  setTheme: (t: Theme) => void,
+  cycleTheme: () => void,
 ): void {
   useEffect(() => {
     function handler(e: KeyboardEvent) {
@@ -20,9 +19,7 @@ export function useKeyboardNav(
 
       switch (e.key) {
         case 't': {
-          const stored = localStorage.getItem('kbe-theme') as ThemeMode | null;
-          const current: ThemeMode = stored === 'light' ? 'light' : 'dark';
-          setTheme(nextTheme(current));
+          cycleTheme();
           break;
         }
         case 'ArrowLeft':
@@ -45,5 +42,5 @@ export function useKeyboardNav(
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [graph, setTheme]);
+  }, [graph, cycleTheme]);
 }
