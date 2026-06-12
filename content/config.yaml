@@ -2,15 +2,47 @@ title: "kbexplorer"
 subtitle: "Interactive Knowledge Base Explorer"
 
 theme:
+  # Built-in modes are dark / light / sepia. Press `t` to cycle through every
+  # mode below (built-ins first, then these named themes in order).
   default: dark
-  # Load named themes from a dedicated host-repo file (F5 / T5.1). Fetched at
-  # runtime like this config and merged into the THEME_MAP; the external file
-  # wins over the inline `themes` below for same-named keys (e.g. `ocean`).
-  themesFile: content/themes/extra-themes.yaml
+
+  # Optional fonts — piped into --kbe-font-* CSS variables (F1 / T1.2).
+  font:
+    heading: "'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif"
+    body: "'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif"
+    mono: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace"
+
+  # Named theme variants (F2). Each derives from a `base` (dark/light), takes an
+  # optional `brand` seed hex (expanded into a full 16-stop Fluent ramp) and/or
+  # explicit `tokens` (which always win). They become selectable in the cycle.
   themes:
+    # Calm blue, dark base. Same key is also present in the external file below,
+    # which field-merges its token over this one (demonstrates precedence).
     ocean:
       base: dark
       brand: "#1B6CA8"
+
+    # Warm magenta on a light base — good for bright rooms / presentations.
+    rose:
+      base: light
+      brand: "#C2185B"
+      tokens:
+        colorNeutralBackground1: "#FFF5F8"
+        colorNeutralBackground2: "#FCE8EF"
+
+    # High-contrast indigo night theme — deep backgrounds, vivid brand.
+    midnight:
+      base: dark
+      brand: "#5C6BC0"
+      tokens:
+        colorNeutralBackground1: "#070A12"
+        colorNeutralBackground2: "#0E1424"
+        colorNeutralForeground1: "#F2F4FF"
+
+  # Load even more named themes from a dedicated host-repo file (F5 / T5.1).
+  # Fetched at runtime like this config and merged into the THEME_MAP; the
+  # external file wins over the inline `themes` above for same-named keys.
+  themesFile: content/themes/extra-themes.yaml
 
 clusters:
   engine:
