@@ -53,7 +53,7 @@ function buildPageTheme(fm: Partial<AuthoredFrontmatter>): import('../types').Pa
   const page: import('../types').PageTheme = {};
   if (typeof fm.accent === 'string' && fm.accent.trim()) page.accent = fm.accent.trim();
   if (typeof fm.theme === 'string' && fm.theme.trim()) page.theme = fm.theme.trim();
-  if (fm.tokens && typeof fm.tokens === 'object') {
+  if (fm.tokens && typeof fm.tokens === 'object' && !Array.isArray(fm.tokens)) {
     const tokens: Record<string, string> = {};
     for (const [k, v] of Object.entries(fm.tokens)) {
       if (typeof v === 'string') tokens[k] = v;

@@ -432,6 +432,14 @@ export function ReadingView({ graph, config, nodeId, theme }: ReadingViewProps) 
   // optional named per-page theme. Rebuilt only when config.theme changes.
   const themeMap = useMemo(() => buildThemeMap(config.theme), [config.theme]);
 
+  // Per-page theme deltas (scoped CSS vars). Empty when the node declares no
+  // page theme, so unthemed pages leave the global theme untouched. This
+  // (potentially non-trivial) named-theme diff / accent brand-ramp computation
+  // is auto-memoized by the React Compiler, keeping a stable style identity
+  // across renders without a manual useMemo. Computed before any early return.
+  const pageTheme = node?.pageTheme;
+  const pageStyle = theme && pageTheme ? pageThemeStyle(theme, pageTheme, themeMap) : {};
+
   // Build set of valid node IDs for linkification
   const nodeIds = new Set(graph.nodes.map(n => n.id));
 
@@ -503,17 +511,14 @@ export function ReadingView({ graph, config, nodeId, theme }: ReadingViewProps) 
   const source = config.source;
   const cluster = findCluster(config, graph.clusters, node.cluster);
 
-  // Per-page theme deltas (scoped CSS vars). Empty when the node declares no
-  // page theme, so unthemed pages render with the global theme untouched. The
-  // container is keyed by node id so navigating to another node remounts it,
-  // automatically restoring the global theme (no leakage, root unchanged).
-  const pageStyle = theme ? pageThemeStyle(theme, node.pageTheme, themeMap) : {};
-
   const showHero = mode === 'heroes' && !!node.image;
   const isHomepage = node.display === 'homepage';
 
   return (
-    <div className={styles.root} style={pageStyle} data-page-themed={node.pageTheme ? 'true' : undefined}>
+    // Keyed by node id so navigating to another node replaces this subtree,
+    // automatically dropping any page-scoped vars and restoring the global
+    // theme (no leakage; document root is never touched).
+    <div key={node.id} className={styles.root} style={pageStyle} data-page-themed={node.pageTheme ? 'true' : undefined}>
       {/* Hero image */}
       {showHero && (
         <NodeVisual node={node} mode={mode} surface="hero" source={source} />

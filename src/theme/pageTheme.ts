@@ -85,7 +85,7 @@ export function pageThemeTokenDeltas(
   // 3. Explicit token deltas always win.
   if (page.tokens) {
     for (const [k, v] of Object.entries(page.tokens)) {
-      if (v != null) deltas[k] = v;
+      if (typeof v === 'string') deltas[k] = v;
     }
   }
 
