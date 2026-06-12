@@ -45,7 +45,7 @@ Vite starts on `http://localhost:5173`. The [Vite configuration](vite-config) au
 
 - Open the browser — land on the [overview grid](overview-view)
 - Click a card to enter the [reading view](reading-view)
-- Press `t` to try different [themes](theme-system)
+- Pick a theme from the paint-palette menu in the [HUD](hud) — or press `t` to cycle [themes](theme-system)
 - Open the [HUD](hud) minimap to see the full constellation
 
 ## Troubleshooting
