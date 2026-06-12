@@ -9,6 +9,11 @@ import {
   Body1Strong,
   Caption1,
   Caption2,
+  Menu,
+  MenuTrigger,
+  MenuPopover,
+  MenuList,
+  MenuItemRadio,
 } from '@fluentui/react-components';
 import {
   ChevronLeftRegular,
@@ -22,13 +27,14 @@ import {
   WeatherMoonRegular,
   WeatherSunnyRegular,
   BookRegular,
+  ColorRegular,
   GridRegular,
   PanelBottomRegular,
   PanelLeftRegular,
   PanelRightRegular,
   PanelTopExpandRegular,
 } from '@fluentui/react-icons';
-import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
+import type { KBGraph, KBConfig, KBNode } from '../types';
 import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
 import type { TrimResult } from '../types';
 import type { ThemeMode } from '../hooks/useTheme';
@@ -50,7 +56,9 @@ interface HUDProps {
    * carry any key — drive minimap edge/highlight contrast correctly.
    */
   isDark: boolean;
-  onThemeChange: (theme: Theme) => void;
+  /** Full selectable theme set (built-ins + config/external/module themes). */
+  availableThemes: ThemeMode[];
+  onThemeChange: (theme: ThemeMode) => void;
   onCollapsedChange?: (collapsed: boolean) => void;
   onDockChange?: (dock: DockPosition) => void;
 }
@@ -278,7 +286,22 @@ const useStyles= makeStyles({
   },
 });
 
-export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
+const THEME_LABELS: Record<string, string> = { dark: 'Dark', light: 'Light', sepia: 'Sepia' };
+
+/** Human label for a theme key — known built-ins, else title-cased key. */
+function themeLabel(mode: string): string {
+  return THEME_LABELS[mode] ?? mode.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Icon for a theme key — built-ins keep their glyph, config themes get a swatch. */
+function themeIcon(mode: string): React.ReactElement {
+  if (mode === 'dark') return <WeatherMoonRegular />;
+  if (mode === 'light') return <WeatherSunnyRegular />;
+  if (mode === 'sepia') return <BookRegular />;
+  return <ColorRegular />;
+}
+
+export function HUD({ graph, config, currentNodeId, theme, isDark, availableThemes, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
   const styles = useStyles();
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [canvasMountKey, setCanvasMountKey] = useState(0);
@@ -756,29 +779,32 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
   const expandIcon = dock === 'top' ? <ChevronDownRegular /> : dock === 'left' ? <ChevronRightRegular /> : dock === 'right' ? <ChevronLeftRegular /> : <ChevronUpRegular />;
 
   const themeButtons = (
-    <>
-      <Button
-        appearance={theme === 'dark' ? 'primary' : 'subtle'}
-        size="small"
-        icon={<WeatherMoonRegular />}
-        onClick={() => onThemeChange('dark')}
-        title="Dark"
-      />
-      <Button
-        appearance={theme === 'light' ? 'primary' : 'subtle'}
-        size="small"
-        icon={<WeatherSunnyRegular />}
-        onClick={() => onThemeChange('light')}
-        title="Light"
-      />
-      <Button
-        appearance={theme === 'sepia' ? 'primary' : 'subtle'}
-        size="small"
-        icon={<BookRegular />}
-        onClick={() => onThemeChange('sepia')}
-        title="Sepia"
-      />
-    </>
+    <Menu
+      checkedValues={{ theme: [theme] }}
+      onCheckedValueChange={(_e, data) => {
+        const next = data.checkedItems[0];
+        if (next) onThemeChange(next as ThemeMode);
+      }}
+    >
+      <MenuTrigger disableButtonEnhancement>
+        <Button
+          appearance="subtle"
+          size="small"
+          icon={<ColorRegular />}
+          title={`Theme: ${themeLabel(theme)}`}
+          aria-label="Choose theme"
+        />
+      </MenuTrigger>
+      <MenuPopover>
+        <MenuList>
+          {availableThemes.map((m) => (
+            <MenuItemRadio key={m} name="theme" value={m} icon={themeIcon(m)}>
+              {themeLabel(m)}
+            </MenuItemRadio>
+          ))}
+        </MenuList>
+      </MenuPopover>
+    </Menu>
   );
 
   const nodeTitle = currentNode?.title ?? config.title;

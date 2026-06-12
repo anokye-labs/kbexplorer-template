@@ -44,7 +44,8 @@ behaves exactly as before (dark / light / sepia only). Add one field at a time:
 
 1. Set `theme.default` and maybe `theme.font.*`.
 2. Add a `theme.brand` seed to recolor the whole app.
-3. Add a couple of `theme.themes` and press `t` to cycle them.
+3. Add a couple of `theme.themes`, then switch between them from the HUD's
+   paint-palette menu (or press `t` to cycle).
 4. Reach for an [escape hatch](theming-escape-hatches) only when the structured
    options can't express what you need.
 
