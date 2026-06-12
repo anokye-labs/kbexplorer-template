@@ -818,6 +818,19 @@ export interface BrandingConfig {
    * static /favicon.svg from index.html is left untouched.
    */
   favicon?: string;
+  /**
+   * Repo-relative path (or absolute URL) to a raw CSS file injected as the LAST
+   * <link rel="stylesheet"> in <head> at runtime. Repo-relative paths are
+   * resolved via resolveImageUrl() (same host-repo asset path the logo/favicon
+   * use); absolute URLs (http(s):// or protocol-relative //) are used verbatim.
+   * This is the "raw escape hatch" (Option C): host repos can override
+   * --colorNeutral*, --colorBrand*, and --kbe-* CSS variables (and any other
+   * surface) the structured token system can't express — without touching the
+   * .kbexplorer submodule. Injected after FluentProvider/app styles so its
+   * declarations win the cascade. When unset, nothing is injected and any
+   * previously injected sheet is removed.
+   */
+  css?: string;
 }
 
 /** Configuration for an external provider plugin */
@@ -1013,6 +1026,9 @@ export const DEFAULT_CONFIG: KBConfig = {
   // branding omitted by default — host repos may set branding.logo (a repo-relative
   // image path) to render a logo on the HomePage hero and HUD header, and
   // branding.favicon (a repo-relative image path) to swap the document favicon at
-  // runtime. Text title and the static /favicon.svg are used as graceful fallbacks
-  // when no logo / favicon is configured.
+  // runtime, and branding.css (a repo-relative path or URL) to inject a raw CSS
+  // override sheet last in <head> for full control over --colorNeutral*/
+  // --colorBrand*/--kbe-* variables. Text title and the static /favicon.svg are
+  // used as graceful fallbacks; branding.css is unset by default so nothing is
+  // injected.
 };
