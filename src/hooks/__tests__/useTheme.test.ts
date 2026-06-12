@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { resolveInitialMode, readStoredRaw, buildThemeMap } from '../useTheme';
+import { resolveInitialMode, readStoredRaw, buildThemeMap, nextTheme, modesForMap, isDarkTheme, BUILTIN_MODES } from '../useTheme';
 import { generateBrandVariants } from '../../theme/brandRamp';
 import { webDarkTheme, webLightTheme, createDarkTheme } from '@fluentui/react-components';
 
@@ -104,5 +104,96 @@ describe('buildThemeMap', () => {
     });
     // The reserved 'dark' built-in is preserved, not replaced by the config theme.
     expect(map.dark).toBe(webDarkTheme);
+  });
+});
+
+describe('modesForMap', () => {
+  it('with no config themes the cycle is exactly dark/light/sepia', () => {
+    const map = buildThemeMap({ default: 'dark' });
+    expect(modesForMap(map)).toEqual(['dark', 'light', 'sepia']);
+    expect(modesForMap(map)).toEqual(BUILTIN_MODES);
+  });
+
+  it('lists built-ins first, then config themes in config order', () => {
+    const map = buildThemeMap({
+      default: 'dark',
+      themes: {
+        ocean: { base: 'light', brand: '#1B6CA8' },
+        forest: { base: 'dark', brand: '#2E7D32' },
+      },
+    });
+    expect(modesForMap(map)).toEqual(['dark', 'light', 'sepia', 'ocean', 'forest']);
+  });
+});
+
+describe('nextTheme', () => {
+  it('cycles the built-ins and wraps around (default modes)', () => {
+    expect(nextTheme('dark')).toBe('light');
+    expect(nextTheme('light')).toBe('sepia');
+    expect(nextTheme('sepia')).toBe('dark');
+  });
+
+  it('cycles built-ins + config themes and wraps around', () => {
+    const modes = ['dark', 'light', 'sepia', 'ocean', 'forest'];
+    expect(nextTheme('sepia', modes)).toBe('ocean');
+    expect(nextTheme('ocean', modes)).toBe('forest');
+    // Wrap from the last config theme back to the first built-in.
+    expect(nextTheme('forest', modes)).toBe('dark');
+  });
+
+  it('resolves an unknown current mode to the first mode', () => {
+    expect(nextTheme('gone', ['dark', 'light', 'sepia'])).toBe('dark');
+  });
+});
+
+describe('isDarkTheme', () => {
+  it('classifies the built-ins by background luminance', () => {
+    const map = buildThemeMap({ default: 'dark' });
+    expect(isDarkTheme(map.dark)).toBe(true);
+    expect(isDarkTheme(map.light)).toBe(false);
+    // Sepia is a warm light reading theme.
+    expect(isDarkTheme(map.sepia)).toBe(false);
+  });
+
+  it('uses the resolved background, so a dark-based config theme with a light token override is light', () => {
+    const map = buildThemeMap({
+      default: 'dark',
+      themes: {
+        ocean: { base: 'dark', brand: '#1B6CA8', tokens: { colorNeutralBackground1: '#E0F0FA' } },
+      },
+    });
+    // base: 'dark' but the explicit light background wins for isDark decisions.
+    expect(isDarkTheme(map.ocean)).toBe(false);
+  });
+});
+
+describe('readStored / resolveInitialMode against a dynamic set', () => {
+  beforeEach(() => {
+    installLocalStorage();
+  });
+
+  afterEach(() => {
+    delete (globalThis as { localStorage?: unknown }).localStorage;
+  });
+
+  it('accepts a valid stored config-theme key', () => {
+    const modes = ['dark', 'light', 'sepia', 'ocean'];
+    localStorage.setItem(STORAGE_KEY, 'ocean');
+    expect(readStoredRaw(modes)).toBe('ocean');
+    expect(resolveInitialMode('dark', modes)).toBe('ocean');
+  });
+
+  it('rejects a stale stored key not in the current set and falls back to config default', () => {
+    // 'ocean' was removed from config, so the live set no longer contains it.
+    const modes = ['dark', 'light', 'sepia'];
+    localStorage.setItem(STORAGE_KEY, 'ocean');
+    expect(readStoredRaw(modes)).toBeNull();
+    expect(resolveInitialMode('light', modes)).toBe('light');
+  });
+
+  it('falls back to dark when the stale key has no valid config default', () => {
+    const modes = ['dark', 'light', 'sepia'];
+    localStorage.setItem(STORAGE_KEY, 'ocean');
+    expect(resolveInitialMode(undefined, modes)).toBe('dark');
   });
 });
