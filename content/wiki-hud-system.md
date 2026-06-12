@@ -29,6 +29,9 @@ Click cluster label to collapse all nodes into one summary node. The [node rende
 
 Drag to any screen edge. The [style system](style-system) adapts layout. Persists in localStorage. Added in PR #28 alongside depth controls.
 
+The HUD also has a paint-palette menu that lists every available theme (built-ins
+plus any host-repo themes) for direct selection.
+
 ## Keyboard
 
 Press `t` to cycle [themes](theme-system), arrows to navigate nodes — handled by [keyboard navigation](keyboard-nav).
