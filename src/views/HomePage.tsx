@@ -28,6 +28,7 @@ import {
 } from '@fluentui/react-icons'
 import type { KBGraph, KBConfig, KBNode } from '../types'
 import { NodeVisual } from '../components/NodeVisual'
+import { resolveImageUrl } from '../api'
 import { createGraphNetwork } from '../engine/createGraphNetwork'
 
 const useStyles = makeStyles({
@@ -70,6 +71,14 @@ const useStyles = makeStyles({
     lineHeight: 1.1,
     marginBottom: '0.75rem',
     marginTop: 0,
+  },
+  heroLogo: {
+    display: 'block',
+    maxWidth: '100%',
+    height: 'auto',
+    maxHeight: 'clamp(3rem, 10vh, 7rem)',
+    margin: '0 auto 0.75rem',
+    objectFit: 'contain',
   },
   heroSub: {
     fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)',
@@ -382,7 +391,15 @@ export function HomePage({ graph, config }: HomePageProps) {
         <div className={styles.heroGlow} style={{ background: '#E8A838', bottom: '-20%', right: '-10%' }} />
         <div ref={heroCanvasRef} className={styles.heroCanvas} />
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>{config.title}</h1>
+          {config.branding?.logo ? (
+            <img
+              className={styles.heroLogo}
+              src={resolveImageUrl(config.source, config.branding.logo)}
+              alt={config.title}
+            />
+          ) : (
+            <h1 className={styles.heroTitle}>{config.title}</h1>
+          )}
           <p className={styles.heroSub}>
             {config.subtitle ?? 'Turn any repository into a navigable knowledge constellation — explore code, issues, docs, and external references as an interconnected graph.'}
           </p>
