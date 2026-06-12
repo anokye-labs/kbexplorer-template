@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Theme, KBConfig, FluentBrandRamp, FluentBrandRampKey } from '../types';
+import type { KBConfig, FluentBrandRamp, FluentBrandRampKey } from '../types';
 import {
   webDarkTheme,
   webLightTheme,
@@ -10,10 +10,32 @@ import {
 } from '@fluentui/react-components';
 import { generateBrandVariants } from '../theme/brandRamp';
 
-export type ThemeMode = 'dark' | 'light' | 'sepia';
+/**
+ * A selectable theme key. The three built-ins (dark/light/sepia) are always
+ * present; config-defined themes (`config.theme.themes.<name>`) widen this set
+ * at runtime, so the type is intentionally open. `(string & {})` keeps built-in
+ * autocomplete while still accepting arbitrary config theme keys.
+ */
+export type ThemeMode = 'dark' | 'light' | 'sepia' | (string & {});
 
 const STORAGE_KEY = 'kbe-theme';
-const MODES: ThemeMode[] = ['dark', 'light', 'sepia'];
+
+/** The always-present built-in themes, in canonical cycle order. */
+export const BUILTIN_MODES: ThemeMode[] = ['dark', 'light', 'sepia'];
+
+/**
+ * Derive the ordered, selectable mode list from a runtime theme map: the
+ * built-ins first (dark, light, sepia — only those actually present), then any
+ * config-defined theme keys in config (insertion) order. This is the dynamic
+ * equivalent of the old static `MODES` array and drives both the cycle order
+ * and stored-key validation.
+ */
+export function modesForMap(themeMap: Record<string, FluentTheme>): ThemeMode[] {
+  const keys = Object.keys(themeMap);
+  const builtins = BUILTIN_MODES.filter(m => keys.includes(m as string));
+  const extras = keys.filter(k => !(BUILTIN_MODES as string[]).includes(k));
+  return [...builtins, ...extras];
+}
 
 // Warm amber brand ramp for the sepia reading theme
 const sepiaBrand: BrandVariants = {
@@ -63,28 +85,41 @@ const sepiaTheme: FluentTheme = {
   colorSubtleBackgroundPressed: '#E5DBC2',
 };
 
-/** Returns the user's explicitly stored theme, or null when none is saved. */
-export function readStoredRaw(): ThemeMode | null {
+/**
+ * Returns the user's explicitly stored theme, or null when none is saved or the
+ * saved key is not in the supplied selectable set. Validating against `modes`
+ * means a stored config-theme key that no longer exists (e.g. the theme was
+ * removed from config) is treated as absent rather than selected.
+ */
+export function readStoredRaw(modes: ThemeMode[] = BUILTIN_MODES): ThemeMode | null {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
-    if (v && MODES.includes(v as ThemeMode)) return v as ThemeMode;
+    if (v && (modes as string[]).includes(v)) return v as ThemeMode;
   } catch { /* ignore */ }
   return null;
 }
 
 /**
- * Resolves the initial theme mode. A theme the user explicitly saved always
- * wins; otherwise fall back to config.theme.default, then to 'dark'.
+ * Resolves the initial theme mode against the given selectable set. A theme the
+ * user explicitly saved (and that is still valid) always wins; otherwise fall
+ * back to config.theme.default (if valid), then to 'dark'.
  */
-export function resolveInitialMode(configDefault?: Theme): ThemeMode {
-  const stored = readStoredRaw();
+export function resolveInitialMode(
+  configDefault?: ThemeMode,
+  modes: ThemeMode[] = BUILTIN_MODES,
+): ThemeMode {
+  const stored = readStoredRaw(modes);
   if (stored) return stored;
-  if (configDefault && MODES.includes(configDefault)) return configDefault;
-  return 'dark';
+  if (configDefault && (modes as string[]).includes(configDefault as string)) return configDefault;
+  return (modes as string[]).includes('dark') ? 'dark' : (modes[0] ?? 'dark');
 }
 
-function readStored(): ThemeMode {
-  return readStoredRaw() ?? 'dark';
+/**
+ * Resolve a starting mode for the hook's initial state: a valid stored choice
+ * wins, otherwise `fallback` (clamped to the selectable set).
+ */
+function readStored(modes: ThemeMode[] = BUILTIN_MODES, fallback: ThemeMode = 'dark'): ThemeMode {
+  return readStoredRaw(modes) ?? ((modes as string[]).includes(fallback as string) ? fallback : (modes[0] ?? 'dark'));
 }
 
 /**
@@ -92,7 +127,7 @@ function readStored(): ThemeMode {
  * the entire theme map, so default (no brand/tokens/themes) behavior is byte-
  * for-byte identical to the previous static map.
  */
-const BUILTIN_THEME_MAP: Record<ThemeMode, FluentTheme> = {
+const BUILTIN_THEME_MAP: Record<'dark' | 'light' | 'sepia', FluentTheme> = {
   dark: webDarkTheme,
   light: webLightTheme,
   sepia: sepiaTheme,
@@ -177,7 +212,7 @@ export function buildThemeMap(theme?: KBConfig['theme']): Record<string, FluentT
 
   if (theme?.themes) {
     for (const [key, def] of Object.entries(theme.themes)) {
-      if ((MODES as string[]).includes(key)) {
+      if ((BUILTIN_MODES as string[]).includes(key)) {
         console.warn(
           `[useTheme] Ignoring config theme "${key}": that name is reserved for a built-in theme.`,
         );
@@ -203,34 +238,80 @@ export function useTheme(): [
   FluentTheme,
   (t: ThemeMode) => void,
   (theme?: KBConfig['theme']) => void,
+  () => void,
 ] {
-  const [mode, setModeState] = useState<ThemeMode>(readStored);
+  const [mode, setModeState] = useState<ThemeMode>(() => readStored());
   const [themeMap, setThemeMap] = useState<Record<string, FluentTheme>>(BUILTIN_THEME_MAP);
 
   const setMode = useCallback((t: ThemeMode) => {
     setModeState(t);
-    localStorage.setItem(STORAGE_KEY, t);
+    try { localStorage.setItem(STORAGE_KEY, t); } catch { /* ignore */ }
   }, []);
 
   // Invoked once config resolves (async, after mount). Builds the dynamic theme
-  // map from config and applies config.theme.default as the initial mode — but
-  // never overrides a theme the user has explicitly saved. The default is not
-  // persisted, so a later config change can still take effect.
+  // map from config and reconciles the active mode against the new selectable
+  // set: a still-valid stored choice wins; a stale stored key (e.g. a config
+  // theme that was removed) is ignored and we fall back to config.theme.default
+  // then 'dark'. The default is not persisted, so a later config change can
+  // still take effect.
   const applyConfig = useCallback((theme?: KBConfig['theme']) => {
-    setThemeMap(buildThemeMap(theme));
-    if (readStoredRaw() !== null) return;
+    const map = buildThemeMap(theme);
+    setThemeMap(map);
+    const modes = modesForMap(map);
+    const stored = readStoredRaw(modes);
+    if (stored !== null) {
+      setModeState(stored);
+      return;
+    }
     const configDefault = theme?.default;
-    if (configDefault && MODES.includes(configDefault)) {
+    if (configDefault && (modes as string[]).includes(configDefault as string)) {
       setModeState(configDefault);
+    } else {
+      setModeState((modes as string[]).includes('dark') ? 'dark' : (modes[0] ?? 'dark'));
     }
   }, []);
 
-  const fluentTheme = themeMap[mode] ?? BUILTIN_THEME_MAP[mode] ?? webDarkTheme;
+  // Cycle to the next theme based on the live map keys (built-ins + config
+  // themes), wrapping around. Persists the choice like an explicit selection.
+  const cycleTheme = useCallback(() => {
+    const modes = modesForMap(themeMap);
+    setModeState(prev => {
+      const next = nextTheme(prev, modes);
+      try { localStorage.setItem(STORAGE_KEY, next); } catch { /* ignore */ }
+      return next;
+    });
+  }, [themeMap]);
 
-  return [mode, fluentTheme, setMode, applyConfig];
+  const fluentTheme =
+    themeMap[mode] ?? (BUILTIN_THEME_MAP as Record<string, FluentTheme>)[mode] ?? webDarkTheme;
+
+  return [mode, fluentTheme, setMode, applyConfig, cycleTheme];
 }
 
-export function nextTheme(current: ThemeMode): ThemeMode {
-  const i = MODES.indexOf(current);
-  return MODES[(i + 1) % MODES.length];
+/**
+ * Return the next theme in the cycle after `current`, wrapping around. The
+ * cycle is the supplied `modes` list (built-ins first, then config themes); an
+ * unknown `current` (not in the set) resolves to the first mode.
+ */
+export function nextTheme(current: ThemeMode, modes: ThemeMode[] = BUILTIN_MODES): ThemeMode {
+  if (modes.length === 0) return current;
+  const i = modes.indexOf(current);
+  return modes[(i + 1) % modes.length];
+}
+
+/**
+ * Whether a resolved Fluent theme renders on a dark background, derived from
+ * the perceived luminance of `colorNeutralBackground1`. Used instead of a
+ * `mode === 'dark'` string check so config themes (any key) drive dark/light
+ * UI decisions correctly. Defaults to dark when the background is unparseable.
+ */
+export function isDarkTheme(theme: FluentTheme): boolean {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(theme.colorNeutralBackground1 ?? '');
+  if (!m) return true;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 0xff;
+  const g = (n >> 8) & 0xff;
+  const b = n & 0xff;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
 }

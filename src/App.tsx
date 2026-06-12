@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { FluentProvider } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
-import { useTheme } from './hooks/useTheme';
+import { useTheme, isDarkTheme } from './hooks/useTheme';
 import { useThemeFonts } from './hooks/useThemeFonts';
 import { useFavicon } from './hooks/useFavicon';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
@@ -28,7 +28,7 @@ function useCurrentNodeId(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function Explorer({ themeMode, setThemeMode, applyConfig }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme']) => void }) {
+function Explorer({ themeMode, isDark, setThemeMode, applyConfig, cycleTheme }: { themeMode: import('./hooks/useTheme').ThemeMode; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme']) => void; cycleTheme: () => void }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
 
@@ -47,7 +47,7 @@ function Explorer({ themeMode, setThemeMode, applyConfig }: { themeMode: import(
 
   useKeyboardNav(
     state.status === 'ready' ? state.graph : null,
-    setThemeMode as (t: import('./types').Theme) => void,
+    cycleTheme,
   );
 
   useThemeFonts(state.status === 'ready' ? state.config.theme.font : undefined);
@@ -82,6 +82,7 @@ function Explorer({ themeMode, setThemeMode, applyConfig }: { themeMode: import(
           config={config}
           currentNodeId={currentNodeId}
           theme={themeMode}
+          isDark={isDark}
           onThemeChange={setThemeMode as (t: import('./types').Theme) => void}
           onCollapsedChange={setHudCollapsed}
           onDockChange={setHudDock}
@@ -91,12 +92,13 @@ function Explorer({ themeMode, setThemeMode, applyConfig }: { themeMode: import(
 }
 
 function App() {
-  const [themeMode, fluentTheme, setThemeMode, applyConfig] = useTheme();
+  const [themeMode, fluentTheme, setThemeMode, applyConfig, cycleTheme] = useTheme();
+  const isDark = isDarkTheme(fluentTheme);
 
   return (
     <FluentProvider theme={fluentTheme} style={{ minHeight: '100vh' }}>
       <HashRouter>
-        <Explorer themeMode={themeMode} setThemeMode={setThemeMode} applyConfig={applyConfig} />
+        <Explorer themeMode={themeMode} isDark={isDark} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} />
       </HashRouter>
     </FluentProvider>
   );
