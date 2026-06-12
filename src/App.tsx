@@ -28,7 +28,7 @@ function useCurrentNodeId(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function Explorer({ themeMode, setThemeMode, applyConfig }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme']) => void }) {
+function Explorer({ themeMode, setThemeMode, applyConfig, cycleTheme }: { themeMode: import('./hooks/useTheme').ThemeMode; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme']) => void; cycleTheme: () => void }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
 
@@ -47,7 +47,7 @@ function Explorer({ themeMode, setThemeMode, applyConfig }: { themeMode: import(
 
   useKeyboardNav(
     state.status === 'ready' ? state.graph : null,
-    setThemeMode as (t: import('./types').Theme) => void,
+    cycleTheme,
   );
 
   useThemeFonts(state.status === 'ready' ? state.config.theme.font : undefined);
@@ -81,7 +81,7 @@ function Explorer({ themeMode, setThemeMode, applyConfig }: { themeMode: import(
           graph={graph}
           config={config}
           currentNodeId={currentNodeId}
-          theme={themeMode}
+          theme={themeMode as import('./types').Theme}
           onThemeChange={setThemeMode as (t: import('./types').Theme) => void}
           onCollapsedChange={setHudCollapsed}
           onDockChange={setHudDock}
@@ -91,12 +91,12 @@ function Explorer({ themeMode, setThemeMode, applyConfig }: { themeMode: import(
 }
 
 function App() {
-  const [themeMode, fluentTheme, setThemeMode, applyConfig] = useTheme();
+  const [themeMode, fluentTheme, setThemeMode, applyConfig, cycleTheme] = useTheme();
 
   return (
     <FluentProvider theme={fluentTheme} style={{ minHeight: '100vh' }}>
       <HashRouter>
-        <Explorer themeMode={themeMode} setThemeMode={setThemeMode} applyConfig={applyConfig} />
+        <Explorer themeMode={themeMode} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} />
       </HashRouter>
     </FluentProvider>
   );

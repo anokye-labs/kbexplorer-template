@@ -8,7 +8,7 @@ import type { SourceConfig } from '../types';
 
 const CACHE_PREFIX = 'kbe:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const CACHE_VERSION = 19; // bump to invalidate all cached data (19: F3 branding.favicon config field swaps document <link rel=icon> at runtime — affects cached render; 18: F3 branding.logo config field renders on HomePage hero + HUD header — affects cached render; 17: F1 config-driven appearance — theme.default initial mode + theme.font.* CSS vars now affect cached render; 16: skill node type — .github/skills/**/SKILL.md → SkillView; 15: F3 structural nodes + node-map JSON-LD merged with content-model spine ingestion; 13: KBNode JSON-LD fields + KBEdge.relation)
+const CACHE_VERSION = 20; // bump to invalidate all cached data (20: T2.4 F2 config-driven brand — theme cycle + persistence now span config.theme.themes.*; selectable theme set is dynamic (built-ins + config themes) and stored kbe-theme is validated against it, changing the cached render's theme shape; 19: F3 branding.favicon config field swaps document <link rel=icon> at runtime — affects cached render; 18: F3 branding.logo config field renders on HomePage hero + HUD header — affects cached render; 17: F1 config-driven appearance — theme.default initial mode + theme.font.* CSS vars now affect cached render; 16: skill node type — .github/skills/**/SKILL.md → SkillView; 15: F3 structural nodes + node-map JSON-LD merged with content-model spine ingestion; 13: KBNode JSON-LD fields + KBEdge.relation)
 
 // Clear stale cache from older versions
 try {
