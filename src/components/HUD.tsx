@@ -949,16 +949,14 @@ export function HUD({ graph, config, currentNodeId, theme, onThemeChange, onColl
               <>
                 <div className={styles.currentNode} style={{ justifyContent: 'center' }}>
                   {brandLogoUrl && (
-                    <img className={styles.brandLogo} src={brandLogoUrl} alt={config.title} />
+                    <img className={styles.brandLogo} src={brandLogoUrl} alt="" />
                   )}
                   {currentNode?.emoji && isFluentIconName(currentNode.emoji) ? (
                     (() => { const Icon = FLUENT_ICONS[currentNode.emoji]; return <Icon style={{ fontSize: 20 }} />; })()
                   ) : (
                     <span style={{ fontSize: tokens.fontSizeBase500 }}>{currentNode?.emoji ?? ''}</span>
                   )}
-                  {!(brandLogoUrl && !currentNode) && (
-                    <Body1Strong className={styles.currentTitle}>{nodeTitle}</Body1Strong>
-                  )}
+                  <Body1Strong className={styles.currentTitle}>{nodeTitle}</Body1Strong>
                 </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
                   {themeButtons}
