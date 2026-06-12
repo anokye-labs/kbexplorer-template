@@ -26,5 +26,10 @@ dist-ssr
 .playwright-cli/
 test-results/
 playwright-report/
+playwright-report-gitea/
 e2e/artifacts/
 .env.kbexplorer
+
+# Gitea Digital Twin Universe (DTU) harness runtime state — never committed.
+# Holds the live Gitea coords + admin API token and the cached `tea` binary.
+.dtu/
