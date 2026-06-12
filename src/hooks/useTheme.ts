@@ -1,12 +1,14 @@
 import { useState, useCallback } from 'react';
-import type { Theme } from '../types';
+import type { Theme, KBConfig, FluentBrandRamp, FluentBrandRampKey } from '../types';
 import {
   webDarkTheme,
   webLightTheme,
   createLightTheme,
+  createDarkTheme,
   type Theme as FluentTheme,
   type BrandVariants,
 } from '@fluentui/react-components';
+import { generateBrandVariants } from '../theme/brandRamp';
 
 export type ThemeMode = 'dark' | 'light' | 'sepia';
 
@@ -85,36 +87,126 @@ function readStored(): ThemeMode {
   return readStoredRaw() ?? 'dark';
 }
 
-const THEME_MAP: Record<ThemeMode, FluentTheme> = {
+/**
+ * The three always-present built-in themes. With no config overrides this is
+ * the entire theme map, so default (no brand/tokens/themes) behavior is byte-
+ * for-byte identical to the previous static map.
+ */
+const BUILTIN_THEME_MAP: Record<ThemeMode, FluentTheme> = {
   dark: webDarkTheme,
   light: webLightTheme,
   sepia: sepiaTheme,
 };
 
+// Brand ramp stops in ascending order, used to fill a partial ramp object.
+const RAMP_STOPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160] as const;
+
+/**
+ * Convert a config brand ramp object (string keys "10".."160", possibly
+ * partial) into a complete Fluent `BrandVariants`. A complete ramp is used
+ * verbatim; a partial ramp has its gaps filled by carrying the nearest
+ * provided neighbor (forward, then backward) so every stop is defined.
+ */
+function rampToBrandVariants(ramp: FluentBrandRamp): BrandVariants {
+  const out: Record<number, string> = {};
+  for (const stop of RAMP_STOPS) {
+    const value = ramp[String(stop) as FluentBrandRampKey];
+    if (value) out[stop] = value;
+  }
+  let last: string | undefined;
+  for (const stop of RAMP_STOPS) {
+    if (out[stop]) last = out[stop];
+    else if (last) out[stop] = last;
+  }
+  let next: string | undefined;
+  for (let i = RAMP_STOPS.length - 1; i >= 0; i--) {
+    const stop = RAMP_STOPS[i];
+    if (out[stop]) next = out[stop];
+    else if (next) out[stop] = next;
+  }
+  return out as BrandVariants;
+}
+
+/** Resolve a config brand value (seed hex or ramp object) to BrandVariants. */
+function resolveBrandVariants(brand: string | FluentBrandRamp): BrandVariants {
+  return typeof brand === 'string' ? generateBrandVariants(brand) : rampToBrandVariants(brand);
+}
+
+/** Spread arbitrary token overrides over a Theme so explicit values win. */
+function applyTokens(base: FluentTheme, tokens?: Partial<Record<string, string>>): FluentTheme {
+  if (!tokens) return base;
+  return { ...base, ...tokens } as FluentTheme;
+}
+
+/**
+ * Build the runtime theme map from config. Pure and side-effect free.
+ *
+ * - Starts from the three built-ins (dark/light/sepia).
+ * - A global `theme.brand` regenerates the dark/light base themes via
+ *   `createDarkTheme`/`createLightTheme`; `theme.tokens` are then spread on top.
+ * - Each `theme.themes.<name>` entry becomes a selectable theme keyed by name,
+ *   derived from its `base` ('dark'→createDarkTheme, 'light'→createLightTheme,
+ *   default 'dark'), its `brand`, and its `tokens`.
+ *
+ * With no brand/tokens/themes configured the result equals BUILTIN_THEME_MAP
+ * (same object references), so behavior is unchanged.
+ */
+export function buildThemeMap(theme?: KBConfig['theme']): Record<string, FluentTheme> {
+  const globalVariants = theme?.brand ? resolveBrandVariants(theme.brand) : undefined;
+  const globalTokens = theme?.tokens;
+
+  const dark = applyTokens(globalVariants ? createDarkTheme(globalVariants) : webDarkTheme, globalTokens);
+  const light = applyTokens(globalVariants ? createLightTheme(globalVariants) : webLightTheme, globalTokens);
+
+  const map: Record<string, FluentTheme> = { dark, light, sepia: sepiaTheme };
+
+  if (theme?.themes) {
+    for (const [key, def] of Object.entries(theme.themes)) {
+      const base = def.base ?? 'dark';
+      const variants = def.brand ? resolveBrandVariants(def.brand) : undefined;
+      let baseTheme: FluentTheme;
+      if (variants) {
+        baseTheme = base === 'light' ? createLightTheme(variants) : createDarkTheme(variants);
+      } else {
+        baseTheme = base === 'light' ? webLightTheme : webDarkTheme;
+      }
+      map[key] = applyTokens(baseTheme, def.tokens);
+    }
+  }
+
+  return map;
+}
+
 export function useTheme(): [
   ThemeMode,
   FluentTheme,
   (t: ThemeMode) => void,
-  (configDefault?: Theme) => void,
+  (theme?: KBConfig['theme']) => void,
 ] {
   const [mode, setModeState] = useState<ThemeMode>(readStored);
+  const [themeMap, setThemeMap] = useState<Record<string, FluentTheme>>(BUILTIN_THEME_MAP);
 
   const setMode = useCallback((t: ThemeMode) => {
     setModeState(t);
     localStorage.setItem(STORAGE_KEY, t);
   }, []);
 
-  // Applies config.theme.default as the initial mode, but never overrides a
-  // theme the user has explicitly saved. Not persisted: a config default is
-  // not a user choice, so a later config change can still take effect.
-  const applyConfigDefault = useCallback((configDefault?: Theme) => {
+  // Invoked once config resolves (async, after mount). Builds the dynamic theme
+  // map from config and applies config.theme.default as the initial mode — but
+  // never overrides a theme the user has explicitly saved. The default is not
+  // persisted, so a later config change can still take effect.
+  const applyConfig = useCallback((theme?: KBConfig['theme']) => {
+    setThemeMap(buildThemeMap(theme));
     if (readStoredRaw() !== null) return;
+    const configDefault = theme?.default;
     if (configDefault && MODES.includes(configDefault)) {
       setModeState(configDefault);
     }
   }, []);
 
-  return [mode, THEME_MAP[mode], setMode, applyConfigDefault];
+  const fluentTheme = themeMap[mode] ?? BUILTIN_THEME_MAP[mode] ?? webDarkTheme;
+
+  return [mode, fluentTheme, setMode, applyConfig];
 }
 
 export function nextTheme(current: ThemeMode): ThemeMode {
