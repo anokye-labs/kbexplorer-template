@@ -35,6 +35,7 @@ import { WorkProvider } from './providers/work-provider'
 import { StructuralProvider } from './providers/structural-provider'
 import { ContentModelProvider } from './providers/content-model-provider'
 import { collectProviderNodes } from './orchestrator'
+import { applyExternalThemeFile } from '../theme/externalTheme'
 
 export type ResolutionPreset = 'summary' | 'standard' | 'full'
 
@@ -66,6 +67,13 @@ async function fetchGitHubData(
   preset: ResolutionPreset,
 ): Promise<FetchedData> {
   const config = await loadConfig(source)
+
+  // F5/T5.1: merge a dedicated host-repo theme file (config.theme.themesFile)
+  // into the theme block before the THEME_MAP is built. Fetched like config.yaml
+  // (repo-relative path via fetchFile); a missing/malformed file is a no-op.
+  if (config.theme?.themesFile) {
+    config.theme = await applyExternalThemeFile(config.theme, p => fetchFile(source, p))
+  }
 
   // All presets fetch issues + README
   const [issues, readme] = await Promise.all([

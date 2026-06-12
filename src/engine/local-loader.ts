@@ -27,6 +27,7 @@ import { ContentModelProvider } from './providers/content-model-provider';
 import { collectProviderNodes } from './orchestrator';
 import type { GHIssue, GHTreeItem } from '../api';
 import type { ContentModelSource } from './content-model';
+import { mergeExternalTheme, parseExternalTheme } from '../theme/externalTheme';
 
 // ── Manifest Types ─────────────────────────────────────────
 
@@ -77,6 +78,14 @@ interface RepoManifest {
    * content model — the ContentModelProvider is then a safe no-op.
    */
   contentModel?: ContentModelSource | null;
+  /**
+   * Optional raw contents of the dedicated theme file referenced by
+   * `config.theme.themesFile` (F5/T5.1). Read at manifest-generation time from
+   * the host repo and merged into the theme block in local mode the same way
+   * the remote loader fetches it at runtime. Null/absent when no themesFile is
+   * configured or the file is missing — a safe no-op.
+   */
+  themeFileRaw?: string | null;
   generatedAt: string;
 }
 
@@ -117,7 +126,14 @@ export async function loadLocalConfig(): Promise<KBConfig> {
 
   try {
     const parsed = yaml.parse(manifest.configRaw) as Partial<KBConfig>;
-    return { ...DEFAULT_CONFIG, ...parsed, source: DEFAULT_CONFIG.source };
+    const config = { ...DEFAULT_CONFIG, ...parsed, source: DEFAULT_CONFIG.source };
+    // F5/T5.1: merge a dedicated host-repo theme file captured in the manifest
+    // (themeFileRaw) into the theme block — the local-mode mirror of the remote
+    // loader's runtime fetch. No-op when no themesFile is configured / present.
+    if (config.theme?.themesFile && manifest.themeFileRaw) {
+      config.theme = mergeExternalTheme(config.theme, parseExternalTheme(manifest.themeFileRaw));
+    }
+    return config;
   } catch {
     return { ...DEFAULT_CONFIG };
   }

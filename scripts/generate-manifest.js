@@ -153,8 +153,36 @@ export function readConfig(root, contentPath = 'content') {
   return null;
 }
 
-// ── README ─────────────────────────────────────────────────
-
+/**
+ * Read the raw contents of the dedicated theme file referenced by
+ * `config.theme.themesFile` (F5/T5.1), if any. The path is interpreted as
+ * repo-root relative (e.g. "content/themes/extra.yaml" or ".kbe/theme.yaml"),
+ * mirroring how the remote loader fetches it via `fetchFile(source, themesFile)`.
+ * Returns null when no themesFile is configured, the config can't be parsed, or
+ * the referenced file doesn't exist — a safe no-op.
+ *
+ * @param {string} root - Project root
+ * @param {string|null} configRaw - Raw config.yaml content
+ * @returns {string|null}
+ */
+export function readThemeFile(root, configRaw) {
+  if (!configRaw) return null;
+  let parsed;
+  try {
+    parsed = yaml.parse(configRaw);
+  } catch {
+    return null;
+  }
+  const themesFile = parsed?.theme?.themesFile;
+  if (!themesFile || typeof themesFile !== 'string') return null;
+  const p = resolve(root, themesFile);
+  if (!existsSync(p)) return null;
+  try {
+    return readFileSync(p, 'utf-8');
+  } catch {
+    return null;
+  }
+}
 /**
  * Read README.md from the project root.
  * @param {string} root
@@ -581,9 +609,11 @@ export function generateManifest(root = hostRoot) {
   const { nodemapFiles, nodemapDirs } = collectNodemapData(root, nodemapRaw, tree);
   const structuredNodeMapRaw = readStructuredNodeMap(root);
   const structuralFiles = collectStructuralFiles(root, tree);
+  const configRaw = readConfig(root, contentPath);
 
   const manifest = {
-    configRaw: readConfig(root, contentPath),
+    configRaw,
+    themeFileRaw: readThemeFile(root, configRaw),
     authoredContent: readAuthoredContent(contentDir, contentPath),
     tree,
     readme: readReadme(root),
@@ -614,6 +644,7 @@ export function generateManifest(root = hostRoot) {
   console.log(`[generate-manifest] Nodemap: ${nodemapRaw ? `${Object.keys(nodemapFiles).length} files, ${Object.keys(nodemapDirs).length} dirs` : 'not found'}`);
   console.log(`[generate-manifest] Structural: ${Object.keys(structuralFiles).length} .github files${structuredNodeMapRaw ? ' + node-map.yaml' : ''}`);
   console.log(`[generate-manifest] Content model: ${manifest.contentModel ? `${Object.keys(manifest.contentModel.files).length} files` : 'not found'}`);
+  console.log(`[generate-manifest] Theme file: ${manifest.themeFileRaw ? 'loaded' : 'not configured'}`);
 
   return manifest;
 }
