@@ -65,13 +65,20 @@ theme:
         colorNeutralBackground1: "#FFF5F8"
 ```
 
-## Cycling
+## Choosing a theme
 
-Press **`t`** to cycle. The order is the built-ins first (dark → light → sepia),
-then your named themes in declaration order, then wrap. The active choice is
-saved to `localStorage` under `kbe-theme`; if a saved theme is later removed from
-config, the app falls back to `theme.default`. See [keyboard nav](keyboard-nav)
-for all shortcuts and the [theme system](theme-system) for how a resolved Fluent
-`Theme` flows to `<FluentProvider>`.
+There are two ways to switch:
+
+- **Palette menu** — the paint-palette button in the HUD opens a menu listing
+  *every* available theme (built-ins plus your named, external-file, and module
+  themes) with the active one checked. Click one to apply it.
+- **Keyboard** — press **`t`** to cycle. The order is the built-ins first
+  (dark → light → sepia), then your named themes in declaration order, then wrap.
+
+Either way the active choice is saved to `localStorage` under `kbe-theme`; if a
+saved theme is later removed from config, the app falls back to `theme.default`.
+See [keyboard nav](keyboard-nav) for all shortcuts and the
+[theme system](theme-system) for how a resolved Fluent `Theme` flows to
+`<FluentProvider>`.
 
 For per-cluster and per-page accents, see [scoped theming](theming-scoped).
