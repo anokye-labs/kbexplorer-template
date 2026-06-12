@@ -820,13 +820,15 @@ export interface BrandingConfig {
   favicon?: string;
   /**
    * Repo-relative path (or absolute URL) to a raw CSS file injected as the LAST
-   * <link rel="stylesheet"> in <head> at runtime, resolved via resolveImageUrl()
-   * (same host-repo asset path the logo/favicon use). This is the "raw escape
-   * hatch" (Option C): host repos can override --colorNeutral*, --colorBrand*,
-   * and --kbe-* CSS variables (and any other surface) the structured token
-   * system can't express — without touching the .kbexplorer submodule. Injected
-   * after FluentProvider/app styles so its declarations win the cascade. When
-   * unset, nothing is injected and any previously injected sheet is removed.
+   * <link rel="stylesheet"> in <head> at runtime. Repo-relative paths are
+   * resolved via resolveImageUrl() (same host-repo asset path the logo/favicon
+   * use); absolute URLs (http(s):// or protocol-relative //) are used verbatim.
+   * This is the "raw escape hatch" (Option C): host repos can override
+   * --colorNeutral*, --colorBrand*, and --kbe-* CSS variables (and any other
+   * surface) the structured token system can't express — without touching the
+   * .kbexplorer submodule. Injected after FluentProvider/app styles so its
+   * declarations win the cascade. When unset, nothing is injected and any
+   * previously injected sheet is removed.
    */
   css?: string;
 }

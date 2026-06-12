@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   applyCssOverride,
+  isAbsoluteUrl,
   CSS_OVERRIDE_ATTR,
   type CssDocTarget,
   type CssLinkTarget,
@@ -92,5 +93,21 @@ describe('applyCssOverride', () => {
         (globalThis as { document?: unknown }).document = original;
       }
     }
+  });
+});
+
+describe('isAbsoluteUrl', () => {
+  it('treats http(s) and protocol-relative URLs as absolute (used verbatim)', () => {
+    expect(isAbsoluteUrl('https://example.com/overrides.css')).toBe(true);
+    expect(isAbsoluteUrl('http://example.com/overrides.css')).toBe(true);
+    expect(isAbsoluteUrl('HTTPS://EXAMPLE.com/x.css')).toBe(true);
+    expect(isAbsoluteUrl('//cdn.example.com/overrides.css')).toBe(true);
+  });
+
+  it('treats repo-relative paths as not absolute (resolved via resolveImageUrl)', () => {
+    expect(isAbsoluteUrl('content/overrides.css')).toBe(false);
+    expect(isAbsoluteUrl('/overrides.css')).toBe(false);
+    expect(isAbsoluteUrl('overrides.css')).toBe(false);
+    expect(isAbsoluteUrl('./theme/overrides.css')).toBe(false);
   });
 });

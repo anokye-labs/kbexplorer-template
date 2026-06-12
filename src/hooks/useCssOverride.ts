@@ -5,6 +5,16 @@ import { resolveImageUrl } from '../api';
 /** Marker attribute on the single managed override <link>, so we can find/update/remove it idempotently. */
 export const CSS_OVERRIDE_ATTR = 'data-kbe-css-override';
 
+/**
+ * Whether `value` is already an absolute URL that must be used verbatim rather
+ * than resolved as a repo-relative path. Matches `http://`, `https://`, and
+ * protocol-relative `//host/...` forms. resolveImageUrl() would otherwise
+ * prefix BASE_URL / build a raw.githubusercontent URL and mangle these.
+ */
+export function isAbsoluteUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value) || value.startsWith('//');
+}
+
 /** Minimal element target that exposes the attribute API we need (testable without a DOM). */
 export type CssLinkTarget = {
   getAttribute(name: string): string | null;
@@ -55,13 +65,17 @@ export function applyCssOverride(href: string | null | undefined, doc?: CssDocTa
 }
 
 /**
- * React hook that injects `config.branding.css` (resolved via resolveImageUrl,
- * the same host-repo asset path the logo/favicon use) as the last stylesheet in
- * <head>. Unset css injects nothing and removes any previously injected sheet.
+ * React hook that injects `config.branding.css` as the last stylesheet in
+ * <head>. A repo-relative path is resolved via resolveImageUrl (the same
+ * host-repo asset path the logo/favicon use); an absolute URL (http(s):// or
+ * protocol-relative //) is used verbatim. Unset css injects nothing and removes
+ * any previously injected sheet.
  */
 export function useCssOverride(config: KBConfig | undefined): void {
   const css = config?.branding?.css;
-  const href = css && config ? resolveImageUrl(config.source, css) : null;
+  const href = css && config
+    ? (isAbsoluteUrl(css) ? css : resolveImageUrl(config.source, css))
+    : null;
   useEffect(() => {
     applyCssOverride(href);
   }, [href]);
