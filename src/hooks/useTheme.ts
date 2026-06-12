@@ -282,7 +282,8 @@ export function useTheme(): [
     });
   }, [themeMap]);
 
-  const fluentTheme = themeMap[mode] ?? BUILTIN_THEME_MAP[mode as 'dark'] ?? webDarkTheme;
+  const fluentTheme =
+    themeMap[mode] ?? (BUILTIN_THEME_MAP as Record<string, FluentTheme>)[mode] ?? webDarkTheme;
 
   return [mode, fluentTheme, setMode, applyConfig, cycleTheme];
 }
@@ -296,4 +297,21 @@ export function nextTheme(current: ThemeMode, modes: ThemeMode[] = BUILTIN_MODES
   if (modes.length === 0) return current;
   const i = modes.indexOf(current);
   return modes[(i + 1) % modes.length];
+}
+
+/**
+ * Whether a resolved Fluent theme renders on a dark background, derived from
+ * the perceived luminance of `colorNeutralBackground1`. Used instead of a
+ * `mode === 'dark'` string check so config themes (any key) drive dark/light
+ * UI decisions correctly. Defaults to dark when the background is unparseable.
+ */
+export function isDarkTheme(theme: FluentTheme): boolean {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(theme.colorNeutralBackground1 ?? '');
+  if (!m) return true;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 0xff;
+  const g = (n >> 8) & 0xff;
+  const b = n & 0xff;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
 }

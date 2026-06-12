@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { resolveInitialMode, readStoredRaw, buildThemeMap, nextTheme, modesForMap, BUILTIN_MODES } from '../useTheme';
+import { resolveInitialMode, readStoredRaw, buildThemeMap, nextTheme, modesForMap, isDarkTheme, BUILTIN_MODES } from '../useTheme';
 import { generateBrandVariants } from '../../theme/brandRamp';
 import { webDarkTheme, webLightTheme, createDarkTheme } from '@fluentui/react-components';
 
@@ -143,6 +143,27 @@ describe('nextTheme', () => {
 
   it('resolves an unknown current mode to the first mode', () => {
     expect(nextTheme('gone', ['dark', 'light', 'sepia'])).toBe('dark');
+  });
+});
+
+describe('isDarkTheme', () => {
+  it('classifies the built-ins by background luminance', () => {
+    const map = buildThemeMap({ default: 'dark' });
+    expect(isDarkTheme(map.dark)).toBe(true);
+    expect(isDarkTheme(map.light)).toBe(false);
+    // Sepia is a warm light reading theme.
+    expect(isDarkTheme(map.sepia)).toBe(false);
+  });
+
+  it('uses the resolved background, so a dark-based config theme with a light token override is light', () => {
+    const map = buildThemeMap({
+      default: 'dark',
+      themes: {
+        ocean: { base: 'dark', brand: '#1B6CA8', tokens: { colorNeutralBackground1: '#E0F0FA' } },
+      },
+    });
+    // base: 'dark' but the explicit light background wins for isDark decisions.
+    expect(isDarkTheme(map.ocean)).toBe(false);
   });
 });
 
