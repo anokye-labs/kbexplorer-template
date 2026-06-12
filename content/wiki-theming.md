@@ -7,7 +7,7 @@ derived: true
 connections: []
 ---
 
-Three visual themes affect every surface in the application.
+Three built-in visual themes ship with the app, and your host repo can add more.
 
 ## Available Themes
 
@@ -16,6 +16,9 @@ Three visual themes affect every surface in the application.
 | **Dark** | `t` to cycle | Code reading, low light |
 | **Light** | `t` to cycle | Bright environments, presentations |
 | **Sepia** | `t` to cycle | Extended reading, reduced eye strain |
+
+Named themes defined in `config.yaml` (see [External Theming](theming-overview))
+join the same `t` cycle after the built-ins.
 
 ## How Themes Propagate
 
@@ -34,7 +37,17 @@ colorNeutralForeground1: '#2A2520'  // warm dark text
 
 ## Customizing
 
-To add a theme: define a `BrandVariants` ramp in the [theme system](theme-system), create via `createLightTheme()`, override tokens, add to `MODES` and `THEME_MAP`, update [keyboard nav](keyboard-nav) cycle.
+You no longer need to edit the `.kbexplorer` submodule to restyle the site.
+Everything is driven from your host repo's `config.yaml` (plus optional companion
+files). The fastest path: add a `theme.brand` seed to recolor the whole app, or
+add entries under `theme.themes` to grow the `t` cycle with your own variants.
+
+See **[External Theming](theming-overview)** for the full picture:
+[brand, tokens & named themes](theming-named-themes),
+[branding assets](theming-branding),
+[scoped per-cluster/per-page theming](theming-scoped), and the
+[modular escape hatches](theming-escape-hatches) (external theme file, raw CSS,
+custom JS module).
 
 ## Persistence
 

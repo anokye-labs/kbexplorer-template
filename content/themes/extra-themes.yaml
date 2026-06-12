@@ -24,3 +24,13 @@ themes:
   ocean:
     tokens:
       colorNeutralBackground1: "#001324"
+
+  # A light-based theme defined ONLY in this external file — proves the host
+  # repo can ship a full light variant without touching config.theme.themes.
+  sandstone:
+    base: light
+    brand: "#B07D2B"
+    tokens:
+      colorNeutralBackground1: "#FBF6EC"
+      colorNeutralBackground2: "#F3E9D6"
+      colorNeutralForeground1: "#2C2516"
