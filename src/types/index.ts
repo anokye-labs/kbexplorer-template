@@ -103,6 +103,39 @@ export interface KBNode {
   jsonld?: JsonLd;
   /** Arbitrary structured-data bag rendered by typed (or the generic) viewers. */
   data?: Record<string, unknown>;
+  /**
+   * Optional per-page theming declared in this node's frontmatter. When present
+   * its deltas restyle ONLY this node's page (scoped CSS vars in ReadingView);
+   * the global theme and document root are never mutated. Absent → no change.
+   */
+  pageTheme?: PageTheme;
+}
+
+/**
+ * Per-page (per-node) theme overrides, parsed from a node's frontmatter.
+ *
+ * All three fields are optional and additive — an absent/empty `PageTheme`
+ * leaves the page rendering with the active global theme. When applied, the
+ * layering order is: named `theme` (lowest) → `accent` brand recolor →
+ * `tokens` (highest), so explicit token deltas always win. Page-level deltas
+ * also win over cluster-level deltas (T4.1) for any overlapping token.
+ */
+export interface PageTheme {
+  /**
+   * Brand seed/accent color (hex, e.g. "#C04040"). Generates a Fluent brand
+   * ramp and recolors only the brand-family tokens on top of the active theme.
+   */
+  accent?: string;
+  /**
+   * Arbitrary Fluent design-token deltas (token name → CSS value). Highest
+   * precedence within the page; same shape as `theme.tokens` / cluster tokens.
+   */
+  tokens?: Partial<Record<string, string>>;
+  /**
+   * Named theme key (`config.theme.themes.<name>` or a built-in dark/light/
+   * sepia) whose tokens become the page's base before accent/tokens layer on.
+   */
+  theme?: string;
 }
 
 /**
