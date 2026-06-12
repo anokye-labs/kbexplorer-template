@@ -186,3 +186,32 @@ describe('cross-repo vocabulary — safe no-op when absent (#153)', () => {
     expect(emptyOverlay.edges).toEqual(plain.edges);
   });
 });
+
+describe('cross-repo vocabulary — robust parsing (#153 review)', () => {
+  it('ignores an array-valued `@context` instead of mapping numeric indices', () => {
+    // A legal JSON-LD array context carries no inline term→canonical aliases;
+    // iterating it by index would otherwise yield bogus keys like "0"/"1".
+    const { schema } = readContentModelSchema(
+      withFiles({
+        'index/vocabulary.jsonld': JSON.stringify({
+          '@context': ['https://schema.org', { cell: 'squad' }],
+        }),
+      }),
+    );
+    expect(schema.vocabulary.aliases).toEqual({});
+  });
+
+  it('attributes an invalid overlay to the overlay, not the repo file', () => {
+    const { diagnostics } = readContentModelSchema(loadFixtureSource(), '{ not json');
+    const bad = diagnostics.find(d => d.code === 'bad-vocabulary');
+    expect(bad?.message).toBe('vocabulary overlay is not valid JSON');
+  });
+
+  it('attributes an invalid repo-local vocabulary file to its path', () => {
+    const { diagnostics } = readContentModelSchema(
+      withFiles({ 'index/vocabulary.jsonld': '{ not json' }),
+    );
+    const bad = diagnostics.find(d => d.code === 'bad-vocabulary');
+    expect(bad?.message).toBe('index/vocabulary.jsonld is not valid JSON');
+  });
+});

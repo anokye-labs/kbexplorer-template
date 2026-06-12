@@ -172,12 +172,14 @@ function parseContext(raw: string | undefined, diags: Diagnostic[]): JsonLdConte
  * synonym layer is authored exactly like the rest of the JSON-LD context.
  *
  * JSON-LD keywords (`@base`, `@vocab`, `@version`, …) and self-mappings
- * (`alias === canonical`, a no-op) are ignored.
+ * (`alias === canonical`, a no-op) are ignored. An array-valued `@context`
+ * (a legal JSON-LD shape) carries no inline term→canonical aliases, so it is
+ * ignored rather than iterated by numeric index (which would yield bogus maps).
  */
 function aliasesFromContext(doc: Record<string, unknown>): Record<string, string> {
   const ctx = (doc['@context'] ?? doc) as Record<string, unknown>;
   const aliases: Record<string, string> = {};
-  if (!ctx || typeof ctx !== 'object') return aliases;
+  if (!ctx || typeof ctx !== 'object' || Array.isArray(ctx)) return aliases;
   for (const [term, value] of Object.entries(ctx)) {
     if (term.startsWith('@')) continue; // JSON-LD keywords
     const canonical = typeof value === 'string'
@@ -191,14 +193,24 @@ function aliasesFromContext(doc: Record<string, unknown>): Record<string, string
   return aliases;
 }
 
-/** Parse a raw `vocabulary.jsonld` document into alias → canonical mappings. */
-function parseVocabularyDoc(raw: string | undefined, diags: Diagnostic[]): Record<string, string> {
+/**
+ * Parse a raw `vocabulary.jsonld` document into alias → canonical mappings.
+ *
+ * `sourceLabel` names the document in diagnostics so an invalid **overlay**
+ * (supplied independently of any repo file) is not misattributed to the repo's
+ * `index/vocabulary.jsonld` path.
+ */
+function parseVocabularyDoc(
+  raw: string | undefined,
+  diags: Diagnostic[],
+  sourceLabel: string = SCHEMA_PATHS.vocabulary,
+): Record<string, string> {
   if (raw == null) return {};
   let doc: Record<string, unknown>;
   try {
     doc = JSON.parse(raw) as Record<string, unknown>;
   } catch {
-    diags.push({ level: 'error', code: 'bad-vocabulary', message: 'index/vocabulary.jsonld is not valid JSON' });
+    diags.push({ level: 'error', code: 'bad-vocabulary', message: `${sourceLabel} is not valid JSON` });
     return {};
   }
   return aliasesFromContext(doc);
@@ -207,7 +219,7 @@ function parseVocabularyDoc(raw: string | undefined, diags: Diagnostic[]): Recor
 /** Normalize an overlay (raw JSON-LD string or parsed {@link Vocabulary}) to aliases. */
 function overlayAliases(overlay: VocabularyOverlay, diags: Diagnostic[]): Record<string, string> {
   if (overlay == null) return {};
-  if (typeof overlay === 'string') return parseVocabularyDoc(overlay, diags);
+  if (typeof overlay === 'string') return parseVocabularyDoc(overlay, diags, 'vocabulary overlay');
   return { ...overlay.aliases };
 }
 

@@ -1,4 +1,5 @@
 import type { ViewerProps } from './GenericStructuredView';
+import { EntityHeader } from './spine-shared';
 import { nativeTypeOf } from './spine-data';
 
 /** Render a simple key/value row when the value is present. */
@@ -31,20 +32,7 @@ export function PersonView({ node }: ViewerProps) {
 
   return (
     <div className="kb-structured-view kb-person-view">
-      <div className="kb-structured-header">
-        <span className="kb-structured-type" title="JSON-LD @type">Person</span>
-        {native && native.toLowerCase() !== 'person' && (
-          <span
-            className="kb-structured-native"
-            title={`Native term — this repo calls it "${native}", unified to the canonical type`}
-          >
-            {native}
-          </span>
-        )}
-        {node.jsonld?.['@id'] && (
-          <code className="kb-structured-id">{node.jsonld['@id']}</code>
-        )}
-      </div>
+      <EntityHeader label="Person" id={node.jsonld?.['@id'] as string | undefined} native={native} />
       <h2 className="kb-person-name">{name}</h2>
       {role && <p className="kb-person-role">{role}</p>}
       <table className="kb-structured-table">
