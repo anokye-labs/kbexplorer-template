@@ -23,7 +23,7 @@ export type ClusterTokenStyle = Record<`--${string}`, string>;
  * clusters without deltas leave the global theme untouched.
  */
 export function clusterTokenStyle(
-  tokens?: Partial<Record<string, string>>,
+  tokens?: Partial<Record<string, string | null | undefined>>,
 ): ClusterTokenStyle {
   const style: ClusterTokenStyle = {};
   if (!tokens) return style;
