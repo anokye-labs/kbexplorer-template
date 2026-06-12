@@ -1,7 +1,7 @@
 import type { BrandVariants } from '@fluentui/react-components';
 
 /**
- * The 16 Fluent brand ramp stop keys, in order ("10" → "160").
+ * The 16 Fluent brand ramp stop keys, in order (10 → 160).
  * Lower stops are darker (near-black); higher stops are lighter (near-white).
  */
 const STOPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160] as const;
@@ -132,12 +132,12 @@ function hslToRgb({ h, s, l }: Hsl): Rgb {
 
 /**
  * Convert a single seed hex color into a deterministic 16-stop Fluent
- * `BrandVariants` ramp (keys "10".."160"), suitable for `createLightTheme` /
- * `createDarkTheme`.
+ * `BrandVariants` ramp (numeric keys 10..160), suitable for `createLightTheme`
+ * / `createDarkTheme`.
  *
  * The ramp preserves the seed's hue and saturation while varying lightness
- * monotonically: stop "10" clamps toward near-black and stop "160" toward
- * near-white, with the seed mapped near the middle (stop "80"). The same seed
+ * monotonically: stop 10 clamps toward near-black and stop 160 toward
+ * near-white, with the seed mapped near the middle (stop 80). The same seed
  * always produces the same ramp.
  */
 export function generateBrandVariants(seedHex: string): BrandVariants {
