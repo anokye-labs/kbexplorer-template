@@ -790,7 +790,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
         <Button
           appearance="subtle"
           size="small"
-          icon={themeIcon(theme)}
+          icon={<ColorRegular />}
           title={`Theme: ${themeLabel(theme)}`}
           aria-label="Choose theme"
         />

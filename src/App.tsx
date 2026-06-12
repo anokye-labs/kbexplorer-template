@@ -112,7 +112,7 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
           theme={themeMode}
           isDark={isDark}
           availableThemes={availableThemes}
-          onThemeChange={setThemeMode as (t: import('./hooks/useTheme').ThemeMode) => void}
+          onThemeChange={setThemeMode}
           onCollapsedChange={setHudCollapsed}
           onDockChange={setHudDock}
         />
