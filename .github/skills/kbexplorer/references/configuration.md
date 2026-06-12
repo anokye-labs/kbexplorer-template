@@ -179,19 +179,38 @@ site:
 - **Off by default, explicit opt-in.** The field is unset out of the box; only a
   deliberate config edit turns it on.
 - **Only point it at code you trust.** Prefer **self-hosting the module in the
-  same repo** that already serves your content (a repo-relative path resolves to
-  the same origin/raw host as your other assets). Avoid third-party/CDN URLs you
+  same repo** that already serves your content. Avoid third-party/CDN URLs you
   don't control — a compromised module can run anything.
+- **How a repo-relative path resolves (this affects your CSP).** A repo-relative
+  `moduleUrl` is resolved with the same helper as other host assets, and that
+  differs by mode:
+  - **Local / dev mode** (`VITE_KB_LOCAL=true` or `vite dev`): resolved to a
+    **same-origin** path under your deploy base (e.g. `/theme/my-theme.js`).
+  - **Remote mode** (the default, fetching from GitHub at runtime): resolved to a
+    **cross-origin raw GitHub URL**, i.e.
+    `https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>` (or your
+    GitHub Enterprise raw/contents host). It is **not** same-origin even though it
+    lives in "your" repo.
 - **Content Security Policy.** If you serve kbexplorer with a CSP, the dynamic
   import must be allowed by **`script-src`** (the origin the module is served
   from), and fetching a cross-origin module additionally needs **`connect-src`**
-  to permit the request. A repo-relative, same-origin module works under a strict
-  `script-src 'self'`; an absolute `https://other.example/…` URL requires you to
-  add that origin to `script-src`/`connect-src` explicitly. `'unsafe-eval'` is
-  **not** required.
+  to permit the request. Concretely:
+  - **Local/dev mode** — a same-origin module works under a strict
+    `script-src 'self'` (and `connect-src 'self'`).
+  - **Remote mode** — `'self'` is **NOT** sufficient. You must explicitly allow
+    the raw host in BOTH directives, e.g.
+    `script-src 'self' https://raw.githubusercontent.com;`
+    `connect-src 'self' https://raw.githubusercontent.com;` (substitute your
+    GitHub Enterprise raw host if applicable).
+  - An absolute `https://other.example/…` `moduleUrl` likewise requires that
+    origin in `script-src`/`connect-src`.
+  - `'unsafe-eval'` is **not** required in any mode.
 - **MIME type.** The module must be served with a JavaScript MIME type
-  (`text/javascript` / `application/javascript`). Files served as `text/plain`
-  (e.g. some raw file hosts) will fail the import — which is then a safe no-op.
+  (`text/javascript` / `application/javascript`). `raw.githubusercontent.com`
+  serves files as `text/plain`, so a repo-relative `moduleUrl` will typically
+  **fail to import in remote mode** (a safe no-op + one warning). To use a custom
+  JS theme module in remote mode, host it somewhere that serves a JS MIME type and
+  reference it as an absolute URL (and allow that origin in your CSP).
 - **No secrets.** The module is fetched by the browser like any static asset; do
   not embed credentials in it.
 

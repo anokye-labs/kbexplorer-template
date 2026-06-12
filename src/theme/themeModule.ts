@@ -213,3 +213,34 @@ export async function loadThemeModule(
   }
   return themes;
 }
+
+/**
+ * Orchestrate applying a theme config that may opt into a custom JS theme module
+ * (T5.3), in the correct ORDER so the UI never lingers on the built-in map:
+ *
+ *   1. Apply the config-only map IMMEDIATELY (synchronously), so a slow or
+ *      failing module import never delays the config themes.
+ *   2. Then `load()` the module (independently — no serial round-trip) and, only
+ *      if it resolves to usable themes, RE-APPLY the merged map on top.
+ *
+ * `load` is expected to be no-throw (see {@link loadThemeModule}); a rejection or
+ * a null result simply leaves the config-only map from step 1 in place. The
+ * caller supplies `apply` already guarded against unmount/cancellation if needed.
+ *
+ * Returns a promise that resolves once the (optional) re-apply has run, so tests
+ * can await the full ordering.
+ */
+export async function applyThemeModuleInOrder<T>(
+  theme: T,
+  load: () => Promise<Record<string, FluentTheme> | null>,
+  apply: (theme: T, moduleThemes?: Record<string, FluentTheme>) => void,
+): Promise<void> {
+  apply(theme);
+  let moduleThemes: Record<string, FluentTheme> | null;
+  try {
+    moduleThemes = await load();
+  } catch {
+    return;
+  }
+  if (moduleThemes) apply(theme, moduleThemes);
+}

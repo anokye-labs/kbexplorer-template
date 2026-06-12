@@ -6,6 +6,7 @@ import {
   themeFromBrand,
   resolveThemeModule,
   loadThemeModule,
+  applyThemeModuleInOrder,
   DEFAULT_MODULE_THEME_NAME,
 } from '../themeModule';
 import { generateBrandVariants } from '../brandRamp';
@@ -177,5 +178,44 @@ describe('loadThemeModule', () => {
     expect(out).toBeNull();
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(String(warnSpy.mock.calls[0][0])).toContain('did not export a usable Fluent Theme');
+  });
+});
+
+describe('applyThemeModuleInOrder', () => {
+  const theme = { moduleThemeName: 'brand' };
+
+  it('applies config-only FIRST (synchronously), then re-applies the merged map', async () => {
+    const calls: Array<{ hasModule: boolean }> = [];
+    const apply = (_t: unknown, m?: Record<string, Theme>) => calls.push({ hasModule: !!m });
+    const moduleThemes = { brand: sampleTheme };
+
+    const promise = applyThemeModuleInOrder(theme, () => Promise.resolve(moduleThemes), apply);
+
+    // The config-only apply must have happened synchronously, before the await.
+    expect(calls).toEqual([{ hasModule: false }]);
+
+    await promise;
+    // Then exactly one re-apply with the module themes.
+    expect(calls).toEqual([{ hasModule: false }, { hasModule: true }]);
+  });
+
+  it('applies config-only ONCE and never re-applies when the module resolves null', async () => {
+    const calls: Array<Record<string, Theme> | undefined> = [];
+    const apply = (_t: unknown, m?: Record<string, Theme>) => calls.push(m);
+
+    await applyThemeModuleInOrder(theme, () => Promise.resolve(null), apply);
+
+    expect(calls).toEqual([undefined]);
+  });
+
+  it('leaves the config-only map in place when load rejects (no re-apply, no throw)', async () => {
+    const calls: Array<Record<string, Theme> | undefined> = [];
+    const apply = (_t: unknown, m?: Record<string, Theme>) => calls.push(m);
+
+    await expect(
+      applyThemeModuleInOrder(theme, () => Promise.reject(new Error('boom')), apply),
+    ).resolves.toBeUndefined();
+
+    expect(calls).toEqual([undefined]);
   });
 });

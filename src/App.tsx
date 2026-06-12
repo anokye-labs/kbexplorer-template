@@ -6,7 +6,7 @@ import { useTheme, isDarkTheme } from './hooks/useTheme';
 import { useThemeFonts } from './hooks/useThemeFonts';
 import { useFavicon } from './hooks/useFavicon';
 import { useCssOverride, isAbsoluteUrl } from './hooks/useCssOverride';
-import { loadThemeModule } from './theme/themeModule';
+import { loadThemeModule, applyThemeModuleInOrder } from './theme/themeModule';
 import { resolveImageUrl } from './api';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
 import { HUD } from './components/HUD';
@@ -39,27 +39,28 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
     if (state.status !== 'ready') return;
     const theme = state.config.theme;
     const moduleUrl = theme?.moduleUrl;
-    // Default (no moduleUrl): pure no-op — build the THEME_MAP from config only,
-    // exactly as before. This keeps the security-sensitive dynamic import strictly
-    // opt-in.
+    // No module configured: pure no-op — just build the config-only THEME_MAP,
+    // keeping the security-sensitive dynamic import strictly opt-in.
     if (!moduleUrl) {
       applyConfig(theme);
       return;
     }
     // T5.3: a host repo opted into a custom JS theme module. Resolve a
-    // repo-relative path like other host assets; an absolute URL is used
-    // verbatim. The dynamic import() is a safe no-op on any failure, so it runs
-    // independently here (after the data load) without adding a serial round-trip
-    // to the content fetch — we apply config-only first if it resolves slowly.
+    // repo-relative path like other host assets (in remote mode this is a
+    // cross-origin raw host URL); an absolute URL is used verbatim.
+    // applyThemeModuleInOrder applies the config-only map IMMEDIATELY, then
+    // re-applies the merged map once the import lands — so the UI never lingers
+    // on the built-in map, and a slow/failed import is a safe no-op.
     let cancelled = false;
     const url = isAbsoluteUrl(moduleUrl) ? moduleUrl : resolveImageUrl(state.config.source, moduleUrl);
-    loadThemeModule(url, { name: theme.moduleThemeName })
-      .then(moduleThemes => {
-        if (!cancelled) applyConfig(theme, moduleThemes ?? undefined);
-      })
-      .catch(() => {
-        if (!cancelled) applyConfig(theme);
-      });
+    const guardedApply = (t?: import('./types').KBConfig['theme'], m?: Record<string, FluentTheme>) => {
+      if (!cancelled) applyConfig(t, m);
+    };
+    void applyThemeModuleInOrder(
+      theme,
+      () => loadThemeModule(url, { name: theme.moduleThemeName }),
+      guardedApply,
+    );
     return () => { cancelled = true; };
   }, [state, applyConfig]);
 
