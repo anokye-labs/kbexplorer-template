@@ -5,7 +5,9 @@ import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme, isDarkTheme } from './hooks/useTheme';
 import { useThemeFonts } from './hooks/useThemeFonts';
 import { useFavicon } from './hooks/useFavicon';
-import { useCssOverride } from './hooks/useCssOverride';
+import { useCssOverride, isAbsoluteUrl } from './hooks/useCssOverride';
+import { loadThemeModule } from './theme/themeModule';
+import { resolveImageUrl } from './api';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
 import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
@@ -29,14 +31,36 @@ function useCurrentNodeId(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, cycleTheme }: { themeMode: import('./hooks/useTheme').ThemeMode; fluentTheme: FluentTheme; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme']) => void; cycleTheme: () => void }) {
+function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, cycleTheme }: { themeMode: import('./hooks/useTheme').ThemeMode; fluentTheme: FluentTheme; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => void; cycleTheme: () => void }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
 
   useEffect(() => {
-    if (state.status === 'ready') {
-      applyConfig(state.config.theme);
+    if (state.status !== 'ready') return;
+    const theme = state.config.theme;
+    const moduleUrl = theme?.moduleUrl;
+    // Default (no moduleUrl): pure no-op — build the THEME_MAP from config only,
+    // exactly as before. This keeps the security-sensitive dynamic import strictly
+    // opt-in.
+    if (!moduleUrl) {
+      applyConfig(theme);
+      return;
     }
+    // T5.3: a host repo opted into a custom JS theme module. Resolve a
+    // repo-relative path like other host assets; an absolute URL is used
+    // verbatim. The dynamic import() is a safe no-op on any failure, so it runs
+    // independently here (after the data load) without adding a serial round-trip
+    // to the content fetch — we apply config-only first if it resolves slowly.
+    let cancelled = false;
+    const url = isAbsoluteUrl(moduleUrl) ? moduleUrl : resolveImageUrl(state.config.source, moduleUrl);
+    loadThemeModule(url, { name: theme.moduleThemeName })
+      .then(moduleThemes => {
+        if (!cancelled) applyConfig(theme, moduleThemes ?? undefined);
+      })
+      .catch(() => {
+        if (!cancelled) applyConfig(theme);
+      });
+    return () => { cancelled = true; };
   }, [state, applyConfig]);
 
   const [hudCollapsed, setHudCollapsed] = useState(() => {

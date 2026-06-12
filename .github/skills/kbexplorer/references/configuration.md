@@ -54,6 +54,17 @@ theme:
     heading: "Instrument Serif"      #   Heading font family.
     body: "General Sans"             #   Body text font family.
     mono: "JetBrains Mono"           #   Code/monospace font family.
+  # ── Theme escape hatches (F5) — all optional, off by default ──
+  themesFile: content/themes.yaml   # Optional. Path to a dedicated host-repo theme
+                                    #   file (same shape as `theme`); its named
+                                    #   themes merge into the THEME_MAP (T5.1).
+  moduleUrl: theme/my-theme.js      # ⚠️ Optional, SECURITY-sensitive. Path/URL to a
+                                    #   custom ESM JS module that exports a Fluent
+                                    #   Theme / BrandVariants; dynamically import()ed
+                                    #   and registered into the THEME_MAP (T5.3).
+                                    #   See "Custom JS theme module" below.
+  moduleThemeName: brand            # Optional. Name a single module theme is
+                                    #   registered/cycled under (default: "custom").
 
 # Graph physics and layout
 graph:
@@ -115,6 +126,80 @@ clusters:
 
 Clusters not defined in config but present in content are auto-generated with
 colors from a built-in palette.
+
+## Custom JS theme module (`theme.moduleUrl`) — the most powerful escape hatch
+
+`theme.moduleUrl` lets a host repo ship its **own ESM JavaScript module** that
+programmatically builds a Fluent theme. kbexplorer dynamically `import()`s the
+module at runtime and registers the result into the theme map, so it becomes
+selectable and cyclable alongside the built-ins (`dark`/`light`/`sepia`) and any
+`theme.themes` / `themesFile` entries.
+
+### Supported export shapes
+
+```js
+// theme/my-theme.js  (an ESM module in your repo, served as application/javascript)
+import { createDarkTheme } from '@fluentui/react-components'; // if you self-bundle
+
+// 1. A fully-built Fluent Theme (named export `theme`, or default export):
+export const name = 'brand';            // optional; names the cycle entry
+export const theme = { /* a Fluent Theme object */ };
+
+// 2. A record of named themes:
+export const themes = { brandDark: {/*Theme*/}, brandLight: {/*Theme*/} };
+
+// 3. A BrandVariants ramp or seed hex kbexplorer turns into a Theme:
+export const brand = '#FF2D95';         // seed hex → generateBrandVariants → Theme
+export const base = 'dark';             // optional: 'dark' (default) | 'light'
+// (or `export const brandVariants = { 10: '#...', …, 160: '#...' }`,
+//  or `export const seed = '#FF2D95'`)
+```
+
+### Precedence
+
+A module theme is the **most specific** escape hatch, so it is registered
+**last** and overrides built-in / config / `themesFile` themes of the same name.
+The single-theme name resolves as: the module's own `name` export →
+`theme.moduleThemeName` → `"custom"`.
+
+### Failure is always a safe no-op
+
+If `moduleUrl` is unset (the default), nothing is imported. If the import fails
+for **any** reason — network/404, wrong MIME type, parse error, or a module that
+doesn't export a usable Theme/BrandVariants — kbexplorer logs a single
+`[themeModule]` warning and leaves the theme map unchanged. The app never breaks.
+
+### ⚠️ Security & CSP implications (read before enabling)
+
+Dynamically `import()`ing host-provided JavaScript **executes arbitrary code in
+the page**, with the same privileges as kbexplorer itself (DOM access, network,
+`localStorage`, etc.). Treat `moduleUrl` like any other script you add to your
+site:
+
+- **Off by default, explicit opt-in.** The field is unset out of the box; only a
+  deliberate config edit turns it on.
+- **Only point it at code you trust.** Prefer **self-hosting the module in the
+  same repo** that already serves your content (a repo-relative path resolves to
+  the same origin/raw host as your other assets). Avoid third-party/CDN URLs you
+  don't control — a compromised module can run anything.
+- **Content Security Policy.** If you serve kbexplorer with a CSP, the dynamic
+  import must be allowed by **`script-src`** (the origin the module is served
+  from), and fetching a cross-origin module additionally needs **`connect-src`**
+  to permit the request. A repo-relative, same-origin module works under a strict
+  `script-src 'self'`; an absolute `https://other.example/…` URL requires you to
+  add that origin to `script-src`/`connect-src` explicitly. `'unsafe-eval'` is
+  **not** required.
+- **MIME type.** The module must be served with a JavaScript MIME type
+  (`text/javascript` / `application/javascript`). Files served as `text/plain`
+  (e.g. some raw file hosts) will fail the import — which is then a safe no-op.
+- **No secrets.** The module is fetched by the browser like any static asset; do
+  not embed credentials in it.
+
+If you only need to recolor tokens or define named theme variants, prefer the
+non-executable escape hatches instead: inline `theme.brand`/`theme.tokens`/
+`theme.themes`, a YAML `theme.themesFile` (T5.1), or a raw CSS sheet via
+`branding.css` (T5.2). Reach for `theme.moduleUrl` only when you need full
+programmatic control.
 
 ## Environment Variables
 

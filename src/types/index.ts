@@ -938,6 +938,34 @@ export interface KBConfig {
      * THEME_MAP equals the config-only result.
      */
     themesFile?: string;
+    /**
+     * Optional path/URL to a custom ESM **JavaScript module** in the HOST repo
+     * that exports a fully-built Fluent `Theme` (named export `theme`, a
+     * `themes` record of name → Theme, or a default export), OR a
+     * `BrandVariants` ramp / seed hex (export `brandVariants` / `brand` / `seed`,
+     * with optional `base: 'dark' | 'light'`) that kbexplorer turns into a Theme
+     * via `generateBrandVariants`. The module is dynamically `import()`ed at
+     * runtime and its theme(s) registered into the dynamic THEME_MAP so they are
+     * selectable and cyclable. This is the most powerful theming escape hatch —
+     * full programmatic control without editing the `.kbexplorer` submodule.
+     *
+     * ⚠️ SECURITY: setting this dynamically `import()`s and EXECUTES
+     * host-provided JavaScript in the page. It is therefore an EXPLICIT,
+     * off-by-default opt-in — unset ⇒ no import and a pure no-op. A repo-relative
+     * path is resolved like other host assets; an absolute `http(s)://` (or
+     * protocol-relative `//`) URL is used verbatim. Self-host the module in the
+     * same repo you already trust and tighten your CSP `script-src` /
+     * `connect-src` accordingly — see the theming docs' CSP note. Any failure
+     * (network, bad module, wrong shape) logs a single warning and is a no-op
+     * (THEME_MAP unchanged), exactly like the custom-provider plugin stub.
+     */
+    moduleUrl?: string;
+    /**
+     * Name to register a single (unnamed) module-provided theme under so it
+     * appears in the cycle/selector. Defaults to `"custom"`. Ignored when the
+     * module exports a `themes` record (those keys are used) or its own `name`.
+     */
+    moduleThemeName?: string;
   };
   graph: {
     physics: boolean;
@@ -1011,6 +1039,12 @@ export const DEFAULT_CONFIG: KBConfig = {
     // host repo (e.g. "content/themes/extra.yaml"); when set it is fetched at runtime
     // like config.yaml and its named themes are merged into the THEME_MAP, overriding
     // any inline theme.themes of the same name. Unset ⇒ no fetch, no behavior change.
+    // moduleUrl (T5.3, also unset by default) is the most powerful escape hatch: a
+    // SECURITY-sensitive opt-in that dynamically import()s a host-provided ESM JS
+    // module exporting a Fluent Theme / BrandVariants and registers it into the
+    // THEME_MAP. Off by default ⇒ no import, pure no-op. Only set it for a module you
+    // trust (ideally self-hosted in this repo) and tighten CSP accordingly — see the
+    // theming docs' CSP note.
   },
   graph: {
     physics: true,
