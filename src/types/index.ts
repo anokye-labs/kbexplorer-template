@@ -693,6 +693,13 @@ export interface Cluster {
   id: string;
   name: string;
   color: string;
+  /**
+   * Optional cluster-scoped Fluent token overrides (token name → CSS value),
+   * carried from `config.clusters.<id>.tokens`. Applied only on cluster-scoped
+   * surfaces (cards, badges, reading header) as scoped CSS variables; the
+   * global theme is never mutated. Same shape as `theme.tokens`.
+   */
+  tokens?: Partial<Record<string, string>>;
 }
 
 /** Computed graph data, ready for visualization. */
@@ -799,7 +806,21 @@ export interface KBConfig {
   author?: string;
   date?: string;
   source: SourceConfig;
-  clusters: Record<string, { name: string; color: string }>;
+  clusters: Record<
+    string,
+    {
+      name: string;
+      color: string;
+      /**
+       * Optional cluster-scoped Fluent design-token overrides (token name → CSS
+       * value), reusing the same shape as `theme.tokens`. Applied only to
+       * cluster-scoped surfaces (node cards, badges, the reading header for
+       * nodes in this cluster) as scoped CSS variables — the global
+       * dark/light/sepia/config themes are unaffected. Additive and optional.
+       */
+      tokens?: Partial<Record<string, string>>;
+    }
+  >;
   visuals: {
     mode: VisualMode;
     fallback: VisualMode;
@@ -897,6 +918,10 @@ export const DEFAULT_CONFIG: KBConfig = {
   author: 'Anokye Labs',
   source: resolveDefaultSource(),
   clusters: {
+    // Each cluster may also carry an optional `tokens` delta (Fluent token name
+    // → CSS value, same shape as theme.tokens) to shift only that cluster's
+    // scoped surfaces (cards/badges/reading header). Omitted here so defaults
+    // inherit the active global theme unchanged.
     feature: { name: 'Feature', color: '#4A9CC8' },
     task: { name: 'Task', color: '#8CB050' },
     bug: { name: 'Bug', color: '#C04040' },
