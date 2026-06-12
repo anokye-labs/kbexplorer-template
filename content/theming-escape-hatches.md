@@ -82,9 +82,12 @@ explicit, off-by-default opt-in. Before using it:
 - **Self-host** the module in a repo you already trust; avoid third-party URLs.
 - In **local/dev** mode the module is same-origin (`script-src 'self'` is enough).
 - In **remote** mode a repo-relative `moduleUrl` resolves to a cross-origin
-  `raw.githubusercontent.com/...` URL — `'self'` is **not** sufficient. Your CSP
-  must allow that host in **both** `script-src` and `connect-src`, or serve the
-  module from an origin you control with a JavaScript MIME type.
+  `raw.githubusercontent.com/...` URL. This usually **won't work as-is**: ES
+  module imports require a JavaScript MIME type, and `raw.githubusercontent.com`
+  serves files as `text/plain`, so the browser refuses the import (a safe
+  no-op). For remote mode, use an **absolute URL** to a host you control that
+  serves the file with `text/javascript` / `application/javascript`, and allow
+  that origin in **both** `script-src` and `connect-src` in your CSP.
 - Never use `'unsafe-eval'` to make a module work.
 
 Prefer the non-executable hatches ([external file](#option-b--external-theme-file)
