@@ -35,12 +35,16 @@ function parseArgs() {
   const opts = {
     surfacesFile: resolve(__dirname, 'review-surfaces.json'),
     outDir: resolve(repoRoot, 'review', 'screenshots'),
+    baselinesDir: resolve(repoRoot, 'review', 'baselines'),
     skipBuild: false,
+    updateBaselines: false,
   };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--surfaces-file' && args[i + 1]) opts.surfacesFile = resolve(args[++i]);
     if (args[i] === '--out-dir' && args[i + 1]) opts.outDir = resolve(args[++i]);
+    if (args[i] === '--baselines-dir' && args[i + 1]) opts.baselinesDir = resolve(args[++i]);
     if (args[i] === '--skip-build') opts.skipBuild = true;
+    if (args[i] === '--update-baselines') opts.updateBaselines = true;
   }
   return opts;
 }
@@ -246,10 +250,11 @@ function checkSize(path) {
   }
 }
 
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { surfacesFile, outDir, skipBuild } = parseArgs();
+  const { surfacesFile, outDir, baselinesDir, skipBuild, updateBaselines } = parseArgs();
 
   // Build the app in local mode unless explicitly skipped
   if (!skipBuild) {
@@ -312,7 +317,6 @@ async function main() {
               viewport: vp.id,
               filename: `${surface.id}--${theme}--${vp.id}.png`,
               status: 'error',
-              bytes: 0,
               skipReason: `Context init failed: ${err.message}`,
               error: err.message,
             });
@@ -327,7 +331,6 @@ async function main() {
 
           let status = 'captured';
           let skipReason = null;
-          let bytes = 0;
           let error = null;
 
           try {
@@ -387,9 +390,8 @@ async function main() {
                 status = 'warning';
                 skipReason = `Screenshot small (${check.bytes} B) — may be blank`;
               }
-              bytes = check.bytes;
               totalCaptured++;
-              console.log(`  [+] ${filename} (${(bytes / 1024).toFixed(1)} KB)`);
+              console.log(`  [+] ${filename}`);
             } else {
               console.log(`  [-] SKIP ${filename}: ${skipReason}`);
             }
@@ -408,7 +410,6 @@ async function main() {
             viewport: vp.id,
             filename,
             status,
-            bytes,
             skipReason,
             error,
           });
@@ -455,6 +456,20 @@ async function main() {
   if (totalCaptured === 0) {
     console.error('\n[capture] ERROR: No screenshots were captured!');
     process.exit(1);
+  }
+
+  // Optionally seed/refresh the committed baselines directory.
+  // Use --update-baselines to promote captured screenshots to baselines
+  // (e.g. after an intentional design change or on first bootstrap).
+  if (updateBaselines) {
+    const { readdirSync, copyFileSync } = await import('fs');
+    mkdirSync(baselinesDir, { recursive: true });
+    const files = readdirSync(outDir).filter(f => f.endsWith('.png'));
+    for (const f of files) {
+      copyFileSync(resolve(outDir, f), resolve(baselinesDir, f));
+    }
+    console.log(`\n[capture] Baselines updated: ${files.length} image(s) → ${baselinesDir}`);
+    console.log('[capture] Stage review/baselines/ and commit to lock the new reference.');
   }
 }
 
