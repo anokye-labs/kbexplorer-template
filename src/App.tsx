@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, Navigate, useParams, useLocation, useNavigat
 import { FluentProvider, type Theme as FluentTheme } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme, isDarkTheme } from './hooks/useTheme';
+import { IsDarkContext } from './theme/isDarkContext';
 import { useThemeFonts } from './hooks/useThemeFonts';
 import { useFavicon } from './hooks/useFavicon';
 import { useCssOverride, isAbsoluteUrl } from './hooks/useCssOverride';
@@ -200,9 +201,11 @@ function App() {
 
   return (
     <FluentProvider theme={fluentTheme} style={{ minHeight: '100vh' }}>
-      <HashRouter>
-        <Explorer themeMode={themeMode} fluentTheme={fluentTheme} isDark={isDark} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} availableThemes={availableThemes} />
-      </HashRouter>
+      <IsDarkContext.Provider value={isDark}>
+        <HashRouter>
+          <Explorer themeMode={themeMode} fluentTheme={fluentTheme} isDark={isDark} setThemeMode={setThemeMode} applyConfig={applyConfig} cycleTheme={cycleTheme} availableThemes={availableThemes} />
+        </HashRouter>
+      </IsDarkContext.Provider>
     </FluentProvider>
   );
 }

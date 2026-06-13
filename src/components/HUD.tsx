@@ -404,9 +404,9 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
   );
 
   // Track whether the viewport is narrow (≤480 px) for mobile reflow (#249).
-  // We use a ResizeObserver on document.documentElement rather than a CSS
-  // media query so the HUD reacts dynamically to viewport changes (e.g. DevTools
-  // responsive mode) without requiring a page reload.
+  // We listen to window 'resize' rather than a CSS media query so the HUD reacts
+  // dynamically to viewport changes (e.g. DevTools responsive mode) without a
+  // page reload.
   const [isNarrow, setIsNarrow] = useState(() => {
     try { return window.innerWidth <= 480; } catch { return false; }
   });
@@ -1388,6 +1388,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                     onClick={goPrev}
                     disabled={!currentNode}
                     title="Previous node (←)"
+                    aria-label="Previous node"
                     style={{ minWidth: 40, minHeight: 40 }}
                   />
                   {/* Current node title */}
@@ -1409,6 +1410,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                     onClick={goNext}
                     disabled={!currentNode}
                     title="Next node (→)"
+                    aria-label="Next node"
                     style={{ minWidth: 40, minHeight: 40 }}
                   />
                   {/* Shortcuts */}
@@ -1454,10 +1456,10 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                         <div className={styles.toolRow}>
                           <Caption2 className={styles.toolLabel}>Dock</Caption2>
                           <div className={styles.dockBtnGroup}>
-                            <Button appearance={dock === 'bottom' ? 'primary' : 'subtle'} size="small" icon={<PanelBottomRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
-                            <Button appearance="subtle" size="small" icon={<PanelLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" />
-                            <Button appearance="subtle" size="small" icon={<PanelRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
-                            <Button appearance={dock === 'top' ? 'primary' : 'subtle'} size="small" icon={<PanelTopExpandRegular />} onClick={() => handleDockChange('top')} title="Dock top" />
+                            <Button appearance={dock === 'bottom' ? 'primary' : 'subtle'} size="small" icon={<PanelBottomRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" aria-label="Dock bottom" />
+                            <Button appearance="subtle" size="small" icon={<PanelLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" aria-label="Dock left" />
+                            <Button appearance="subtle" size="small" icon={<PanelRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" aria-label="Dock right" />
+                            <Button appearance={dock === 'top' ? 'primary' : 'subtle'} size="small" icon={<PanelTopExpandRegular />} onClick={() => handleDockChange('top')} title="Dock top" aria-label="Dock top" />
                           </div>
                         </div>
                         {currentNode && (
