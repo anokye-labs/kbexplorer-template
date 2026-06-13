@@ -46,7 +46,12 @@ export interface BuildVisNodeOptions {
   showLabel?: boolean;
   flagDisconnected?: boolean;
   keyNodeIds?: Set<string>;
-  /** Minimum degree a node must have for its label to be painted at low zoom. */
+  /**
+   * Minimum degree a node must have to be given a (non-empty) label. Nodes
+   * below this — and not in `keyNodeIds` — are built with `label: ''`, so the
+   * custom renderer paints no text for them. This gates whether a label exists
+   * at all (the LOD that declutters the constellation), not zoom behaviour.
+   */
   labelDegreeThreshold?: number;
 }
 
@@ -311,9 +316,10 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const network = new Network(container, { nodes, edges }, {
     nodes: {
       scaling: {
-        // drawThreshold: minimum font-size px below which labels are suppressed.
-        // A higher value means labels only appear at closer zoom levels —
-        // preventing the wall-of-micro-text at default zoom (#252).
+        // Label LOD is done by the custom renderer: non-key, low-degree nodes
+        // are built with `label: ''` (see labelDegreeThreshold), so most nodes
+        // paint no text at all. drawThreshold here is a secondary guard on
+        // vis-network's own label scaling; min/max bound the painted font size.
         label: { enabled: true, min: 10, max: 16, drawThreshold: 8 },
       },
       font: { vadjust: 45, size: 13 },
