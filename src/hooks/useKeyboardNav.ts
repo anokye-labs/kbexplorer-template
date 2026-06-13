@@ -4,20 +4,34 @@ import type { KBGraph } from '../types';
 /**
  * Global keyboard shortcuts.
  *
- * t        → cycle theme (built-ins + config themes, via the live theme map)
- * ←/→      → prev/next node (reading view)
+ * t          → cycle theme (built-ins + config themes, via the live theme map)
+ * ←/→        → prev/next node (reading view)
+ * Ctrl-K / / → open search palette (delegated to onOpenSearch)
  */
 export function useKeyboardNav(
   graph: KBGraph | null,
   cycleTheme: () => void,
+  onOpenSearch?: () => void,
 ): void {
   useEffect(() => {
     function handler(e: KeyboardEvent) {
+      // Ctrl-K: open search palette (fires even inside inputs — mirrors VS Code behaviour)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        onOpenSearch?.();
+        return;
+      }
+
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if ((e.target as HTMLElement)?.isContentEditable) return;
 
       switch (e.key) {
+        case '/': {
+          e.preventDefault();
+          onOpenSearch?.();
+          break;
+        }
         case 't': {
           cycleTheme();
           break;
@@ -42,5 +56,5 @@ export function useKeyboardNav(
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [graph, cycleTheme]);
+  }, [graph, cycleTheme, onOpenSearch]);
 }

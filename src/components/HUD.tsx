@@ -33,6 +33,7 @@ import {
   PanelLeftRegular,
   PanelRightRegular,
   PanelTopExpandRegular,
+  SearchRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode } from '../types';
 import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
@@ -61,6 +62,8 @@ interface HUDProps {
   onThemeChange: (theme: ThemeMode) => void;
   onCollapsedChange?: (collapsed: boolean) => void;
   onDockChange?: (dock: DockPosition) => void;
+  /** Called when the user activates the search button (Ctrl-K palette). */
+  onOpenSearch?: () => void;
 }
 
 const FONT_SIZES = [0.92, 1.0, 1.1, 1.2, 1.35, 1.5, 1.6];
@@ -301,7 +304,7 @@ function themeIcon(mode: string): React.ReactElement {
   return <ColorRegular />;
 }
 
-export function HUD({ graph, config, currentNodeId, theme, isDark, availableThemes, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
+export function HUD({ graph, config, currentNodeId, theme, isDark, availableThemes, onThemeChange, onCollapsedChange, onDockChange, onOpenSearch }: HUDProps) {
   const styles = useStyles();
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [canvasMountKey, setCanvasMountKey] = useState(0);
@@ -1193,10 +1196,19 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                       icon={<GridRegular />}
                       onClick={() => { window.location.hash = '#/overview'; }}
                       title="Card overview"
-                      style={{ marginRight: 'auto' }}
                     >
                       Cards
                     </Button>
+                    <Button
+                      appearance="subtle"
+                      size="small"
+                      icon={<SearchRegular />}
+                      onClick={onOpenSearch}
+                      title="Search (Ctrl-K or /)"
+                      aria-label="Open search"
+                      data-testid="hud-search-button-sidebar"
+                      style={{ marginRight: 'auto' }}
+                    />
                     <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
                       Connections
                     </Caption2>
@@ -1325,6 +1337,17 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                   onClick={() => { window.location.hash = '#/overview'; }}
                 >
                   Cards
+                </Button>
+                <Button
+                  appearance="outline"
+                  size="small"
+                  icon={<SearchRegular />}
+                  onClick={onOpenSearch}
+                  title="Search (Ctrl-K or /)"
+                  aria-label="Open search"
+                  data-testid="hud-search-button"
+                >
+                  Search
                 </Button>
                 <Button
                   appearance="subtle"
