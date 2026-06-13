@@ -112,7 +112,7 @@ readiness state the adapter and app report.
 | Trigger | Schedule |
 |---------|----------|
 | `workflow_dispatch` | Manual run (with optional `skip_app` + `write_brief` inputs) |
-| `schedule` | Weekly, Monday 06:00 UTC |
+| `schedule` | Nightly, 06:00 UTC |
 
 The job:
 1. Installs dependencies (no `vite build` — the harness serves the app with

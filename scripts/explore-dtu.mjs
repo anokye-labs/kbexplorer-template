@@ -33,12 +33,13 @@
  * ENVIRONMENT VARIABLES
  * ─────────────────────
  * EXPLORE_SKIP_DTU=1        Skip dtu:up + dtu:seed (useful when the DTU is
- *                           already up, or in unit tests).  The adapter +
- *                           app still start; endpoints are read from
- *                           .dtu/state.json if present.
+ *                           already up, or in unit tests).  The adapter + app
+ *                           still start; endpoints are derived from env / the
+ *                           defaults below (GITEA_HTTP_PORT, EXPLORE_*_PORT),
+ *                           NOT read from a state file.
  * EXPLORE_NO_APP=1          Skip the Vite app step (adapter-only staging).
- * EXPLORE_WRITE_BRIEF=1     Write .dtu/session-brief.json (set automatically
- *                           when running under CI / $GITHUB_STEP_SUMMARY).
+ * EXPLORE_WRITE_BRIEF       Write .dtu/session-brief.json.  Defaults ON under
+ *                           CI ($GITHUB_STEP_SUMMARY set); set =0 to force off.
  * EXPLORE_ADAPTER_PORT      Override the adapter port (default: TWIN_PORT / 3456).
  * EXPLORE_APP_PORT          Override the app port (default: 4319).
  *
@@ -62,8 +63,11 @@ const GITEA_PORT = Number(process.env.GITEA_HTTP_PORT ?? 3000);
 
 const SKIP_DTU = process.env.EXPLORE_SKIP_DTU === '1';
 const NO_APP = process.env.EXPLORE_NO_APP === '1';
-// Write a brief when asked, or when running under GitHub Actions.
-const WRITE_BRIEF = process.env.EXPLORE_WRITE_BRIEF === '1' || Boolean(process.env.GITHUB_STEP_SUMMARY);
+// Write a brief when asked, or by default under GitHub Actions — but an
+// explicit EXPLORE_WRITE_BRIEF=0 always wins, so CI can opt out.
+const WRITE_BRIEF = process.env.EXPLORE_WRITE_BRIEF === '0'
+  ? false
+  : process.env.EXPLORE_WRITE_BRIEF === '1' || Boolean(process.env.GITHUB_STEP_SUMMARY);
 
 const GITEA_API = process.env.GITEA_API ?? `http://localhost:${GITEA_PORT}`;
 const ADAPTER_URL = `http://localhost:${ADAPTER_PORT}`;
@@ -273,7 +277,7 @@ node twins/gitea/actors/merge-pr.mjs --number <N> --style merge
 npm run dtu:tea -- issues ls
 \`\`\`
 
-## Probe edges cases
+## Probe edge cases
 
 Try:
 - Rapid successive edits to the same file (cache invalidation under churn)

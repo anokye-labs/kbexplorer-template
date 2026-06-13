@@ -27,8 +27,9 @@ on:
         default: 'true'
         type: boolean
   schedule:
-    # Weekly on Monday at 06:00 UTC — light enough to stay within free minutes.
-    - cron: '0 6 * * 1'
+    # Nightly at 06:00 UTC (issue #259 specifies a nightly entry point).
+    # Offset from the other DTU jobs (dtu-gitea 04:30, visual-regression 05:15).
+    - cron: '0 6 * * *'
 
 concurrency:
   group: explore-dtu-${{ github.ref }}
@@ -81,14 +82,23 @@ jobs:
         # typically the job ends after the summary step because there is no
         # external consumer wired up yet.
         #
-        # EXPLORE_NO_APP mirrors the workflow_dispatch input (defaults false).
+        # EXPLORE_NO_APP / EXPLORE_WRITE_BRIEF mirror the workflow_dispatch
+        # inputs (defaults: app on, brief on). The harness blocks forever once
+        # staged, so we cap it with `timeout 300`. Exit 124 (timeout fired as
+        # expected) is the ONLY code we swallow — any other non-zero exit is a
+        # real staging failure (e.g. Podman bringup) and must fail the job so
+        # scheduled runs don't look green when staging broke.
         run: |
+          code=0
           EXPLORE_NO_APP=${{ inputs.skip_app == 'true' && '1' || '0' }} \
-            timeout 300 node scripts/explore-dtu.mjs || true
-        env:
-          EXPLORE_WRITE_BRIEF: '1'
-          # GITHUB_STEP_SUMMARY is injected by the runner automatically; the
-          # script appends its markdown summary to it directly.
+          EXPLORE_WRITE_BRIEF=${{ inputs.write_brief == 'false' && '0' || '1' }} \
+            timeout 300 node scripts/explore-dtu.mjs || code=$?
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            echo "::error::explore-dtu.mjs failed with exit code $code"
+            exit "$code"
+          fi
+        # GITHUB_STEP_SUMMARY is injected by the runner automatically; the
+        # script appends its markdown summary to it directly.
 
       - name: Upload session brief artifact
         if: always()
