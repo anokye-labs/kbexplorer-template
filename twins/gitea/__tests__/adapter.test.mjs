@@ -4,6 +4,7 @@ import {
   parseRoute,
   translatePath,
   normalizeIssue,
+  normalizeRelease,
   paginate,
   buildLinkHeader,
   computeEtag,
@@ -42,6 +43,8 @@ describe('parseRoute', () => {
     expect(parseRoute('/repos/o/r/issues')).toMatchObject({ kind: 'issues' });
     expect(parseRoute('/repos/o/r/pulls')).toMatchObject({ kind: 'pulls' });
     expect(parseRoute('/repos/o/r/commits')).toMatchObject({ kind: 'commits' });
+    expect(parseRoute('/repos/o/r/releases')).toMatchObject({ kind: 'releases', owner: 'o', repo: 'r' });
+    expect(parseRoute('/repos/o/r/releases/')).toMatchObject({ kind: 'releases', owner: 'o', repo: 'r' });
   });
 
   it('decodes a URL-encoded tree ref', () => {
@@ -61,6 +64,39 @@ describe('translatePath', () => {
     expect(translatePath({ kind: 'issues', owner: 'o', repo: 'r' })).toBe('/api/v1/repos/o/r/issues');
     expect(translatePath({ kind: 'pulls', owner: 'o', repo: 'r' })).toBe('/api/v1/repos/o/r/pulls');
     expect(translatePath({ kind: 'commits', owner: 'o', repo: 'r' })).toBe('/api/v1/repos/o/r/commits');
+    expect(translatePath({ kind: 'releases', owner: 'o', repo: 'r' })).toBe('/api/v1/repos/o/r/releases');
+  });
+});
+
+describe('normalizeRelease', () => {
+  it('maps Gitea created_at → GitHub published_at', () => {
+    const ts = '2026-01-15T10:00:00Z';
+    const norm = normalizeRelease({ tag_name: 'v1.0', name: 'Release 1.0', body: 'notes', html_url: 'https://x', created_at: ts, is_prerelease: false, is_draft: false });
+    expect(norm.published_at).toBe(ts);
+    expect(norm.prerelease).toBe(false);
+    expect(norm.draft).toBe(false);
+    expect(norm.tag_name).toBe('v1.0');
+    expect(norm.name).toBe('Release 1.0');
+  });
+
+  it('prefers published_at over created_at when both present', () => {
+    const norm = normalizeRelease({ tag_name: 'v2', published_at: '2026-02-01T00:00:00Z', created_at: '2026-01-01T00:00:00Z', is_prerelease: false, is_draft: false });
+    expect(norm.published_at).toBe('2026-02-01T00:00:00Z');
+  });
+
+  it('normalises Gitea is_prerelease boolean to prerelease', () => {
+    const norm = normalizeRelease({ tag_name: 'v0.1-beta', is_prerelease: true, is_draft: false });
+    expect(norm.prerelease).toBe(true);
+  });
+
+  it('defaults missing fields to empty strings / false', () => {
+    const norm = normalizeRelease({ tag_name: 'v3' });
+    expect(norm.name).toBe('v3');
+    expect(norm.body).toBe('');
+    expect(norm.html_url).toBe('');
+    expect(norm.published_at).toBe('');
+    expect(norm.prerelease).toBe(false);
+    expect(norm.draft).toBe(false);
   });
 });
 
@@ -223,6 +259,33 @@ describe('createGiteaHandler (mocked upstream)', () => {
     const missing = makeRes();
     await handle({ method: 'GET', url: '/repos/o/r/contents/missing.yaml?ref=main', headers: {} }, missing);
     expect(missing.statusCode).toBe(404);
+  });
+
+  it('proxies releases: normalises to GitHub shape, filters drafts, sorts newest-first', async () => {
+    const releases = [
+      { id: 1, tag_name: 'v1.0', name: 'Release 1.0', body: 'notes', html_url: 'https://x/1', published_at: '2026-01-01T00:00:00Z', is_prerelease: false, is_draft: false },
+      { id: 2, tag_name: 'v2.0', name: 'Release 2.0', body: '', html_url: 'https://x/2', published_at: '2026-02-01T00:00:00Z', is_prerelease: false, is_draft: false },
+      { id: 3, tag_name: 'v3.0-draft', name: 'Draft', body: '', html_url: 'https://x/3', published_at: '2026-03-01T00:00:00Z', is_prerelease: false, is_draft: true },
+    ];
+    const handle = handlerWith({
+      '/api/v1/repos/o/r/releases': (page) => page === 1 ? jsonResponse(releases) : jsonResponse([]),
+    });
+    const res = makeRes();
+    await handle({ method: 'GET', url: '/repos/o/r/releases?per_page=30', headers: {} }, res);
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    // Draft filtered out.
+    expect(body).toHaveLength(2);
+    // Sorted newest-first.
+    expect(body[0].tag_name).toBe('v2.0');
+    expect(body[1].tag_name).toBe('v1.0');
+    // GitHub-shaped fields.
+    expect(typeof body[0].published_at).toBe('string');
+    expect(typeof body[0].prerelease).toBe('boolean');
+    // ETag present.
+    expect(res.headers.ETag).toMatch(/^"[0-9a-f]{40}"$/);
+    // X-Total-Count reflects non-draft count.
+    expect(res.headers['X-Total-Count']).toBe('2');
   });
 
   it('ignores non-/repos paths so the host server can 404 them', async () => {

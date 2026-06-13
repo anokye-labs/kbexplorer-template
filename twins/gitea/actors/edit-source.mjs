@@ -39,7 +39,9 @@ export async function editSource({ path, set, marker, title } = {}) {
       content = re.test(content) ? content.replace(re, line) : `${content.replace(/\s*$/, '')}\n${line}\n`;
     }
   } else {
-    content = `${content.replace(/\s*$/, '')}\n# touched by DTU actor ${n}\n`;
+    // Use the caller-supplied marker (for spec assertions) or fall back to the nonce.
+    const tag = marker ?? `touched by DTU actor ${n}`;
+    content = `${content.replace(/\s*$/, '')}\n# ${tag}\n`;
   }
 
   await putFile(owner, repo, targetPath, {
