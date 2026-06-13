@@ -21,7 +21,7 @@ function NodeLink({ to, label }: { to: string; label: string }) {
   return (
     <a
       className="kb-person-work-link kb-structured-link"
-      href={`#${to}`}
+      href={`#/node/${encodeURIComponent(to)}`}
       data-node-id={to}
     >
       {label}

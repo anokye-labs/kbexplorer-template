@@ -22,6 +22,7 @@ import { ProviderRegistry } from './providers';
 import { FilesProvider } from './providers/files-provider';
 import { AuthoredProvider } from './providers/authored-provider';
 import { WorkProvider } from './providers/work-provider';
+import { PersonProvider } from './providers/person-provider';
 import { StructuralProvider } from './providers/structural-provider';
 import { ContentModelProvider } from './providers/content-model-provider';
 import { collectProviderNodes } from './orchestrator';
@@ -374,6 +375,11 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
   registry.register(
     new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null),
   );
+
+  // People derived from GitHub activity (#235). Local-manifest PRs do not
+  // carry author/assignees yet (kbexplorer-cli follow-up), so local-mode
+  // person derivation comes from issues; the provider tolerates the gap.
+  registry.register(new PersonProvider(manifest.issues, manifest.pullRequests));
 
   // ── Structural discovery (.github → repository node) ────
   if (manifest.structuralFiles && Object.keys(manifest.structuralFiles).length > 0) {
