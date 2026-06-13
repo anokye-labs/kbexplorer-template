@@ -30,6 +30,8 @@
     "kb:build": "kbexplorer build",
     "kb:generate": "kbexplorer generate",
     "capture:review": "node scripts/capture-review.mjs",
+    "update:baselines": "node scripts/capture-review.mjs --update-baselines",
+    "verify:visual": "node scripts/verify-visual.mjs",
     "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
@@ -56,6 +58,8 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.57.0",
     "vite": "^8.0.5",

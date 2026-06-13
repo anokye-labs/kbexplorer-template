@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-06-13T04:46:46.264Z",
+  "capturedAt": "2026-06-13T07:15:11.922Z",
   "surfaces": [
     {
       "surfaceId": "home",
@@ -8,7 +8,6 @@
       "viewport": "desktop",
       "filename": "home--dark--desktop.png",
       "status": "captured",
-      "bytes": 198033,
       "skipReason": null,
       "error": null
     },
@@ -19,7 +18,6 @@
       "viewport": "desktop",
       "filename": "constellation--dark--desktop.png",
       "status": "captured",
-      "bytes": 144192,
       "skipReason": null,
       "error": null
     },
@@ -30,7 +28,6 @@
       "viewport": "desktop",
       "filename": "reading--dark--desktop.png",
       "status": "captured",
-      "bytes": 90544,
       "skipReason": null,
       "error": null
     },
@@ -41,7 +38,6 @@
       "viewport": "desktop",
       "filename": "overview--dark--desktop.png",
       "status": "captured",
-      "bytes": 75861,
       "skipReason": null,
       "error": null
     },
@@ -52,7 +48,6 @@
       "viewport": "desktop",
       "filename": "hud-expanded--dark--desktop.png",
       "status": "captured",
-      "bytes": 65925,
       "skipReason": null,
       "error": null
     },
@@ -63,7 +58,6 @@
       "viewport": "desktop",
       "filename": "hud-collapsed--dark--desktop.png",
       "status": "captured",
-      "bytes": 62664,
       "skipReason": null,
       "error": null
     },
@@ -74,7 +68,6 @@
       "viewport": "desktop",
       "filename": "hud-docked-left--dark--desktop.png",
       "status": "captured",
-      "bytes": 140958,
       "skipReason": null,
       "error": null
     },
@@ -85,7 +78,6 @@
       "viewport": "desktop",
       "filename": "node-selected--dark--desktop.png",
       "status": "captured",
-      "bytes": 75541,
       "skipReason": null,
       "error": null
     },
@@ -96,7 +88,6 @@
       "viewport": "desktop",
       "filename": "source-editor--dark--desktop.png",
       "status": "skipped",
-      "bytes": 0,
       "skipReason": "Source editor dialog not opened: edit-button-not-found",
       "error": null
     },
@@ -107,7 +98,6 @@
       "viewport": "mobile",
       "filename": "home--dark--mobile.png",
       "status": "captured",
-      "bytes": 115648,
       "skipReason": null,
       "error": null
     },
@@ -118,7 +108,6 @@
       "viewport": "mobile",
       "filename": "constellation--dark--mobile.png",
       "status": "captured",
-      "bytes": 53646,
       "skipReason": null,
       "error": null
     },
@@ -129,7 +118,6 @@
       "viewport": "mobile",
       "filename": "reading--dark--mobile.png",
       "status": "captured",
-      "bytes": 43807,
       "skipReason": null,
       "error": null
     },
@@ -140,7 +128,6 @@
       "viewport": "mobile",
       "filename": "overview--dark--mobile.png",
       "status": "captured",
-      "bytes": 38172,
       "skipReason": null,
       "error": null
     },
@@ -151,7 +138,6 @@
       "viewport": "mobile",
       "filename": "hud-expanded--dark--mobile.png",
       "status": "captured",
-      "bytes": 32671,
       "skipReason": null,
       "error": null
     },
@@ -162,7 +148,6 @@
       "viewport": "mobile",
       "filename": "hud-collapsed--dark--mobile.png",
       "status": "captured",
-      "bytes": 28436,
       "skipReason": null,
       "error": null
     },
@@ -173,7 +158,6 @@
       "viewport": "mobile",
       "filename": "hud-docked-left--dark--mobile.png",
       "status": "captured",
-      "bytes": 49551,
       "skipReason": null,
       "error": null
     },
@@ -184,7 +168,6 @@
       "viewport": "mobile",
       "filename": "node-selected--dark--mobile.png",
       "status": "captured",
-      "bytes": 40552,
       "skipReason": null,
       "error": null
     },
@@ -195,7 +178,6 @@
       "viewport": "mobile",
       "filename": "source-editor--dark--mobile.png",
       "status": "skipped",
-      "bytes": 0,
       "skipReason": "Source editor dialog not opened: edit-button-not-found",
       "error": null
     },
@@ -206,7 +188,6 @@
       "viewport": "desktop",
       "filename": "home--light--desktop.png",
       "status": "captured",
-      "bytes": 211415,
       "skipReason": null,
       "error": null
     },
@@ -217,7 +198,6 @@
       "viewport": "desktop",
       "filename": "constellation--light--desktop.png",
       "status": "captured",
-      "bytes": 143893,
       "skipReason": null,
       "error": null
     },
@@ -228,7 +208,6 @@
       "viewport": "desktop",
       "filename": "reading--light--desktop.png",
       "status": "captured",
-      "bytes": 90978,
       "skipReason": null,
       "error": null
     },
@@ -239,7 +218,6 @@
       "viewport": "desktop",
       "filename": "overview--light--desktop.png",
       "status": "captured",
-      "bytes": 75969,
       "skipReason": null,
       "error": null
     },
@@ -250,7 +228,6 @@
       "viewport": "desktop",
       "filename": "hud-expanded--light--desktop.png",
       "status": "captured",
-      "bytes": 68199,
       "skipReason": null,
       "error": null
     },
@@ -261,7 +238,6 @@
       "viewport": "desktop",
       "filename": "hud-collapsed--light--desktop.png",
       "status": "captured",
-      "bytes": 65182,
       "skipReason": null,
       "error": null
     },
@@ -272,7 +248,6 @@
       "viewport": "desktop",
       "filename": "hud-docked-left--light--desktop.png",
       "status": "captured",
-      "bytes": 147117,
       "skipReason": null,
       "error": null
     },
@@ -283,7 +258,6 @@
       "viewport": "desktop",
       "filename": "node-selected--light--desktop.png",
       "status": "captured",
-      "bytes": 76290,
       "skipReason": null,
       "error": null
     },
@@ -294,7 +268,6 @@
       "viewport": "desktop",
       "filename": "source-editor--light--desktop.png",
       "status": "skipped",
-      "bytes": 0,
       "skipReason": "Source editor dialog not opened: edit-button-not-found",
       "error": null
     },
@@ -305,7 +278,6 @@
       "viewport": "mobile",
       "filename": "home--light--mobile.png",
       "status": "captured",
-      "bytes": 108944,
       "skipReason": null,
       "error": null
     },
@@ -316,7 +288,6 @@
       "viewport": "mobile",
       "filename": "constellation--light--mobile.png",
       "status": "captured",
-      "bytes": 57226,
       "skipReason": null,
       "error": null
     },
@@ -327,7 +298,6 @@
       "viewport": "mobile",
       "filename": "reading--light--mobile.png",
       "status": "captured",
-      "bytes": 43687,
       "skipReason": null,
       "error": null
     },
@@ -338,7 +308,6 @@
       "viewport": "mobile",
       "filename": "overview--light--mobile.png",
       "status": "captured",
-      "bytes": 37948,
       "skipReason": null,
       "error": null
     },
@@ -349,7 +318,6 @@
       "viewport": "mobile",
       "filename": "hud-expanded--light--mobile.png",
       "status": "captured",
-      "bytes": 34039,
       "skipReason": null,
       "error": null
     },
@@ -360,7 +328,6 @@
       "viewport": "mobile",
       "filename": "hud-collapsed--light--mobile.png",
       "status": "captured",
-      "bytes": 30221,
       "skipReason": null,
       "error": null
     },
@@ -371,7 +338,6 @@
       "viewport": "mobile",
       "filename": "hud-docked-left--light--mobile.png",
       "status": "captured",
-      "bytes": 50499,
       "skipReason": null,
       "error": null
     },
@@ -382,7 +348,6 @@
       "viewport": "mobile",
       "filename": "node-selected--light--mobile.png",
       "status": "captured",
-      "bytes": 41109,
       "skipReason": null,
       "error": null
     },
@@ -393,7 +358,6 @@
       "viewport": "mobile",
       "filename": "source-editor--light--mobile.png",
       "status": "skipped",
-      "bytes": 0,
       "skipReason": "Source editor dialog not opened: edit-button-not-found",
       "error": null
     },
@@ -404,7 +368,6 @@
       "viewport": "desktop",
       "filename": "home--sepia--desktop.png",
       "status": "captured",
-      "bytes": 211488,
       "skipReason": null,
       "error": null
     },
@@ -415,7 +378,6 @@
       "viewport": "desktop",
       "filename": "constellation--sepia--desktop.png",
       "status": "captured",
-      "bytes": 168407,
       "skipReason": null,
       "error": null
     },
@@ -426,7 +388,6 @@
       "viewport": "desktop",
       "filename": "reading--sepia--desktop.png",
       "status": "captured",
-      "bytes": 106147,
       "skipReason": null,
       "error": null
     },
@@ -437,7 +398,6 @@
       "viewport": "desktop",
       "filename": "overview--sepia--desktop.png",
       "status": "captured",
-      "bytes": 86149,
       "skipReason": null,
       "error": null
     },
@@ -448,7 +408,6 @@
       "viewport": "desktop",
       "filename": "hud-expanded--sepia--desktop.png",
       "status": "captured",
-      "bytes": 78307,
       "skipReason": null,
       "error": null
     },
@@ -459,7 +418,6 @@
       "viewport": "desktop",
       "filename": "hud-collapsed--sepia--desktop.png",
       "status": "captured",
-      "bytes": 78323,
       "skipReason": null,
       "error": null
     },
@@ -470,7 +428,6 @@
       "viewport": "desktop",
       "filename": "hud-docked-left--sepia--desktop.png",
       "status": "captured",
-      "bytes": 163769,
       "skipReason": null,
       "error": null
     },
@@ -481,7 +438,6 @@
       "viewport": "desktop",
       "filename": "node-selected--sepia--desktop.png",
       "status": "captured",
-      "bytes": 88826,
       "skipReason": null,
       "error": null
     },
@@ -492,7 +448,6 @@
       "viewport": "desktop",
       "filename": "source-editor--sepia--desktop.png",
       "status": "skipped",
-      "bytes": 0,
       "skipReason": "Source editor dialog not opened: edit-button-not-found",
       "error": null
     },
@@ -503,7 +458,6 @@
       "viewport": "mobile",
       "filename": "home--sepia--mobile.png",
       "status": "captured",
-      "bytes": 115761,
       "skipReason": null,
       "error": null
     },
@@ -514,7 +468,6 @@
       "viewport": "mobile",
       "filename": "constellation--sepia--mobile.png",
       "status": "captured",
-      "bytes": 64811,
       "skipReason": null,
       "error": null
     },
@@ -525,7 +478,6 @@
       "viewport": "mobile",
       "filename": "reading--sepia--mobile.png",
       "status": "captured",
-      "bytes": 46834,
       "skipReason": null,
       "error": null
     },
@@ -536,7 +488,6 @@
       "viewport": "mobile",
       "filename": "overview--sepia--mobile.png",
       "status": "captured",
-      "bytes": 42661,
       "skipReason": null,
       "error": null
     },
@@ -547,7 +498,6 @@
       "viewport": "mobile",
       "filename": "hud-expanded--sepia--mobile.png",
       "status": "captured",
-      "bytes": 38516,
       "skipReason": null,
       "error": null
     },
@@ -558,7 +508,6 @@
       "viewport": "mobile",
       "filename": "hud-collapsed--sepia--mobile.png",
       "status": "captured",
-      "bytes": 34610,
       "skipReason": null,
       "error": null
     },
@@ -569,7 +518,6 @@
       "viewport": "mobile",
       "filename": "hud-docked-left--sepia--mobile.png",
       "status": "captured",
-      "bytes": 56131,
       "skipReason": null,
       "error": null
     },
@@ -580,7 +528,6 @@
       "viewport": "mobile",
       "filename": "node-selected--sepia--mobile.png",
       "status": "captured",
-      "bytes": 44699,
       "skipReason": null,
       "error": null
     },
@@ -591,7 +538,6 @@
       "viewport": "mobile",
       "filename": "source-editor--sepia--mobile.png",
       "status": "skipped",
-      "bytes": 0,
       "skipReason": "Source editor dialog not opened: edit-button-not-found",
       "error": null
     },
@@ -602,7 +548,6 @@
       "viewport": "desktop",
       "filename": "home--ocean--desktop.png",
       "status": "captured",
-      "bytes": 198381,
       "skipReason": null,
       "error": null
     },
@@ -613,7 +558,6 @@
       "viewport": "desktop",
       "filename": "constellation--ocean--desktop.png",
       "status": "captured",
-      "bytes": 155085,
       "skipReason": null,
       "error": null
     },
@@ -624,7 +568,6 @@
       "viewport": "desktop",
       "filename": "reading--ocean--desktop.png",
       "status": "captured",
-      "bytes": 91413,
       "skipReason": null,
       "error": null
     },
@@ -635,7 +578,6 @@
       "viewport": "desktop",
       "filename": "overview--ocean--desktop.png",
       "status": "captured",
-      "bytes": 78182,
       "skipReason": null,
       "error": null
     },
@@ -646,7 +588,6 @@
       "viewport": "desktop",
       "filename": "hud-expanded--ocean--desktop.png",
       "status": "captured",
-      "bytes": 66598,
       "skipReason": null,
       "error": null
     },
@@ -657,7 +598,6 @@
       "viewport": "desktop",
       "filename": "hud-collapsed--ocean--desktop.png",
       "status": "captured",
-      "bytes": 62980,
       "skipReason": null,
       "error": null
     },
@@ -668,7 +608,6 @@
       "viewport": "desktop",
       "filename": "hud-docked-left--ocean--desktop.png",
       "status": "captured",
-      "bytes": 148499,
       "skipReason": null,
       "error": null
     },
@@ -679,7 +618,6 @@
       "viewport": "desktop",
       "filename": "node-selected--ocean--desktop.png",
       "status": "captured",
-      "bytes": 76444,
       "skipReason": null,
       "error": null
     },
@@ -690,7 +628,6 @@
       "viewport": "desktop",
       "filename": "source-editor--ocean--desktop.png",
       "status": "skipped",
-      "bytes": 0,
       "skipReason": "Source editor dialog not opened: edit-button-not-found",
       "error": null
     },
@@ -701,7 +638,6 @@
       "viewport": "mobile",
       "filename": "home--ocean--mobile.png",
       "status": "captured",
-      "bytes": 119495,
       "skipReason": null,
       "error": null
     },
@@ -712,7 +648,6 @@
       "viewport": "mobile",
       "filename": "constellation--ocean--mobile.png",
       "status": "captured",
-      "bytes": 60047,
       "skipReason": null,
       "error": null
     },
@@ -723,7 +658,6 @@
       "viewport": "mobile",
       "filename": "reading--ocean--mobile.png",
       "status": "captured",
-      "bytes": 44944,
       "skipReason": null,
       "error": null
     },
@@ -734,7 +668,6 @@
       "viewport": "mobile",
       "filename": "overview--ocean--mobile.png",
       "status": "captured",
-      "bytes": 40436,
       "skipReason": null,
       "error": null
     },
@@ -745,7 +678,6 @@
       "viewport": "mobile",
       "filename": "hud-expanded--ocean--mobile.png",
       "status": "captured",
-      "bytes": 33406,
       "skipReason": null,
       "error": null
     },
@@ -756,7 +688,6 @@
       "viewport": "mobile",
       "filename": "hud-collapsed--ocean--mobile.png",
       "status": "captured",
-      "bytes": 28597,
       "skipReason": null,
       "error": null
     },
@@ -767,7 +698,6 @@
       "viewport": "mobile",
       "filename": "hud-docked-left--ocean--mobile.png",
       "status": "captured",
-      "bytes": 52384,
       "skipReason": null,
       "error": null
     },
@@ -778,7 +708,6 @@
       "viewport": "mobile",
       "filename": "node-selected--ocean--mobile.png",
       "status": "captured",
-      "bytes": 41677,
       "skipReason": null,
       "error": null
     },
@@ -789,7 +718,6 @@
       "viewport": "mobile",
       "filename": "source-editor--ocean--mobile.png",
       "status": "skipped",
-      "bytes": 0,
       "skipReason": "Source editor dialog not opened: edit-button-not-found",
       "error": null
     }
