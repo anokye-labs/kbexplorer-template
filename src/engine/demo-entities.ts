@@ -129,7 +129,14 @@ export function injectDemoEntities(graph: KBGraph): KBGraph {
     'demo-team-atlas',
     'Team Atlas',
     'team',
-    { name: 'Team Atlas', mission: 'Owns the knowledge-graph engine', size: 4 },
+    {
+      name: 'Team Atlas',
+      mission: 'Owns the knowledge-graph engine',
+      size: 4,
+      lead: 'Ada Okonkwo',
+      members: ['Ada Okonkwo', 'Ben Carter'],
+      workstreams: ['Discovery'],
+    },
     'Organization',
   );
   const squad = entityNode(
