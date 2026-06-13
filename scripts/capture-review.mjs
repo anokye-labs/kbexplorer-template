@@ -344,14 +344,20 @@ async function main() {
               });
             }
 
-            // Navigate to target URL
+            // Navigate to target URL. Hard-reset through about:blank first:
+            // hash-only navigations don't remount the SPA, so transient UI
+            // state (e.g. the full-screen MAP overlay opened for the
+            // constellation surface) would otherwise leak into every
+            // subsequent capture and mislabel the surface.
             const targetUrl = `${baseUrl}${surface.url}`;
+            await page.goto('about:blank');
             await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 25000 });
 
-            // Wait for primary content selector
+            // Wait for primary content selector to be VISIBLE (an existing
+            // but overlay-covered selector must not count as the surface).
             if (surface.waitFor) {
               try {
-                await page.waitForSelector(surface.waitFor, { timeout: 8000 });
+                await page.waitForSelector(surface.waitFor, { timeout: 8000, state: 'visible' });
               } catch { /* selector may not exist on all views */ }
             }
 
