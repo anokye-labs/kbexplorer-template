@@ -21,7 +21,11 @@
  *
  * Usage:
  *   npm run verify:visual
- *   node scripts/verify-visual.mjs [--screenshots-dir <path>] [--baselines-dir <path>] [--diff-dir <path>] [--threshold <0-1>] [--fail-percent <0-100>]
+ *   node scripts/verify-visual.mjs [--screenshots-dir <path>] [--baselines-dir <path>] [--diff-dir <path>] [--threshold <0-1>] [--fail-percent <0-100>] [--allow-missing]
+ *
+ * By default the gate is strict: a baseline with no captured screenshot, or a
+ * captured screenshot with no committed baseline, fails. Pass --allow-missing
+ * to downgrade both to non-fatal for local spot-checks.
  *
  * Bootstrapping baselines (first time or after an intentional design change):
  *   npm run capture:review -- --update-baselines
@@ -33,7 +37,7 @@
  */
 
 import { existsSync, mkdirSync, readdirSync, writeFileSync, readFileSync } from 'fs';
-import { resolve, dirname, join, relative, sep } from 'path';
+import { resolve, dirname, relative, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
@@ -55,13 +59,30 @@ function parseArgs() {
     threshold: 0.1,
     // Percentage of total pixels that may differ before a surface fails.
     failPercent: 0.5,
+    // Strict by default: a baseline whose screenshot wasn't captured, or a
+    // captured screenshot with no committed baseline, fails the gate. Passing
+    // --allow-missing downgrades both to non-fatal (for local spot-checks).
+    allowMissing: false,
   };
+
+  // Validate a numeric CLI arg in [min, max]; abort with a clear message
+  // instead of letting NaN/out-of-range silently fail every surface.
+  const numeric = (flag, raw, min, max) => {
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n) || n < min || n > max) {
+      console.error(`[verify:visual] ERROR: ${flag} must be a number in [${min}, ${max}], got: ${raw}`);
+      process.exit(2);
+    }
+    return n;
+  };
+
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--screenshots-dir' && args[i + 1]) opts.screenshotsDir = resolve(args[++i]);
-    if (args[i] === '--baselines-dir' && args[i + 1]) opts.baselinesDir = resolve(args[++i]);
-    if (args[i] === '--diff-dir' && args[i + 1]) opts.diffDir = resolve(args[++i]);
-    if (args[i] === '--threshold' && args[i + 1]) opts.threshold = parseFloat(args[++i]);
-    if (args[i] === '--fail-percent' && args[i + 1]) opts.failPercent = parseFloat(args[++i]);
+    else if (args[i] === '--baselines-dir' && args[i + 1]) opts.baselinesDir = resolve(args[++i]);
+    else if (args[i] === '--diff-dir' && args[i + 1]) opts.diffDir = resolve(args[++i]);
+    else if (args[i] === '--threshold' && args[i + 1]) opts.threshold = numeric('--threshold', args[++i], 0, 1);
+    else if (args[i] === '--fail-percent' && args[i + 1]) opts.failPercent = numeric('--fail-percent', args[++i], 0, 100);
+    else if (args[i] === '--allow-missing') opts.allowMissing = true;
   }
   return opts;
 }
@@ -131,7 +152,7 @@ function diffImages(baselinePath, currentPath, diffDir, filename, threshold) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { screenshotsDir, baselinesDir, diffDir, threshold, failPercent } = parseArgs();
+  const { screenshotsDir, baselinesDir, diffDir, threshold, failPercent, allowMissing } = parseArgs();
 
   // Guard: baselines must exist.
   if (!existsSync(baselinesDir)) {
@@ -150,6 +171,7 @@ async function main() {
   }
 
   const baselineFiles = readdirSync(baselinesDir).filter(f => f.endsWith('.png'));
+  const baselineSet = new Set(baselineFiles);
   const currentFiles = new Set(readdirSync(screenshotsDir).filter(f => f.endsWith('.png')));
 
   if (baselineFiles.length === 0) {
@@ -171,11 +193,19 @@ async function main() {
     const baselinePath = resolve(baselinesDir, filename);
 
     if (!currentFiles.has(filename)) {
-      // Surface was not captured in this run (may be a skipped surface).
-      // Treat as missing — not a failure (skipped surfaces won't be captured).
-      results.push({ filename, status: 'missing', note: 'Not found in screenshots dir (skipped surface?)' });
+      // A committed baseline whose screenshot was NOT captured in this run.
+      // In CI this usually signals a capture failure or a removed surface, so
+      // it fails the gate by default — silently passing here would mask
+      // regressions. --allow-missing downgrades it for local spot-checks.
       missing++;
-      console.log(`  [?] MISSING   ${filename}`);
+      if (allowMissing) {
+        results.push({ filename, status: 'missing', note: 'Not captured this run (--allow-missing)' });
+        console.log(`  [?] MISSING   ${filename}  (not captured; allowed)`);
+      } else {
+        results.push({ filename, status: 'fail', error: 'Baseline has no captured screenshot (capture failure or removed surface?)' });
+        failed++;
+        console.error(`  [✗] MISSING   ${filename}  (no captured screenshot — capture failure or removed surface?)`);
+      }
       continue;
     }
 
@@ -223,6 +253,22 @@ async function main() {
     }
   }
 
+  // Detect captured screenshots that have NO committed baseline. A new
+  // surface/theme/viewport must be baselined deliberately — otherwise it would
+  // bypass the gate entirely (never compared). Fails by default.
+  for (const filename of currentFiles) {
+    if (baselineSet.has(filename)) continue;
+    skippedNoBaseline++;
+    if (allowMissing) {
+      results.push({ filename, status: 'no-baseline', note: 'Captured but not baselined (--allow-missing)' });
+      console.log(`  [?] NO-BASE   ${filename}  (captured, no baseline; allowed)`);
+    } else {
+      results.push({ filename, status: 'fail', error: 'Captured screenshot has no committed baseline (run capture:review --update-baselines)' });
+      failed++;
+      console.error(`  [✗] NO-BASE   ${filename}  (captured, no committed baseline — would bypass the gate)`);
+    }
+  }
+
   // Write diff report.
   const reportPath = resolve(repoRoot, 'review', 'visual-diff-report.json');
   const report = {
@@ -240,10 +286,11 @@ async function main() {
   writeFileSync(reportPath, JSON.stringify(report, null, 2));
 
   console.log('\n── Visual regression check ──────────────────────────────────');
-  console.log(`  Passed   : ${passed}`);
-  console.log(`  Failed   : ${failed}`);
-  console.log(`  Missing  : ${missing}`);
-  console.log(`  Report   : ${reportPath}`);
+  console.log(`  Passed     : ${passed}`);
+  console.log(`  Failed     : ${failed}`);
+  console.log(`  Missing    : ${missing}${allowMissing ? '' : ' (counted as failures)'}`);
+  console.log(`  No-baseline: ${skippedNoBaseline}${allowMissing ? '' : ' (counted as failures)'}`);
+  console.log(`  Report     : ${reportPath}`);
   if (failed > 0) {
     console.log(`  Diffs    : ${diffDir}`);
   }

@@ -21,7 +21,7 @@
 import { chromium } from 'playwright';
 import http from 'node:http';
 import { spawn } from 'child_process';
-import { readFileSync, mkdirSync, writeFileSync, statSync } from 'fs';
+import { readFileSync, mkdirSync, writeFileSync, statSync, existsSync } from 'fs';
 import { resolve, dirname, join, relative, sep } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -462,13 +462,37 @@ async function main() {
   // Use --update-baselines to promote captured screenshots to baselines
   // (e.g. after an intentional design change or on first bootstrap).
   if (updateBaselines) {
-    const { readdirSync, copyFileSync } = await import('fs');
+    const { readdirSync, copyFileSync, rmSync } = await import('fs');
     mkdirSync(baselinesDir, { recursive: true });
-    const files = readdirSync(outDir).filter(f => f.endsWith('.png'));
-    for (const f of files) {
-      copyFileSync(resolve(outDir, f), resolve(baselinesDir, f));
+
+    // Promote ONLY the screenshots actually captured this run — never the raw
+    // contents of outDir, which can retain stale PNGs from a previous run or a
+    // removed surface and would otherwise be silently promoted.
+    const capturedNow = new Set(
+      report.surfaces
+        .filter(s => s.status !== 'skipped' && s.status !== 'error')
+        .map(s => s.filename),
+    );
+    let promoted = 0;
+    for (const f of capturedNow) {
+      const src = resolve(outDir, f);
+      if (!existsSync(src)) continue; // defensive: capture recorded but file absent
+      copyFileSync(src, resolve(baselinesDir, f));
+      promoted++;
     }
-    console.log(`\n[capture] Baselines updated: ${files.length} image(s) → ${baselinesDir}`);
+
+    // Prune baselines that were NOT captured this run (removed/renamed
+    // surfaces) so the committed set stays a faithful mirror of live surfaces.
+    let pruned = 0;
+    for (const f of readdirSync(baselinesDir).filter(f => f.endsWith('.png'))) {
+      if (!capturedNow.has(f)) {
+        rmSync(resolve(baselinesDir, f));
+        pruned++;
+        console.log(`  [-] pruned stale baseline: ${f}`);
+      }
+    }
+
+    console.log(`\n[capture] Baselines updated: ${promoted} promoted, ${pruned} pruned → ${baselinesDir}`);
     console.log('[capture] Stage review/baselines/ and commit to lock the new reference.');
   }
 }

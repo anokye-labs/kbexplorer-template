@@ -46,9 +46,11 @@ Output is written to `review/screenshots/` (gitignored — screenshots are revie
 artifacts, not committed fixtures).
 
 After the run a `review/capture-report.json` file is created listing every
-surface as `captured`, `skipped` (with reason), or `error`. The report records
-only `status`, `skipReason`, and `error` — not `bytes` — so the committed file
-is stable across runs and does not produce spurious merge conflicts.
+surface. Each entry records `surfaceId`, `surfaceLabel`, `theme`, `viewport`,
+`filename`, `status` (`captured`, `skipped`, `warning`, or `error`),
+`skipReason`, and `error`. It deliberately omits the screenshot `bytes` size —
+that value varied run-to-run and produced spurious merge conflicts in the
+committed report.
 
 ## Extending the surface set
 
