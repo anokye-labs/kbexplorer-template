@@ -114,12 +114,25 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     onNodeClick,
     focusNodeId,
     fitOnStabilize = false,
-    nodeSizeRange = [44, 64],
     nodeSizeStep = 4,
     labelMaxLength = 25,
     emphasizeNodeId,
     interactive = false,
   } = options;
+
+  // Adaptive node sizing — large graphs need smaller nodes so the labels stay
+  // proportional and the canvas doesn't turn into a sea of overlapping bubbles.
+  // Was a fixed [44, 64] for every graph, which left 800-node constellations
+  // looking like a wall of touching circles with little visible label area.
+  const totalNodes = graph.nodes.length;
+  const adaptiveDefault: [number, number] = totalNodes > 600
+    ? [22, 36]
+    : totalNodes > 200
+      ? [28, 44]
+      : totalNodes > 80
+        ? [34, 52]
+        : [44, 64];
+  const nodeSizeRange = options.nodeSizeRange ?? adaptiveDefault;
 
   const degrees = getNodeDegrees(graph);
   const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
@@ -155,10 +168,17 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       flagDisconnected: true,
       opacity: faded ? fadedOpacity : undefined,
       showLabel: faded ? showFadedLabels : true,
+      // Always label direct neighbours of the focused node — without this
+      // override low-degree neighbours render as unlabelled "mystery circles"
+      // because the global label threshold (degree ≥ 2) hides them.
+      labelDegreeThreshold: effectiveEmphasis && emphasizedIds.has(n.id) ? 0 : undefined,
     });
   });
 
-  const EDGE_FADED_COLOR = 'rgba(80,80,80,0.08)';
+  // Slightly brighter faded edge tone — the previous rgba(80,80,80,0.08) made
+  // off-neighbourhood edges effectively invisible on the dark theme, which the
+  // user flagged as "links between nodes are too hard to see".
+  const EDGE_FADED_COLOR = isDark ? 'rgba(160,160,160,0.18)' : 'rgba(80,80,80,0.18)';
 
   /** Resolve the visual style for an edge type */
   /** Resolve the visual style for an edge (relation-aware, data-driven). */
@@ -246,6 +266,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         flagDisconnected: true,
         opacity: faded ? fadedOpacity : undefined,
         showLabel: faded ? showFadedLabels : true,
+        // Force-label every 1-hop neighbour of the focus regardless of degree
+        // (otherwise a sole-edge neighbour shows up as a circle with no text).
+        labelDegreeThreshold: active && hop1.has(n.id) ? 0 : undefined,
       }));
     }
     nodes.update(nodeUpdates);

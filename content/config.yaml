@@ -69,6 +69,31 @@ clusters:
   reference:
     name: "Reference"
     color: "#79C0FF"
+  # Work-axis clusters — declared here so their legend entries have stable
+  # colours (they used to be palette-allocated on the fly, which shuffled
+  # whenever node creation order changed). All issues now land in `work`
+  # regardless of their GitHub labels, so the legend stays bounded.
+  work:
+    name: "Work"
+    color: "#F9A8D4"
+  pull-request:
+    name: "Pull Request"
+    color: "#A371F7"
+  commits:
+    name: "Commits"
+    color: "#7EE787"
+  releases:
+    name: "Releases"
+    color: "#3FB950"
+  person:
+    name: "Person"
+    color: "#F0883E"
+  code:
+    name: "Code"
+    color: "#9A8A78"
+  docs:
+    name: "Docs"
+    color: "#E3B341"
 
 providers:
   - type: wikipedia
