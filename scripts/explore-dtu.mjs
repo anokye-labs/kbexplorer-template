@@ -6,7 +6,9 @@
  * ─────────────────────
  * 1. Brings the Gitea DTU up (bootstrap → seed → starts the adapter in the
  *    background).
- * 2. Starts the kbexplorer app in Vite preview mode pointed at the adapter.
+ * 2. Starts the kbexplorer app with `vite dev` pointed at the adapter (dev,
+ *    not preview — VITE_GH_API_BASE is inlined at build time, so only a dev
+ *    server honours the runtime twin URL; see Step 3 for the full rationale).
  * 3. Waits for both servers to pass their health/readiness checks.
  * 4. Prints a ready-to-paste probing prompt for the orchestrator / agent session.
  * 5. Optionally writes a machine-readable `session-brief.json` to `.dtu/`.
@@ -170,16 +172,18 @@ async function main() {
   if (NO_APP) {
     warn('EXPLORE_NO_APP=1 — skipping Vite app. Probe the adapter directly.');
   } else {
-    log('--- Step 3: Start kbexplorer app (Vite dev / preview) ---');
-    // We use `vite preview` if a dist/ exists; else fall back to `vite dev`.
-    // Both honour VITE_GH_API_BASE for remote mode.
-    // Use `npx vite` so the npm shim resolves correctly on all platforms
-    // (direct node invocation of the .bin shim fails on Windows because the
-    // shim is a bash script, not a JS module).
-    const hasDist = existsSync(resolve(REPO_ROOT, 'dist', 'index.html'));
-    const viteSubCmd = hasDist ? 'preview' : 'dev';
+    log('--- Step 3: Start kbexplorer app (Vite dev) ---');
+    // MUST use `vite dev`, never `vite preview`. The app reads the twin URL
+    // from `import.meta.env.VITE_GH_API_BASE` (src/api/github.ts), which Vite
+    // INLINES at build time. A prebuilt dist/ therefore bakes in whatever base
+    // was set during `vite build` and silently ignores VITE_GH_API_BASE passed
+    // at preview time — the app would come up "ready" but pointed at the wrong
+    // backend, defeating the harness. `vite dev` evaluates env at serve time,
+    // so the runtime injection below actually takes effect.
+    // Use `npm exec` so the vite bin resolves on all platforms (a direct node
+    // invocation of the .bin shim fails on Windows — the shim is a bash script).
     const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    spawnBackground('app', npmCmd, ['exec', '--', 'vite', viteSubCmd, '--port', String(APP_PORT), '--strictPort'], {
+    spawnBackground('app', npmCmd, ['exec', '--', 'vite', 'dev', '--port', String(APP_PORT), '--strictPort'], {
       VITE_GH_API_BASE: ADAPTER_URL,
       VITE_KB_OWNER: KB_OWNER,
       VITE_KB_REPO: KB_REPO,

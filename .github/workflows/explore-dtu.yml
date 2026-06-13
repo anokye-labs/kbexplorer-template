@@ -64,17 +64,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Build the app so `vite preview` can serve it (faster and more stable
-      # than `vite dev` in CI — no HMR noise, deterministic port binding).
-      - name: Build app for preview
-        run: npx vite build
-        env:
-          VITE_KB_LOCAL: 'true'
-          # Placeholder coords — the harness re-injects the real twin coords at
-          # runtime via VITE_GH_API_BASE / VITE_KB_* env vars passed to `vite preview`.
-          VITE_KB_OWNER: 'anokye-labs'
-          VITE_KB_REPO: 'kbexplorer-template'
-          VITE_KB_BRANCH: 'main'
+      # No `vite build` step: the harness serves the app with `vite dev`, which
+      # reads VITE_GH_API_BASE at serve time. A prebuilt dist/ would inline a
+      # stale base at build time and ignore the runtime twin URL, so building
+      # here would be both wasteful and misleading.
 
       - name: Stage DTU + emit session brief
         # The script brings up Gitea (dtu:up + dtu:seed), starts the adapter
@@ -94,7 +87,8 @@ jobs:
             timeout 300 node scripts/explore-dtu.mjs || true
         env:
           EXPLORE_WRITE_BRIEF: '1'
-          GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
+          # GITHUB_STEP_SUMMARY is injected by the runner automatically; the
+          # script appends its markdown summary to it directly.
 
       - name: Upload session brief artifact
         if: always()

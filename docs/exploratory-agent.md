@@ -115,7 +115,8 @@ readiness state the adapter and app report.
 | `schedule` | Weekly, Monday 06:00 UTC |
 
 The job:
-1. Installs dependencies and builds the app (`vite build`) for `vite preview`.
+1. Installs dependencies (no `vite build` — the harness serves the app with
+   `vite dev`, the only mode that honours the runtime `VITE_GH_API_BASE`).
 2. Runs `node scripts/explore-dtu.mjs` (which does `dtu:up` + `dtu:seed` +
    starts the adapter + app, writes the brief, and emits a job summary).
 3. Uploads `.dtu/session-brief.json` as a workflow artifact
