@@ -21,7 +21,7 @@ export function SystemOfRecordView({ node }: ViewerProps) {
       <table className="kb-structured-table">
         <tbody>
           <Row label="URL">
-            {url && <a href={url} target="_blank" rel="noopener noreferrer">{url}</a>}
+            {url ? <a className="kb-structured-link" href={url} target="_blank" rel="noopener noreferrer">{url}</a> : null}
           </Row>
         </tbody>
       </table>

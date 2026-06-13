@@ -23,8 +23,8 @@ export function TeamView({ node }: ViewerProps) {
       <table className="kb-structured-table">
         <tbody>
           <Row label="Lead">{lead}</Row>
-          <Row label="Members"><ScalarList items={members} /></Row>
-          <Row label="Workstreams"><ScalarList items={workstreams} /></Row>
+          <Row label="Members">{members.length > 0 ? <ScalarList items={members} /> : null}</Row>
+          <Row label="Workstreams">{workstreams.length > 0 ? <ScalarList items={workstreams} /> : null}</Row>
         </tbody>
       </table>
     </div>
