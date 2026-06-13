@@ -26,6 +26,8 @@
     "assess": "node scripts/assess-graph.js",
     "audit:runtime": "node scripts/generate-manifest.js && node scripts/audit-runtime-graph.mjs",
     "audit:runtime:strict": "node scripts/generate-manifest.js && node scripts/audit-runtime-graph.mjs --fail-on=issues-not-linked-to-repo,prs-not-linked-to-repo,repo-meta-repo-root-disconnected,cluster-proliferation,unreachable-from-hub,genuine-orphans",
+    "audit:visual": "node scripts/audit-visual.mjs",
+    "audit:visual:strict": "node scripts/audit-visual.mjs --fail-on=hud-related-links,legend-cluster-count,map-canvas-non-blank,map-edge-visibility,map-label-coverage,focus-neighbour-labels",
     "derive": "node scripts/derive-content.js",
     "compare": "node scripts/compare-content.js",
     "kb:dev": "kbexplorer dev",

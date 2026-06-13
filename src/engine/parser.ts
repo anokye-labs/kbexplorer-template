@@ -441,7 +441,7 @@ export function treeToNodes(tree: GHTreeItem[], repoName: string, excludePaths?:
   const rootNode: KBNode = {
     id: 'repo-root',
     title: repoName,
-    cluster: 'code',
+    cluster: 'infra',
     content: rootHtml,
     rawContent: rootContent,
     emoji: 'Folder',
@@ -463,7 +463,7 @@ export function treeToNodes(tree: GHTreeItem[], repoName: string, excludePaths?:
     nodes.push({
       id: `dir-${dirPath}`,
       title: `${dirPath}/`,
-      cluster: 'code',
+      cluster: 'infra',
       content: html,
       rawContent: content,
       emoji: 'Folder',
@@ -497,7 +497,7 @@ export function treeToNodes(tree: GHTreeItem[], repoName: string, excludePaths?:
     nodes.push({
       id: `file-${item.path}`,
       title: parts[parts.length - 1],
-      cluster: 'code',
+      cluster: 'infra',
       content: `<p><code>${item.path}</code></p>`,
       rawContent: item.path,
       emoji: 'Document',

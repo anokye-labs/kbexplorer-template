@@ -50,13 +50,13 @@ describe('WorkProvider — release nodes', () => {
     expect(releaseNode!.title).toBe('v0.9.0');
   });
 
-  it('assigns cluster "releases" to release nodes', async () => {
+  it('assigns cluster "work" to release nodes (folded with PRs/commits/people for legend sensemaking — #270)', async () => {
     const provider = new WorkProvider([], [], [], [], null, [makeRelease()]);
     const { nodes } = await provider.resolve(config, []);
 
     const releaseNode = nodes.find(n => n.source.type === 'release');
     expect(releaseNode).toBeDefined();
-    expect(releaseNode!.cluster).toBe('releases');
+    expect(releaseNode!.cluster).toBe('work');
   });
 
   it('assigns source.type = release with tag and prerelease flag', async () => {

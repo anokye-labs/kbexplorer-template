@@ -25,6 +25,12 @@ export interface GraphNetworkOptions {
   emphasizeNodeId?: string | null;
   /** Enable drag-to-pan and scroll-to-zoom (default: false) */
   interactive?: boolean;
+  /**
+   * Slot label for the audit hook (`window.__kbeNetworks[slot]`). Used by
+   * `scripts/audit-visual.mjs` and devtools to find the live network. If
+   * omitted, no audit registration occurs.
+   */
+  auditSlot?: string;
 }
 
 export interface GraphNetworkResult {
@@ -96,6 +102,12 @@ export function buildVisNode(
     shape: 'custom',
     ctxRenderer: createNodeRenderer(node.emoji, color, size, options.isDark, label, disconnected),
     size: size / 2,
+    // Audit sidecar: the rendered label is captured inside the ctxRenderer
+    // closure and isn't visible through vis-network's public DataSet API.
+    // We mirror it here so `scripts/audit-visual.mjs` can assert label
+    // coverage without re-running OCR on the canvas pixels. Empty string
+    // means the renderer is configured to paint no text for this node.
+    __auditLabel: label ?? '',
   };
 
   if (options.opacity != null) {
@@ -118,6 +130,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     labelMaxLength = 25,
     emphasizeNodeId,
     interactive = false,
+    auditSlot,
   } = options;
 
   // Adaptive node sizing — large graphs need smaller nodes so the labels stay
@@ -497,7 +510,31 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     }
   });
 
+  if (auditSlot) {
+    registerNetworkForAudit(network, container, auditSlot);
+  }
+
   return { network, nodes, edges, setEmphasis };
+}
+
+/**
+ * Debug hook: when an audit (or a developer) needs to introspect a live
+ * vis-network instance (positions, bounding boxes, label state) we expose
+ * the live networks on `window.__kbeNetworks` keyed by the container's
+ * `data-kbe-graph` attribute or `id`. This is a no-op when there is no
+ * `window` (SSR / Node) and adds a tiny amount of memory in the browser.
+ *
+ * Used by `scripts/audit-visual.mjs` to assert on label coverage, node-to-
+ * label ratio, and edge visibility on the actually-rendered constellation.
+ */
+function registerNetworkForAudit(network: Network, container: HTMLElement, slot: string) {
+  if (typeof window === 'undefined') return;
+  type AuditWindow = Window & {
+    __kbeNetworks?: Record<string, { network: Network; container: HTMLElement }>;
+  };
+  const w = window as AuditWindow;
+  if (!w.__kbeNetworks) w.__kbeNetworks = {};
+  w.__kbeNetworks[slot] = { network, container };
 }
 
 /**

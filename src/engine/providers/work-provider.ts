@@ -164,7 +164,7 @@ export class WorkProvider implements GraphProvider {
       const prNode: KBNode = {
         id: `pr-${pr.number}`,
         title: pr.title,
-        cluster: 'pull-request',
+        cluster: 'work',
         content: html,
         rawContent: fullContent,
         emoji: 'BranchFork',
@@ -227,7 +227,7 @@ export class WorkProvider implements GraphProvider {
       nodes.push({
         id: 'commits',
         title: 'Recent Commits',
-        cluster: 'commits',
+        cluster: 'work',
         content: commitHtml,
         rawContent: commitContent,
         emoji: 'History',
@@ -375,7 +375,7 @@ export class WorkProvider implements GraphProvider {
       const releaseNode: KBNode = {
         id: `release-${tag}`,
         title: release.name || tag,
-        cluster: 'releases',
+        cluster: 'work',
         content: html,
         rawContent: fullContent,
         emoji: release.prerelease ? 'Beaker' : 'Rocket',
