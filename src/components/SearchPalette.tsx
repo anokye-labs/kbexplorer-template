@@ -5,9 +5,11 @@
  *   - Ctrl-K or '/' (global keyboard shortcut — wired in useKeyboardNav)
  *   - The HUD search button
  *
- * A11y: combobox role on the input, listbox + option roles on results.
- * Arrow keys move focus within the listbox; Enter navigates; Esc closes.
- * Focus is trapped inside the dialog while open.
+ * A11y: combobox role on the input, listbox role on the results list with
+ * option roles on the interactive result buttons. Arrow keys move the active
+ * option; Enter navigates; Esc (or backdrop click) closes. Focus stays on the
+ * input; there is deliberately no Tab trap — the dialog is dismissed rather
+ * than cycled.
  */
 import React, { useEffect, useRef, useState, useCallback, useId } from 'react';
 import {
@@ -153,9 +155,10 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
   const listboxId = useId();
   const inputId = useId();
 
-  const results = query.trim().length >= 1
-    ? searchIndex(index, query, 20)
-    : [];
+  const results = React.useMemo(
+    () => (query.trim().length >= 1 ? searchIndex(index, query, 20) : []),
+    [index, query],
+  );
 
   // Reset active index when results change
   useEffect(() => { setActiveIdx(0); }, [query]);
@@ -182,7 +185,7 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setActiveIdx(i => Math.min(i + 1, results.length - 1));
+        setActiveIdx(i => (results.length === 0 ? 0 : Math.min(i + 1, results.length - 1)));
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -237,7 +240,7 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
             className={styles.inputEl}
             type="text"
             role="combobox"
-            aria-expanded={results.length > 0}
+            aria-expanded={query.trim().length >= 1}
             aria-controls={listboxId}
             aria-activedescendant={results[activeIdx] ? `search-result-${activeIdx}` : undefined}
             aria-label="Search knowledge base"
@@ -270,14 +273,12 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
         >
           {results.length > 0 ? (
             results.map((r, i) => (
-              <li
-                key={r.nodeId}
-                id={`search-result-${i}`}
-                role="option"
-                aria-selected={i === activeIdx}
-                data-testid={`search-result-${i}`}
-              >
+              <li key={r.nodeId} role="presentation">
                 <button
+                  id={`search-result-${i}`}
+                  role="option"
+                  aria-selected={i === activeIdx}
+                  data-testid={`search-result-${i}`}
                   className={`${styles.item}${i === activeIdx ? ' ' + styles.itemActive : ''}`}
                   style={i === activeIdx ? { backgroundColor: tokens.colorNeutralBackground3 } : undefined}
                   onClick={() => navigate(r.nodeId)}

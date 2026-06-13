@@ -1,9 +1,8 @@
 /**
  * Client-side search index for kbexplorer.
  *
- * Design: hand-rolled inverted index over a 32-bit MurmurHash-inspired token
- * digest. No external dependency — stays zero-cost at runtime and trivially
- * tree-shaken.
+ * Design: hand-rolled inverted index over normalized token strings. No
+ * external dependency — stays zero-cost at runtime and trivially tree-shaken.
  *
  * Rationale vs minisearch:
  * - No added dependency / license surface.
@@ -72,6 +71,8 @@ export interface IndexEntry {
 
 export interface SearchIndex {
   entries: IndexEntry[];
+  /** nodeId → entry, built once at index time (queries run per keystroke). */
+  entryMap: Map<string, IndexEntry>;
   /** token → Set of nodeIds that contain it in each field */
   titleMap: Map<string, Set<string>>;
   headingMap: Map<string, Set<string>>;
@@ -136,7 +137,7 @@ export function buildSearchIndex(nodes: KBNode[]): SearchIndex {
     addTokens(bodyMap, bodyTokens, node.id);
   }
 
-  return { entries, titleMap, headingMap, bodyMap };
+  return { entries, entryMap: new Map(entries.map(e => [e.nodeId, e])), titleMap, headingMap, bodyMap };
 }
 
 // ── Query ──────────────────────────────────────────────────
@@ -205,11 +206,10 @@ export function searchIndex(
 
   if (candidateIds.size === 0) return [];
 
-  const entryMap = new Map(index.entries.map(e => [e.nodeId, e]));
   const results: SearchResult[] = [];
 
   for (const nodeId of candidateIds) {
-    const entry = entryMap.get(nodeId);
+    const entry = index.entryMap.get(nodeId);
     if (!entry) continue;
 
     const titleScore = tokenScore(entry.titleTokens, queryTokens) * FIELD_WEIGHTS.title;
