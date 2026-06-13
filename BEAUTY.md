@@ -64,6 +64,26 @@ defect is any 0–1 on a shipped surface.
    capture of affected surfaces.
 5. Re-assess after each remediation wave; update §4.
 
+### Regression gate (issue #257)
+
+The visual-regression gate (`npm run verify:visual`) diffs fresh captures
+against committed baseline PNGs in `review/baselines/` using `pixelmatch`
+(perceptual pixel diff, threshold 0.1 per channel; fail at >0.5% differing
+pixels). Diff images land in `review/diffs/` (gitignored) for inspection.
+
+**Gate runs:** nightly + `workflow_dispatch`
+(`.github/workflows/visual-regression.yml`). **Not a PR gate** — captures are
+environment-sensitive and baselines must be updated intentionally.
+
+**Baseline bootstrap / update:**
+```sh
+npm run capture:review -- --update-baselines
+git add review/baselines
+git commit -m "chore(review): update visual baselines"
+```
+
+See `review/README.md` for the full gate specification.
+
 ## 4. Assessment — wave 1 (2026-06-12, captures `review/capture-report.json`)
 
 Surfaces: home, reading, overview, constellation, HUD variants × dark/light/sepia × desktop/mobile.

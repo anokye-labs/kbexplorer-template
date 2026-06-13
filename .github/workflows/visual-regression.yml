@@ -1,0 +1,107 @@
+name: Visual Regression — capture + baseline diff
+
+# Opt-in / scheduled ONLY. Deliberately NOT part of the fast PR gate:
+# captures require a full app build + a real browser and produce
+# environment-sensitive screenshots that would cause false failures on
+# minor font-rendering differences across OS/runner images.
+#
+# Run it manually to validate a visual-touching change, or let the nightly
+# schedule catch drift.
+on:
+  workflow_dispatch:
+    inputs:
+      update_baselines:
+        description: 'Promote captures to new baselines (commit the update separately)'
+        type: boolean
+        default: false
+  schedule:
+    # Nightly at 05:15 UTC (offset from the DTU job at 04:30).
+    - cron: '15 5 * * *'
+
+concurrency:
+  group: visual-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  visual-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (chromium + system deps)
+        run: npx playwright install --with-deps chromium
+
+      # Step 1 — build the app in local mode
+      - name: Generate manifest
+        run: node scripts/generate-manifest.js
+        env:
+          VITE_KB_LOCAL: 'true'
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Build app (local mode)
+        run: npx vite build
+        env:
+          VITE_KB_LOCAL: 'true'
+
+      # Step 2 — capture fresh screenshots (reuse the dist/ just built).
+      # When update_baselines is requested, promote captures in place so the
+      # refreshed baselines can be uploaded for a separate human commit.
+      - name: Capture review screenshots
+        run: npm run capture:review -- --skip-build ${{ inputs.update_baselines && '--update-baselines' || '' }}
+
+      # Step 3 — diff against committed baselines; non-zero exit = regression.
+      # Skipped on a baseline-promotion run (nothing to diff against yet).
+      - name: Run visual regression check
+        if: ${{ !inputs.update_baselines }}
+        run: npm run verify:visual
+
+      # Step 3b — on a promotion run, upload refreshed baselines for the
+      # maintainer to download and commit deliberately (never auto-committed).
+      - name: Upload refreshed baselines
+        if: ${{ inputs.update_baselines }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: refreshed-baselines-${{ github.run_number }}
+          path: review/baselines/
+          retention-days: 14
+          if-no-files-found: warn
+
+      # Step 4 — upload artifacts (always, so failures are inspectable)
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-screenshots-${{ github.run_number }}
+          path: review/screenshots/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload diff images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-diffs-${{ github.run_number }}
+          path: review/diffs/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload diff report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff-report-${{ github.run_number }}
+          path: review/visual-diff-report.json
+          retention-days: 14
+          if-no-files-found: ignore
