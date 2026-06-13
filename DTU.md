@@ -1,5 +1,7 @@
 # Digital Twin Universe (DTU)
 
+> **Looking for the overall testing map?** See [TESTING.md](TESTING.md) for the full pyramid, CI orchestration table, and per-layer runbook. This document covers the DTU architecture and holdout discipline in detail.
+
 ## What this is
 A DTU is a set of local behavioral clones of every external service this project
 depends on. Instead of calling live services during development and testing, all
