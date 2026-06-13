@@ -1,0 +1,86 @@
+{
+  "comment": "Canonical review surface manifest for kbexplorer design review (issue #240). Edit this file to add/remove surfaces; the capture script reads it at runtime.",
+  "surfaces": [
+    {
+      "id": "home",
+      "label": "Home / Landing",
+      "url": "/#/node/home",
+      "setup": null,
+      "waitFor": ".kb-prose",
+      "settleMs": 2000
+    },
+    {
+      "id": "constellation",
+      "label": "Constellation Graph (MAP overlay)",
+      "url": "/#/node/readme",
+      "setup": { "localStorage": {} },
+      "waitFor": ".kb-prose",
+      "action": "open-map",
+      "settleMs": 3000
+    },
+    {
+      "id": "reading",
+      "label": "Reading View — long-form node",
+      "url": "/#/node/graph-engine",
+      "setup": null,
+      "waitFor": ".kb-prose",
+      "settleMs": 2000
+    },
+    {
+      "id": "overview",
+      "label": "Overview / Card Grid",
+      "url": "/#/overview",
+      "setup": null,
+      "waitFor": "h1",
+      "settleMs": 2000
+    },
+    {
+      "id": "hud-expanded",
+      "label": "HUD — expanded (bottom dock)",
+      "url": "/#/node/readme",
+      "setup": { "localStorage": { "kbe-hud-dock": "bottom", "kbe-hud-collapsed": "false" } },
+      "waitFor": ".kb-prose",
+      "settleMs": 2000
+    },
+    {
+      "id": "hud-collapsed",
+      "label": "HUD — collapsed",
+      "url": "/#/node/readme",
+      "setup": { "localStorage": { "kbe-hud-dock": "bottom", "kbe-hud-collapsed": "true" } },
+      "waitFor": ".kb-prose",
+      "settleMs": 2000
+    },
+    {
+      "id": "hud-docked-left",
+      "label": "HUD — docked left (sidebar)",
+      "url": "/#/node/readme",
+      "setup": { "localStorage": { "kbe-hud-dock": "left", "kbe-hud-collapsed": "false" } },
+      "waitFor": ".kb-prose",
+      "settleMs": 3000
+    },
+    {
+      "id": "node-selected",
+      "label": "Node selected — neighborhood emphasis",
+      "url": "/#/node/readme",
+      "setup": { "localStorage": { "kbe-hud-dock": "bottom", "kbe-hud-collapsed": "false" } },
+      "action": "select-node",
+      "waitFor": ".kb-prose",
+      "settleMs": 2000
+    },
+    {
+      "id": "source-editor",
+      "label": "Source Editor dialog",
+      "url": "/#/node/readme",
+      "setup": null,
+      "action": "open-source-editor",
+      "waitFor": ".kb-prose",
+      "settleMs": 2000,
+      "skipIfNotFound": true
+    }
+  ],
+  "themes": ["dark", "light", "sepia"],
+  "viewports": [
+    { "id": "desktop", "width": 1440, "height": 900 },
+    { "id": "mobile", "width": 390, "height": 844 }
+  ]
+}
