@@ -226,7 +226,11 @@ export type KnownRelation =
   | 'reports-to'
   | 'structural'
   | 'derived'
-  | 'deprecated';
+  | 'deprecated'
+  // Work-graph organizational-layer relations (#233)
+  | 'owns'
+  | 'has-priority'
+  | 'tracked-in';
 
 /** Default weights per edge type — higher = tighter layout clustering */
 export const EDGE_TYPE_WEIGHTS: Record<KnownEdgeType, number> = {
@@ -265,12 +269,16 @@ export const EDGE_TYPE_STYLES: Record<KnownEdgeType, EdgeTypeStyle> = {
 
 /** Visual styles for the relation taxonomy (rendered data-drivenly in the legend). */
 export const RELATION_STYLES: Record<KnownRelation, EdgeTypeStyle> = {
-  leads:        { color: '#f0883e', dashes: false,     width: 2.5, label: 'Leads' },
-  staffs:       { color: '#3fb950', dashes: false,     width: 1.5, label: 'Staffs' },
-  'reports-to': { color: '#a371f7', dashes: false,     width: 1.8, label: 'Reports to' },
-  structural:   { color: '#a0adb8', dashes: false,     width: 2,   label: 'Structural' },
-  derived:      { color: '#e8a854', dashes: [6, 4],    width: 1.5, label: 'Derived' },
-  deprecated:   { color: '#8b949e', dashes: [2, 3],    width: 1.2, label: 'Deprecated' },
+  leads:            { color: '#f0883e', dashes: false,     width: 2.5, label: 'Leads' },
+  staffs:           { color: '#3fb950', dashes: false,     width: 1.5, label: 'Staffs' },
+  'reports-to':     { color: '#a371f7', dashes: false,     width: 1.8, label: 'Reports to' },
+  structural:       { color: '#a0adb8', dashes: false,     width: 2,   label: 'Structural' },
+  derived:          { color: '#e8a854', dashes: [6, 4],    width: 1.5, label: 'Derived' },
+  deprecated:       { color: '#8b949e', dashes: [2, 3],    width: 1.2, label: 'Deprecated' },
+  // Work-graph organizational-layer relations (#233)
+  owns:             { color: '#4A9CC8', dashes: false,     width: 2,   label: 'Owns' },
+  'has-priority':   { color: '#E8A838', dashes: [4, 3],    width: 1.8, label: 'Has priority' },
+  'tracked-in':     { color: '#a371f7', dashes: [6, 3],    width: 1.5, label: 'Tracked in' },
 };
 
 const DEFAULT_RELATION_STYLE: EdgeTypeStyle = { color: '#79c0ff', dashes: [2, 2], width: 1.5, label: 'Related' };

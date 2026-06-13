@@ -1,0 +1,11 @@
+"@type": workstream
+id: kb-explorer
+name: KB Explorer
+description: >
+  Interactive knowledge-graph explorer for work-graph sensemaking.
+  Provides collapsed-graph navigation, search, theming, and the Fluid
+  conversation accumulator.
+priority: p1
+team: graph-platform
+systems-of-record:
+  - gh-repo

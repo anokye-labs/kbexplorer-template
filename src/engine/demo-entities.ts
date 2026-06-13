@@ -67,6 +67,16 @@ export function registerDemoEntityTypes(): void {
     relations: ['staffs', 'leads'],
     description: 'A squad / team that staffs people and is led by a person.',
   });
+  // `charter` deliberately has NO bespoke viewer — it exists to exercise the
+  // generic structured-viewer fallback end-to-end (team gained TeamView in #233).
+  registerType({
+    id: 'charter',
+    label: 'Charter',
+    layer: 'work',
+    cluster: DEMO_CLUSTER.id,
+    relations: [],
+    description: 'A team charter document (demo kind with no bespoke viewer).',
+  });
   registerViewer('person', PersonView);
   registerViewer('squad', SquadView);
 }
@@ -108,7 +118,7 @@ function relationEdge(from: string, to: string, relation: string, description: s
 export function injectDemoEntities(graph: KBGraph): KBGraph {
   registerDemoEntityTypes();
 
-  const DEMO_IDS = ['demo-team-atlas', 'demo-squad-orbit', 'demo-person-ada', 'demo-person-ben'];
+  const DEMO_IDS = ['demo-team-atlas', 'demo-squad-orbit', 'demo-person-ada', 'demo-person-ben', 'demo-charter-atlas'];
   // Guard against collisions / double-injection: if any fixed demo id already
   // exists in the graph, skip injection and return it unchanged.
   if (graph.nodes.some(n => DEMO_IDS.includes(n.id))) {
@@ -119,7 +129,14 @@ export function injectDemoEntities(graph: KBGraph): KBGraph {
     'demo-team-atlas',
     'Team Atlas',
     'team',
-    { name: 'Team Atlas', mission: 'Owns the knowledge-graph engine', size: 4 },
+    {
+      name: 'Team Atlas',
+      mission: 'Owns the knowledge-graph engine',
+      size: 4,
+      lead: 'Ada Okonkwo',
+      members: ['Ada Okonkwo', 'Ben Carter'],
+      workstreams: ['Discovery'],
+    },
     'Organization',
   );
   const squad = entityNode(
@@ -151,7 +168,15 @@ export function injectDemoEntities(graph: KBGraph): KBGraph {
     'Person',
   );
 
-  const newNodes: KBNode[] = [team, squad, lead, ic];
+  const charter = entityNode(
+    'demo-charter-atlas',
+    'Atlas Charter',
+    'charter',
+    { name: 'Atlas Charter', mission: 'Owns the knowledge-graph engine', reviewed: '2026-01-15' },
+    'CreativeWork',
+  );
+
+  const newNodes: KBNode[] = [team, squad, lead, ic, charter];
 
   const newEdges: KBEdge[] = [
     relationEdge(lead.id, team.id, 'leads', 'Ada leads Team Atlas'),
@@ -162,6 +187,7 @@ export function injectDemoEntities(graph: KBGraph): KBGraph {
     relationEdge(squad.id, ic.id, 'staffs', 'Squad Orbit staffs Ben'),
     relationEdge(lead.id, squad.id, 'leads', 'Ada (DRI) leads Squad Orbit'),
     relationEdge(team.id, squad.id, 'structural', 'Team Atlas → Squad Orbit'),
+    relationEdge(team.id, charter.id, 'structural', 'Team Atlas → Atlas Charter'),
   ];
 
   // Anchor the demo subgraph to an existing hub so it is reachable in the graph.
