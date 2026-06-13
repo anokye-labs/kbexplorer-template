@@ -31,7 +31,8 @@
     "kb:generate": "kbexplorer generate",
     "capture:review": "node scripts/capture-review.mjs",
     "update:baselines": "node scripts/capture-review.mjs --update-baselines",
-    "verify:visual": "node scripts/verify-visual.mjs"
+    "verify:visual": "node scripts/verify-visual.mjs",
+    "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.73.7",
