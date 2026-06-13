@@ -3,6 +3,7 @@
  */
 import type { KBNode, VisualMode, SourceConfig } from '../types';
 import { resolveImageUrl } from '../api';
+import { useIsDark } from '../theme/isDarkContext';
 import {
   AccessTimeRegular,
   AccessibilityCheckmarkRegular,
@@ -5280,6 +5281,72 @@ interface NodeVisualProps {
   source: SourceConfig;
   className?: string;
   clusterColor?: string;
+  /**
+   * Whether the current theme renders on a dark background (derived from the
+   * resolved theme's luminance via isDarkTheme, so config themes are handled).
+   * When false (any pale-background theme) the cluster color is darkened so
+   * icons remain legible. Defaults to true so callers that do not yet thread
+   * the flag keep the current dark-palette behaviour.
+   */
+  isDark?: boolean;
+}
+
+/**
+ * Ensure `clusterColor` is dark enough to read on a pale background.
+ *
+ * The cluster palette contains medium-saturation accents calibrated for dark
+ * backgrounds (#E8A838, #4A9CC8, …). On a non-dark theme we darken them by
+ * clamping HSL lightness to ≤ 0.42 so the icon stays legible on cream/white.
+ *
+ * Accepts 3- or 6-digit hex (with or without `#`); returns the input unchanged
+ * when it can't be parsed or the theme is dark.
+ */
+export function ensureIconContrast(hex: string | undefined, isDark: boolean): string | undefined {
+  if (!hex || isDark) return hex;
+  const m = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(hex);
+  if (!m) return hex;
+  const raw = m[1].length === 3 ? m[1].split('').map(c => c + c).join('') : m[1];
+  const n = parseInt(raw, 16);
+  let r = ((n >> 16) & 0xff) / 255;
+  let g = ((n >> 8) & 0xff) / 255;
+  let b = (n & 0xff) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      default: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+
+  // Clamp lightness to ≤ 42 % so the icon is dark enough on cream/white.
+  const newL = Math.min(l, 0.42);
+  if (newL === l) return hex; // already dark enough
+
+  // HSL → RGB (standard algorithm)
+  function hue2rgb(p: number, q: number, t: number) {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  }
+  const q = newL < 0.5 ? newL * (1 + s) : newL + s - newL * s;
+  const p = 2 * newL - q;
+  r = hue2rgb(p, q, h + 1 / 3);
+  g = hue2rgb(p, q, h);
+  b = hue2rgb(p, q, h - 1 / 3);
+
+  const toHex = (x: number) => Math.round(x * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
 const SURFACE_SIZES: Record<NodeVisualProps['surface'], { width: number; height: number }> = {
@@ -5312,9 +5379,17 @@ function resolveNodeImage(
   return null;
 }
 
-export function NodeVisual({ node, mode, surface, source, className, clusterColor }: NodeVisualProps) {
+export function NodeVisual({ node, mode, surface, source, className, clusterColor, isDark: isDarkProp }: NodeVisualProps) {
+  // Fall back to the IsDarkContext so callers (e.g. HUD's related rail) that
+  // do not explicitly pass the flag still pick up the active theme correctly.
+  const isDarkCtx = useIsDark();
+  const isDark = isDarkProp !== undefined ? isDarkProp : isDarkCtx;
+
   const imageUrl = resolveNodeImage(node, mode, source);
   const size = SURFACE_SIZES[surface];
+  // Darken the cluster-color icon on non-dark themes so it stays legible on a
+  // pale background (no-op when isDark; isDark is luminance-derived upstream).
+  const iconColor = ensureIconContrast(clusterColor, isDark);
 
   // Hero surface — full-bleed image with gradient overlay
   if (surface === 'hero' && mode === 'heroes' && imageUrl) {
@@ -5366,7 +5441,7 @@ export function NodeVisual({ node, mode, surface, source, className, clusterColo
           role="img"
           aria-label={node.title}
         >
-          <Icon style={{ fontSize: size.width || 24, color: clusterColor }} />
+          <Icon style={{ fontSize: size.width || 24, color: iconColor }} />
         </span>
       );
     }
@@ -5399,7 +5474,7 @@ export function NodeVisual({ node, mode, surface, source, className, clusterColo
         role="img"
         aria-label={node.title}
       >
-        <Icon style={{ fontSize: size.width || 24, color: clusterColor }} />
+        <Icon style={{ fontSize: size.width || 24, color: iconColor }} />
       </span>
     );
   }
