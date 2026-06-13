@@ -137,7 +137,13 @@ export class PersonProvider implements GraphProvider {
 
       const addConn = (to: string, relation: 'assigned-to' | 'authored') => {
         if (!seen.has(to)) {
-          connections.push({ to, relation, description: relation === 'assigned-to' ? 'Assigned to' : 'Authored' });
+          connections.push({
+            to,
+            relation,
+            description: relation === 'assigned-to' ? 'Assigned to' : 'Authored',
+            type: 'related',
+            source: 'inferred',
+          });
           seen.add(to);
         }
       };
@@ -148,7 +154,26 @@ export class PersonProvider implements GraphProvider {
       for (const pr of d.authoredPRs) addConn(`pr-${pr.number}`, 'authored');
 
       if (descriptor) {
-        // Descriptor exists: enrich it with connections to active items.
+        // Descriptor exists: enrich it with connections to active items AND
+        // the active-work data bag PersonView renders its "Active work"
+        // section from (data.activeIssues / data.activePRs).
+        const uniqueIssuesD = [
+          ...d.assignedIssues,
+          ...d.authoredIssues.filter(i => !d.assignedIssues.some(a => a.number === i.number)),
+        ];
+        const uniquePRsD = [
+          ...d.assignedPRs,
+          ...d.authoredPRs.filter(pr => !d.assignedPRs.some(a => a.number === pr.number)),
+        ];
+        descriptor.data = {
+          ...(descriptor.data ?? {}),
+          login: d.login,
+          activeIssues: uniqueIssuesD.map(i => ({ number: i.number, title: i.title })),
+          activePRs: uniquePRsD.map(pr => ({ number: pr.number, title: pr.title })),
+          activeIssueCount: uniqueIssuesD.length,
+          activePRCount: uniquePRsD.length,
+        };
+        // Enrich it with connections to active items.
         // We push these connections onto the descriptor node so the graph
         // renders edges from the descriptor person to their active items.
         // (Safe: KBNode.connections is an array we can append to.)
