@@ -492,7 +492,7 @@ export const BUILT_IN_VIEWS: GraphView[] = [
     color: '#d29922',
     resolve: (graph) => filterByPredicate(graph, n => {
       const t = n.source.type
-      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository'
+      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository' || t === 'release'
     }),
   },
   {
@@ -833,7 +833,9 @@ export type NodeSource =
    * requiring a bespoke `NodeSource` variant. `ref` optionally records the
    * upstream record id the node was mapped from.
    */
-  | { type: 'structured'; entityType: string; ref?: string };
+  | { type: 'structured'; entityType: string; ref?: string }
+  /** A GitHub release (tag, name, release notes, prerelease flag). */
+  | { type: 'release'; tag: string; prerelease: boolean };
 
 /** Optional site branding assets (logo, favicon, etc.). All fields optional/additive. */
 export interface BrandingConfig {
@@ -1048,6 +1050,7 @@ export const DEFAULT_CONFIG: KBConfig = {
     docs: { name: 'Documentation', color: '#D4A050' },
     'pull-request': { name: 'Pull Request', color: '#A86FDF' },
     commits: { name: 'Commits', color: '#5A98A8' },
+    releases: { name: 'Releases', color: '#F78166' },
   },
   visuals: {
     mode: 'emoji',

@@ -19,8 +19,9 @@ import {
   fetchFile,
   fetchFiles,
   fetchCommits,
+  fetchReleases,
 } from '../api'
-import type { GHIssue, GHTreeItem, GHCommit } from '../api'
+import type { GHIssue, GHTreeItem, GHCommit, GHRelease } from '../api'
 import {
   loadConfig,
   extractClusters,
@@ -45,6 +46,7 @@ interface FetchedData {
   tree: GHTreeItem[]
   readme: string | null
   commits: GHCommit[]
+  releases: GHRelease[]
   authoredContent: Record<string, string>
   structuralFiles: Record<string, string>
   structuredNodeMapRaw: string | null
@@ -77,10 +79,11 @@ async function fetchGitHubData(
     ? applyExternalThemeFile(config.theme, p => fetchFile(source, p))
     : null
 
-  // All presets fetch issues + README
-  const [issues, readme, mergedTheme] = await Promise.all([
+  // All presets fetch issues + README + releases
+  const [issues, readme, releases, mergedTheme] = await Promise.all([
     fetchIssues(source).catch(() => [] as GHIssue[]),
     fetchFile(source, 'README.md').catch(() => null),
+    fetchReleases(source).catch(() => [] as GHRelease[]),
     themeFilePromise,
   ])
 
@@ -146,7 +149,7 @@ async function fetchGitHubData(
     commits = await fetchCommits(source).catch(() => [] as GHCommit[])
   }
 
-  return { issues, pullRequests, tree, readme, commits, authoredContent, structuralFiles, structuredNodeMapRaw, config }
+  return { issues, pullRequests, tree, readme, commits, releases, authoredContent, structuralFiles, structuredNodeMapRaw, config }
 }
 
 /**
@@ -189,7 +192,7 @@ export async function loadRemoteKnowledgeBase(
     updated_at: pr.updated_at,
   }))
 
-  registry.register(new WorkProvider(data.issues, shapedPRs, data.commits))
+  registry.register(new WorkProvider(data.issues, shapedPRs, data.commits, [], null, data.releases))
 
   // ── Structural discovery (.github → repository node) ────
   if (Object.keys(data.structuralFiles).length > 0) {
