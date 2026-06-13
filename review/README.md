@@ -37,10 +37,8 @@ Examples:
 ## Running the capture
 
 ```sh
-# 1. Build the app (generates manifest + dist/)
-npm run build
-
-# 2. Run the capture
+# Builds local-mode manifest + dist, boots a preview server, captures all
+# surfaces. Pass --skip-build to reuse an existing dist/ for fast re-runs.
 npm run capture:review
 ```
 
@@ -61,7 +59,7 @@ Edit `scripts/review-surfaces.json` to add or remove surfaces. Each entry suppor
   "url": "/#/route",
   "setup": { "localStorage": { "kbe-hud-dock": "left" } },
   "waitFor": ".css-selector",
-  "action": "open-map | select-node | open-source-editor | null",
+  "action": "open-map",
   "settleMs": 2000,
   "skipIfNotFound": false
 }

@@ -22,7 +22,7 @@ import { chromium } from 'playwright';
 import http from 'node:http';
 import { spawn } from 'child_process';
 import { readFileSync, mkdirSync, writeFileSync, statSync } from 'fs';
-import { resolve, dirname, join } from 'path';
+import { resolve, dirname, join, relative, sep } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -91,7 +91,10 @@ async function pollHttp(url, maxMs = 25000) {
   while (Date.now() - start < maxMs) {
     try {
       await new Promise((res, rej) => {
-        const req = http.get(url, () => res());
+        const req = http.get(url, (response) => {
+          response.resume(); // consume the body so the socket closes promptly
+          res();
+        });
         req.on('error', rej);
         req.setTimeout(1500, () => { req.destroy(); rej(new Error('timeout')); });
       });
@@ -437,7 +440,9 @@ async function main() {
     expectedCaptures: surfaces.length * themes.length * viewports.length,
     captured: totalCaptured,
     skipped: totalSkipped,
-    outputDir: outDir,
+    // Repo-relative so the committed report stays deterministic and never
+    // leaks a contributor's local filesystem path.
+    outputDir: relative(repoRoot, outDir).split(sep).join('/'),
   };
   writeFileSync(reportPath, JSON.stringify(report, null, 2));
 
