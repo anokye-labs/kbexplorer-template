@@ -18,8 +18,9 @@
  *      the freshly generated manifest.
  *
  * ## Substrate
- * Static GitHub twin (twins/github/full-loop-server.mjs) — deterministic, no
- * Podman, passes in the fast CI gate.
+ * A minimal in-process mutable GitHub twin defined in this file
+ * (startMutableTwin) — deterministic, no Podman. It serves the
+ * twins/github/fixtures with actor-injected items prepended on every read.
  *
  * ## Deferred gap — live Gitea half
  * The mutation here is synthetic (fixture injection) rather than a real Gitea
@@ -61,7 +62,8 @@ const SETUP_PORT = Number(process.env.FULL_LOOP_SETUP_PORT ?? 3559);
 
 /**
  * Build and start an in-process mutable fixture server.
- * Returns { server, injectedIssues, stop }.
+ * Returns { injectIssue, stop }: injectIssue prepends an item the subsequent
+ * fixture reads will include; stop closes the server.
  */
 function startMutableTwin(port: number): Promise<{
   injectIssue: (issue: Record<string, unknown>) => void;

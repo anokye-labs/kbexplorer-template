@@ -19,10 +19,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  *     → app serves in local mode          (VITE_KB_LOCAL=true, pre-built manifest)
  *     → browser renders the new node
  *
- * Substrate (this run): static GitHub twin (twins/github/full-loop-server.mjs)
- * The "actor mutation" is a REST injection into the in-process twin server that
- * runs during globalSetup — architecturally identical to the Gitea actor path
- * but backed by canned fixtures rather than Podman+Gitea.
+ * Substrate (this run): the in-process mutable GitHub twin in global-setup.mts
+ * (startMutableTwin). The "actor mutation" injects an item into that twin's
+ * in-memory state before the CLI regen — architecturally identical to the Gitea
+ * actor path but backed by canned fixtures rather than Podman+Gitea.
  *
  * Deferred gap
  * ────────────
@@ -66,8 +66,8 @@ test.describe('Full-loop: actor → twin → CLI regen → app render → verify
     await expect(page.getByText(sentinelTitle).first()).toBeVisible({ timeout: 20_000 });
   });
 
-  test('sentinel issue node is reachable and its title is correct', async ({ page }) => {
-    // Navigate to the overview and find the node; clicking it should reveal details.
+  test('sentinel issue node renders in the overview with the correct title', async ({ page }) => {
+    // Navigate to the overview and assert the actor-injected node is rendered.
     await page.goto('/#/overview', { waitUntil: 'networkidle', timeout: 60_000 });
     const nodeEl = page.getByText(sentinelTitle).first();
     await expect(nodeEl).toBeVisible({ timeout: 20_000 });

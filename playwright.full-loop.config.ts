@@ -49,8 +49,9 @@ export default defineConfig({
   webServer: SUBSTRATE === 'gitea'
     ? [
         // ── Live-Gitea substrate (deferred — Podman required) ────────────────
-        // globalSetup must have already run dtu:up + dtu:seed before this config
-        // is evaluated. The adapter and app start here.
+        // globalSetup runs dtu:up + dtu:seed (Playwright runs globalSetup after
+        // this config is loaded but before any webServer/test). The Gitea
+        // adapter and the app start here.
         {
           command: `node twins/gitea/server.mjs`,
           url: `http://localhost:${Number(process.env.DTU_TWIN_PORT ?? 3557)}/health`,
