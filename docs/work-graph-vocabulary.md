@@ -90,7 +90,7 @@ manager: kwame        # person id → reports-to edge
 **Required fields:** `@type`, `id`, `name`
 **Optional fields:** `alias` (string — the alias handle referenced by `team.lead`, `team.members`), `role`, `email`, `manager` (person id → `reports-to` edge)
 
-> `alias` is the aliasField for `person` in `conventions.yaml`. When both `id` and `alias` differ, alias-FK edges (e.g. `team.lead`) resolve via alias; id-FK edges (e.g. `team.members`) resolve via id. For simplicity, new descriptors should keep `id === alias`.
+> `alias` is the aliasField for `person` in `conventions.yaml`. Only `team.lead` is an alias-FK (resolves via the person's alias, falling back to id); `team.members` and all other person references are id-FKs. For simplicity, new descriptors should keep `id === alias`.
 
 ### 2.5 `system-of-record`
 
@@ -115,7 +115,7 @@ description: Primary planning and tracking board.
 
 ## 3. Derived edges
 
-The builder derives four edge types from the descriptor fields. These are FK edges declared in `schema/edges.yaml` and resolved by the existing engine; they are **not stored** on any entity.
+The builder derives the descriptor edges below from entity fields. These are FK edges declared in `schema/edges.yaml` and resolved by the existing engine; they are **not stored** on any entity.
 
 | Edge id | From | Field | To | Relation | FK flavor |
 |---|---|---|---|---|---|
@@ -124,7 +124,7 @@ The builder derives four edge types from the descriptor fields. These are FK edg
 | `team-workstreams` | `team` | `workstreams` | `workstream` | `owns` | array |
 | `workstream-priority` | `workstream` | `priority` | `priority` | `has-priority` | scalar |
 | `workstream-team` | `workstream` | `team` | `team` | `structural` | scalar |
-| `workstream-sor` | `workstream` | `systems-of-record[*].id` | `system-of-record` | `tracked-in` | array |
+| `workstream-sor` | `workstream` | `systems-of-record` | `system-of-record` | `tracked-in` | array |
 | `person-manager` | `person` | `manager` | `person` | `reports-to` | scalar |
 
 > `owns` and `has-priority` are new relation labels that flow into the open `KnownRelation` taxonomy. They render with distinct visual styles (see §6).

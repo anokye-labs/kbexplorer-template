@@ -85,7 +85,7 @@ edges:
     fk: scalar
     relation: structural
     description: Workstream belongs to team
-  # workstream.systems-of-record[*].id → system-of-record (array FK → tracked-in edges)
+  # workstream.systems-of-record → system-of-record[] (array FK; entries are id strings or { id } objects → tracked-in edges)
   - id: workstream-sor
     from: workstream
     field: systems-of-record
