@@ -171,10 +171,12 @@ runs `bootstrap.mjs` and `seed.mjs` before any spec runs. The
 `twins/gitea/server.mjs` adapter sits between the app and Gitea, translating
 GitHub REST ↔ Gitea API.
 
-Dedicated ports (set by the config, overridable via env):
+Dedicated ports (set by `playwright.gitea.config.ts`, overridable via env):
 - Gitea → Podman container on port 3000
-- Adapter → port 3557 (`DTU_TWIN_PORT`)
-- App (`vite dev`) → port 4319 (`DTU_APP_PORT`)
+- Adapter → listens on `TWIN_PORT`. This suite sets `TWIN_PORT` from
+  `DTU_TWIN_PORT` (default **3557**) so it can coexist with the standalone
+  adapter (`npm run dtu:twin`), which defaults to `TWIN_PORT` 3456.
+- App (`vite dev`) → `DTU_APP_PORT` (default **4319**)
 
 **Where it runs:** Nightly at **04:30 UTC** (`dtu-gitea.yml` schedule) and
 on-demand via `workflow_dispatch`. Never on the PR gate.
