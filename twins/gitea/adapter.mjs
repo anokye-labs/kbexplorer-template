@@ -300,7 +300,9 @@ export function createGiteaHandler(opts = {}) {
         const allReleases = agg.items
           .map(normalizeRelease)
           .filter(r => !r.draft)
-          .sort((a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime());
+          // Date.parse('') / invalid → NaN; `|| 0` keeps the comparator stable
+          // when published_at is missing/empty (normalizeRelease can emit '').
+          .sort((a, b) => (Date.parse(b.published_at ?? '') || 0) - (Date.parse(a.published_at ?? '') || 0));
         const { slice, hasNext } = paginate(allReleases, page, perPage);
         const link = buildLinkHeader(selfBase, pathname, page, perPage, hasNext);
         const extra = { 'X-Total-Count': String(allReleases.length) };

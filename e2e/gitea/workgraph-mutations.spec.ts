@@ -51,6 +51,12 @@ async function freshLoad(page: Page, hash: string) {
 }
 
 async function clearCacheAndReload(page: Page) {
+  // localStorage is origin-scoped. On a fresh page (about:blank) there is no app
+  // origin yet, so navigate to the app first — otherwise clear()/reload() act on
+  // about:blank and are a no-op. Idempotent when already on the app.
+  if (!page.url().includes('#/')) {
+    await page.goto('/#/overview', { waitUntil: 'networkidle', timeout: 60_000 });
+  }
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'networkidle' });
 }
