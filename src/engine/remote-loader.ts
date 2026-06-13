@@ -33,6 +33,7 @@ import { ProviderRegistry } from './providers'
 import { FilesProvider } from './providers/files-provider'
 import { AuthoredProvider } from './providers/authored-provider'
 import { WorkProvider } from './providers/work-provider'
+import { PersonProvider } from './providers/person-provider'
 import { StructuralProvider } from './providers/structural-provider'
 import { ContentModelProvider } from './providers/content-model-provider'
 import { collectProviderNodes } from './orchestrator'
@@ -193,6 +194,20 @@ export async function loadRemoteKnowledgeBase(
   }))
 
   registry.register(new WorkProvider(data.issues, shapedPRs, data.commits, [], null, data.releases))
+
+  // People derived from GitHub activity (#235) — author/assignee data comes
+  // straight off the API responses.
+  registry.register(new PersonProvider(
+    data.issues,
+    data.pullRequests.map(pr => ({
+      number: pr.number,
+      title: pr.title,
+      state: pr.state,
+      html_url: pr.html_url,
+      user: pr.user,
+      assignees: pr.assignees,
+    })),
+  ))
 
   // ── Structural discovery (.github → repository node) ────
   if (Object.keys(data.structuralFiles).length > 0) {
