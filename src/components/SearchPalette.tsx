@@ -204,11 +204,8 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
     if (e.target === e.currentTarget) onClose();
   }, [onClose]);
 
-  // Trap focus inside dialog
+  // Esc anywhere inside the dialog closes it; Tab moves naturally within.
   const handleDialogKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Tab') {
-      // Let Tab move naturally within the dialog; Esc closes
-    }
     if (e.key === 'Escape') {
       e.preventDefault();
       onClose();
@@ -308,12 +305,11 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
                 </button>
               </li>
             ))
-          ) : query.trim().length >= 1 ? (
-            <li role="option" aria-selected={false}>
-              <div className={styles.empty}>No results for &ldquo;{query}&rdquo;</div>
-            </li>
           ) : null}
         </ul>
+        {results.length === 0 && query.trim().length >= 1 && (
+          <div className={styles.empty} role="status">No results for &ldquo;{query}&rdquo;</div>
+        )}
 
         {/* Hint bar */}
         <div className={styles.hint} aria-hidden="true">
