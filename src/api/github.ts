@@ -8,7 +8,7 @@ import type { SourceConfig } from '../types';
 
 const CACHE_PREFIX = 'kbe:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const CACHE_VERSION = 27; // bump to invalidate all cached data (27: content-model nodes carry sourceFile {path,raw,format} for the F5 source-of-truth editor → PR write-back; 26: cross-repo vocabulary/synonym mapping (#153) — alias @type canonicalized to its kind + `jsonld.nativeType` preserving the repo's native term; 25: T5.3 F5 custom JS theme-module loader — config.theme.moduleUrl/moduleThemeName opt into dynamically import()ing a host-provided ESM module that exports a Fluent Theme/BrandVariants, registered into the THEME_MAP, changing the cached config shape; 24: T5.1 F5 external theme file — config.theme.themesFile points at a dedicated host-repo theme file fetched at runtime (and captured in the local manifest as themeFileRaw) and merged into the THEME_MAP, so the cached content shape now includes external-file themes; 23: T5.2 F5 raw CSS override sheet — config.branding.css now records a host-repo CSS path/URL injected as the last <link rel=stylesheet>, changing the cached config shape; 22: T4.2 F4 per-page accent/theme — node frontmatter accent/tokens/theme (KBNode.pageTheme) now restyle individual reading pages via scoped CSS vars, changing the cached render's node shape; 21: T4.1 F4 per-cluster token deltas — config.clusters.<id>.tokens now shift cluster-scoped surfaces (cards/badges/reading header) via scoped CSS vars, affecting cached render; 20: T2.4 F2 config-driven brand — theme cycle + persistence now span config.theme.themes.*; selectable theme set is dynamic (built-ins + config themes) and stored kbe-theme is validated against it, changing the cached render's theme shape; 19: F3 branding.favicon config field swaps document <link rel=icon> at runtime — affects cached render; 18: F3 branding.logo config field renders on HomePage hero + HUD header — affects cached render; 17: F1 config-driven appearance — theme.default initial mode + theme.font.* CSS vars now affect cached render; 16: skill node type — .github/skills/**/SKILL.md → SkillView; 15: F3 structural nodes + node-map JSON-LD merged with content-model spine ingestion; 13: KBNode JSON-LD fields + KBEdge.relation)
+const CACHE_VERSION = 28; // bump to invalidate all cached data (28: release nodes — GHRelease shape added, releases fetched from /repos/{owner}/{repo}/releases, NodeSource union extended with `release`, Work view includes release nodes; 27: content-model nodes carry sourceFile {path,raw,format} for the F5 source-of-truth editor → PR write-back; 26: cross-repo vocabulary/synonym mapping (#153) — alias @type canonicalized to its kind + `jsonld.nativeType` preserving the repo's native term; 25: T5.3 F5 custom JS theme-module loader — config.theme.moduleUrl/moduleThemeName opt into dynamically import()ing a host-provided ESM module that exports a Fluent Theme/BrandVariants, registered into the THEME_MAP, changing the cached config shape; 24: T5.1 F5 external theme file — config.theme.themesFile points at a dedicated host-repo theme file fetched at runtime (and captured in the local manifest as themeFileRaw) and merged into the THEME_MAP, so the cached content shape now includes external-file themes; 23: T5.2 F5 raw CSS override sheet — config.branding.css now records a host-repo CSS path/URL injected as the last <link rel=stylesheet>, changing the cached config shape; 22: T4.2 F4 per-page accent/theme — node frontmatter accent/tokens/theme (KBNode.pageTheme) now restyle individual reading pages via scoped CSS vars, changing the cached render's node shape; 21: T4.1 F4 per-cluster token deltas — config.clusters.<id>.tokens now shift cluster-scoped surfaces (cards/badges/reading header) via scoped CSS vars, affecting cached render; 20: T2.4 F2 config-driven brand — theme cycle + persistence now span config.theme.themes.*; selectable theme set is dynamic (built-ins + config themes) and stored kbe-theme is validated against it, changing the cached render's theme shape; 19: F3 branding.favicon config field swaps document <link rel=icon> at runtime — affects cached render; 18: F3 branding.logo config field renders on HomePage hero + HUD header — affects cached render; 17: F1 config-driven appearance — theme.default initial mode + theme.font.* CSS vars now affect cached render; 16: skill node type — .github/skills/**/SKILL.md → SkillView; 15: F3 structural nodes + node-map JSON-LD merged with content-model spine ingestion; 13: KBNode JSON-LD fields + KBEdge.relation)
 
 // Clear stale cache from older versions
 try {
@@ -246,6 +246,19 @@ export interface GHCommit {
   files?: Array<{ filename: string; status: string }>;
 }
 
+/**
+ * A GitHub release as returned by the releases API.
+ * Drafts are excluded; prerelease flag is preserved.
+ */
+export interface GHRelease {
+  tag_name: string;
+  name: string;
+  body: string;
+  html_url: string;
+  published_at: string;
+  prerelease: boolean;
+}
+
 /** Fetch recent commits from the repo. */
 export async function fetchCommits(source: SourceConfig, count = 30): Promise<GHCommit[]> {
   const cacheKey = `commits:${source.owner}/${source.repo}`;
@@ -259,6 +272,39 @@ export async function fetchCommits(source: SourceConfig, count = 30): Promise<GH
 
   cacheSet(cacheKey, data);
   return data;
+}
+
+/** Fetch GitHub releases (non-draft, newest-first, capped at 30). */
+export async function fetchReleases(source: SourceConfig, limit = 30): Promise<GHRelease[]> {
+  const cacheKey = `releases:${source.owner}/${source.repo}`;
+  const cached = cacheGet<GHRelease[]>(cacheKey);
+  if (cached) return cached.data;
+
+  const { data } = await ghFetch<Array<{
+    tag_name: string;
+    name: string | null;
+    body: string | null;
+    html_url: string;
+    published_at: string | null;
+    prerelease: boolean;
+    draft: boolean;
+  }>>(`/repos/${source.owner}/${source.repo}/releases?per_page=${limit}`);
+
+  const releases: GHRelease[] = data
+    .filter(r => !r.draft)
+    .sort((a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime())
+    .slice(0, limit)
+    .map(r => ({
+      tag_name: r.tag_name ?? '',
+      name: r.name ?? r.tag_name ?? '',
+      body: r.body ?? '',
+      html_url: r.html_url ?? '',
+      published_at: r.published_at ?? '',
+      prerelease: r.prerelease ?? false,
+    }));
+
+  cacheSet(cacheKey, releases);
+  return releases;
 }
 
 /** Fetch multiple files in parallel. */
