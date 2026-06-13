@@ -64,6 +64,18 @@ interface HUDProps {
   onDockChange?: (dock: DockPosition) => void;
   /** Called when the user activates the search button (Ctrl-K palette). */
   onOpenSearch?: () => void;
+  /**
+   * Override the HUD's initial collapsed state.
+   *
+   * Used by the landing-mode feature (#238): when `config.landing.graph` is
+   * `'collapsed'` AND the user has no stored `kbe-hud-collapsed` preference,
+   * the parent passes `true` here so the HUD starts collapsed on first visit.
+   * The HUD's own localStorage read (which happens inside the `useState`
+   * initializer) is bypassed in favour of this prop when provided.
+   *
+   * Optional — when absent the HUD falls back to its normal localStorage read.
+   */
+  initialCollapsed?: boolean;
 }
 
 const FONT_SIZES = [0.92, 1.0, 1.1, 1.2, 1.35, 1.5, 1.6];
@@ -304,7 +316,7 @@ function themeIcon(mode: string): React.ReactElement {
   return <ColorRegular />;
 }
 
-export function HUD({ graph, config, currentNodeId, theme, isDark, availableThemes, onThemeChange, onCollapsedChange, onDockChange, onOpenSearch }: HUDProps) {
+export function HUD({ graph, config, currentNodeId, theme, isDark, availableThemes, onThemeChange, onCollapsedChange, onDockChange, onOpenSearch, initialCollapsed }: HUDProps) {
   const styles = useStyles();
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [canvasMountKey, setCanvasMountKey] = useState(0);
@@ -351,6 +363,10 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
   const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
 
   const [collapsed, setCollapsed] = useState(() => {
+    // Landing-mode override (#238): when the parent has already resolved the
+    // initial state (honoring config vs localStorage precedence), use it
+    // directly — no second localStorage read needed.
+    if (initialCollapsed !== undefined) return initialCollapsed;
     try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
   });
   const [dock, setDock] = useState<DockPosition>(() =>

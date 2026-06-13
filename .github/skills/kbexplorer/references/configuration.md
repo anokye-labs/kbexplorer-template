@@ -82,6 +82,22 @@ features:
                                    #   HUD search buttons. Unset = enabled;
                                    #   set false to opt out entirely.
 
+# Landing mode — controls the initial view when arriving at / with no deep link
+# Optional and additive. Deep links (#/node/x, #/overview) are always honored
+# unchanged. localStorage user preferences (set after first interaction) win.
+landing:
+  view: reading                    # Optional. reading | overview | graph (default).
+                                   #   reading → a content node in ReadingView.
+                                   #   overview → the card-grid overview (/overview).
+                                   #   graph → graph-first HomePage (current default).
+  node: readme                     # Optional. Node ID for reading/graph; ignored
+                                   #   for overview. Default differs by view:
+                                   #   reading → 'readme' (content), graph → 'home'.
+  graph: collapsed                 # Optional. HUD initial state: collapsed | expanded.
+                                   #   collapsed → HUD starts as a rail (one click
+                                   #     expands). Only applies when the user has no
+                                   #     stored kbe-hud-collapsed preference.
+
 # BLUF (Bottom Line Up Front) — optional intro screen
 bluf:
   quote: "Knowledge is the path."  # Quote shown on intro screen.
