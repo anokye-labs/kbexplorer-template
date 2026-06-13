@@ -1,0 +1,29 @@
+[
+  {
+    "tag_name": "v2.0.0",
+    "name": "Version 2.0.0",
+    "body": "## What's New\n\n- Feature A (#10)\n- Closes #42\n\n## Bug Fixes\n\n- Fix crash on startup (see #7)",
+    "html_url": "https://github.com/test-owner/test-repo/releases/tag/v2.0.0",
+    "published_at": "2024-06-01T12:00:00Z",
+    "prerelease": false,
+    "draft": false
+  },
+  {
+    "tag_name": "v1.1.0",
+    "name": "Version 1.1.0",
+    "body": "Maintenance release.\n\n- Dependency updates",
+    "html_url": "https://github.com/test-owner/test-repo/releases/tag/v1.1.0",
+    "published_at": "2024-03-15T10:00:00Z",
+    "prerelease": false,
+    "draft": false
+  },
+  {
+    "tag_name": "v2.0.0-beta.1",
+    "name": "2.0.0 Beta 1",
+    "body": "Pre-release of v2.0.0.",
+    "html_url": "https://github.com/test-owner/test-repo/releases/tag/v2.0.0-beta.1",
+    "published_at": "2024-05-01T09:00:00Z",
+    "prerelease": true,
+    "draft": false
+  }
+]

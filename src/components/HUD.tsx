@@ -33,6 +33,7 @@ import {
   PanelLeftRegular,
   PanelRightRegular,
   PanelTopExpandRegular,
+  SearchRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode } from '../types';
 import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
@@ -61,6 +62,20 @@ interface HUDProps {
   onThemeChange: (theme: ThemeMode) => void;
   onCollapsedChange?: (collapsed: boolean) => void;
   onDockChange?: (dock: DockPosition) => void;
+  /** Called when the user activates the search button (Ctrl-K palette). */
+  onOpenSearch?: () => void;
+  /**
+   * Override the HUD's initial collapsed state.
+   *
+   * Used by the landing-mode feature (#238): when `config.landing.graph` is
+   * `'collapsed'` AND the user has no stored `kbe-hud-collapsed` preference,
+   * the parent passes `true` here so the HUD starts collapsed on first visit.
+   * The HUD's own localStorage read (which happens inside the `useState`
+   * initializer) is bypassed in favour of this prop when provided.
+   *
+   * Optional — when absent the HUD falls back to its normal localStorage read.
+   */
+  initialCollapsed?: boolean;
 }
 
 const FONT_SIZES = [0.92, 1.0, 1.1, 1.2, 1.35, 1.5, 1.6];
@@ -301,7 +316,7 @@ function themeIcon(mode: string): React.ReactElement {
   return <ColorRegular />;
 }
 
-export function HUD({ graph, config, currentNodeId, theme, isDark, availableThemes, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
+export function HUD({ graph, config, currentNodeId, theme, isDark, availableThemes, onThemeChange, onCollapsedChange, onDockChange, onOpenSearch, initialCollapsed }: HUDProps) {
   const styles = useStyles();
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [canvasMountKey, setCanvasMountKey] = useState(0);
@@ -348,6 +363,10 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
   const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
 
   const [collapsed, setCollapsed] = useState(() => {
+    // Landing-mode override (#238): when the parent has already resolved the
+    // initial state (honoring config vs localStorage precedence), use it
+    // directly — no second localStorage read needed.
+    if (initialCollapsed !== undefined) return initialCollapsed;
     try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
   });
   const [dock, setDock] = useState<DockPosition>(() =>
@@ -1193,10 +1212,25 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                       icon={<GridRegular />}
                       onClick={() => { window.location.hash = '#/overview'; }}
                       title="Card overview"
-                      style={{ marginRight: 'auto' }}
                     >
                       Cards
                     </Button>
+                    {onOpenSearch ? (
+                      <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<SearchRegular />}
+                        onClick={onOpenSearch}
+                        title="Search (Ctrl-K or /)"
+                        aria-label="Open search"
+                        data-testid="hud-search-button-sidebar"
+                        style={{ marginRight: 'auto' }}
+                      />
+                    ) : (
+                      // Flex spacer standing in for the search button's
+                      // marginRight: auto, keeping the caption right-aligned.
+                      <span style={{ marginRight: 'auto' }} />
+                    )}
                     <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
                       Connections
                     </Caption2>
@@ -1326,6 +1360,19 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                 >
                   Cards
                 </Button>
+                {onOpenSearch && (
+                  <Button
+                    appearance="outline"
+                    size="small"
+                    icon={<SearchRegular />}
+                    onClick={onOpenSearch}
+                    title="Search (Ctrl-K or /)"
+                    aria-label="Open search"
+                    data-testid="hud-search-button"
+                  >
+                    Search
+                  </Button>
+                )}
                 <Button
                   appearance="subtle"
                   size="small"

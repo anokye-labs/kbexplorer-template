@@ -27,7 +27,8 @@
     "compare": "node scripts/compare-content.js",
     "kb:dev": "kbexplorer dev",
     "kb:build": "kbexplorer build",
-    "kb:generate": "kbexplorer generate"
+    "kb:generate": "kbexplorer generate",
+    "capture:review": "node scripts/capture-review.mjs"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.73.7",

@@ -160,6 +160,7 @@ features:
   readingTools: true
   keyboardNav: true
   sparkAnimation: false
+  search: true           # optional — unset means enabled; false hides the Ctrl-K palette
 
 bluf:
   quote: "Knowledge is the path."

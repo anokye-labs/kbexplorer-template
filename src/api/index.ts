@@ -6,9 +6,10 @@ export {
   fetchIssues,
   fetchPullRequests,
   fetchCommits,
+  fetchReleases,
   NotModifiedError,
   RateLimitError,
   GitHubApiError,
 } from './github';
 
-export type { GHTreeItem, GHIssue, GHFileContent, GHCommit } from './github';
+export type { GHTreeItem, GHIssue, GHFileContent, GHCommit, GHRelease } from './github';

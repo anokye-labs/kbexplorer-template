@@ -230,7 +230,11 @@ export type KnownRelation =
   // Work-graph organizational-layer relations (#233)
   | 'owns'
   | 'has-priority'
-  | 'tracked-in';
+  | 'tracked-in'
+  // Person-node active-work relations (#235)
+  | 'assigned-to'
+  | 'authored'
+  | 'member-of';
 
 /** Default weights per edge type — higher = tighter layout clustering */
 export const EDGE_TYPE_WEIGHTS: Record<KnownEdgeType, number> = {
@@ -279,6 +283,10 @@ export const RELATION_STYLES: Record<KnownRelation, EdgeTypeStyle> = {
   owns:             { color: '#4A9CC8', dashes: false,     width: 2,   label: 'Owns' },
   'has-priority':   { color: '#E8A838', dashes: [4, 3],    width: 1.8, label: 'Has priority' },
   'tracked-in':     { color: '#a371f7', dashes: [6, 3],    width: 1.5, label: 'Tracked in' },
+  // Person-node active-work relations (#235)
+  'assigned-to':    { color: '#56d364', dashes: false,     width: 1.8, label: 'Assigned to' },
+  'authored':       { color: '#79c0ff', dashes: [4, 3],    width: 1.5, label: 'Authored' },
+  'member-of':      { color: '#f0883e', dashes: false,     width: 1.8, label: 'Member of' },
 };
 
 const DEFAULT_RELATION_STYLE: EdgeTypeStyle = { color: '#79c0ff', dashes: [2, 2], width: 1.5, label: 'Related' };
@@ -500,7 +508,8 @@ export const BUILT_IN_VIEWS: GraphView[] = [
     color: '#d29922',
     resolve: (graph) => filterByPredicate(graph, n => {
       const t = n.source.type
-      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository'
+      if (t === 'structured' && n.entityType === 'person') return true
+      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository' || t === 'release' || t === 'person'
     }),
   },
   {
@@ -841,7 +850,16 @@ export type NodeSource =
    * requiring a bespoke `NodeSource` variant. `ref` optionally records the
    * upstream record id the node was mapped from.
    */
-  | { type: 'structured'; entityType: string; ref?: string };
+  | { type: 'structured'; entityType: string; ref?: string }
+  /** A GitHub release (tag, name, release notes, prerelease flag). */
+  | { type: 'release'; tag: string; prerelease: boolean }
+  /**
+   * A person node derived from GitHub activity (author/assignee on active
+   * issues / PRs). When a content-model person descriptor matches (same
+   * alias/login), `linked` is set to true and the identity URN is reused
+   * from the descriptor rather than minted fresh.
+   */
+  | { type: 'person'; login: string; linked: boolean };
 
 /** Optional site branding assets (logo, favicon, etc.). All fields optional/additive. */
 export interface BrandingConfig {
@@ -1012,9 +1030,74 @@ export interface KBConfig {
     readingTools: boolean;
     keyboardNav: boolean;
     sparkAnimation: boolean;
+    /**
+     * Show the search palette (Ctrl-K / `/`) and the HUD search buttons.
+     * Optional and additive: unset means enabled, so existing host configs
+     * keep search without any change. Set `false` to opt out entirely —
+     * the palette, its shortcuts, and the HUD buttons all disappear and
+     * the search index is never built.
+     */
+    search?: boolean;
   };
   branding?: BrandingConfig;
   providers?: ExternalProviderConfig[];
+  /**
+   * Person-node derivation settings (#235).
+   *
+   * Controls whether and how work-derived person nodes are materialized from
+   * GitHub activity. Person nodes appear for every GitHub login that is an
+   * author or assignee on at least `minActiveItems` open issues or PRs.
+   * Set `minActiveItems` to a higher value to exclude drive-by contributors.
+   */
+  people?: {
+    /**
+     * Minimum number of active (open) items a GitHub login must appear on
+     * (as author or assignee) before a person node is materialized.
+     * Default: 1.
+     */
+    minActiveItems?: number;
+  };
+  /**
+   * Landing-mode configuration (#238).
+   *
+   * Controls the initial view and HUD state when the user arrives at `/` with
+   * no deep-link hash. Deep links (`#/node/x`, `#/overview`) are always
+   * honored unchanged. localStorage user preferences win after first
+   * interaction (e.g. once the user expands the HUD, that choice persists).
+   *
+   * All three sub-fields are optional and additive — omit the block entirely
+   * to keep the current behavior (redirects to `/node/home`, HUD expanded).
+   */
+  landing?: {
+    /**
+     * Which view to land on:
+     * - `'reading'` — a content node in the normal ReadingView (use `node` to
+     *    pick which one; defaults to the `readme` content node, NOT the
+     *    graph-first HomePage).
+     * - `'overview'` — the card-grid overview (`/overview`).
+     * - `'graph'` — the graph-first HomePage (current default; navigates to
+     *    `/node/home` with the HUD expanded so the graph is immediately
+     *    visible).
+     * Unset is equivalent to `'graph'`.
+     */
+    view?: 'reading' | 'overview' | 'graph';
+    /**
+     * Node ID to land on for `'reading'` and `'graph'`. Ignored for
+     * `'overview'`. The default differs by view because `/node/home` is the
+     * special graph-first HomePage route: `'reading'` defaults to `'readme'`
+     * (a content node), `'graph'` defaults to `'home'` (the HomePage).
+     */
+    node?: string;
+    /**
+     * Initial HUD state for the constellation graph panel:
+     * - `'collapsed'` — HUD starts collapsed to its rail; one click expands.
+     * - `'expanded'` — HUD starts fully expanded (current default).
+     * Only applies when the user has **no** stored `kbe-hud-collapsed`
+     * preference in localStorage — user choice always wins after first
+     * interaction.
+     */
+    graph?: 'collapsed' | 'expanded';
+  };
   bluf?: {
     audio?: string;
     quote?: string;
@@ -1056,6 +1139,7 @@ export const DEFAULT_CONFIG: KBConfig = {
     docs: { name: 'Documentation', color: '#D4A050' },
     'pull-request': { name: 'Pull Request', color: '#A86FDF' },
     commits: { name: 'Commits', color: '#5A98A8' },
+    releases: { name: 'Releases', color: '#F78166' },
   },
   visuals: {
     mode: 'emoji',
@@ -1091,6 +1175,7 @@ export const DEFAULT_CONFIG: KBConfig = {
     readingTools: true,
     keyboardNav: true,
     sparkAnimation: false,
+    search: true,
   },
   // branding omitted by default — host repos may set branding.logo (a repo-relative
   // image path) to render a logo on the HomePage hero and HUD header, and
