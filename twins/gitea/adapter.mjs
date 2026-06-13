@@ -72,6 +72,9 @@ export function parseRoute(pathname) {
   if ((m = pathname.match(/^\/repos\/([^/]+)\/([^/]+)\/commits\/?$/))) {
     return { kind: 'commits', owner: m[1], repo: m[2] };
   }
+  if ((m = pathname.match(/^\/repos\/([^/]+)\/([^/]+)\/releases\/?$/))) {
+    return { kind: 'releases', owner: m[1], repo: m[2] };
+  }
   return null;
 }
 
@@ -89,6 +92,8 @@ export function translatePath(route) {
       return `${base}/pulls`;
     case 'commits':
       return `${base}/commits`;
+    case 'releases':
+      return `${base}/releases`;
     default:
       return base;
   }
@@ -106,6 +111,27 @@ export function normalizeIssue(issue) {
     ...issue,
     assignees: Array.isArray(issue.assignees) ? issue.assignees : [],
     labels: Array.isArray(issue.labels) ? issue.labels : [],
+  };
+}
+
+/**
+ * Normalise a Gitea release object to the GitHub Releases API shape.
+ *
+ * Key differences:
+ * - Gitea uses `created_at` for the publication timestamp; GitHub uses `published_at`.
+ *   The app reads `published_at` (GHRelease type), so we map it here.
+ * - Gitea's `is_draft` / `is_prerelease` booleans correspond to GitHub's `draft` / `prerelease`.
+ * - `tag_name`, `name`, `body`, and `html_url` are structurally identical.
+ */
+export function normalizeRelease(r) {
+  return {
+    tag_name: r.tag_name ?? '',
+    name: r.name ?? r.tag_name ?? '',
+    body: r.body ?? '',
+    html_url: r.html_url ?? '',
+    published_at: r.published_at ?? r.created_at ?? '',
+    prerelease: Boolean(r.prerelease ?? r.is_prerelease),
+    draft: Boolean(r.draft ?? r.is_draft),
   };
 }
 
@@ -260,6 +286,26 @@ export function createGiteaHandler(opts = {}) {
         if (!r.ok) { ghError(res, r.status, 'Gitea contents error'); return true; }
         const data = await r.json();
         notModifiedOr(res, req, JSON.stringify(data));
+        return true;
+      }
+
+      // Releases: aggregate, normalise to GitHub shape (filter drafts, newest-first).
+      if (route.kind === 'releases') {
+        const upstream = translatePath(route);
+        const agg = await giteaGetAll(upstream, new URLSearchParams());
+        if (!agg.ok) { ghError(res, agg.status, 'Gitea releases error'); return true; }
+        const inParams = new URLSearchParams(search ?? '');
+        const perPage = Number(inParams.get('per_page') ?? 30);
+        const page = Number(inParams.get('page') ?? 1);
+        const allReleases = agg.items
+          .map(normalizeRelease)
+          .filter(r => !r.draft)
+          .sort((a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime());
+        const { slice, hasNext } = paginate(allReleases, page, perPage);
+        const link = buildLinkHeader(selfBase, pathname, page, perPage, hasNext);
+        const extra = { 'X-Total-Count': String(allReleases.length) };
+        if (link) extra.Link = link;
+        notModifiedOr(res, req, JSON.stringify(slice), extra);
         return true;
       }
 
