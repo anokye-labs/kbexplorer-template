@@ -17,7 +17,7 @@ import type { KBGraph, KBConfig, KBNode, Cluster } from '../types';
 import { NodeVisual } from '../components/NodeVisual';
 import { clusterTokenStyle } from '../theme/clusterTokens';
 import { pageThemeStyle } from '../theme/pageTheme';
-import { buildThemeMap } from '../hooks/useTheme';
+import { buildThemeMap, isDarkTheme } from '../hooks/useTheme';
 import type { Theme as FluentTheme } from '@fluentui/react-components';
 import { HomePageWidgets } from '../components/HomePageWidgets';
 import { ConstellationHero } from '../components/ConstellationHero';
@@ -350,70 +350,86 @@ function humanizeEntityType(t: string): string {
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+/**
+ * Per-source-type colors for the source badge.
+ *
+ * Two palettes cover the full theme range:
+ *   dark  — existing GitHub-palette accents (light tones on dark BG).
+ *   light — darker, higher-contrast versions that meet WCAG AA on cream/white
+ *           (sepia ≈ #F5ECD7, light ≈ #FFFFFF).
+ *
+ * WCAG AA requires 4.5:1 contrast for normal text; Badge text at 11–12 px
+ * is "small text" so we target ≥ 4.5:1 on both bg extremes.
+ */
+const SOURCE_BADGE_COLORS: Record<string, { dark: string; light: string }> = {
+  issue:       { dark: '#d29922', light: '#7A5400' },
+  pull_request: { dark: '#56d364', light: '#1A6B2A' },
+  commit:      { dark: '#8b949e', light: '#4A5260' },
+  file:        { dark: '#9A8A78', light: '#5C4A38' },
+  authored:    { dark: '#58a6ff', light: '#0050A0' },
+  derived:     { dark: '#e8a854', light: '#7A4A00' },
+  readme:      { dark: '#58a6ff', light: '#0050A0' },
+  external:    { dark: '#79C0FF', light: '#0050A0' },
+  branch:      { dark: '#a78bfa', light: '#4A1F9A' },
+  workflow:    { dark: '#e3b341', light: '#7A5200' },
+  repository:  { dark: '#56d364', light: '#1A6B2A' },
+  section:     { dark: '#8b949e', light: '#4A5260' },
+  structured:  { dark: '#c0a3ff', light: '#4A1F9A' },
+};
+
 /** Describes where a node comes from — shown as a badge next to the cluster */
-function SourceBadge({ node, config }: { node: KBNode; config: KBConfig }) {
+function SourceBadge({ node, config, isDark }: { node: KBNode; config: KBConfig; isDark: boolean }) {
   const repo = `${config.source.owner}/${config.source.repo}`
   const s = node.source
 
   let label: string
-  let color: string
 
   switch (s.type) {
     case 'issue':
       label = `GitHub Issue · ${repo} #${s.number}`
-      color = '#d29922'
       break
     case 'pull_request':
       label = `GitHub PR · ${repo} #${s.number}`
-      color = '#56d364'
       break
     case 'commit':
       label = `GitHub Commits · ${repo}`
-      color = '#8b949e'
       break
     case 'file':
       label = `File · ${s.path}`
-      color = '#9A8A78'
       break
     case 'authored':
       label = `Authored · ${s.file.replace(/.*\//, '')}`
-      color = '#58a6ff'
       break
     case 'derived':
       label = `Derived Content`
-      color = '#e8a854'
       break
     case 'readme':
       label = `README · ${repo}`
-      color = '#58a6ff'
       break
     case 'external':
       label = `External · ${s.provider}`
-      color = '#79C0FF'
       break
     case 'branch':
       label = `Branch · ${s.name}${s.protected ? ' 🛡️' : ''}`
-      color = '#a78bfa'
       break
     case 'workflow':
       label = `Workflow · ${s.path.replace('.github/workflows/', '')}`
-      color = '#e3b341'
       break
     case 'repository':
       label = `Repository · ${s.owner}/${s.repo}`
-      color = '#56d364'
       break
     case 'section':
       label = 'Section'
-      color = '#8b949e'
       break
     case 'structured':
       label = `Entity · ${humanizeEntityType(s.entityType)}`
-      color = '#c0a3ff'
       break
     default:
       return null
   }
+
+  const palette = SOURCE_BADGE_COLORS[s.type];
+  const color = palette ? (isDark ? palette.dark : palette.light) : (isDark ? '#8b949e' : '#4A5260');
 
   return (
     <Badge
@@ -429,6 +445,11 @@ function SourceBadge({ node, config }: { node: KBNode; config: KBConfig }) {
 export function ReadingView({ graph, config, nodeId, theme }: ReadingViewProps) {
   const styles = useStyles();
   const node = graph.nodes.find(n => n.id === nodeId);
+
+  // Derive dark/light flag from the resolved Fluent theme so config themes
+  // (arbitrary key names) drive contrast decisions correctly — not just the
+  // built-in 'dark'/'light' mode strings.
+  const isDark = theme ? isDarkTheme(theme) : true;
 
   // Runtime theme map (built-ins + config themes) for resolving a node's
   // optional named per-page theme. Rebuilt only when config.theme changes.
@@ -546,15 +567,15 @@ export function ReadingView({ graph, config, nodeId, theme }: ReadingViewProps) 
         >
           <div className={styles.headerVisual}>
             {!showHero && (mode === 'sprites' && node.sprite) && (
-              <NodeVisual node={node} mode={mode} surface="header" source={source} clusterColor={cluster.color} />
+              <NodeVisual node={node} mode={mode} surface="header" source={source} clusterColor={cluster.color} isDark={isDark} />
             )}
             {!showHero && mode === 'emoji' && node.emoji && (
-              <NodeVisual node={node} mode="emoji" surface="header" source={source} clusterColor={cluster.color} />
+              <NodeVisual node={node} mode="emoji" surface="header" source={source} clusterColor={cluster.color} isDark={isDark} />
             )}
           </div>
           <div className={styles.clusterBadge} style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             <Badge appearance="tint" color="informative">{cluster.name}</Badge>
-            <SourceBadge node={node} config={config} />
+            <SourceBadge node={node} config={config} isDark={isDark} />
             {canEditSource(node) && <SourceEditor node={node} config={config} />}
           </div>
           <Title1>{node.title}</Title1>
@@ -577,7 +598,7 @@ export function ReadingView({ graph, config, nodeId, theme }: ReadingViewProps) 
                   <a key={child.id} href={`#/node/${encodeURIComponent(child.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Card appearance="subtle" size="small" style={{ marginBottom: 4 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
-                        <NodeVisual node={child} mode={config.visuals.mode} surface="hud-thumb" source={config.source} clusterColor={childCluster.color} />
+                        <NodeVisual node={child} mode={config.visuals.mode} surface="hud-thumb" source={config.source} clusterColor={childCluster.color} isDark={isDark} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <Body1Strong style={{ display: 'block' }}>{child.title}</Body1Strong>
                           {child.rawContent && (
@@ -616,7 +637,7 @@ export function ReadingView({ graph, config, nodeId, theme }: ReadingViewProps) 
                   <a key={t.id} href={`#/node/${encodeURIComponent(t.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Card appearance="subtle" size="small" style={{ marginBottom: 4 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalS }}>
-                        <NodeVisual node={t} mode={config.visuals.mode} surface="hud-thumb" source={config.source} clusterColor={targetCluster.color} />
+                        <NodeVisual node={t} mode={config.visuals.mode} surface="hud-thumb" source={config.source} clusterColor={targetCluster.color} isDark={isDark} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <Body1Strong style={{ display: 'block' }}>{t.title}</Body1Strong>
                           <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>{conn.description}</Caption1>
