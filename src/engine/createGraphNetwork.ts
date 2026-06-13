@@ -46,6 +46,8 @@ export interface BuildVisNodeOptions {
   showLabel?: boolean;
   flagDisconnected?: boolean;
   keyNodeIds?: Set<string>;
+  /** Minimum degree a node must have for its label to be painted at low zoom. */
+  labelDegreeThreshold?: number;
 }
 
 /**
@@ -71,7 +73,12 @@ export function buildVisNode(
   const baseSize = isKey ? minSize * 1.5 : minSize;
   const size = Math.min(baseSize + deg * step, isKey ? maxSize * 1.4 : maxSize);
   const color = options.clusterColorMap.get(node.cluster) ?? '#9A8A78';
-  const showLabel = options.showLabel ?? true;
+  // LOD: only show label when explicitly enabled AND the node is prominent enough.
+  // Key nodes and nodes above the degree threshold are always labelled.
+  // Other nodes suppress their label so the canvas isn't a wall of micro-text.
+  const labelDegThreshold = options.labelDegreeThreshold ?? 2;
+  const labelEligible = isKey || deg >= labelDegThreshold;
+  const showLabel = (options.showLabel ?? true) && labelEligible;
   const label = showLabel
     ? (node.title.length > maxLen ? node.title.substring(0, maxLen - 3) + '...' : node.title)
     : undefined;
@@ -152,11 +159,15 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   /** Resolve the visual style for an edge (relation-aware, data-driven). */
   const edgeStyle = (e: { type?: string; relation?: string }) => getEdgeStyle(e);
 
-  const baseSpringLength = 250;
+  const baseSpringLength = 220;
+  // Inferred edges (auto-created to anchor orphan nodes to cluster siblings)
+  // get a shorter spring so they don't scatter to the periphery (#252).
+  const inferredSpringLength = 120;
   const edgeData = graph.edges.map((e, i) => {
     const style = edgeStyle(e);
     const faded = effectiveEmphasis && !emphasizedIds.has(e.from) && !emphasizedIds.has(e.to);
     const nearFaded = effectiveEmphasis && !(emphasizedIds.has(e.from) && emphasizedIds.has(e.to));
+    const springBase = e.source === 'inferred' ? inferredSpringLength : baseSpringLength;
     return {
       id: `e${i}`,
       from: e.from,
@@ -169,7 +180,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       },
       width: faded ? 0.5 : style.width,
       dashes: faded ? false : style.dashes,
-      length: e.weight ? baseSpringLength / e.weight : baseSpringLength,
+      length: e.weight ? springBase / e.weight : springBase,
     };
   });
 
@@ -300,17 +311,23 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const network = new Network(container, { nodes, edges }, {
     nodes: {
       scaling: {
-        label: { enabled: true, min: 8, max: 14, drawThreshold: 5 },
+        // drawThreshold: minimum font-size px below which labels are suppressed.
+        // A higher value means labels only appear at closer zoom levels —
+        // preventing the wall-of-micro-text at default zoom (#252).
+        label: { enabled: true, min: 10, max: 16, drawThreshold: 8 },
       },
-      font: { vadjust: 45 },
+      font: { vadjust: 45, size: 13 },
     },
     physics: {
       solver: 'forceAtlas2Based',
       forceAtlas2Based: {
         gravitationalConstant: -120,
-        centralGravity: 0.01,
-        springLength: 200,
-        springConstant: 0.04,
+        // Higher centralGravity keeps the whole graph — including lightly-
+        // connected (orphan) nodes — pulled toward the centre, preventing
+        // them from drifting into a noisy ring at the periphery (#252).
+        centralGravity: 0.06,
+        springLength: 180,
+        springConstant: 0.05,
         damping: 0.6,
       },
       stabilization: { enabled: true, iterations: 500, updateInterval: 100 },
@@ -487,9 +504,9 @@ export function computeGraphPositions(
       solver: 'forceAtlas2Based',
       forceAtlas2Based: {
         gravitationalConstant: -120,
-        centralGravity: 0.01,
-        springLength: 200,
-        springConstant: 0.04,
+        centralGravity: 0.06,
+        springLength: 180,
+        springConstant: 0.05,
         damping: 0.6,
       },
       stabilization: { iterations: 150 },

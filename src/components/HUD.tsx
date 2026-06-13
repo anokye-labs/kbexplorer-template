@@ -5,7 +5,6 @@ import {
   Button,
   Slider,
   Card,
-  CardHeader,
   Body1Strong,
   Caption1,
   Caption2,
@@ -942,40 +941,41 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                 Showing {filteredGraph.nodes.length} of {trimResult.totalNodes} nodes
               </Caption2>
             )}
-            <Card size="small" style={{ position: 'absolute', bottom: 16, left: 16, zIndex: 10 }}>
-              <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
+            {/* Cluster + edge-type legend — read-only palette in the overlay.
+                Cluster collapse is managed in the sidebar (single source of
+                truth per #252); this panel is display-only so there's one
+                legend, not two. */}
+            <div style={{
+              position: 'absolute', bottom: 16, left: 16, zIndex: 10,
+              background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium,
+              border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '6px 10px',
+              fontSize: 12, lineHeight: '18px', opacity: 0.9,
+            }}>
               {activeClusters.map(c => {
                 const isCollapsed = collapsedClusters.has(c.id);
                 return (
-                  <div
-                    key={c.id}
-                    onClick={() => toggleClusterCollapse(c.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 12px', cursor: 'pointer', opacity: isCollapsed ? 0.5 : 1 }}
-                    title={isCollapsed ? `Expand ${c.name}` : `Collapse ${c.name}`}
-                  >
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0', opacity: isCollapsed ? 0.4 : 1 }}>
                     <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
-                    <Caption1 style={{ textDecoration: isCollapsed ? 'line-through' : 'none' }}>{c.name}</Caption1>
+                    <Caption1 style={{ color: tokens.colorNeutralForeground2, textDecoration: isCollapsed ? 'line-through' : 'none' }}>{c.name}</Caption1>
                   </div>
                 );
               })}
               {activeEdgeStyles.length > 0 && (
                 <>
-                  <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 12px' }} />
-                  {activeEdgeStyles.map(({ key, label, style: s }) => {
-                    return (
-                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 12px' }}>
-                        <svg width={18} height={8} style={{ flexShrink: 0 }}>
-                          <line x1={0} y1={4} x2={18} y2={4}
-                            stroke={s.color} strokeWidth={Math.max(s.width, 1.2)}
-                            strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
-                        </svg>
-                        <Caption1>{label}</Caption1>
-                      </div>
-                    );
-                  })}
+                  <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
+                  {activeEdgeStyles.map(({ key, label, style: s }) => (
+                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0' }}>
+                      <svg width={18} height={8} style={{ flexShrink: 0 }}>
+                        <line x1={0} y1={4} x2={18} y2={4}
+                          stroke={s.color} strokeWidth={Math.max(s.width, 1.2)}
+                          strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
+                      </svg>
+                      <Caption1 style={{ color: tokens.colorNeutralForeground2 }}>{label}</Caption1>
+                    </div>
+                  ))}
                 </>
               )}
-            </Card>
+            </div>
             {/* Zoom & Detail sliders */}
             <div style={{
               position: 'absolute', bottom: 16, right: 16, zIndex: 10,
@@ -1123,12 +1123,14 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                       {filteredGraph.nodes.length}/{trimResult.totalNodes} nodes
                     </Caption2>
                   )}
-                  {/* Legend overlay with background */}
+                  {/* Cluster legend — single source of truth for cluster colours and
+                      collapse toggles. This sidebar panel is the HUD cluster list;
+                      the fullscreen overlay no longer duplicates it (#252). */}
                   <div style={{
                     position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px',
                     background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium,
-                    border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '6px 8px',
-                    opacity: 0.9,
+                    border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '4px 8px',
+                    opacity: 0.9, maxWidth: 'calc(100% - 80px)',
                   }}>
                     {activeClusters.map(c => {
                       const isCollapsed = collapsedClusters.has(c.id);
@@ -1144,23 +1146,6 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                         </div>
                       );
                     })}
-                    {activeEdgeStyles.length > 0 && (
-                      <>
-                        <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
-                        {activeEdgeStyles.map(({ key, label, style: s }) => {
-                          return (
-                            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                              <svg width={14} height={7} style={{ flexShrink: 0 }}>
-                                <line x1={0} y1={3.5} x2={14} y2={3.5}
-                                  stroke={s.color} strokeWidth={Math.max(s.width, 1)}
-                                  strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
-                              </svg>
-                              <span style={{ color: tokens.colorNeutralForeground3 }}>{label}</span>
-                            </div>
-                          );
-                        })}
-                      </>
-                    )}
                   </div>
                   {/* Re-center the graph */}
                   <Button
