@@ -1,0 +1,7 @@
+"@type": priority
+id: p1
+name: P1 — Explorer Completeness
+description: >
+  Make KB Explorer the canonical lens for work-graph sensemaking: content-model
+  engine, source-edit affordance, search, and Fluid conversation rollup.
+rank: 1
