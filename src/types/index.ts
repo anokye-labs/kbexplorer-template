@@ -230,7 +230,11 @@ export type KnownRelation =
   // Work-graph organizational-layer relations (#233)
   | 'owns'
   | 'has-priority'
-  | 'tracked-in';
+  | 'tracked-in'
+  // Person-node active-work relations (#235)
+  | 'assigned-to'
+  | 'authored'
+  | 'member-of';
 
 /** Default weights per edge type — higher = tighter layout clustering */
 export const EDGE_TYPE_WEIGHTS: Record<KnownEdgeType, number> = {
@@ -279,6 +283,10 @@ export const RELATION_STYLES: Record<KnownRelation, EdgeTypeStyle> = {
   owns:             { color: '#4A9CC8', dashes: false,     width: 2,   label: 'Owns' },
   'has-priority':   { color: '#E8A838', dashes: [4, 3],    width: 1.8, label: 'Has priority' },
   'tracked-in':     { color: '#a371f7', dashes: [6, 3],    width: 1.5, label: 'Tracked in' },
+  // Person-node active-work relations (#235)
+  'assigned-to':    { color: '#56d364', dashes: false,     width: 1.8, label: 'Assigned to' },
+  'authored':       { color: '#79c0ff', dashes: [4, 3],    width: 1.5, label: 'Authored' },
+  'member-of':      { color: '#f0883e', dashes: false,     width: 1.8, label: 'Member of' },
 };
 
 const DEFAULT_RELATION_STYLE: EdgeTypeStyle = { color: '#79c0ff', dashes: [2, 2], width: 1.5, label: 'Related' };
@@ -500,7 +508,7 @@ export const BUILT_IN_VIEWS: GraphView[] = [
     color: '#d29922',
     resolve: (graph) => filterByPredicate(graph, n => {
       const t = n.source.type
-      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository'
+      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository' || t === 'person'
     }),
   },
   {
@@ -841,7 +849,14 @@ export type NodeSource =
    * requiring a bespoke `NodeSource` variant. `ref` optionally records the
    * upstream record id the node was mapped from.
    */
-  | { type: 'structured'; entityType: string; ref?: string };
+  | { type: 'structured'; entityType: string; ref?: string }
+  /**
+   * A person node derived from GitHub activity (author/assignee on active
+   * issues / PRs). When a content-model person descriptor matches (same
+   * alias/login), `linked` is set to true and the identity URN is reused
+   * from the descriptor rather than minted fresh.
+   */
+  | { type: 'person'; login: string; linked: boolean };
 
 /** Optional site branding assets (logo, favicon, etc.). All fields optional/additive. */
 export interface BrandingConfig {
@@ -1015,6 +1030,22 @@ export interface KBConfig {
   };
   branding?: BrandingConfig;
   providers?: ExternalProviderConfig[];
+  /**
+   * Person-node derivation settings (#235).
+   *
+   * Controls whether and how work-derived person nodes are materialized from
+   * GitHub activity. Person nodes appear for every GitHub login that is an
+   * author or assignee on at least `minActiveItems` open issues or PRs.
+   * Set `minActiveItems` to a higher value to exclude drive-by contributors.
+   */
+  people?: {
+    /**
+     * Minimum number of active (open) items a GitHub login must appear on
+     * (as author or assignee) before a person node is materialized.
+     * Default: 1.
+     */
+    minActiveItems?: number;
+  };
   bluf?: {
     audio?: string;
     quote?: string;

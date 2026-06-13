@@ -123,6 +123,8 @@ export interface GHIssue {
   state: string;
   labels: Array<{ name: string; color: string }>;
   assignees: Array<{ login: string }>;
+  /** The GitHub user who opened the issue (author). */
+  user?: { login: string };
   html_url: string;
   created_at: string;
   updated_at: string;

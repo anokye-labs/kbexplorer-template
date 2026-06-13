@@ -13,11 +13,34 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 /**
- * Bespoke viewer for `person` entities (F2 / T2.5 — #164).
+ * A navigable link to a graph node (issue or PR).
+ * Uses an anchor styled like an in-graph reference — clicking opens that
+ * node's reading page without leaving the app.
+ */
+function NodeLink({ to, label }: { to: string; label: string }) {
+  return (
+    <a
+      className="kb-person-work-link kb-structured-link"
+      href={`#${to}`}
+      data-node-id={to}
+    >
+      {label}
+    </a>
+  );
+}
+
+/**
+ * Bespoke viewer for `person` entities (F2 / T2.5 — #164; extended #235).
  *
- * Renders the spine person fields — name, role, alias handle, reporting line and
- * knowledge areas — with the email exposed as a `mailto:` link. className-styled
- * (no pixel sizing, SSR-safe) so it renders identically in tests and the app.
+ * Renders the spine person fields — name, role, alias handle, reporting line
+ * and knowledge areas — with the email exposed as a `mailto:` link.
+ *
+ * When the node carries `data.login` (i.e. it is a work-derived person node
+ * or a descriptor that has been linked to GitHub activity) an "Active work"
+ * section lists all assigned/authored open issues and PRs as navigable links.
+ *
+ * className-styled (no pixel sizing, SSR-safe) so it renders identically in
+ * tests and the app.
  */
 export function PersonView({ node }: ViewerProps) {
   const d = (node.data ?? {}) as Record<string, unknown>;
@@ -30,6 +53,16 @@ export function PersonView({ node }: ViewerProps) {
   const areas = Array.isArray(d.knowledgeAreas) ? (d.knowledgeAreas as unknown[]) : [];
   const native = nativeTypeOf(node);
 
+  // Work-derived active items (present on work-derived person nodes; #235)
+  const activeIssues = Array.isArray(d.activeIssues)
+    ? (d.activeIssues as Array<{ number: number; title: string }>)
+    : [];
+  const activePRs = Array.isArray(d.activePRs)
+    ? (d.activePRs as Array<{ number: number; title: string }>)
+    : [];
+  const login = d.login as string | undefined;
+  const hasActiveWork = activeIssues.length > 0 || activePRs.length > 0;
+
   return (
     <div className="kb-structured-view kb-person-view">
       <EntityHeader label="Person" id={node.jsonld?.['@id'] as string | undefined} native={native} />
@@ -37,7 +70,9 @@ export function PersonView({ node }: ViewerProps) {
       {role && <p className="kb-person-role">{role}</p>}
       <table className="kb-structured-table">
         <tbody>
-          {alias && <Row label="Alias"><code className="kb-structured-code">@{alias}</code></Row>}
+          {(alias ?? login) && (
+            <Row label="GitHub"><code className="kb-structured-code">@{alias ?? login}</code></Row>
+          )}
           {team && <Row label="Team">{team}</Row>}
           {manager && <Row label="Reports to">{manager}</Row>}
           {email && (
@@ -54,6 +89,36 @@ export function PersonView({ node }: ViewerProps) {
           )}
         </tbody>
       </table>
+
+      {hasActiveWork && (
+        <section className="kb-person-active-work">
+          <h3 className="kb-person-active-work-heading">Active work</h3>
+          {activeIssues.length > 0 && (
+            <>
+              <h4 className="kb-person-active-work-subheading">Issues</h4>
+              <ul className="kb-person-work-list">
+                {activeIssues.map(i => (
+                  <li key={i.number}>
+                    <NodeLink to={`issue-${i.number}`} label={`#${i.number}: ${i.title}`} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {activePRs.length > 0 && (
+            <>
+              <h4 className="kb-person-active-work-subheading">Pull Requests</h4>
+              <ul className="kb-person-work-list">
+                {activePRs.map(p => (
+                  <li key={p.number}>
+                    <NodeLink to={`pr-${p.number}`} label={`#${p.number}: ${p.title}`} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
     </div>
   );
 }
