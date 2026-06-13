@@ -3,7 +3,7 @@
 This document is the canonical map of the entire testing system for the
 kbexplorer project. It covers both the template app
 (`anokye-labs/kbexplorer-template`) and the CLI
-(`anokye-labs/kbexplorer`). Read this first; then follow the cross-links
+(`anokye-labs/kbexplorer-cli`). Read this first; then follow the cross-links
 below for deeper detail on each subsystem.
 
 ---
@@ -25,7 +25,7 @@ layer is additive and opt-in above the fast PR gate.
                    │     visual-regression.yml         │  (pixelmatch baseline diff)
                    └───────────────────────────────────┘
                   ┌─────────────────────────────────────┐
-                  │  4. Full-loop scenario              │  nightly (inside dtu-gitea.yml)
+                  │  4. Full-loop scenario              │  manual / local (not yet in nightly CI)
                   │     playwright.full-loop.config.ts  │  actor → regen → render → verify
                   └─────────────────────────────────────┘
                  ┌───────────────────────────────────────┐
@@ -228,8 +228,11 @@ App port: 4318 (`FULL_LOOP_APP_PORT`). The `globalSetup`
 (`e2e/full-loop/global-setup.mts`) handles the mutable-twin setup and manifest
 regen before specs run.
 
-**Where it runs:** Nightly (scheduled via `dtu-gitea.yml`; the same job that
-runs layer 3 can also drive the full-loop config). Run manually with:
+**Where it runs:** Manual / local only. As of this writing **no scheduled
+workflow invokes the full-loop config** — `dtu-gitea.yml` (the nightly DTU job)
+runs only `npm run test:e2e:gitea` (layer 3). Wiring the full-loop into a
+nightly job (or extending `dtu-gitea.yml` to also run it) is tracked separately.
+Run it manually with:
 
 ```bash
 npm run test:e2e:full-loop
@@ -364,7 +367,7 @@ deliberately kept off the fast PR gate.
 
 | Workflow | File | Trigger | What it runs |
 |----------|------|---------|--------------|
-| Deploy to GitHub Pages | `github-pages.yml` | push `main`, PR→`main`, `workflow_dispatch` | unit tests (vitest) → manifest gen → graph validate + drift + quality gate → e2e static-twin (Playwright, layer 2) → build → Pages deploy (push only) |
+| Deploy to GitHub Pages | `github-pages.yml` | push `main`, PR→`main`, `workflow_dispatch` | unit tests (vitest) → manifest gen → graph validate + drift + quality gate → build → e2e static-twin (Playwright, layer 2) → Pages deploy (push only) |
 | dependency-review | `dependency-review.yml` | PR (opened / sync / reopened / ready) | `actions/dependency-review-action@v4` (skipped on private repos) |
 | pr-title | `pr-title.yml` | PR (opened / edited / sync / reopened / ready) | validates PR title not empty / not WIP / not draft |
 | linked-issue | `linked-issue.yml` | PR (all states including labeled) | requires issue reference in title or body (bots exempt) |
@@ -372,7 +375,7 @@ deliberately kept off the fast PR gate.
 | Visual Regression | `visual-regression.yml` | `workflow_dispatch` (`update_baselines` input), nightly **05:15 UTC** | manifest gen → build → `capture:review` → `verify:visual` (layer 5) → upload screenshots / diffs / baselines |
 | Exploratory-agent harness | `explore-dtu.yml` | `workflow_dispatch` (`skip_app`, `write_brief` inputs), nightly **06:00 UTC** | Podman+Gitea bringup → `node scripts/explore-dtu.mjs` (5-min cap) → upload `session-brief.json` → `dtu:down` (layer 6) |
 
-### `anokye-labs/kbexplorer` (CLI) workflows
+### `anokye-labs/kbexplorer-cli` workflows
 
 | Workflow | File | Trigger | What it runs |
 |----------|------|---------|--------------|
@@ -394,13 +397,8 @@ deliberately kept off the fast PR gate.
 | Exploratory-agent harness | **No** | N/A | Stages a live DTU + emits brief; no deterministic pass/fail signal |
 
 The CLI has **no PR-gate CI** beyond the four housekeeping checks above; unit
-tests only run as part of the publish pipeline. There is no equivalent of the
-template's `github-pages.yml` for the CLI.
-
-**Discrepancy to flag for review:** The CLI's `publish.yml` references
-`actions/checkout@v6` and `actions/setup-node@v6`, which do not exist (latest
-major versions are `@v4`). This is a latent bug that will fail on the next
-`v*` tag push.
+tests only run as part of the publish pipeline (on `v*` tag push). There is no
+equivalent of the template's `github-pages.yml` for the CLI.
 
 ---
 
