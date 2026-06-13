@@ -7,6 +7,10 @@
  * Also covers: Ctrl-K shortcut, HUD search button, Esc to close.
  */
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import YAML from 'yaml';
 
 /** Wait until the app has finished loading (loading screen gone, HUD visible). */
 async function waitForApp(page: import('@playwright/test').Page): Promise<void> {
@@ -116,5 +120,72 @@ test.describe('Search palette', () => {
       await page.keyboard.press('ArrowDown');
       await expect(page.locator('[id="search-result-1"][aria-selected="true"]')).toBeVisible();
     }
+  });
+});
+
+test.describe('Search feature flag (features.search: false)', () => {
+  const manifestPath = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../src/generated/repo-manifest.json',
+  );
+
+  /** The committed manifest with its configRaw patched to opt out of search. */
+  function patchedManifest(): { manifest: Record<string, unknown>; configRaw: string } {
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as Record<string, unknown>;
+    const config = (manifest.configRaw ? YAML.parse(manifest.configRaw as string) : null) ?? {};
+    config.features = { ...(config.features ?? {}), search: false };
+    const configRaw = YAML.stringify(config);
+    manifest.configRaw = configRaw;
+    return { manifest, configRaw };
+  }
+
+  test.beforeEach(async ({ page }) => {
+    const { manifest, configRaw } = patchedManifest();
+
+    // Local-mode builds (CI) ship the manifest as its own lazy JS chunk —
+    // serve a copy whose configRaw opts out of search.
+    await page.route('**/assets/repo-manifest-*.js', route => {
+      void route.fulfill({
+        status: 200,
+        contentType: 'application/javascript',
+        body: `export default ${JSON.stringify(manifest)};`,
+      });
+    });
+
+    // Remote-mode builds fetch config.yaml through the GitHub contents API —
+    // serve the same opted-out config in the API's base64 envelope.
+    await page.route('**/contents/**config.yaml*', route => {
+      void route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          content: Buffer.from(configRaw).toString('base64'),
+          sha: 'e2e-search-flag-off',
+          encoding: 'base64',
+        }),
+      });
+    });
+
+    await page.goto('/#/node/readme', { timeout: 60000 });
+    // App-ready signal that doesn't depend on search: the HUD Cards button.
+    await expect(page.getByRole('button', { name: 'Cards' })).toBeVisible({ timeout: 45000 });
+  });
+
+  test('HUD search buttons are hidden', async ({ page }) => {
+    await expect(page.getByTestId('hud-search-button')).toHaveCount(0);
+    await expect(page.getByTestId('hud-search-button-sidebar')).toHaveCount(0);
+  });
+
+  test('Ctrl-K does not open the palette', async ({ page }) => {
+    await page.keyboard.press('Control+k');
+    await page.waitForTimeout(500);
+    await expect(page.getByTestId('search-dialog')).toHaveCount(0);
+  });
+
+  test('/ does not open the palette', async ({ page }) => {
+    await page.locator('body').click({ position: { x: 200, y: 300 } });
+    await page.keyboard.press('/');
+    await page.waitForTimeout(500);
+    await expect(page.getByTestId('search-dialog')).toHaveCount(0);
   });
 });

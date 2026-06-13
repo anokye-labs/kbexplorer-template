@@ -1199,16 +1199,22 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                     >
                       Cards
                     </Button>
-                    <Button
-                      appearance="subtle"
-                      size="small"
-                      icon={<SearchRegular />}
-                      onClick={onOpenSearch}
-                      title="Search (Ctrl-K or /)"
-                      aria-label="Open search"
-                      data-testid="hud-search-button-sidebar"
-                      style={{ marginRight: 'auto' }}
-                    />
+                    {onOpenSearch ? (
+                      <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<SearchRegular />}
+                        onClick={onOpenSearch}
+                        title="Search (Ctrl-K or /)"
+                        aria-label="Open search"
+                        data-testid="hud-search-button-sidebar"
+                        style={{ marginRight: 'auto' }}
+                      />
+                    ) : (
+                      // Flex spacer standing in for the search button's
+                      // marginRight: auto, keeping the caption right-aligned.
+                      <span style={{ marginRight: 'auto' }} />
+                    )}
                     <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
                       Connections
                     </Caption2>
@@ -1338,17 +1344,19 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                 >
                   Cards
                 </Button>
-                <Button
-                  appearance="outline"
-                  size="small"
-                  icon={<SearchRegular />}
-                  onClick={onOpenSearch}
-                  title="Search (Ctrl-K or /)"
-                  aria-label="Open search"
-                  data-testid="hud-search-button"
-                >
-                  Search
-                </Button>
+                {onOpenSearch && (
+                  <Button
+                    appearance="outline"
+                    size="small"
+                    icon={<SearchRegular />}
+                    onClick={onOpenSearch}
+                    title="Search (Ctrl-K or /)"
+                    aria-label="Open search"
+                    data-testid="hud-search-button"
+                  >
+                    Search
+                  </Button>
+                )}
                 <Button
                   appearance="subtle"
                   size="small"

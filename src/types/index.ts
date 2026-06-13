@@ -1004,6 +1004,14 @@ export interface KBConfig {
     readingTools: boolean;
     keyboardNav: boolean;
     sparkAnimation: boolean;
+    /**
+     * Show the search palette (Ctrl-K / `/`) and the HUD search buttons.
+     * Optional and additive: unset means enabled, so existing host configs
+     * keep search without any change. Set `false` to opt out entirely —
+     * the palette, its shortcuts, and the HUD buttons all disappear and
+     * the search index is never built.
+     */
+    search?: boolean;
   };
   branding?: BrandingConfig;
   providers?: ExternalProviderConfig[];
@@ -1083,6 +1091,7 @@ export const DEFAULT_CONFIG: KBConfig = {
     readingTools: true,
     keyboardNav: true,
     sparkAnimation: false,
+    search: true,
   },
   // branding omitted by default — host repos may set branding.logo (a repo-relative
   // image path) to render a logo on the HomePage hero and HUD header, and

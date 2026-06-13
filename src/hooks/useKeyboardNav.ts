@@ -15,10 +15,12 @@ export function useKeyboardNav(
 ): void {
   useEffect(() => {
     function handler(e: KeyboardEvent) {
-      // Ctrl-K: open search palette (fires even inside inputs — mirrors VS Code behaviour)
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      // Ctrl-K: open search palette (fires even inside inputs — mirrors VS Code
+      // behaviour). When search is disabled (no onOpenSearch), let the browser
+      // keep its default Ctrl-K behaviour instead of swallowing the key.
+      if (onOpenSearch && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        onOpenSearch?.();
+        onOpenSearch();
         return;
       }
 
@@ -28,8 +30,9 @@ export function useKeyboardNav(
 
       switch (e.key) {
         case '/': {
+          if (!onOpenSearch) break;
           e.preventDefault();
-          onOpenSearch?.();
+          onOpenSearch();
           break;
         }
         case 't': {

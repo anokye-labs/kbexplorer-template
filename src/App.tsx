@@ -75,6 +75,11 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
   });
 
   // ── Search palette ─────────────────────────────────────────
+  // Host repos can opt out via `features.search: false` in config.yaml.
+  // Unset means enabled (the flag is optional/additive), and loadConfig's
+  // shallow merge means a host `features:` block without `search` still
+  // resolves to undefined here — so check `!== false`, not truthiness.
+  const searchEnabled = state.status !== 'ready' || state.config.features?.search !== false;
   const [searchOpen, setSearchOpen] = useState(false);
 
   const openSearch = useCallback(() => setSearchOpen(true), []);
@@ -85,13 +90,13 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
   }, [navigate]);
 
   const searchIndex = useSearchIndex(
-    state.status === 'ready' ? state.graph.nodes : []
+    state.status === 'ready' && searchEnabled ? state.graph.nodes : []
   );
 
   useKeyboardNav(
     state.status === 'ready' ? state.graph : null,
     cycleTheme,
-    openSearch,
+    searchEnabled ? openSearch : undefined,
   );
 
   useThemeFonts(state.status === 'ready' ? state.config.theme.font : undefined);
@@ -133,9 +138,9 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
           onThemeChange={setThemeMode}
           onCollapsedChange={setHudCollapsed}
           onDockChange={setHudDock}
-          onOpenSearch={openSearch}
+          onOpenSearch={searchEnabled ? openSearch : undefined}
         />
-      {searchOpen && (
+      {searchEnabled && searchOpen && (
         <SearchPalette
           index={searchIndex}
           onClose={closeSearch}
