@@ -136,7 +136,7 @@ The builder derives four edge types from the descriptor fields. These are FK edg
 1. **id resolution (scalar/array FK):** The engine looks up the target entity by its `id` field in the `(kind, id)` index.
 2. **alias resolution (alias FK):** For `team.lead`, the engine looks up `person` by `alias`. If not found it falls back to `id`.
 3. **Dangling references:** Any reference that cannot be resolved (no matching `id`/`alias` in scope) creates a **stub node** (`data.unresolved = true`) and pushes a `warn`-level diagnostic with code `unresolved-ref`. The graph stays connected; the validator reports every dangling ref. This is the same behavior as existing spine FK edges.
-4. **Inline systems-of-record:** Inline `{ id, name, url }` entries on a workstream do NOT produce separate nodes. Only standalone `system-of-record` files in `systems-of-record/` become nodes and receive `tracked-in` edges.
+4. **Inline systems-of-record:** Array entries may be id strings (canonical) or objects carrying a string `id` (e.g. `{ id: ado-board, name: ..., url: ... }`) — object entries resolve via their `id` exactly like strings, and the extra fields are ignored for edge purposes. An object entry without a string `id` produces a `bad-ref-shape` diagnostic and no edge. Only standalone `system-of-record` files become nodes; unresolved ids become stub nodes per rule 3.
 5. **Cross-org:** Team and workstream descriptors are org-scoped. Files stored flat under `teams/<id>.yaml` belong to the default org; files under `teams/<other-org>/<id>.yaml` belong to that org.
 
 ---
@@ -152,6 +152,7 @@ The graph-validation gate surfaces actionable errors for:
 | `missing-id` | warn | `Entity has no id` |
 | `missing-type` | warn | `Entity has no @type` |
 | `unknown-prefix` | error | `No URN base in context for kind "<kind>"` |
+| `bad-ref-shape` | warn | `FK "<rule>" entry is an object without a string "id"` |
 
 All codes are stable machine keys, suitable for CI filtering.
 

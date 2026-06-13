@@ -257,3 +257,67 @@ describe('work-graph vocabulary — org-scoping (#233)', () => {
     expect(SOR).not.toContain('/personalization/');
   });
 });
+
+describe('work-graph vocabulary — inline object FK entries (#233 review)', () => {
+  it('resolves an object systems-of-record entry via its string id', () => {
+    const src = withFiles({
+      'workstreams/obj-sor.yaml': [
+        '"@type": workstream',
+        'id: obj-sor',
+        'name: Object SoR WS',
+        'systems-of-record:',
+        '  - id: gh-issues',
+        '    name: GitHub Issues',
+        '    url: "https://example.com"',
+      ].join('\n'),
+    });
+    const g = buildContentModel(src);
+    const ws = 'kg://xbox.com/workstreams/personalization/obj-sor';
+    expect(g.edges.some(e => e.from === ws && e.to === SOR && e.relation === 'tracked-in')).toBe(true);
+    expect(g.nodes.some(n => n.id.includes('[object Object]'))).toBe(false);
+  });
+
+  it('diagnoses an object entry without a string id (bad-ref-shape) instead of a garbage stub', () => {
+    const src = withFiles({
+      'workstreams/bad-sor.yaml': [
+        '"@type": workstream',
+        'id: bad-sor',
+        'name: Bad SoR WS',
+        'systems-of-record:',
+        '  - name: No Id Here',
+        '    url: "https://example.com"',
+      ].join('\n'),
+    });
+    const g = buildContentModel(src);
+    expect(g.diagnostics.some(d => d.code === 'bad-ref-shape')).toBe(true);
+    expect(g.nodes.some(n => n.id.includes('[object Object]'))).toBe(false);
+  });
+});
+
+describe('work-graph vocabulary — team alias identity (#233 review)', () => {
+  it('teams are NOT addressable by their lead (no aliasField on team)', () => {
+    // Two teams sharing a lead must not collide in the alias index, and a
+    // scalar FK to a team must resolve by id only.
+    const src = withFiles({
+      'teams/second-team.yaml': [
+        '"@type": team',
+        'id: second-team',
+        'name: Second Team',
+        'lead: aokonkwo',
+      ].join('\n'),
+      'workstreams/by-lead.yaml': [
+        '"@type": workstream',
+        'id: by-lead',
+        'name: By Lead WS',
+        'team: aokonkwo',
+      ].join('\n'),
+    });
+    const g = buildContentModel(src);
+    const byLeadWs = 'kg://xbox.com/workstreams/personalization/by-lead';
+    const aliasTarget = 'kg://xbox.com/teams/personalization/aokonkwo';
+    // "aokonkwo" is not a team id → stub + unresolved-ref, NOT a silent hit on a team-by-lead alias
+    expect(g.nodes.find(n => n.id === aliasTarget)?.data?.unresolved).toBe(true);
+    expect(g.edges.some(e => e.from === byLeadWs && e.to === aliasTarget)).toBe(true);
+    expect(g.diagnostics.some(d => d.code === 'unresolved-ref' && d.ref === aliasTarget)).toBe(true);
+  });
+});
