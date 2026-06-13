@@ -8,6 +8,10 @@ function manifestPlugin(): Plugin {
     name: 'kbexplorer-manifest',
     buildStart() {
       if (process.env.VITE_KB_LOCAL !== 'true') return;
+      // VITE_KB_SKIP_REGEN=1 lets a pre-generated manifest (e.g. from the
+      // full-loop globalSetup via the CLI's DTU-aware generator) survive Vite's
+      // buildStart without being overwritten by the local gh-CLI script.
+      if (process.env.VITE_KB_SKIP_REGEN === '1') return;
       try {
         execSync('node scripts/generate-manifest.js', { stdio: 'inherit' });
       } catch (err) {
