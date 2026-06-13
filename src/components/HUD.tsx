@@ -14,6 +14,9 @@ import {
   MenuPopover,
   MenuList,
   MenuItemRadio,
+  Popover,
+  PopoverTrigger,
+  PopoverSurface,
 } from '@fluentui/react-components';
 import {
   ChevronLeftRegular,
@@ -34,6 +37,7 @@ import {
   PanelRightRegular,
   PanelTopExpandRegular,
   SearchRegular,
+  MoreHorizontalRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode } from '../types';
 import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
@@ -299,6 +303,32 @@ const useStyles= makeStyles({
     alignItems: 'center',
     gap: tokens.spacingHorizontalXS,
   },
+  // Mobile-only rail: single row shown when the HUD is in bottom/top dock
+  // and the viewport is ≤480px wide (covers 390px standard mobile width).
+  mobileRail: {
+    display: 'flex',
+    alignItems: 'center',
+    flex: 1,
+    padding: `0 ${tokens.spacingHorizontalS}`,
+    gap: tokens.spacingHorizontalXS,
+    minHeight: 0,
+    minWidth: 0,
+  },
+  mobileNodeTitle: {
+    flex: 1,
+    minWidth: 0,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  // Popover surface for the mobile tools disclosure
+  mobileToolsPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+    padding: tokens.spacingHorizontalM,
+    minWidth: '200px',
+  },
 });
 
 const THEME_LABELS: Record<string, string> = { dark: 'Dark', light: 'Light', sepia: 'Sepia' };
@@ -372,6 +402,19 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
   const [dock, setDock] = useState<DockPosition>(() =>
     readPersistedString('kbe-hud-dock', 'bottom') as DockPosition,
   );
+
+  // Track whether the viewport is narrow (≤480 px) for mobile reflow (#249).
+  // We use a ResizeObserver on document.documentElement rather than a CSS
+  // media query so the HUD reacts dynamically to viewport changes (e.g. DevTools
+  // responsive mode) without requiring a page reload.
+  const [isNarrow, setIsNarrow] = useState(() => {
+    try { return window.innerWidth <= 480; } catch { return false; }
+  });
+  useEffect(() => {
+    const update = () => setIsNarrow(window.innerWidth <= 480);
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const handleCollapse = useCallback((value: boolean) => {
     setCollapsed(value);
@@ -1329,8 +1372,127 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
               </>
             ) : (
               /* ── Horizontal layout (top/bottom dock) ── */
+              /* On narrow viewports (≤480 px, #249) we render a single compact
+                 rail instead of the three-column desktop layout. All reading
+                 tools move into a Popover ("⋯") so nothing overflows or overlaps
+                 the node-title bar.  On wide viewports the original three-column
+                 layout is preserved unchanged. */
+              <React.Fragment>{isNarrow ? (
+                /* ── Mobile rail (#249) ── */
+                <div className={styles.mobileRail}>
+                  {/* Prev/Next */}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<ChevronLeftRegular />}
+                    onClick={goPrev}
+                    disabled={!currentNode}
+                    title="Previous node (←)"
+                    style={{ minWidth: 40, minHeight: 40 }}
+                  />
+                  {/* Current node title */}
+                  <div className={styles.mobileNodeTitle}>
+                    {currentNode ? (
+                      <Body1Strong className={styles.mobileNodeTitle}>{currentNode.title}</Body1Strong>
+                    ) : (
+                      <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                        {brandLogoUrl
+                          ? <img className={styles.brandLogo} src={brandLogoUrl} alt="" />
+                          : config.title}
+                      </Caption1>
+                    )}
+                  </div>
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<ChevronRightRegular />}
+                    onClick={goNext}
+                    disabled={!currentNode}
+                    title="Next node (→)"
+                    style={{ minWidth: 40, minHeight: 40 }}
+                  />
+                  {/* Shortcuts */}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<MapRegular />}
+                    onClick={() => setMapExpanded(true)}
+                    title="Open constellation"
+                    style={{ minWidth: 40, minHeight: 40 }}
+                    aria-label="Open constellation map"
+                  />
+                  {onOpenSearch && (
+                    <Button
+                      appearance="subtle"
+                      size="small"
+                      icon={<SearchRegular />}
+                      onClick={onOpenSearch}
+                      title="Search (Ctrl-K or /)"
+                      aria-label="Open search"
+                      data-testid="hud-search-button"
+                      style={{ minWidth: 40, minHeight: 40 }}
+                    />
+                  )}
+                  {/* ⋯ tools disclosure */}
+                  <Popover trapFocus>
+                    <PopoverTrigger disableButtonEnhancement>
+                      <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<MoreHorizontalRegular />}
+                        title="More options"
+                        aria-label="More reading options"
+                        style={{ minWidth: 40, minHeight: 40 }}
+                      />
+                    </PopoverTrigger>
+                    <PopoverSurface>
+                      <div className={styles.mobileToolsPanel}>
+                        <div className={styles.toolRow}>
+                          <Caption2 className={styles.toolLabel}>Theme</Caption2>
+                          {themeButtons}
+                        </div>
+                        <div className={styles.toolRow}>
+                          <Caption2 className={styles.toolLabel}>Dock</Caption2>
+                          <div className={styles.dockBtnGroup}>
+                            <Button appearance={dock === 'bottom' ? 'primary' : 'subtle'} size="small" icon={<PanelBottomRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" />
+                            <Button appearance="subtle" size="small" icon={<PanelLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" />
+                            <Button appearance="subtle" size="small" icon={<PanelRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" />
+                            <Button appearance={dock === 'top' ? 'primary' : 'subtle'} size="small" icon={<PanelTopExpandRegular />} onClick={() => handleDockChange('top')} title="Dock top" />
+                          </div>
+                        </div>
+                        {currentNode && (
+                          <>
+                            <div className={styles.toolRow}>
+                              <Caption2 className={styles.toolLabel}>Aa</Caption2>
+                              <Slider className={styles.slider} min={0} max={6} step={1} value={fontSize} onChange={(_e, data) => setFontSize(data.value)} title={`Font size: ${FONT_SIZES[fontSize]}rem`} />
+                            </div>
+                            <div className={styles.toolRow}>
+                              <Caption2 className={styles.toolLabel}>Width</Caption2>
+                              <Slider className={styles.slider} min={0} max={4} step={1} value={colWidth} onChange={(_e, data) => setColWidth(data.value)} title={`Column width: ${COL_WIDTHS[colWidth]}`} />
+                            </div>
+                          </>
+                        )}
+                        <Button
+                          appearance="outline"
+                          size="small"
+                          icon={<GridRegular />}
+                          onClick={() => { window.location.hash = '#/overview'; }}
+                        >
+                          Cards
+                        </Button>
+                      </div>
+                    </PopoverSurface>
+                  </Popover>
+                </div>
+              ) : (
+              /* ── Desktop three-column layout ── */
               <>
-              {/* Minimap panel */}
+              {/* Minimap panel — only rendered once positions are available (#251).
+                  An empty canvas with a "MAP" label is a placeholder that must not
+                  ship (BEAUTY.md principle 5). We mount the canvas element (off-
+                  screen, via canvasRef) so drawMinimap can still populate it; the
+                  panel is only shown once we have real position data. */}
+              {minimapPositions.size > 0 && (
               <div className={styles.panelLeft}>
                 <canvas
                   ref={canvasRef}
@@ -1340,6 +1502,17 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                 />
                 <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
               </div>
+              )}
+              {/* Hidden canvas used for minimap drawing while positions are loading.
+                  Removed from the layout (display:none) so it never shows as an
+                  empty box, but still mounted so the ref and drawMinimap work. */}
+              {minimapPositions.size === 0 && (
+                <canvas
+                  ref={canvasRef}
+                  style={{ display: 'none' }}
+                  aria-hidden="true"
+                />
+              )}
 
               {/* Center: Navigation */}
               <div className={styles.panelCenter}>
@@ -1514,6 +1687,9 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
             </div>
               </>
             )}
+            </React.Fragment>
+          )
+          }
           </div>
         )}
       </div>
