@@ -1057,6 +1057,47 @@ export interface KBConfig {
      */
     minActiveItems?: number;
   };
+  /**
+   * Landing-mode configuration (#238).
+   *
+   * Controls the initial view and HUD state when the user arrives at `/` with
+   * no deep-link hash. Deep links (`#/node/x`, `#/overview`) are always
+   * honored unchanged. localStorage user preferences win after first
+   * interaction (e.g. once the user expands the HUD, that choice persists).
+   *
+   * All three sub-fields are optional and additive — omit the block entirely
+   * to keep the current behavior (redirects to `/node/home`, HUD expanded).
+   */
+  landing?: {
+    /**
+     * Which view to land on:
+     * - `'reading'` — a content node in the normal ReadingView (use `node` to
+     *    pick which one; defaults to the `readme` content node, NOT the
+     *    graph-first HomePage).
+     * - `'overview'` — the card-grid overview (`/overview`).
+     * - `'graph'` — the graph-first HomePage (current default; navigates to
+     *    `/node/home` with the HUD expanded so the graph is immediately
+     *    visible).
+     * Unset is equivalent to `'graph'`.
+     */
+    view?: 'reading' | 'overview' | 'graph';
+    /**
+     * Node ID to land on for `'reading'` and `'graph'`. Ignored for
+     * `'overview'`. The default differs by view because `/node/home` is the
+     * special graph-first HomePage route: `'reading'` defaults to `'readme'`
+     * (a content node), `'graph'` defaults to `'home'` (the HomePage).
+     */
+    node?: string;
+    /**
+     * Initial HUD state for the constellation graph panel:
+     * - `'collapsed'` — HUD starts collapsed to its rail; one click expands.
+     * - `'expanded'` — HUD starts fully expanded (current default).
+     * Only applies when the user has **no** stored `kbe-hud-collapsed`
+     * preference in localStorage — user choice always wins after first
+     * interaction.
+     */
+    graph?: 'collapsed' | 'expanded';
+  };
   bluf?: {
     audio?: string;
     quote?: string;
