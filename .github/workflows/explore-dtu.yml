@@ -1,0 +1,110 @@
+name: Exploratory-agent harness — stage DTU + emit session brief
+
+# Opt-in / scheduled ONLY.
+#
+# This workflow is deliberately NOT part of the fast PR gate and NOT wired into
+# github-pages.yml.  It brings up a live Gitea DTU (Podman + container) and emits
+# a session brief that an external orchestrator can use to launch exploratory agent
+# sessions.  Those sessions probe the running DTU via actors, find gaps, and open
+# human-reviewed e2e/gitea/*.spec.ts PRs — they never auto-commit to main.
+#
+# BOUNDARY: this workflow stages the environment and emits the brief.  It does NOT
+# call any LLM or launch any agent session.  The orchestrator reads the brief from
+# the workflow artifact / job summary and launches sessions externally.
+#
+# See docs/exploratory-agent.md and twins/gitea/README.md for the full loop.
+on:
+  workflow_dispatch:
+    inputs:
+      skip_app:
+        description: 'Skip starting the Vite app (adapter-only staging)'
+        required: false
+        default: 'false'
+        type: boolean
+      write_brief:
+        description: 'Write .dtu/session-brief.json artifact'
+        required: false
+        default: 'true'
+        type: boolean
+  schedule:
+    # Weekly on Monday at 06:00 UTC — light enough to stay within free minutes.
+    - cron: '0 6 * * 1'
+
+concurrency:
+  group: explore-dtu-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  stage-dtu:
+    # ubuntu-latest ships Podman and runs OCI containers natively (no
+    # `podman machine` needed on Linux — bootstrap.mjs detects this).
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Harness ports: keep distinct from the nightly dtu-gitea run so
+      # both can coexist in the concurrency window if needed.
+      TWIN_PORT: '3456'
+      GITEA_HTTP_PORT: '3000'
+      EXPLORE_APP_PORT: '4319'
+      EXPLORE_WRITE_BRIEF: '1'      # always write the brief artifact in CI
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify Podman is available
+        run: podman --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Build the app so `vite preview` can serve it (faster and more stable
+      # than `vite dev` in CI — no HMR noise, deterministic port binding).
+      - name: Build app for preview
+        run: npx vite build
+        env:
+          VITE_KB_LOCAL: 'true'
+          # Placeholder coords — the harness re-injects the real twin coords at
+          # runtime via VITE_GH_API_BASE / VITE_KB_* env vars passed to `vite preview`.
+          VITE_KB_OWNER: 'anokye-labs'
+          VITE_KB_REPO: 'kbexplorer-template'
+          VITE_KB_BRANCH: 'main'
+
+      - name: Stage DTU + emit session brief
+        # The script brings up Gitea (dtu:up + dtu:seed), starts the adapter
+        # and app as background processes, waits for readiness, then prints the
+        # probing prompt and writes .dtu/session-brief.json.
+        #
+        # The process then blocks (waiting for Ctrl-C); we let the job timeout
+        # naturally after the brief is written and the summary updated.  The
+        # adapter + app will remain live for the remainder of the timeout window
+        # so that a human or an orchestrator could in principle connect — but
+        # typically the job ends after the summary step because there is no
+        # external consumer wired up yet.
+        #
+        # EXPLORE_NO_APP mirrors the workflow_dispatch input (defaults false).
+        run: |
+          EXPLORE_NO_APP=${{ inputs.skip_app == 'true' && '1' || '0' }} \
+            timeout 300 node scripts/explore-dtu.mjs || true
+        env:
+          EXPLORE_WRITE_BRIEF: '1'
+          GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
+
+      - name: Upload session brief artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: explore-dtu-brief-${{ github.run_id }}
+          path: .dtu/session-brief.json
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Tear down the twin
+        if: always()
+        run: npm run dtu:down || true

@@ -126,23 +126,46 @@ accumulate harmlessly against a warm twin.
 
 ## Exploratory-agent playbook
 
-The harness is built so the **orchestrator** can launch Copilot sessions that
-probe a *running* DTU and propose new repeatable specs.
+The harness is built so the **orchestrator** can launch agent sessions that
+probe a *running* DTU and propose new repeatable specs.  The playbook below is
+now **runnable** via `npm run explore:dtu` (see
+[`docs/exploratory-agent.md`](../../docs/exploratory-agent.md) for the full
+reference, including the CI workflow and session-brief format).
 
-1. **Bring the universe up once** (shared by all explorers):
-   `npm run dtu:up && npm run dtu:seed && npm run dtu:twin`, then start the app in
-   remote mode pointed at the adapter (see Quickstart).
-2. **Launch an exploratory session** with `create_session`, kicking it off with a
-   prompt like:
-   > "A live kbexplorer DTU is running: app at `http://localhost:4319`, GitHub→Gitea
-   > adapter at `http://localhost:3456`, Gitea at `http://localhost:3000`. Use the
-   > actors in `twins/gitea/actors/` (or `npm run dtu:tea --`) to mutate issues/PRs,
-   > then verify the app reflects each change on refresh. Probe edge cases
-   > (rapid edits, label churn, concurrent PRs, merge races). For any gap you find,
-   > **author a new `e2e/gitea/*.spec.ts`** that reproduces it and open a PR."
+### Quick start (manual)
+
+```bash
+npm run explore:dtu   # dtu:up + dtu:seed + adapter + app + probing prompt
+```
+
+The script blocks after printing the probing prompt, keeping the background
+servers alive. Press **Ctrl-C** to stop. Use `EXPLORE_SKIP_DTU=1` when the DTU
+is already running.
+
+### The loop
+
+1. **Bring the universe up** — `npm run explore:dtu` (or the scheduled
+   `.github/workflows/explore-dtu.yml`) stages the DTU and emits a
+   _session brief_ (probing prompt + endpoint URLs).
+2. **Launch an exploratory session** — the orchestrator reads the brief and
+   kicks off an agent session with a prompt like:
+   > "A live kbexplorer DTU is running: app at `http://localhost:4319`,
+   > GitHub→Gitea adapter at `http://localhost:3456`, Gitea at
+   > `http://localhost:3000`. Use the actors in `twins/gitea/actors/` (or
+   > `npm run dtu:tea --`) to mutate issues/PRs, then verify the app reflects
+   > each change on refresh. Probe edge cases (rapid edits, label churn,
+   > concurrent PRs, merge races). For any gap you find, **author a new
+   > `e2e/gitea/*.spec.ts`** that reproduces it and open a PR."
 3. **Findings → specs land via human-reviewed PRs.** Agent-authored specs are
-   never auto-committed to `main`; they go through normal review. Keep assertions
-   in the specs, never in the twin (the **holdout rule** — see `DTU.md`).
+   never auto-committed to `main`; they go through normal review. Keep
+   assertions in the specs, never in the twin (the **holdout rule** — see
+   `DTU.md`).
+
+### Boundary: harness vs. agent session
+
+`explore-dtu.mjs` **does not call any LLM**. It stages the environment and
+emits the brief; the orchestrator launches the agent session externally. This
+boundary is intentional — the harness is infrastructure, not an actor.
 
 ## Constraints honoured
 

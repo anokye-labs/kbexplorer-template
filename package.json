@@ -29,7 +29,8 @@
     "kb:dev": "kbexplorer dev",
     "kb:build": "kbexplorer build",
     "kb:generate": "kbexplorer generate",
-    "capture:review": "node scripts/capture-review.mjs"
+    "capture:review": "node scripts/capture-review.mjs",
+    "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.73.7",
