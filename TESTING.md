@@ -233,8 +233,9 @@ regen before specs run.
 **Where it runs:** Manual / local only. As of this writing **no scheduled
 workflow invokes the full-loop config** — `dtu-gitea.yml` (the nightly DTU job)
 runs only `npm run test:e2e:gitea` (layer 3). Wiring the full-loop into a
-nightly job (or extending `dtu-gitea.yml` to also run it) is tracked separately.
-Run it manually with:
+nightly job (or extending `dtu-gitea.yml` to also run it) is tracked in
+[#269](https://github.com/anokye-labs/kbexplorer-template/issues/269). Run it
+manually with:
 
 ```bash
 npm run test:e2e:full-loop
