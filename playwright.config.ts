@@ -2,11 +2,12 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  // The Gitea Digital Twin Universe specs live under e2e/gitea but require a live
-  // Podman-backed Gitea + bootstrapped .dtu/state.json. They run only via their
-  // dedicated playwright.gitea.config.ts (npm run test:e2e:gitea / nightly DTU
-  // workflow), so exclude them from this fast, dependency-free e2e gate.
-  testIgnore: '**/e2e/gitea/**',
+  // Opt-in suites with external dependencies are excluded from this fast,
+  // dependency-free e2e gate and run only via their dedicated configs:
+  //  - e2e/gitea/**     — live Podman Gitea + .dtu/state.json (playwright.gitea.config.ts)
+  //  - e2e/full-loop/** — its globalSetup writes .dtu/full-loop-state.json and
+  //                       needs the kbexplorer-cli sibling (playwright.full-loop.config.ts)
+  testIgnore: ['**/e2e/gitea/**', '**/e2e/full-loop/**'],
   fullyParallel: false,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
