@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { HashRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { HashRouter, Routes, Route, Navigate, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { FluentProvider, type Theme as FluentTheme } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme, isDarkTheme } from './hooks/useTheme';
@@ -11,6 +11,8 @@ import { resolveImageUrl } from './api';
 import { useKeyboardNav } from './hooks/useKeyboardNav';
 import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
+import { SearchPalette } from './components/SearchPalette';
+import { useSearchIndex } from './search/useSearchIndex';
 import { ReadingView } from './views/ReadingView';
 import { OverviewView } from './views/OverviewView';
 import { HomePage } from './views/HomePage';
@@ -34,6 +36,7 @@ function useCurrentNodeId(): string | null {
 function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, cycleTheme, availableThemes }: { themeMode: import('./hooks/useTheme').ThemeMode; fluentTheme: FluentTheme; isDark: boolean; setThemeMode: (t: import('./hooks/useTheme').ThemeMode) => void; applyConfig: (theme?: import('./types').KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => void; cycleTheme: () => void; availableThemes: import('./hooks/useTheme').ThemeMode[] }) {
   const state = useKnowledgeBase();
   const currentNodeId = useCurrentNodeId();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (state.status !== 'ready') return;
@@ -71,9 +74,29 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
     try { return (localStorage.getItem('kbe-hud-dock') ?? 'bottom') as DockPosition; } catch { return 'bottom'; }
   });
 
+  // ── Search palette ─────────────────────────────────────────
+  // Host repos can opt out via `features.search: false` in config.yaml.
+  // Unset means enabled (the flag is optional/additive), and loadConfig's
+  // shallow merge means a host `features:` block without `search` still
+  // resolves to undefined here — so check `!== false`, not truthiness.
+  const searchEnabled = state.status !== 'ready' || state.config.features?.search !== false;
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+
+  const handleSearchNavigate = useCallback((nodeId: string) => {
+    navigate(`/node/${encodeURIComponent(nodeId)}`);
+  }, [navigate]);
+
+  const searchIndex = useSearchIndex(
+    state.status === 'ready' && searchEnabled ? state.graph.nodes : []
+  );
+
   useKeyboardNav(
     state.status === 'ready' ? state.graph : null,
     cycleTheme,
+    searchEnabled ? openSearch : undefined,
   );
 
   useThemeFonts(state.status === 'ready' ? state.config.theme.font : undefined);
@@ -115,7 +138,15 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
           onThemeChange={setThemeMode}
           onCollapsedChange={setHudCollapsed}
           onDockChange={setHudDock}
+          onOpenSearch={searchEnabled ? openSearch : undefined}
         />
+      {searchEnabled && searchOpen && (
+        <SearchPalette
+          index={searchIndex}
+          onClose={closeSearch}
+          onNavigate={handleSearchNavigate}
+        />
+      )}
     </>
   );
 }

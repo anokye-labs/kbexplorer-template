@@ -508,7 +508,7 @@ export const BUILT_IN_VIEWS: GraphView[] = [
     color: '#d29922',
     resolve: (graph) => filterByPredicate(graph, n => {
       const t = n.source.type
-      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository' || t === 'person'
+      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository' || t === 'release' || t === 'person'
     }),
   },
   {
@@ -850,6 +850,8 @@ export type NodeSource =
    * upstream record id the node was mapped from.
    */
   | { type: 'structured'; entityType: string; ref?: string }
+  /** A GitHub release (tag, name, release notes, prerelease flag). */
+  | { type: 'release'; tag: string; prerelease: boolean }
   /**
    * A person node derived from GitHub activity (author/assignee on active
    * issues / PRs). When a content-model person descriptor matches (same
@@ -1027,6 +1029,14 @@ export interface KBConfig {
     readingTools: boolean;
     keyboardNav: boolean;
     sparkAnimation: boolean;
+    /**
+     * Show the search palette (Ctrl-K / `/`) and the HUD search buttons.
+     * Optional and additive: unset means enabled, so existing host configs
+     * keep search without any change. Set `false` to opt out entirely —
+     * the palette, its shortcuts, and the HUD buttons all disappear and
+     * the search index is never built.
+     */
+    search?: boolean;
   };
   branding?: BrandingConfig;
   providers?: ExternalProviderConfig[];
@@ -1087,6 +1097,7 @@ export const DEFAULT_CONFIG: KBConfig = {
     docs: { name: 'Documentation', color: '#D4A050' },
     'pull-request': { name: 'Pull Request', color: '#A86FDF' },
     commits: { name: 'Commits', color: '#5A98A8' },
+    releases: { name: 'Releases', color: '#F78166' },
   },
   visuals: {
     mode: 'emoji',
@@ -1122,6 +1133,7 @@ export const DEFAULT_CONFIG: KBConfig = {
     readingTools: true,
     keyboardNav: true,
     sparkAnimation: false,
+    search: true,
   },
   // branding omitted by default — host repos may set branding.logo (a repo-relative
   // image path) to render a logo on the HomePage hero and HUD header, and
