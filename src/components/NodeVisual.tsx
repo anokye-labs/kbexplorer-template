@@ -5282,29 +5282,31 @@ interface NodeVisualProps {
   className?: string;
   clusterColor?: string;
   /**
-   * Whether the current theme renders on a dark background. When false
-   * (light / sepia / ocean) the cluster color is darkened so icons remain
-   * legible against a pale background. Defaults to true so callers that do
-   * not yet thread the flag keep the current dark-palette behaviour.
+   * Whether the current theme renders on a dark background (derived from the
+   * resolved theme's luminance via isDarkTheme, so config themes are handled).
+   * When false (any pale-background theme) the cluster color is darkened so
+   * icons remain legible. Defaults to true so callers that do not yet thread
+   * the flag keep the current dark-palette behaviour.
    */
   isDark?: boolean;
 }
 
 /**
- * Ensure `clusterColor` is dark enough to read on a light background.
+ * Ensure `clusterColor` is dark enough to read on a pale background.
  *
  * The cluster palette contains medium-saturation accents calibrated for dark
- * backgrounds (#E8A838, #4A9CC8, …). On light/sepia we darken them to ≥45 %
- * relative luminance deficit (approx WCAG AA threshold for UI components).
+ * backgrounds (#E8A838, #4A9CC8, …). On a non-dark theme we darken them by
+ * clamping HSL lightness to ≤ 0.42 so the icon stays legible on cream/white.
  *
- * Algorithm: parse the hex, convert to HSL, clamp `l` to ≤ 45, return a new
- * hex. Returns the input unchanged when it can't be parsed.
+ * Accepts 3- or 6-digit hex (with or without `#`); returns the input unchanged
+ * when it can't be parsed or the theme is dark.
  */
-function ensureIconContrast(hex: string | undefined, isDark: boolean): string | undefined {
+export function ensureIconContrast(hex: string | undefined, isDark: boolean): string | undefined {
   if (!hex || isDark) return hex;
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex);
+  const m = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(hex);
   if (!m) return hex;
-  const n = parseInt(m[1], 16);
+  const raw = m[1].length === 3 ? m[1].split('').map(c => c + c).join('') : m[1];
+  const n = parseInt(raw, 16);
   let r = ((n >> 16) & 0xff) / 255;
   let g = ((n >> 8) & 0xff) / 255;
   let b = (n & 0xff) / 255;
@@ -5385,7 +5387,8 @@ export function NodeVisual({ node, mode, surface, source, className, clusterColo
 
   const imageUrl = resolveNodeImage(node, mode, source);
   const size = SURFACE_SIZES[surface];
-  // Ensure the cluster-color icon remains legible on light/sepia/ocean themes.
+  // Darken the cluster-color icon on non-dark themes so it stays legible on a
+  // pale background (no-op when isDark; isDark is luminance-derived upstream).
   const iconColor = ensureIconContrast(clusterColor, isDark);
 
   // Hero surface — full-bleed image with gradient overlay
