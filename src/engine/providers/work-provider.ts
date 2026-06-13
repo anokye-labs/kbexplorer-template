@@ -296,7 +296,7 @@ export class WorkProvider implements GraphProvider {
         cluster: 'releases',
         content: html,
         rawContent: fullContent,
-        emoji: release.prerelease ? 'BeakerEmpty' : 'Rocket',
+        emoji: release.prerelease ? 'Beaker' : 'Rocket',
         connections,
         source: { type: 'release', tag, prerelease: release.prerelease },
         provider: 'work',
