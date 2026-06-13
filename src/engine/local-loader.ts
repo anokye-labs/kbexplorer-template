@@ -22,10 +22,11 @@ import { ProviderRegistry } from './providers';
 import { FilesProvider } from './providers/files-provider';
 import { AuthoredProvider } from './providers/authored-provider';
 import { WorkProvider } from './providers/work-provider';
+import { PersonProvider } from './providers/person-provider';
 import { StructuralProvider } from './providers/structural-provider';
 import { ContentModelProvider } from './providers/content-model-provider';
 import { collectProviderNodes } from './orchestrator';
-import type { GHIssue, GHTreeItem } from '../api';
+import type { GHIssue, GHTreeItem, GHRelease } from '../api';
 import type { ContentModelSource } from './content-model';
 import { mergeExternalTheme, parseExternalTheme } from '../theme/externalTheme';
 
@@ -54,6 +55,11 @@ interface RepoManifest {
     html_url: string;
   }>;
   branches?: Array<{ name: string; protected: boolean }>;
+  /**
+   * GitHub releases (non-draft, newest-first, capped at 30). Absent/empty in
+   * repos without releases — the WorkProvider handles this gracefully (safe no-op).
+   */
+  releases?: GHRelease[];
   repoMetadata?: {
     name: string;
     description: string;
@@ -372,8 +378,13 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
   );
 
   registry.register(
-    new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null),
+    new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null, manifest.releases ?? []),
   );
+
+  // People derived from GitHub activity (#235). Local-manifest PRs do not
+  // carry author/assignees yet (kbexplorer-cli follow-up), so local-mode
+  // person derivation comes from issues; the provider tolerates the gap.
+  registry.register(new PersonProvider(manifest.issues, manifest.pullRequests));
 
   // ── Structural discovery (.github → repository node) ────
   if (manifest.structuralFiles && Object.keys(manifest.structuralFiles).length > 0) {

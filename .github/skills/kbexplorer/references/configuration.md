@@ -78,6 +78,9 @@ features:
   readingTools: true               # Show reading tools (copy, highlight, etc.).
   keyboardNav: true                # Enable keyboard navigation shortcuts.
   sparkAnimation: false            # Enable spark animation on nodes.
+  search: true                     # Optional. Search palette (Ctrl-K / "/") and
+                                   #   HUD search buttons. Unset = enabled;
+                                   #   set false to opt out entirely.
 
 # BLUF (Bottom Line Up Front) — optional intro screen
 bluf:

@@ -35,19 +35,20 @@ describe('demo-entities seam', () => {
     expect(isDemoEntitiesEnabled()).toBe(false);
   });
 
-  it('appends person/squad/team entity nodes without mutating the original graph', () => {
+  it('appends person/squad/team/charter entity nodes without mutating the original graph', () => {
     const graph = baseGraph();
     const originalNodeCount = graph.nodes.length;
     const result = injectDemoEntities(graph);
 
     expect(graph.nodes).toHaveLength(originalNodeCount); // original untouched
-    expect(result.nodes.length).toBe(originalNodeCount + 4);
+    expect(result.nodes.length).toBe(originalNodeCount + 5);
 
     const ids = result.nodes.map(n => n.id);
     expect(ids).toContain('demo-team-atlas');
     expect(ids).toContain('demo-squad-orbit');
     expect(ids).toContain('demo-person-ada');
     expect(ids).toContain('demo-person-ben');
+    expect(ids).toContain('demo-charter-atlas');
   });
 
   it('renders the squad through the squad entity type + SquadView data shape', () => {
