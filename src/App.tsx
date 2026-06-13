@@ -78,16 +78,30 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
     try { return (localStorage.getItem('kbe-hud-dock') ?? 'bottom') as DockPosition; } catch { return 'bottom'; }
   });
 
+  // Whether this load is a true landing (root URL, no deep-link hash) vs a
+  // deep link (#/node/x, #/overview). Captured once from the initial hash so
+  // deep links bypass landing config — including the HUD-collapse default.
+  const isRootLandingRef = useRef<boolean | null>(null);
+  if (isRootLandingRef.current === null) {
+    let h = '';
+    try { h = window.location.hash; } catch { /* ignore */ }
+    isRootLandingRef.current = h === '' || h === '#' || h === '#/';
+  }
+
   // Landing-mode initial HUD collapsed state (#238).
   // Computed once on the first 'ready' render (the render that mounts HUD
   // for the first time) and passed as `initialCollapsed` to HUD so it starts
   // in the right state without a flash. A ref prevents re-computation on
-  // subsequent renders.
+  // subsequent renders. On a deep link, landing config is bypassed: only the
+  // user's stored preference applies (config.landing.graph must not force a
+  // deep-linked visitor's HUD closed).
   const hudInitialCollapsedRef = useRef<boolean | undefined>(undefined);
   if (state.status === 'ready' && hudInitialCollapsedRef.current === undefined) {
     let storedPref: string | null = null;
     try { storedPref = localStorage.getItem('kbe-hud-collapsed'); } catch { /* ignore */ }
-    hudInitialCollapsedRef.current = resolveLandingHudCollapsed(state.config, storedPref);
+    hudInitialCollapsedRef.current = isRootLandingRef.current
+      ? resolveLandingHudCollapsed(state.config, storedPref)
+      : storedPref === 'true';
   }
 
   // Sync the App-level hudCollapsed (used for content padding) with the

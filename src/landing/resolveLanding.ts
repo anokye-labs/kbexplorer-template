@@ -8,19 +8,17 @@
 import type { KBConfig } from '../types';
 
 /**
- * The resolved initial destination for the app when the user lands at `/`
- * with no deep-link hash.
- */
-export interface LandingDestination {
-  /** Hash-router path, e.g. `/node/home` or `/overview`. */
-  path: string;
-}
-
-/**
  * Resolve the initial route path from the landing config.
  *
  * Called only when the user arrives at `/` (no deep-link hash).
  * Deep links (`#/node/x`, `#/overview`) bypass this entirely.
+ *
+ * Two distinct node defaults, because `/node/home` is a special route:
+ *  - `'graph'` (and the no-config default) → `/node/home`, the graph-first
+ *    **HomePage** (hero + graph), preserving today's behavior.
+ *  - `'reading'` → `/node/readme`, a content node rendered by the normal
+ *    **ReadingView**. Defaulting reading to `home` would land on the very
+ *    graph-first homepage that reading-first mode exists to replace.
  *
  * @param config - The loaded KB config.
  * @returns The hash-router path to navigate to.
@@ -32,11 +30,14 @@ export function resolveLandingPath(config: KBConfig): string {
   switch (landing.view) {
     case 'overview':
       return '/overview';
-    case 'reading':
+    case 'reading': {
+      // Reading-first: a content node in ReadingView, NOT the graph HomePage.
+      const nodeId = landing.node ?? 'readme';
+      return `/node/${encodeURIComponent(nodeId)}`;
+    }
     case 'graph':
     default: {
-      // Both 'reading' and 'graph' land on a node; 'graph' just leaves the
-      // HUD expanded (handled separately in resolveLandingHudCollapsed).
+      // Graph-first: the HomePage route leaves the graph immediately visible.
       const nodeId = landing.node ?? 'home';
       return `/node/${encodeURIComponent(nodeId)}`;
     }

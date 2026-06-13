@@ -1071,18 +1071,21 @@ export interface KBConfig {
   landing?: {
     /**
      * Which view to land on:
-     * - `'reading'` — a reading-view node (use `node` to pick which one;
-     *    defaults to the `home`/`readme` node).
+     * - `'reading'` — a content node in the normal ReadingView (use `node` to
+     *    pick which one; defaults to the `readme` content node, NOT the
+     *    graph-first HomePage).
      * - `'overview'` — the card-grid overview (`/overview`).
-     * - `'graph'` — the constellation graph (current default; navigates to
+     * - `'graph'` — the graph-first HomePage (current default; navigates to
      *    `/node/home` with the HUD expanded so the graph is immediately
      *    visible).
      * Unset is equivalent to `'graph'`.
      */
     view?: 'reading' | 'overview' | 'graph';
     /**
-     * Node ID to land on when `view` is `'reading'` (or `'graph'`).
-     * Defaults to `'home'` (the home/README node). Ignored for `'overview'`.
+     * Node ID to land on for `'reading'` and `'graph'`. Ignored for
+     * `'overview'`. The default differs by view because `/node/home` is the
+     * special graph-first HomePage route: `'reading'` defaults to `'readme'`
+     * (a content node), `'graph'` defaults to `'home'` (the HomePage).
      */
     node?: string;
     /**

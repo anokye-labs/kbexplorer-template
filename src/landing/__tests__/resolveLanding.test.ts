@@ -28,8 +28,8 @@ describe('resolveLandingPath', () => {
     expect(resolveLandingPath(withLanding({}))).toBe('/node/home');
   });
 
-  it('view: reading → /node/home when no node is specified', () => {
-    expect(resolveLandingPath(withLanding({ view: 'reading' }))).toBe('/node/home');
+  it('view: reading → /node/readme when no node is specified (content node, not the graph HomePage)', () => {
+    expect(resolveLandingPath(withLanding({ view: 'reading' }))).toBe('/node/readme');
   });
 
   it('view: reading + node → /node/<id>', () => {
