@@ -668,6 +668,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
       fitOnStabilize: !currentNodeId || filteredGraph.nodes.length < 60,
       emphasizeNodeId: currentNodeId,
       interactive: true,
+      auditSlot: 'map-overlay',
     });
     network.once('stabilized', () => {
       const scale = network.getScale();
@@ -717,6 +718,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
         nodeSizeRange: [28, 44],
         nodeSizeStep: 3,
         labelMaxLength: 18,
+        auditSlot: 'hud-sidebar',
       });
       network.once('stabilized', () => {
         setSidebarZoom(Math.round(network.getScale() * 100));
@@ -759,13 +761,23 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
     } catch { /* node might not exist */ }
   }, [currentNodeId]);
 
-  // Active clusters: use the view-filtered (but not collapsed) graph for the legend
-  const activeClusters = React.useMemo(() => {
+  // Active clusters: use the view-filtered (but not collapsed) graph for the legend.
+  // Sorted by node count (descending) so the most-populated clusters lead the
+  // legend; the rest are folded into an "+N more" overflow chip in the renderer.
+  // 12 is a deliberate ceiling — beyond ~12 colour-coded categories the legend
+  // becomes a wall of pills and the constellation reads as noise (#270 audit).
+  const LEGEND_VISIBLE_LIMIT = 12;
+  const activeClustersFull = React.useMemo(() => {
     const viewGraph = filterGraphToView(graph, activeView);
     const counts = new Map<string, number>();
     for (const n of viewGraph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
-    return viewGraph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
+    return viewGraph.clusters
+      .filter(c => (counts.get(c.id) ?? 0) >= 2)
+      .map(c => ({ ...c, _count: counts.get(c.id) ?? 0 }))
+      .sort((a, b) => b._count - a._count);
   }, [graph, activeView]);
+  const activeClusters = activeClustersFull.slice(0, LEGEND_VISIBLE_LIMIT);
+  const overflowClusters = activeClustersFull.slice(LEGEND_VISIBLE_LIMIT);
 
   // Active edge/relation styles present in the graph — data-driven from the
   // edges themselves so relation types (leads/staffs/reports-to/…) and any
@@ -945,7 +957,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                 Cluster collapse is managed in the sidebar (single source of
                 truth per #252); this panel is display-only so there's one
                 legend, not two. */}
-            <div style={{
+            <div data-kbe-legend="legend-root" style={{
               position: 'absolute', bottom: 16, left: 16, zIndex: 10,
               background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium,
               border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '6px 10px',
@@ -954,12 +966,22 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
               {activeClusters.map(c => {
                 const isCollapsed = collapsedClusters.has(c.id);
                 return (
-                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0', opacity: isCollapsed ? 0.4 : 1 }}>
+                  <div key={c.id} data-kbe-legend="cluster" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0', opacity: isCollapsed ? 0.4 : 1 }}>
                     <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
                     <Caption1 style={{ color: tokens.colorNeutralForeground2, textDecoration: isCollapsed ? 'line-through' : 'none' }}>{c.name}</Caption1>
                   </div>
                 );
               })}
+              {overflowClusters.length > 0 && (
+                <div
+                  data-kbe-legend="overflow"
+                  title={overflowClusters.map(c => `${c.name} (${c._count})`).join(', ')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0', opacity: 0.7 }}
+                >
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: tokens.colorNeutralBackground3, border: `1px dashed ${tokens.colorNeutralStroke2}`, flexShrink: 0 }} />
+                  <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>{`+${overflowClusters.length} more`}</Caption1>
+                </div>
+              )}
               {activeEdgeStyles.length > 0 && (
                 <>
                   <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
@@ -1146,6 +1168,15 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                         </div>
                       );
                     })}
+                    {overflowClusters.length > 0 && (
+                      <div
+                        title={overflowClusters.map(c => `${c.name} (${c._count})`).join(', ')}
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, opacity: 0.7 }}
+                      >
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: tokens.colorNeutralBackground3, border: `1px dashed ${tokens.colorNeutralStroke2}`, flexShrink: 0 }} />
+                        <span style={{ color: tokens.colorNeutralForeground3 }}>{`+${overflowClusters.length} more`}</span>
+                      </div>
+                    )}
                   </div>
                   {/* Re-center the graph */}
                   <Button

@@ -173,7 +173,7 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
   const nodes: KBNode[] = [];
 
   // Issues
-  const issueNodes = manifest.issues.map(issueToNode);
+  const issueNodes = manifest.issues.map(issue => issueToNode(issue));
 
   // Tree
   const tree = manifest.tree as GHTreeItem[];

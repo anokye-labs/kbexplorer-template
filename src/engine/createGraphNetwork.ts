@@ -25,6 +25,12 @@ export interface GraphNetworkOptions {
   emphasizeNodeId?: string | null;
   /** Enable drag-to-pan and scroll-to-zoom (default: false) */
   interactive?: boolean;
+  /**
+   * Slot label for the audit hook (`window.__kbeNetworks[slot]`). Used by
+   * `scripts/audit-visual.mjs` and devtools to find the live network. If
+   * omitted, no audit registration occurs.
+   */
+  auditSlot?: string;
 }
 
 export interface GraphNetworkResult {
@@ -96,6 +102,12 @@ export function buildVisNode(
     shape: 'custom',
     ctxRenderer: createNodeRenderer(node.emoji, color, size, options.isDark, label, disconnected),
     size: size / 2,
+    // Audit sidecar: the rendered label is captured inside the ctxRenderer
+    // closure and isn't visible through vis-network's public DataSet API.
+    // We mirror it here so `scripts/audit-visual.mjs` can assert label
+    // coverage without re-running OCR on the canvas pixels. Empty string
+    // means the renderer is configured to paint no text for this node.
+    __auditLabel: label ?? '',
   };
 
   if (options.opacity != null) {
@@ -114,12 +126,26 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     onNodeClick,
     focusNodeId,
     fitOnStabilize = false,
-    nodeSizeRange = [44, 64],
     nodeSizeStep = 4,
     labelMaxLength = 25,
     emphasizeNodeId,
     interactive = false,
+    auditSlot,
   } = options;
+
+  // Adaptive node sizing — large graphs need smaller nodes so the labels stay
+  // proportional and the canvas doesn't turn into a sea of overlapping bubbles.
+  // Was a fixed [44, 64] for every graph, which left 800-node constellations
+  // looking like a wall of touching circles with little visible label area.
+  const totalNodes = graph.nodes.length;
+  const adaptiveDefault: [number, number] = totalNodes > 600
+    ? [22, 36]
+    : totalNodes > 200
+      ? [28, 44]
+      : totalNodes > 80
+        ? [34, 52]
+        : [44, 64];
+  const nodeSizeRange = options.nodeSizeRange ?? adaptiveDefault;
 
   const degrees = getNodeDegrees(graph);
   const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
@@ -155,10 +181,17 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       flagDisconnected: true,
       opacity: faded ? fadedOpacity : undefined,
       showLabel: faded ? showFadedLabels : true,
+      // Always label direct neighbours of the focused node — without this
+      // override low-degree neighbours render as unlabelled "mystery circles"
+      // because the global label threshold (degree ≥ 2) hides them.
+      labelDegreeThreshold: effectiveEmphasis && emphasizedIds.has(n.id) ? 0 : undefined,
     });
   });
 
-  const EDGE_FADED_COLOR = 'rgba(80,80,80,0.08)';
+  // Slightly brighter faded edge tone — the previous rgba(80,80,80,0.08) made
+  // off-neighbourhood edges effectively invisible on the dark theme, which the
+  // user flagged as "links between nodes are too hard to see".
+  const EDGE_FADED_COLOR = isDark ? 'rgba(160,160,160,0.18)' : 'rgba(80,80,80,0.18)';
 
   /** Resolve the visual style for an edge type */
   /** Resolve the visual style for an edge (relation-aware, data-driven). */
@@ -246,6 +279,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         flagDisconnected: true,
         opacity: faded ? fadedOpacity : undefined,
         showLabel: faded ? showFadedLabels : true,
+        // Force-label every 1-hop neighbour of the focus regardless of degree
+        // (otherwise a sole-edge neighbour shows up as a circle with no text).
+        labelDegreeThreshold: active && hop1.has(n.id) ? 0 : undefined,
       }));
     }
     nodes.update(nodeUpdates);
@@ -474,7 +510,31 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     }
   });
 
+  if (auditSlot) {
+    registerNetworkForAudit(network, container, auditSlot);
+  }
+
   return { network, nodes, edges, setEmphasis };
+}
+
+/**
+ * Debug hook: when an audit (or a developer) needs to introspect a live
+ * vis-network instance (positions, bounding boxes, label state) we expose
+ * the live networks on `window.__kbeNetworks` keyed by the container's
+ * `data-kbe-graph` attribute or `id`. This is a no-op when there is no
+ * `window` (SSR / Node) and adds a tiny amount of memory in the browser.
+ *
+ * Used by `scripts/audit-visual.mjs` to assert on label coverage, node-to-
+ * label ratio, and edge visibility on the actually-rendered constellation.
+ */
+function registerNetworkForAudit(network: Network, container: HTMLElement, slot: string) {
+  if (typeof window === 'undefined') return;
+  type AuditWindow = Window & {
+    __kbeNetworks?: Record<string, { network: Network; container: HTMLElement }>;
+  };
+  const w = window as AuditWindow;
+  if (!w.__kbeNetworks) w.__kbeNetworks = {};
+  w.__kbeNetworks[slot] = { network, container };
 }
 
 /**

@@ -35,6 +35,7 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
               });
             } else {
               const finalGraph = isDemoEntitiesEnabled() ? injectDemoEntities(graph) : graph;
+              exposeAuditGraph(finalGraph, config, 'local');
               setState({ status: 'ready', graph: finalGraph, config });
             }
           }
@@ -51,6 +52,7 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
             });
           } else {
             const finalGraph = isDemoEntitiesEnabled() ? injectDemoEntities(graph) : graph;
+            exposeAuditGraph(finalGraph, config, 'remote');
             setState({ status: 'ready', graph: finalGraph, config });
           }
         }
@@ -69,4 +71,30 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
   }, [sourceOverride]);
 
   return state;
+}
+
+/**
+ * Expose the resolved full graph + config on `window.__kbeGraph` so the
+ * visual audit can probe the unfiltered topology. The HUD-mounted vis
+ * networks only render a 40-node filtered view, so without this hook the
+ * audit cannot tell whether disconnections happen in the data or only in
+ * the visible subset. Storing references (not clones) — the audit is
+ * read-only and the page is throwaway, so no mutation risk.
+ */
+function exposeAuditGraph(graph: KBGraph, config: KBConfig, mode: 'local' | 'remote'): void {
+  if (typeof window === 'undefined') return;
+  try {
+    (window as unknown as { __kbeGraph?: unknown }).__kbeGraph = {
+      mode,
+      graph,
+      config,
+      stats: {
+        nodes: graph.nodes.length,
+        edges: graph.edges.length,
+        clusters: graph.clusters.length,
+      },
+    };
+  } catch {
+    /* ignore — non-fatal */
+  }
 }
