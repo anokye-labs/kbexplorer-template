@@ -79,9 +79,9 @@ for (const iss of manifest.issues ?? []) {
   if (manifest.repoMetadata) addEdge(`issue-${iss.number}`, 'repo-meta');
 }
 
-// PRs — same cluster as before (`pull-request`), tracked-in repo-meta
+// PRs — folded into the unified `work` cluster (was: `pull-request`)
 for (const pr of manifest.pullRequests ?? []) {
-  addNode(`pr-${pr.number}`, 'pull-request', 'pr');
+  addNode(`pr-${pr.number}`, 'work', 'pr');
   for (const m of (pr.body ?? '').matchAll(/#(\d+)/g)) {
     const n = Number(m[1]);
     if (n === pr.number) continue;
@@ -106,9 +106,9 @@ if (manifest.repoMetadata) {
   addEdge('repo-meta', 'repo-root');
 }
 
-// Commits — single summary node, also tracked-in repo-meta
+// Commits — single summary node, folded into `work` (was: `commits`)
 if ((manifest.commits ?? []).length > 0) {
-  addNode('commits', 'commits', 'commits');
+  addNode('commits', 'work', 'commits');
   if (manifest.repoMetadata) addEdge('commits', 'repo-meta');
   for (const c of manifest.commits) {
     for (const m of (c.commit?.message ?? '').matchAll(/#(\d+)/g)) {
@@ -119,8 +119,14 @@ if ((manifest.commits ?? []).length > 0) {
   }
 }
 
-// Tree → repo-root + dir-* + file-*
-addNode('repo-root', 'code', 'file-root');
+// Releases — also folded into `infra` (parser cluster: 'infra')
+for (const r of manifest.releases ?? []) {
+  addNode(`release-${r.tag_name ?? r.id}`, 'infra', 'release');
+  if (manifest.repoMetadata) addEdge(`release-${r.tag_name ?? r.id}`, 'repo-meta');
+}
+
+// Tree → repo-root + dir-* + file-* (cluster `infra`, matching the engine fold)
+addNode('repo-root', 'infra', 'file-root');
 const dirs = new Set();
 for (const item of manifest.tree ?? []) {
   if (item.type !== 'blob' || item.path.startsWith('.')) continue;
@@ -132,39 +138,75 @@ for (const item of manifest.tree ?? []) {
 }
 for (const dir of dirs) {
   const id = `dir-${dir}`;
-  addNode(id, 'code', 'dir');
+  addNode(id, 'infra', 'dir');
   const depth = dir.split('/').length;
   if (depth === 1) {
     addEdge(id, 'repo-root');
   } else {
     const parentDir = dir.split('/')[0];
     // Ensure the parent dir node exists so we don't strand the subdir
-    addNode(`dir-${parentDir}`, 'code', 'dir');
+    addNode(`dir-${parentDir}`, 'infra', 'dir');
     addEdge(`dir-${parentDir}`, 'repo-root');
     addEdge(id, `dir-${parentDir}`);
   }
 }
-// README
+// README — folded into `infra` (matches parser.ts:444)
 if (manifest.readme) {
-  addNode('readme', 'docs', 'readme');
+  addNode('readme', 'infra', 'readme');
   addEdge('readme', 'repo-root');
 }
 
-// Authored content
-for (const c of manifest.content ?? []) {
+// Authored content — manifest key is `authoredContent` (was: `content`)
+for (const c of manifest.authoredContent ?? []) {
   const match = c.raw?.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) continue;
   const meta = yaml.parse(match[1]) || {};
   if (!meta.id) continue;
   addNode(meta.id, meta.cluster ?? 'uncategorized', 'authored');
+  // Authored content's connections live in body markdown; we approximate by
+  // requiring the engine's actual link extraction. For the audit we only
+  // care that the node exists and is reachable via the structural anchors,
+  // not the exact body-derived edges.
 }
 
-// Structural .github files → repo-meta
-for (const path of Object.keys(manifest.structural ?? {})) {
+// Structural .github files → repo-meta. Manifest key is `structuralFiles`
+// (was: `structural`).
+for (const path of Object.keys(manifest.structuralFiles ?? {})) {
   const safe = path.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
   addNode(`gh-${safe}`, 'infra', 'structural');
   addEdge(`gh-${safe}`, 'repo-meta');
 }
+
+// Content-model entities (was: not handled at all — 24+ nodes silently
+// missed). Mirrors ContentModelProvider: every entity gets a `tracked-in
+// repo-meta` connection so the kg:// islands don't float disconnected.
+const cm = manifest.contentModel;
+if (cm && cm.files) {
+  // The content-model URN namespace is org-derived. We approximate the URN
+  // shape (`kg://<org>/<kind>/<id>`) just well enough for the cluster +
+  // edge-count audit. Exact URN parity isn't required — the goal is to
+  // count nodes and ensure each one anchors to repo-meta.
+  let orgName = 'unknown';
+  const orgFile = Object.entries(cm.files).find(([p]) => p.startsWith('orgs/'));
+  if (orgFile) {
+    try {
+      const o = yaml.parse(orgFile[1].raw) || {};
+      orgName = (o.name || o.id || 'unknown').toString();
+    } catch { /* */ }
+  }
+  for (const [path, file] of Object.entries(cm.files)) {
+    if (!path.endsWith('.yaml') || path.startsWith('schema/') || path.startsWith('index/')) continue;
+    const parts = path.replace(/\.yaml$/, '').split('/');
+    if (parts.length < 2) continue;
+    const [kindPlural, ...idParts] = parts;
+    const kind = kindPlural.replace(/s$/, '');
+    const id = idParts.join('/');
+    const urn = `kg://${orgName}/${kind}/${id}`;
+    addNode(urn, kind, 'content-model');
+    addEdge(urn, 'repo-meta');
+  }
+}
+
 
 // ── Compute metrics ──
 const allNodes = [...nodes.values()];

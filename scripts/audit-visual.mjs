@@ -13,6 +13,15 @@
  * assertion about a measurable visual property:
  *
  *   - hud-related-links       Repo-meta panel surfaces enough connected nodes
+ *   - graph-isolated-subgraphs Whole graph is (mostly) a single connected
+ *                             component; no isolated kg:// / provider islands
+ *                             (probes window.__kbeGraph — the full graph,
+ *                             not the trimmed MAP view)
+ *   - graph-reachable-from-home ≥95% of nodes reachable from `home`
+ *   - graph-cluster-count-data Occupied clusters in the resolved data stay
+ *                             under the sensemaking tolerance (catches
+ *                             taxonomy fragmentation the legend hides
+ *                             behind "+N more")
  *   - legend-cluster-count    MAP legend stays under the 8-cluster sensemaking
  *                             limit (catches label-as-cluster regression)
  *   - map-canvas-non-blank    Canvas actually rendered (smoke test)
@@ -337,6 +346,137 @@ async function main() {
           { linkCount });
       } else if (opts.verbose) {
         console.log(`[audit-visual] hud-related-links: ${linkCount} OK`);
+      }
+    }
+
+    // ── Checks 1b-1d: full-graph topology (via window.__kbeGraph) ──
+    // The rendered MAP overlay only shows a trimmed subgraph
+    // (MAX_VISIBLE_NODES). Checks 2-6 below probe what the user *sees*
+    // on a single view. This block probes the *full* resolved graph
+    // exposed by useKnowledgeBase, so we catch global disconnections
+    // (kg:// content-model islands, orphaned providers, etc.) that
+    // never surface in any single MAP view.
+    {
+      const topology = await page.evaluate((startId) => {
+        const g = window.__kbeGraph;
+        if (!g || !g.graph) return null;
+        const nodes = g.graph.nodes || [];
+        const edges = g.graph.edges || [];
+        const clusters = g.graph.clusters || [];
+        const adj = new Map();
+        for (const n of nodes) adj.set(n.id, new Set());
+        for (const e of edges) {
+          if (adj.has(e.from) && adj.has(e.to)) {
+            adj.get(e.from).add(e.to);
+            adj.get(e.to).add(e.from);
+          }
+        }
+        // Connected components
+        const seen = new Set();
+        const components = [];
+        for (const n of nodes) {
+          if (seen.has(n.id)) continue;
+          const comp = [];
+          const stack = [n.id];
+          while (stack.length) {
+            const id = stack.pop();
+            if (seen.has(id)) continue;
+            seen.add(id);
+            comp.push(id);
+            for (const next of adj.get(id) || []) {
+              if (!seen.has(next)) stack.push(next);
+            }
+          }
+          components.push(comp);
+        }
+        components.sort((a, b) => b.length - a.length);
+        // BFS reachability from startId
+        let reachable = 0;
+        const r = new Set();
+        if (adj.has(startId)) {
+          const q = [startId];
+          while (q.length) {
+            const id = q.shift();
+            if (r.has(id)) continue;
+            r.add(id);
+            for (const next of adj.get(id) || []) q.push(next);
+          }
+          reachable = r.size;
+        }
+        // Cluster counts (distinct cluster IDs *actually* on nodes)
+        const occupiedClusters = new Map();
+        for (const n of nodes) {
+          const c = n.cluster || '(unset)';
+          occupiedClusters.set(c, (occupiedClusters.get(c) || 0) + 1);
+        }
+        // Sample of unreached nodes for diagnostic
+        const unreached = nodes.filter((n) => !r.has(n.id)).slice(0, 12).map((n) => ({
+          id: n.id, cluster: n.cluster, title: n.title,
+        }));
+        return {
+          nodeCount: nodes.length,
+          edgeCount: edges.length,
+          declaredClusterCount: clusters.length,
+          occupiedClusterCount: occupiedClusters.size,
+          occupiedClusters: [...occupiedClusters.entries()].sort((a, b) => b[1] - a[1]),
+          componentCount: components.length,
+          largestComponent: components[0]?.length ?? 0,
+          isolatedSubgraphSizes: components.slice(1).map((c) => c.length),
+          reachableFromStart: reachable,
+          unreachedSample: unreached,
+          startId,
+        };
+      }, 'home');
+
+      if (!topology) {
+        add('graph-exposed', 'high',
+          'window.__kbeGraph was never populated — the full-graph audit hook is missing',
+          {});
+      } else {
+        if (opts.verbose) console.log('[audit-visual] full-graph topology', topology);
+
+        // 1b: Single connected component (allow tiny tolerance for genuinely
+        // orphan content the author intentionally isolated).
+        // A component with > 3 nodes that isn't the main one is a real
+        // disconnection (typically a whole provider/sub-system that fails
+        // to link back). Anything ≤ 3 might be a 1-off author oversight
+        // we don't want to fail the build for.
+        const ISOLATED_TOLERANCE = 3;
+        const bigIslands = topology.isolatedSubgraphSizes.filter((n) => n > ISOLATED_TOLERANCE);
+        if (bigIslands.length > 0) {
+          const total = bigIslands.reduce((a, b) => a + b, 0);
+          add('graph-isolated-subgraphs', 'high',
+            `Graph splits into ${topology.componentCount} components: main=${topology.largestComponent}, ${bigIslands.length} isolated islands totalling ${total} nodes (sizes: ${bigIslands.join(', ')})`,
+            { islands: bigIslands, unreachedSample: topology.unreachedSample });
+        } else if (opts.verbose) {
+          console.log(`[audit-visual] graph-isolated-subgraphs: ${topology.componentCount} components, largest=${topology.largestComponent} OK`);
+        }
+
+        // 1c: Reachability from home — the canonical entry point should
+        // reach almost everything the user can browse to.
+        if (topology.nodeCount > 0) {
+          const reachFrac = topology.reachableFromStart / topology.nodeCount;
+          if (reachFrac < 0.95) {
+            add('graph-reachable-from-home', 'high',
+              `Only ${(reachFrac * 100).toFixed(1)}% of ${topology.nodeCount} nodes reachable from "home" (${topology.nodeCount - topology.reachableFromStart} unreached)`,
+              { reachable: topology.reachableFromStart, total: topology.nodeCount, unreachedSample: topology.unreachedSample });
+          } else if (opts.verbose) {
+            console.log(`[audit-visual] graph-reachable-from-home: ${(reachFrac * 100).toFixed(1)}% OK`);
+          }
+        }
+
+        // 1d: Cluster count in the *data* (not just the rendered legend).
+        // The legend can hide overflow; the data-side count exposes real
+        // taxonomy fragmentation. Tolerance matches the legend visible
+        // cap + overflow design (12 + 5 = 17).
+        const DATA_CLUSTER_LIMIT = 17;
+        if (topology.occupiedClusterCount > DATA_CLUSTER_LIMIT) {
+          add('graph-cluster-count-data', 'high',
+            `Resolved graph has ${topology.occupiedClusterCount} occupied clusters — exceeds the ${DATA_CLUSTER_LIMIT}-cluster sensemaking tolerance (the legend will hide many behind "+N more")`,
+            { occupiedClusterCount: topology.occupiedClusterCount, declaredClusterCount: topology.declaredClusterCount, clusters: topology.occupiedClusters });
+        } else if (opts.verbose) {
+          console.log(`[audit-visual] graph-cluster-count-data: ${topology.occupiedClusterCount} OK`);
+        }
       }
     }
 

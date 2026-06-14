@@ -69,6 +69,14 @@ clusters:
   reference:
     name: "Reference"
     color: "#79C0FF"
+  # Team operations — folds the content-model spine (org / team / squad /
+  # person / mission / priority / workstream / cycle / system-of-record)
+  # into one legend entry. Without this, each kind becomes a 1-5 node
+  # singleton cluster and the legend overflows into "+N more" — exactly
+  # the fragmentation the sensemaking audit was added to catch.
+  teamops:
+    name: "Team Ops"
+    color: "#F0883E"
   # Work-axis clusters — declared here so their legend entries have stable
   # colours (they used to be palette-allocated on the fly, which shuffled
   # whenever node creation order changed). All issues now land in `work`
