@@ -24,3 +24,7 @@ export {
   type ViewerComponent,
   type ViewerProps,
 } from './GenericStructuredView';
+
+// Services-monorepo bespoke viewers (#275).
+export { ServiceView } from './ServiceView';
+export { DecisionView } from './DecisionView';

@@ -11,6 +11,8 @@ import { MissionView } from '../MissionView';
 import { PriorityView } from '../PriorityView';
 import { CycleView } from '../CycleView';
 import { OrgView } from '../OrgView';
+import { ServiceView } from '../ServiceView';
+import { DecisionView } from '../DecisionView';
 
 function makeNode(entityType: string, data: Record<string, unknown>): KBNode {
   const id = `kg://test/${entityType}`;
@@ -104,6 +106,67 @@ describe('spine viewers — rendering (T2.5 + T2.6 / #164, #165)', () => {
     expect(html).toContain('Personalization');
     expect(html).toContain('Hand-crafted experiences');
   });
+
+  it('ServiceView renders ownership, ServiceTree link, catalog-info and repo (#275)', () => {
+    const html = render(ServiceView, makeNode('service', {
+      name: 'KB Explorer Web', description: 'Static web frontend',
+      team: 'graph-platform',
+      serviceTreeId: '7e4a1c20-91a2-4d3e-9f0b-2c6d8e1a4b55',
+      serviceTreeUrl: 'https://servicetree.msftcloudes.com/#/svc/7e4a1c20',
+      catalogInfoPath: 'services/kb-explorer-web/catalog-info.yaml',
+      repoPath: 'anokye-labs/kbexplorer-template',
+      repoUrl: 'https://github.com/anokye-labs/kbexplorer-template',
+      'systems-of-record': ['gh-repo'],
+    }));
+    expect(html).toContain('Service');
+    expect(html).toContain('KB Explorer Web');
+    expect(html).toContain('Owned by');
+    expect(html).toContain('graph-platform');
+    // ServiceTree id surfaced inside the catalog link
+    expect(html).toContain('href="https://servicetree.msftcloudes.com/#/svc/7e4a1c20"');
+    expect(html).toContain('7e4a1c20-91a2-4d3e-9f0b-2c6d8e1a4b55');
+    expect(html).toContain('services/kb-explorer-web/catalog-info.yaml');
+    expect(html).toContain('href="https://github.com/anokye-labs/kbexplorer-template"');
+    expect(html).toContain('gh-repo');
+  });
+
+  it('ServiceView falls back to a code-rendered ServiceTree id when no URL is present (#275)', () => {
+    const html = render(ServiceView, makeNode('service', {
+      name: 'Catalog Only', team: 'graph-platform',
+      serviceTreeId: 'abc-123',
+    }));
+    expect(html).toContain('abc-123');
+    expect(html).not.toContain('<a');
+  });
+
+  it('DecisionView renders deciders, status pill and context (#275)', () => {
+    const html = render(DecisionView, makeNode('decision', {
+      name: 'ADR-001: Adopt schema-driven content model',
+      status: 'accepted',
+      context: 'The spine was hardcoded per org.',
+      date: '2026-02-12',
+      deciders: ['adwoa', 'kwame'],
+      'affects-workstreams': ['kb-explorer'],
+      'affects-missions': ['q1-uplift'],
+    }));
+    expect(html).toContain('Decision');
+    expect(html).toContain('ADR-001');
+    expect(html).toContain('kb-pill');
+    expect(html).toContain('The spine was hardcoded per org.');
+    expect(html).toContain('Deciders');
+    expect(html).toContain('adwoa');
+    expect(html).toContain('kwame');
+    // both affected workstreams and missions are listed under Affects
+    expect(html).toContain('kb-explorer');
+    expect(html).toContain('q1-uplift');
+  });
+
+  it('DecisionView omits Deciders/Affects rows when those arrays are empty (#275)', () => {
+    const html = render(DecisionView, makeNode('decision', { name: 'Bare ADR', status: 'proposed' }));
+    expect(html).toContain('Bare ADR');
+    expect(html).not.toContain('Deciders');
+    expect(html).not.toContain('Affects');
+  });
 });
 
 describe('spine viewers — registration + resolution (#164, #165)', () => {
@@ -112,6 +175,7 @@ describe('spine viewers — registration + resolution (#164, #165)', () => {
     const expected: Record<string, ViewerComponent> = {
       squad: SquadView, workstream: WorkstreamView, mission: MissionView,
       priority: PriorityView, cycle: CycleView, org: OrgView,
+      service: ServiceView, decision: DecisionView,
     };
     for (const k of CONTENT_MODEL_KINDS) {
       const node = makeNode(k.id, { name: k.label });

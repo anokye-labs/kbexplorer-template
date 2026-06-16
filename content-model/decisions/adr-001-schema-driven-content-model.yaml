@@ -1,0 +1,20 @@
+"@type": decision
+id: adr-001-schema-driven-content-model
+name: "ADR-001: Adopt a schema-driven content model"
+status: accepted
+date: 2026-02-12
+context: >
+  The work-graph spine was hardcoded per org, which blocked reuse across teams.
+  We chose a schema-driven pipeline (teamops + conventions + edges + lifecycle +
+  a JSON-LD context) so a new org adopts the platform by changing configuration,
+  not engine code.
+consequences: >
+  Identity, storage layout, and relationships are all data-driven; URN bases
+  come from the JSON-LD context only and a kind always comes from its @type.
+deciders:
+  - adwoa
+  - kwame
+affects-workstreams:
+  - kb-explorer
+affects-missions:
+  - q1-uplift
