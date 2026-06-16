@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { KBGraph, KBConfig, SourceConfig } from '../types';
 import { detectLocalMode, loadLocalKnowledgeBase } from '../engine/local-loader';
 import { loadRemoteKnowledgeBase } from '../engine/remote-loader';
-import { isDemoEntitiesEnabled, injectDemoEntities } from '../engine/demo-entities';
+import { isDemoEntitiesEnabled, injectDemoEntities, isBigOrgDemoEnabled, injectBigOrg } from '../engine/demo-entities';
 
 export type LoadingState =
   | { status: 'loading' }
@@ -34,7 +34,7 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
                 error: 'No content found in local manifest. Run `npm run prebuild` to regenerate.',
               });
             } else {
-              const finalGraph = isDemoEntitiesEnabled() ? injectDemoEntities(graph) : graph;
+              const finalGraph = applyDemoSeams(graph);
               exposeAuditGraph(finalGraph, config, 'local');
               setState({ status: 'ready', graph: finalGraph, config });
             }
@@ -51,7 +51,7 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
               error: 'No content loaded. The GitHub API may be rate-limited — try again in a minute, or check your network.',
             });
           } else {
-            const finalGraph = isDemoEntitiesEnabled() ? injectDemoEntities(graph) : graph;
+            const finalGraph = applyDemoSeams(graph);
             exposeAuditGraph(finalGraph, config, 'remote');
             setState({ status: 'ready', graph: finalGraph, config });
           }
@@ -71,6 +71,18 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
   }, [sourceOverride]);
 
   return state;
+}
+
+/**
+ * Apply optional demo seams (off by default) to the loaded graph: small
+ * entity demo (`?demo=entities`) and the large synthetic org tree
+ * (`?demo=bigorg`, for exercising the reports-to layout at scale — #279).
+ */
+function applyDemoSeams(graph: KBGraph): KBGraph {
+  let g = graph;
+  if (isDemoEntitiesEnabled()) g = injectDemoEntities(g);
+  if (isBigOrgDemoEnabled()) g = injectBigOrg(g);
+  return g;
 }
 
 /**

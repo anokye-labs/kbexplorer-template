@@ -6,7 +6,8 @@ import { Network } from 'vis-network/standalone';
 import { DataSet } from 'vis-data';
 import { createNodeRenderer } from './nodeRenderer';
 import { getNodeDegrees } from './graph';
-import type { KBGraph } from '../types';
+import { computeReportsToLevels } from './reports-to-layout';
+import type { KBGraph, GraphLayoutMode } from '../types';
 import { getEdgeStyle } from '../types';
 
 export interface GraphNetworkOptions {
@@ -25,6 +26,12 @@ export interface GraphNetworkOptions {
   emphasizeNodeId?: string | null;
   /** Enable drag-to-pan and scroll-to-zoom (default: false) */
   interactive?: boolean;
+  /**
+   * Layout strategy. `'force'` (default) is the force-directed constellation;
+   * `'reports-to'` renders a hierarchical org tree where managers sit above
+   * their reports, levels computed from the `reports-to` relation (#279).
+   */
+  layout?: GraphLayoutMode;
   /**
    * Slot label for the audit hook (`window.__kbeNetworks[slot]`). Used by
    * `scripts/audit-visual.mjs` and devtools to find the live network. If
@@ -130,8 +137,13 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     labelMaxLength = 25,
     emphasizeNodeId,
     interactive = false,
+    layout = 'force',
     auditSlot,
   } = options;
+
+  const hierarchical = layout === 'reports-to';
+  // Per-node tree depth for the hierarchical org layout. Empty in force mode.
+  const reportsToLevels = hierarchical ? computeReportsToLevels(graph) : null;
 
   // Adaptive node sizing — large graphs need smaller nodes so the labels stay
   // proportional and the canvas doesn't turn into a sea of overlapping bubbles.
@@ -175,7 +187,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     const sizeRange: [number, number] = faded
       ? [nodeSizeRange[0] * fadedSizeScale, nodeSizeRange[1] * fadedSizeScale]
       : nodeSizeRange;
-    return buildVisNode(n, {
+    const visNode = buildVisNode(n, {
       degrees, clusterColorMap, isDark, keyNodeIds,
       nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
       flagDisconnected: true,
@@ -186,6 +198,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       // because the global label threshold (degree ≥ 2) hides them.
       labelDegreeThreshold: effectiveEmphasis && emphasizedIds.has(n.id) ? 0 : undefined,
     });
+    // Hierarchical org layout positions nodes by their reporting depth.
+    if (reportsToLevels) visNode.level = reportsToLevels.get(n.id) ?? 0;
+    return visNode;
   });
 
   // Slightly brighter faded edge tone — the previous rgba(80,80,80,0.08) made
@@ -206,10 +221,14 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     const faded = effectiveEmphasis && !emphasizedIds.has(e.from) && !emphasizedIds.has(e.to);
     const nearFaded = effectiveEmphasis && !(emphasizedIds.has(e.from) && emphasizedIds.has(e.to));
     const springBase = e.source === 'inferred' ? inferredSpringLength : baseSpringLength;
+    // In the hierarchical org tree, render edges manager→report (parent→child)
+    // so vis-network routes them downward. Semantic KBEdge direction
+    // (report→manager) is unchanged; this only affects the drawn vis edge.
+    const reverseForTree = hierarchical && e.relation === 'reports-to';
     return {
       id: `e${i}`,
-      from: e.from,
-      to: e.to,
+      from: reverseForTree ? e.to : e.from,
+      to: reverseForTree ? e.from : e.to,
       title: `${style.label}: ${e.description}`,
       color: {
         color: faded ? EDGE_FADED_COLOR : nearFaded ? 'rgba(80,80,80,0.25)' : style.color,
@@ -349,6 +368,45 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     network.setOptions({ physics: { enabled: false } });
   };
 
+  // Physics + layout differ by mode. Force mode uses forceAtlas2 stabilization;
+  // the org tree uses vis-network's hierarchical layout with physics disabled —
+  // deterministic and fast even for a hundreds-person org (#279).
+  const physicsOptions = hierarchical
+    ? { enabled: false }
+    : {
+        solver: 'forceAtlas2Based',
+        forceAtlas2Based: {
+          gravitationalConstant: -120,
+          // Higher centralGravity keeps the whole graph — including lightly-
+          // connected (orphan) nodes — pulled toward the centre, preventing
+          // them from drifting into a noisy ring at the periphery (#252).
+          centralGravity: 0.06,
+          springLength: 180,
+          springConstant: 0.05,
+          damping: 0.6,
+        },
+        stabilization: { enabled: true, iterations: 500, updateInterval: 100 },
+      };
+
+  const layoutOptions = hierarchical
+    ? {
+        // Explicit per-node `level` drives placement; we do NOT use
+        // sortMethod:'directed' (our edges are report→manager, which would
+        // invert the tree). Levels are authoritative.
+        hierarchical: {
+          enabled: true,
+          direction: 'UD',
+          levelSeparation: 160,
+          nodeSpacing: 130,
+          treeSpacing: 220,
+          blockShifting: true,
+          edgeMinimization: true,
+          parentCentralization: true,
+          shakeTowards: 'roots',
+        },
+      }
+    : undefined;
+
   const network = new Network(container, { nodes, edges }, {
     nodes: {
       scaling: {
@@ -360,20 +418,8 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       },
       font: { vadjust: 45, size: 13 },
     },
-    physics: {
-      solver: 'forceAtlas2Based',
-      forceAtlas2Based: {
-        gravitationalConstant: -120,
-        // Higher centralGravity keeps the whole graph — including lightly-
-        // connected (orphan) nodes — pulled toward the centre, preventing
-        // them from drifting into a noisy ring at the periphery (#252).
-        centralGravity: 0.06,
-        springLength: 180,
-        springConstant: 0.05,
-        damping: 0.6,
-      },
-      stabilization: { enabled: true, iterations: 500, updateInterval: 100 },
-    },
+    ...(layoutOptions ? { layout: layoutOptions } : {}),
+    physics: physicsOptions,
     interaction: {
       hover: true,
       tooltipDelay: 200,
@@ -384,7 +430,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       zoomSpeed: 0.3,
     },
     edges: {
-      smooth: { enabled: true, type: 'continuous', roundness: 0.5 },
+      smooth: { enabled: true, type: hierarchical ? 'cubicBezier' : 'continuous', roundness: 0.5 },
     },
   });
 
@@ -401,7 +447,14 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     network.setOptions({ physics: { enabled: false } });
   });
 
-  network.once('stabilized', () => {
+  // Finalize once: kill physics, compute pan bounds, wire bounded pan/zoom and
+  // the initial fit/focus. Idempotent so it can be driven from `stabilized`
+  // (force layout) or from rAF/afterDrawing (hierarchical layout, where physics
+  // is disabled and `stabilized` never fires).
+  let finalized = false;
+  const finalizeLayout = () => {
+    if (finalized) return;
+    finalized = true;
     // Kill physics immediately — no more drifting
     network.setOptions({ physics: { enabled: false } });
 
@@ -508,7 +561,20 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         });
       }
     }
-  });
+  };
+
+  // Drive finalization. Force layout finalizes on `stabilized`; the org tree
+  // (physics off) finalizes on the next frame, with `afterDrawing` as a
+  // belt-and-suspenders fallback. `finalizeLayout` is idempotent.
+  network.once('stabilized', finalizeLayout);
+  if (hierarchical) {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(finalizeLayout);
+    } else {
+      setTimeout(finalizeLayout, 0);
+    }
+    network.once('afterDrawing', finalizeLayout);
+  }
 
   if (auditSlot) {
     registerNetworkForAudit(network, container, auditSlot);

@@ -81,6 +81,109 @@ export function registerDemoEntityTypes(): void {
   registerViewer('squad', SquadView);
 }
 
+/** Whether the large synthetic-org demo seam is enabled for this session. */
+export function isBigOrgDemoEnabled(): boolean {
+  try {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === 'bigorg') return true;
+      const hash = window.location.hash;
+      const qIndex = hash.indexOf('?');
+      if (qIndex >= 0) {
+        const hp = new URLSearchParams(hash.slice(qIndex + 1));
+        if (hp.get('demo') === 'bigorg') return true;
+      }
+      const flag = window.localStorage?.getItem('kbe-demo-bigorg');
+      if (flag === '1' || flag === 'true') return true;
+    }
+  } catch {
+    /* access to window/localStorage may be denied; treat as disabled */
+  }
+  return false;
+}
+
+/**
+ * Build a deep/wide synthetic org of `person` nodes wired by `reports-to`
+ * (report → manager) edges — a single rooted tree. Used to validate the
+ * hierarchical org-tree layout (#279) at a hundreds-person scale without
+ * committing hundreds of YAML files.
+ */
+export function generateOrgTree(
+  branching = 4,
+  depth = 4,
+): { nodes: KBNode[]; edges: KBEdge[] } {
+  const nodes: KBNode[] = [];
+  const edges: KBEdge[] = [];
+  let counter = 0;
+
+  const makePerson = (level: number): KBNode => {
+    const idx = counter++;
+    const id = `org-p${idx}`;
+    const role = level === 0 ? 'Chief Executive' : level === 1 ? 'VP' : level === 2 ? 'Director' : 'Engineer';
+    return entityNode(
+      id,
+      `${role} ${idx}`,
+      'person',
+      { name: `${role} ${idx}`, role, email: `p${idx}@example.com`, level },
+      'Person',
+    );
+  };
+
+  const root = makePerson(0);
+  nodes.push(root);
+
+  let frontier = [root];
+  for (let level = 1; level <= depth; level++) {
+    const next: KBNode[] = [];
+    for (const manager of frontier) {
+      for (let b = 0; b < branching; b++) {
+        const report = makePerson(level);
+        nodes.push(report);
+        next.push(report);
+        // reports-to edge: report (from) → manager (to)
+        edges.push(relationEdge(report.id, manager.id, 'reports-to', `${report.title} reports to ${manager.title}`));
+      }
+    }
+    frontier = next;
+  }
+
+  return { nodes, edges };
+}
+
+/**
+ * Return a new graph with a large synthetic org tree appended (off by default).
+ * Idempotent: skips injection if the org tree is already present.
+ */
+export function injectBigOrg(graph: KBGraph): KBGraph {
+  registerDemoEntityTypes();
+
+  if (graph.nodes.some(n => n.id === 'org-p0')) return graph;
+
+  const { nodes: orgNodes, edges: orgEdges } = generateOrgTree();
+
+  // Anchor the root to an existing hub so the subgraph is reachable in non-org
+  // views (the org view itself only needs the reports-to edges).
+  const hub =
+    graph.nodes.find(n => n.id === 'readme') ??
+    graph.nodes.find(n => n.id === 'home') ??
+    graph.nodes.find(n => n.id === 'overview') ??
+    graph.nodes[0];
+  if (hub) {
+    orgEdges.push(relationEdge(hub.id, 'org-p0', 'structural', `${hub.title} → Org`));
+  }
+
+  const clusters = graph.clusters.some(c => c.id === DEMO_CLUSTER.id)
+    ? graph.clusters
+    : [...graph.clusters, DEMO_CLUSTER];
+
+  return {
+    nodes: [...graph.nodes, ...orgNodes],
+    edges: [...graph.edges, ...orgEdges],
+    clusters,
+    related: graph.related,
+  };
+}
+
 function entityNode(
   id: string,
   title: string,
