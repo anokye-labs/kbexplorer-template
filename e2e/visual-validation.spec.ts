@@ -46,9 +46,8 @@ test.describe('Visual Validation', () => {
     await expect(page.getByRole('button', { name: 'Dock right' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Dock top' })).toBeVisible()
 
-    // Theme buttons
-    await expect(page.getByRole('button', { name: /Dark/ })).toBeVisible()
-    await expect(page.getByRole('button', { name: /Light/ })).toBeVisible()
+    // Theme chooser (palette menu)
+    await expect(page.getByRole('button', { name: 'Choose theme' })).toBeVisible()
 
     // Sliders (at least detail + zoom or font + width)
     const sliders = page.locator('input[type="range"]')
@@ -310,16 +309,18 @@ test.describe('Visual Validation', () => {
     await page.goto('/#/node/readme', { timeout: 60000 })
     await page.waitForTimeout(3000)
 
-    // Switch to light
-    await page.getByRole('button', { name: /Light/ }).click()
+    // Open the palette menu and switch to light
+    await page.getByRole('button', { name: 'Choose theme' }).click()
+    await page.getByRole('menuitemradio', { name: 'Light' }).click()
     await page.waitForTimeout(1000)
     const lightBg = await page.evaluate(() => {
       const el = document.querySelector('[class*=fui-FluentProvider]') || document.documentElement
       return getComputedStyle(el).backgroundColor
     })
 
-    // Switch to dark
-    await page.getByRole('button', { name: /Dark/ }).click()
+    // Open the palette menu and switch to dark
+    await page.getByRole('button', { name: 'Choose theme' }).click()
+    await page.getByRole('menuitemradio', { name: 'Dark' }).click()
     await page.waitForTimeout(1000)
     const darkBg = await page.evaluate(() => {
       const el = document.querySelector('[class*=fui-FluentProvider]') || document.documentElement

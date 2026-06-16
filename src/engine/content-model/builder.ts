@@ -71,6 +71,10 @@ interface EntityEntry {
   nativeType?: string;
   /** Companion markdown body (e.g. a sibling `.md`), when the kind declares one. */
   body?: string;
+  /** Path of the entity file relative to the content-model root (e.g. `people/ada.yaml`). */
+  path: string;
+  /** Verbatim text of the entity file — the editable source of truth (F5 — #152). */
+  raw: string;
 }
 
 const NUL = '\u0000';
@@ -78,6 +82,22 @@ const key = (kind: string, value: string): string => `${kind}${NUL}${value}`;
 
 function humanize(s: string): string {
   return s.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/**
+ * Coerce an FK value to its reference string. Scalars stringify; object
+ * entries (e.g. inline `{ id, name, url }` systems-of-record) resolve via
+ * their string `id`. Objects without a string id return null — the caller
+ * diagnoses rather than producing a "[object Object]" stub.
+ */
+function refOf(v: unknown): string | null {
+  if (v == null) return null;
+  if (typeof v === 'object') {
+    const id = (v as Record<string, unknown>).id;
+    return typeof id === 'string' && id.trim() ? id.trim() : null;
+  }
+  const s = String(v).trim();
+  return s || null;
 }
 
 /** Schema/index files that are never treated as entities. */
@@ -88,6 +108,17 @@ function isSchemaPath(path: string): boolean {
 }
 
 const YAML_RE = /\.ya?ml$/i;
+
+/** Join a content-model root with an entity path into a single repo-relative path. */
+function joinPath(root: string, path: string): string {
+  const trimmedRoot = root.replace(/\/+$/, '');
+  return trimmedRoot ? `${trimmedRoot}/${path}` : path;
+}
+
+/** Parser format for an entity file, inferred from its extension (defaults to YAML). */
+function sourceFormat(path: string): 'yaml' | 'json' {
+  return /\.json$/i.test(path) ? 'json' : 'yaml';
+}
 
 function parseYaml(raw: string): EntityRecord | null {
   try {
@@ -180,6 +211,8 @@ function walkEntities(schema: ContentModelSchema, source: ContentModelSource, di
       record,
       nativeType,
       body: companionBody(source.files, path, convention.companionExt),
+      path,
+      raw,
     };
     entries.push(entry);
     byKindId.set(key(kind, id), entry);
@@ -201,7 +234,12 @@ function ldContextOf(schema: ContentModelSchema): JsonLd['@context'] {
   return Object.keys(ctx).length > 0 ? ctx : 'https://schema.org';
 }
 
-function emitNode(schema: ContentModelSchema, entry: EntityEntry, ldContext: JsonLd['@context']): KBNode {
+function emitNode(
+  schema: ContentModelSchema,
+  entry: EntityEntry,
+  ldContext: JsonLd['@context'],
+  root: string,
+): KBNode {
   const { kind, id, urn, record, body, nativeType } = entry;
   const title = String(record.name ?? record.title ?? id);
   // `data` is the verbatim record — the field → node mapping is reversible, and
@@ -231,6 +269,10 @@ function emitNode(schema: ContentModelSchema, entry: EntityEntry, ldContext: Jso
     provider: CONTENT_MODEL_PROVIDER,
     data,
     jsonld: buildJsonLd({ id: urn, identity: urn }, kind, ldData, ldContext),
+    // Pointer to the underlying source-of-truth file so the in-app editor can
+    // edit the real entity file and hand the change off to GitHub as a PR
+    // (F5 — #152). The path is repo-relative (root + entry path).
+    sourceFile: { path: joinPath(root, entry.path), raw: entry.raw, format: sourceFormat(entry.path) },
   };
 }
 
@@ -355,7 +397,17 @@ class EdgeResolver {
       : [raw];
     for (const v of values) {
       if (v == null) continue;
-      const to = this.resolve(rule.to ?? '', String(v).trim(), mode);
+      const ref = refOf(v);
+      if (ref == null) {
+        this.diagnostics.push({
+          level: 'warn',
+          code: 'bad-ref-shape',
+          message: `FK "${rule.id}" entry is an object without a string "id" — expected an id string (or { id: ... })`,
+          ref: entry.urn,
+        });
+        continue;
+      }
+      const to = this.resolve(rule.to ?? '', ref, mode);
       this.addEdge(entry.urn, to, relation, rule.description ?? humanize(relation));
     }
   }
@@ -399,7 +451,9 @@ class EdgeResolver {
         if (raw == null) continue;
         const refs = via.fk === 'array' ? (Array.isArray(raw) ? raw : [raw]) : [raw];
         for (const r of refs) {
-          const targetUrn = this.lookup(via.to, String(r).trim(), mode);
+          const ref = refOf(r);
+          if (ref == null) continue;
+          const targetUrn = this.lookup(via.to, ref, mode);
           if (!targetUrn) continue;
           (groups.get(targetUrn) ?? groups.set(targetUrn, []).get(targetUrn)!).push(entry.urn);
         }
@@ -444,7 +498,7 @@ export function buildContentModel(
   // Pass 3: emit nodes
   const nodeByUrn = new Map<string, KBNode>();
   for (const entry of index.entries) {
-    nodeByUrn.set(entry.urn, emitNode(schema, entry, ldContext));
+    nodeByUrn.set(entry.urn, emitNode(schema, entry, ldContext, src.root));
   }
 
   // Passes 4 + 5: edges

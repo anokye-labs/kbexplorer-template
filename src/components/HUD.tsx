@@ -5,10 +5,17 @@ import {
   Button,
   Slider,
   Card,
-  CardHeader,
   Body1Strong,
   Caption1,
   Caption2,
+  Menu,
+  MenuTrigger,
+  MenuPopover,
+  MenuList,
+  MenuItemRadio,
+  Popover,
+  PopoverTrigger,
+  PopoverSurface,
 } from '@fluentui/react-components';
 import {
   ChevronLeftRegular,
@@ -22,13 +29,16 @@ import {
   WeatherMoonRegular,
   WeatherSunnyRegular,
   BookRegular,
+  ColorRegular,
   GridRegular,
   PanelBottomRegular,
   PanelLeftRegular,
   PanelRightRegular,
   PanelTopExpandRegular,
+  SearchRegular,
+  MoreHorizontalRegular,
 } from '@fluentui/react-icons';
-import type { KBGraph, KBConfig, KBNode, Theme } from '../types';
+import type { KBGraph, KBConfig, KBNode } from '../types';
 import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
 import type { TrimResult } from '../types';
 import type { ThemeMode } from '../hooks/useTheme';
@@ -50,9 +60,25 @@ interface HUDProps {
    * carry any key — drive minimap edge/highlight contrast correctly.
    */
   isDark: boolean;
-  onThemeChange: (theme: Theme) => void;
+  /** Full selectable theme set (built-ins + config/external/module themes). */
+  availableThemes: ThemeMode[];
+  onThemeChange: (theme: ThemeMode) => void;
   onCollapsedChange?: (collapsed: boolean) => void;
   onDockChange?: (dock: DockPosition) => void;
+  /** Called when the user activates the search button (Ctrl-K palette). */
+  onOpenSearch?: () => void;
+  /**
+   * Override the HUD's initial collapsed state.
+   *
+   * Used by the landing-mode feature (#238): when `config.landing.graph` is
+   * `'collapsed'` AND the user has no stored `kbe-hud-collapsed` preference,
+   * the parent passes `true` here so the HUD starts collapsed on first visit.
+   * The HUD's own localStorage read (which happens inside the `useState`
+   * initializer) is bypassed in favour of this prop when provided.
+   *
+   * Optional — when absent the HUD falls back to its normal localStorage read.
+   */
+  initialCollapsed?: boolean;
 }
 
 const FONT_SIZES = [0.92, 1.0, 1.1, 1.2, 1.35, 1.5, 1.6];
@@ -276,9 +302,50 @@ const useStyles= makeStyles({
     alignItems: 'center',
     gap: tokens.spacingHorizontalXS,
   },
+  // Mobile-only rail: single row shown when the HUD is in bottom/top dock
+  // and the viewport is ≤480px wide (covers 390px standard mobile width).
+  mobileRail: {
+    display: 'flex',
+    alignItems: 'center',
+    flex: 1,
+    padding: `0 ${tokens.spacingHorizontalS}`,
+    gap: tokens.spacingHorizontalXS,
+    minHeight: 0,
+    minWidth: 0,
+  },
+  mobileNodeTitle: {
+    flex: 1,
+    minWidth: 0,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  // Popover surface for the mobile tools disclosure
+  mobileToolsPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+    padding: tokens.spacingHorizontalM,
+    minWidth: '200px',
+  },
 });
 
-export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange, onCollapsedChange, onDockChange }: HUDProps) {
+const THEME_LABELS: Record<string, string> = { dark: 'Dark', light: 'Light', sepia: 'Sepia' };
+
+/** Human label for a theme key — known built-ins, else title-cased key. */
+function themeLabel(mode: string): string {
+  return THEME_LABELS[mode] ?? mode.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Icon for a theme key — built-ins keep their glyph, config themes get a swatch. */
+function themeIcon(mode: string): React.ReactElement {
+  if (mode === 'dark') return <WeatherMoonRegular />;
+  if (mode === 'light') return <WeatherSunnyRegular />;
+  if (mode === 'sepia') return <BookRegular />;
+  return <ColorRegular />;
+}
+
+export function HUD({ graph, config, currentNodeId, theme, isDark, availableThemes, onThemeChange, onCollapsedChange, onDockChange, onOpenSearch, initialCollapsed }: HUDProps) {
   const styles = useStyles();
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [canvasMountKey, setCanvasMountKey] = useState(0);
@@ -325,11 +392,28 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
   const splitResizeRef = useRef<{ startY: number; startPct: number } | null>(null);
 
   const [collapsed, setCollapsed] = useState(() => {
+    // Landing-mode override (#238): when the parent has already resolved the
+    // initial state (honoring config vs localStorage precedence), use it
+    // directly — no second localStorage read needed.
+    if (initialCollapsed !== undefined) return initialCollapsed;
     try { return localStorage.getItem('kbe-hud-collapsed') === 'true'; } catch { return false; }
   });
   const [dock, setDock] = useState<DockPosition>(() =>
     readPersistedString('kbe-hud-dock', 'bottom') as DockPosition,
   );
+
+  // Track whether the viewport is narrow (≤480 px) for mobile reflow (#249).
+  // We listen to window 'resize' rather than a CSS media query so the HUD reacts
+  // dynamically to viewport changes (e.g. DevTools responsive mode) without a
+  // page reload.
+  const [isNarrow, setIsNarrow] = useState(() => {
+    try { return window.innerWidth <= 480; } catch { return false; }
+  });
+  useEffect(() => {
+    const update = () => setIsNarrow(window.innerWidth <= 480);
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const handleCollapse = useCallback((value: boolean) => {
     setCollapsed(value);
@@ -584,6 +668,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
       fitOnStabilize: !currentNodeId || filteredGraph.nodes.length < 60,
       emphasizeNodeId: currentNodeId,
       interactive: true,
+      auditSlot: 'map-overlay',
     });
     network.once('stabilized', () => {
       const scale = network.getScale();
@@ -633,6 +718,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
         nodeSizeRange: [28, 44],
         nodeSizeStep: 3,
         labelMaxLength: 18,
+        auditSlot: 'hud-sidebar',
       });
       network.once('stabilized', () => {
         setSidebarZoom(Math.round(network.getScale() * 100));
@@ -675,13 +761,23 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
     } catch { /* node might not exist */ }
   }, [currentNodeId]);
 
-  // Active clusters: use the view-filtered (but not collapsed) graph for the legend
-  const activeClusters = React.useMemo(() => {
+  // Active clusters: use the view-filtered (but not collapsed) graph for the legend.
+  // Sorted by node count (descending) so the most-populated clusters lead the
+  // legend; the rest are folded into an "+N more" overflow chip in the renderer.
+  // 12 is a deliberate ceiling — beyond ~12 colour-coded categories the legend
+  // becomes a wall of pills and the constellation reads as noise (#270 audit).
+  const LEGEND_VISIBLE_LIMIT = 12;
+  const activeClustersFull = React.useMemo(() => {
     const viewGraph = filterGraphToView(graph, activeView);
     const counts = new Map<string, number>();
     for (const n of viewGraph.nodes) counts.set(n.cluster, (counts.get(n.cluster) ?? 0) + 1);
-    return viewGraph.clusters.filter(c => (counts.get(c.id) ?? 0) >= 2);
+    return viewGraph.clusters
+      .filter(c => (counts.get(c.id) ?? 0) >= 2)
+      .map(c => ({ ...c, _count: counts.get(c.id) ?? 0 }))
+      .sort((a, b) => b._count - a._count);
   }, [graph, activeView]);
+  const activeClusters = activeClustersFull.slice(0, LEGEND_VISIBLE_LIMIT);
+  const overflowClusters = activeClustersFull.slice(LEGEND_VISIBLE_LIMIT);
 
   // Active edge/relation styles present in the graph — data-driven from the
   // edges themselves so relation types (leads/staffs/reports-to/…) and any
@@ -756,29 +852,32 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
   const expandIcon = dock === 'top' ? <ChevronDownRegular /> : dock === 'left' ? <ChevronRightRegular /> : dock === 'right' ? <ChevronLeftRegular /> : <ChevronUpRegular />;
 
   const themeButtons = (
-    <>
-      <Button
-        appearance={theme === 'dark' ? 'primary' : 'subtle'}
-        size="small"
-        icon={<WeatherMoonRegular />}
-        onClick={() => onThemeChange('dark')}
-        title="Dark"
-      />
-      <Button
-        appearance={theme === 'light' ? 'primary' : 'subtle'}
-        size="small"
-        icon={<WeatherSunnyRegular />}
-        onClick={() => onThemeChange('light')}
-        title="Light"
-      />
-      <Button
-        appearance={theme === 'sepia' ? 'primary' : 'subtle'}
-        size="small"
-        icon={<BookRegular />}
-        onClick={() => onThemeChange('sepia')}
-        title="Sepia"
-      />
-    </>
+    <Menu
+      checkedValues={{ theme: [theme] }}
+      onCheckedValueChange={(_e, data) => {
+        const next = data.checkedItems[0];
+        if (next) onThemeChange(next as ThemeMode);
+      }}
+    >
+      <MenuTrigger disableButtonEnhancement>
+        <Button
+          appearance="subtle"
+          size="small"
+          icon={<ColorRegular />}
+          title={`Theme: ${themeLabel(theme)}`}
+          aria-label="Choose theme"
+        />
+      </MenuTrigger>
+      <MenuPopover>
+        <MenuList>
+          {availableThemes.map((m) => (
+            <MenuItemRadio key={m} name="theme" value={m} icon={themeIcon(m)}>
+              {themeLabel(m)}
+            </MenuItemRadio>
+          ))}
+        </MenuList>
+      </MenuPopover>
+    </Menu>
   );
 
   const nodeTitle = currentNode?.title ?? config.title;
@@ -854,40 +953,51 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
                 Showing {filteredGraph.nodes.length} of {trimResult.totalNodes} nodes
               </Caption2>
             )}
-            <Card size="small" style={{ position: 'absolute', bottom: 16, left: 16, zIndex: 10 }}>
-              <CardHeader header={<Caption1><strong>Clusters</strong></Caption1>} />
+            {/* Cluster + edge-type legend — read-only palette in the overlay.
+                Cluster collapse is managed in the sidebar (single source of
+                truth per #252); this panel is display-only so there's one
+                legend, not two. */}
+            <div data-kbe-legend="legend-root" style={{
+              position: 'absolute', bottom: 16, left: 16, zIndex: 10,
+              background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium,
+              border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '6px 10px',
+              fontSize: 12, lineHeight: '18px', opacity: 0.9,
+            }}>
               {activeClusters.map(c => {
                 const isCollapsed = collapsedClusters.has(c.id);
                 return (
-                  <div
-                    key={c.id}
-                    onClick={() => toggleClusterCollapse(c.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 12px', cursor: 'pointer', opacity: isCollapsed ? 0.5 : 1 }}
-                    title={isCollapsed ? `Expand ${c.name}` : `Collapse ${c.name}`}
-                  >
+                  <div key={c.id} data-kbe-legend="cluster" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0', opacity: isCollapsed ? 0.4 : 1 }}>
                     <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
-                    <Caption1 style={{ textDecoration: isCollapsed ? 'line-through' : 'none' }}>{c.name}</Caption1>
+                    <Caption1 style={{ color: tokens.colorNeutralForeground2, textDecoration: isCollapsed ? 'line-through' : 'none' }}>{c.name}</Caption1>
                   </div>
                 );
               })}
+              {overflowClusters.length > 0 && (
+                <div
+                  data-kbe-legend="overflow"
+                  title={overflowClusters.map(c => `${c.name} (${c._count})`).join(', ')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0', opacity: 0.7 }}
+                >
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: tokens.colorNeutralBackground3, border: `1px dashed ${tokens.colorNeutralStroke2}`, flexShrink: 0 }} />
+                  <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>{`+${overflowClusters.length} more`}</Caption1>
+                </div>
+              )}
               {activeEdgeStyles.length > 0 && (
                 <>
-                  <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 12px' }} />
-                  {activeEdgeStyles.map(({ key, label, style: s }) => {
-                    return (
-                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 12px' }}>
-                        <svg width={18} height={8} style={{ flexShrink: 0 }}>
-                          <line x1={0} y1={4} x2={18} y2={4}
-                            stroke={s.color} strokeWidth={Math.max(s.width, 1.2)}
-                            strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
-                        </svg>
-                        <Caption1>{label}</Caption1>
-                      </div>
-                    );
-                  })}
+                  <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
+                  {activeEdgeStyles.map(({ key, label, style: s }) => (
+                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0' }}>
+                      <svg width={18} height={8} style={{ flexShrink: 0 }}>
+                        <line x1={0} y1={4} x2={18} y2={4}
+                          stroke={s.color} strokeWidth={Math.max(s.width, 1.2)}
+                          strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
+                      </svg>
+                      <Caption1 style={{ color: tokens.colorNeutralForeground2 }}>{label}</Caption1>
+                    </div>
+                  ))}
                 </>
               )}
-            </Card>
+            </div>
             {/* Zoom & Detail sliders */}
             <div style={{
               position: 'absolute', bottom: 16, right: 16, zIndex: 10,
@@ -1035,12 +1145,14 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
                       {filteredGraph.nodes.length}/{trimResult.totalNodes} nodes
                     </Caption2>
                   )}
-                  {/* Legend overlay with background */}
+                  {/* Cluster legend — single source of truth for cluster colours and
+                      collapse toggles. This sidebar panel is the HUD cluster list;
+                      the fullscreen overlay no longer duplicates it (#252). */}
                   <div style={{
                     position: 'absolute', top: 42, left: 8, fontSize: 11, lineHeight: '18px',
                     background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium,
-                    border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '6px 8px',
-                    opacity: 0.9,
+                    border: `1px solid ${tokens.colorNeutralStroke2}`, padding: '4px 8px',
+                    opacity: 0.9, maxWidth: 'calc(100% - 80px)',
                   }}>
                     {activeClusters.map(c => {
                       const isCollapsed = collapsedClusters.has(c.id);
@@ -1056,22 +1168,14 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
                         </div>
                       );
                     })}
-                    {activeEdgeStyles.length > 0 && (
-                      <>
-                        <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
-                        {activeEdgeStyles.map(({ key, label, style: s }) => {
-                          return (
-                            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                              <svg width={14} height={7} style={{ flexShrink: 0 }}>
-                                <line x1={0} y1={3.5} x2={14} y2={3.5}
-                                  stroke={s.color} strokeWidth={Math.max(s.width, 1)}
-                                  strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
-                              </svg>
-                              <span style={{ color: tokens.colorNeutralForeground3 }}>{label}</span>
-                            </div>
-                          );
-                        })}
-                      </>
+                    {overflowClusters.length > 0 && (
+                      <div
+                        title={overflowClusters.map(c => `${c.name} (${c._count})`).join(', ')}
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, opacity: 0.7 }}
+                      >
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: tokens.colorNeutralBackground3, border: `1px dashed ${tokens.colorNeutralStroke2}`, flexShrink: 0 }} />
+                        <span style={{ color: tokens.colorNeutralForeground3 }}>{`+${overflowClusters.length} more`}</span>
+                      </div>
                     )}
                   </div>
                   {/* Re-center the graph */}
@@ -1167,10 +1271,25 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
                       icon={<GridRegular />}
                       onClick={() => { window.location.hash = '#/overview'; }}
                       title="Card overview"
-                      style={{ marginRight: 'auto' }}
                     >
                       Cards
                     </Button>
+                    {onOpenSearch ? (
+                      <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<SearchRegular />}
+                        onClick={onOpenSearch}
+                        title="Search (Ctrl-K or /)"
+                        aria-label="Open search"
+                        data-testid="hud-search-button-sidebar"
+                        style={{ marginRight: 'auto' }}
+                      />
+                    ) : (
+                      // Flex spacer standing in for the search button's
+                      // marginRight: auto, keeping the caption right-aligned.
+                      <span style={{ marginRight: 'auto' }} />
+                    )}
                     <Caption2 style={{ color: tokens.colorNeutralForeground3, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
                       Connections
                     </Caption2>
@@ -1269,8 +1388,129 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
               </>
             ) : (
               /* ── Horizontal layout (top/bottom dock) ── */
+              /* On narrow viewports (≤480 px, #249) we render a single compact
+                 rail instead of the three-column desktop layout. All reading
+                 tools move into a Popover ("⋯") so nothing overflows or overlaps
+                 the node-title bar.  On wide viewports the original three-column
+                 layout is preserved unchanged. */
+              <React.Fragment>{isNarrow ? (
+                /* ── Mobile rail (#249) ── */
+                <div className={styles.mobileRail}>
+                  {/* Prev/Next */}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<ChevronLeftRegular />}
+                    onClick={goPrev}
+                    disabled={!currentNode}
+                    title="Previous node (←)"
+                    aria-label="Previous node"
+                    style={{ minWidth: 40, minHeight: 40 }}
+                  />
+                  {/* Current node title */}
+                  <div className={styles.mobileNodeTitle}>
+                    {currentNode ? (
+                      <Body1Strong className={styles.mobileNodeTitle}>{currentNode.title}</Body1Strong>
+                    ) : (
+                      <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                        {brandLogoUrl
+                          ? <img className={styles.brandLogo} src={brandLogoUrl} alt="" />
+                          : config.title}
+                      </Caption1>
+                    )}
+                  </div>
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<ChevronRightRegular />}
+                    onClick={goNext}
+                    disabled={!currentNode}
+                    title="Next node (→)"
+                    aria-label="Next node"
+                    style={{ minWidth: 40, minHeight: 40 }}
+                  />
+                  {/* Shortcuts */}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<MapRegular />}
+                    onClick={() => setMapExpanded(true)}
+                    title="Open constellation"
+                    style={{ minWidth: 40, minHeight: 40 }}
+                    aria-label="Open constellation map"
+                  />
+                  {onOpenSearch && (
+                    <Button
+                      appearance="subtle"
+                      size="small"
+                      icon={<SearchRegular />}
+                      onClick={onOpenSearch}
+                      title="Search (Ctrl-K or /)"
+                      aria-label="Open search"
+                      data-testid="hud-search-button"
+                      style={{ minWidth: 40, minHeight: 40 }}
+                    />
+                  )}
+                  {/* ⋯ tools disclosure */}
+                  <Popover trapFocus>
+                    <PopoverTrigger disableButtonEnhancement>
+                      <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<MoreHorizontalRegular />}
+                        title="More options"
+                        aria-label="More reading options"
+                        style={{ minWidth: 40, minHeight: 40 }}
+                      />
+                    </PopoverTrigger>
+                    <PopoverSurface>
+                      <div className={styles.mobileToolsPanel}>
+                        <div className={styles.toolRow}>
+                          <Caption2 className={styles.toolLabel}>Theme</Caption2>
+                          {themeButtons}
+                        </div>
+                        <div className={styles.toolRow}>
+                          <Caption2 className={styles.toolLabel}>Dock</Caption2>
+                          <div className={styles.dockBtnGroup}>
+                            <Button appearance={dock === 'bottom' ? 'primary' : 'subtle'} size="small" icon={<PanelBottomRegular />} onClick={() => handleDockChange('bottom')} title="Dock bottom" aria-label="Dock bottom" />
+                            <Button appearance="subtle" size="small" icon={<PanelLeftRegular />} onClick={() => handleDockChange('left')} title="Dock left" aria-label="Dock left" />
+                            <Button appearance="subtle" size="small" icon={<PanelRightRegular />} onClick={() => handleDockChange('right')} title="Dock right" aria-label="Dock right" />
+                            <Button appearance={dock === 'top' ? 'primary' : 'subtle'} size="small" icon={<PanelTopExpandRegular />} onClick={() => handleDockChange('top')} title="Dock top" aria-label="Dock top" />
+                          </div>
+                        </div>
+                        {currentNode && (
+                          <>
+                            <div className={styles.toolRow}>
+                              <Caption2 className={styles.toolLabel}>Aa</Caption2>
+                              <Slider className={styles.slider} min={0} max={6} step={1} value={fontSize} onChange={(_e, data) => setFontSize(data.value)} title={`Font size: ${FONT_SIZES[fontSize]}rem`} />
+                            </div>
+                            <div className={styles.toolRow}>
+                              <Caption2 className={styles.toolLabel}>Width</Caption2>
+                              <Slider className={styles.slider} min={0} max={4} step={1} value={colWidth} onChange={(_e, data) => setColWidth(data.value)} title={`Column width: ${COL_WIDTHS[colWidth]}`} />
+                            </div>
+                          </>
+                        )}
+                        <Button
+                          appearance="outline"
+                          size="small"
+                          icon={<GridRegular />}
+                          onClick={() => { window.location.hash = '#/overview'; }}
+                        >
+                          Cards
+                        </Button>
+                      </div>
+                    </PopoverSurface>
+                  </Popover>
+                </div>
+              ) : (
+              /* ── Desktop three-column layout ── */
               <>
-              {/* Minimap panel */}
+              {/* Minimap panel — only rendered once positions are available (#251).
+                  An empty canvas with a "MAP" label is a placeholder that must not
+                  ship (BEAUTY.md principle 5). We mount the canvas element (off-
+                  screen, via canvasRef) so drawMinimap can still populate it; the
+                  panel is only shown once we have real position data. */}
+              {minimapPositions.size > 0 && (
               <div className={styles.panelLeft}>
                 <canvas
                   ref={canvasRef}
@@ -1280,6 +1520,17 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
                 />
                 <Caption2 style={{ marginTop: 4, color: tokens.colorNeutralForeground3 }}>MAP</Caption2>
               </div>
+              )}
+              {/* Hidden canvas used for minimap drawing while positions are loading.
+                  Removed from the layout (display:none) so it never shows as an
+                  empty box, but still mounted so the ref and drawMinimap work. */}
+              {minimapPositions.size === 0 && (
+                <canvas
+                  ref={canvasRef}
+                  style={{ display: 'none' }}
+                  aria-hidden="true"
+                />
+              )}
 
               {/* Center: Navigation */}
               <div className={styles.panelCenter}>
@@ -1300,6 +1551,19 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
                 >
                   Cards
                 </Button>
+                {onOpenSearch && (
+                  <Button
+                    appearance="outline"
+                    size="small"
+                    icon={<SearchRegular />}
+                    onClick={onOpenSearch}
+                    title="Search (Ctrl-K or /)"
+                    aria-label="Open search"
+                    data-testid="hud-search-button"
+                  >
+                    Search
+                  </Button>
+                )}
                 <Button
                   appearance="subtle"
                   size="small"
@@ -1441,6 +1705,9 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, onThemeChange
             </div>
               </>
             )}
+            </React.Fragment>
+          )
+          }
           </div>
         )}
       </div>

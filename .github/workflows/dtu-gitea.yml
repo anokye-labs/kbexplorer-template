@@ -1,0 +1,58 @@
+name: DTU — Gitea multi-agent harness
+
+# Opt-in / scheduled ONLY. This is deliberately NOT part of the fast PR gate:
+# it brings up a real Gitea server in Podman and drives the live multi-agent
+# scenario suite, which is heavier and slower than the static-twin e2e gate.
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Nightly at 04:30 UTC.
+    - cron: '30 4 * * *'
+
+concurrency:
+  group: dtu-gitea-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gitea-dtu:
+    # ubuntu-latest ships Podman and runs OCI containers natively (no VM /
+    # `podman machine` needed — bootstrap detects this automatically).
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify Podman is available
+        run: podman --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (chromium + system deps)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Gitea DTU scenario suite
+        # globalSetup bootstraps Podman+Gitea and seeds the universe; the config
+        # starts the adapter + app on dedicated ports.
+        run: npm run test:e2e:gitea
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-gitea
+          path: playwright-report-gitea/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Tear down the twin
+        if: always()
+        run: npm run dtu:down || true

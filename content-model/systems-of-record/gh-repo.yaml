@@ -1,0 +1,7 @@
+"@type": system-of-record
+id: gh-repo
+name: GitHub Repo
+url: "https://github.com/anokye-labs/kbexplorer-template"
+description: >
+  Primary source-of-truth for code, issues, PRs, and discussions.
+  The content-model engine reads from this repo at runtime.

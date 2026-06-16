@@ -20,8 +20,9 @@ test.describe('Entity nodes (open node-type foundation)', () => {
     await expect(page.getByText(/Entity · Person/i).first()).toBeVisible({ timeout: 10000 });
   });
 
-  test('team entity falls back to the generic structured viewer', async ({ page }) => {
-    await page.goto('/?demo=entities#/node/demo-team-atlas', { timeout: 60000 });
+  test('charter entity falls back to the generic structured viewer', async ({ page }) => {
+    // `charter` is the demo kind with no bespoke viewer (team gained TeamView in #233)
+    await page.goto('/?demo=entities#/node/demo-charter-atlas', { timeout: 60000 });
     await page.waitForTimeout(3000);
 
     const view = page.locator('.kb-structured-view');
@@ -30,7 +31,18 @@ test.describe('Entity nodes (open node-type foundation)', () => {
     await expect(view).toContainText('Mission');
     await expect(view).toContainText('Owns the knowledge-graph engine');
     // JSON-LD @id surfaced in the header
-    await expect(view).toContainText('kg://team/demo-team-atlas');
+    await expect(view).toContainText('kg://charter/demo-charter-atlas');
+  });
+
+  test('team entity resolves the bespoke TeamView (#233)', async ({ page }) => {
+    await page.goto('/?demo=entities#/node/demo-team-atlas', { timeout: 60000 });
+    await page.waitForTimeout(3000);
+
+    const view = page.locator('.kb-team-view');
+    await expect(view).toBeVisible({ timeout: 10000 });
+    await expect(view).toContainText('Team Atlas');
+    await expect(view).toContainText('Members');
+    await expect(view).toContainText('Workstreams');
   });
 
   test('renders cleanly when stale (older-version) cache is present', async ({ page }) => {

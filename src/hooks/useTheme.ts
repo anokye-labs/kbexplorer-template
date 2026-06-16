@@ -239,6 +239,7 @@ export function useTheme(): [
   (t: ThemeMode) => void,
   (theme?: KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => void,
   () => void,
+  ThemeMode[],
 ] {
   const [mode, setModeState] = useState<ThemeMode>(() => readStored());
   const [themeMap, setThemeMap] = useState<Record<string, FluentTheme>>(BUILTIN_THEME_MAP);
@@ -290,7 +291,11 @@ export function useTheme(): [
   const fluentTheme =
     themeMap[mode] ?? (BUILTIN_THEME_MAP as Record<string, FluentTheme>)[mode] ?? webDarkTheme;
 
-  return [mode, fluentTheme, setMode, applyConfig, cycleTheme];
+  // The full selectable set (built-ins first, then config/external/module
+  // themes) so the UI can render a theme chooser, not just the `t` cycle.
+  const availableModes = modesForMap(themeMap);
+
+  return [mode, fluentTheme, setMode, applyConfig, cycleTheme, availableModes];
 }
 
 /**

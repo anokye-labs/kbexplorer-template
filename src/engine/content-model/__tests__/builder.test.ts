@@ -70,6 +70,17 @@ describe('content-model builder — node emission (T2.2 / #161)', () => {
     expect(game.rawContent).toContain('Game Assist owns');
     expect(game.content).toContain('<');
   });
+
+  it('attaches the underlying source-of-truth file (path + raw + format) for PR write-back (F5 / #152)', () => {
+    const ada = node(ADA);
+    expect(ada.sourceFile).toEqual({
+      path: 'content-model/people/ada.yaml',
+      raw: source.files['people/ada.yaml'],
+      format: 'yaml',
+    });
+    // unresolved stubs have no file to edit
+    expect(node(CTO).sourceFile).toBeUndefined();
+  });
 });
 
 describe('content-model builder — org detection (T2.2 / #161)', () => {
@@ -88,7 +99,7 @@ describe('content-model builder — org detection (T2.2 / #161)', () => {
 
 describe('content-model builder — FK edge resolution (T2.3 / #162)', () => {
   it('resolves a scalar FK (workstream → priority)', () => {
-    expect(hasEdge(WS, PRIO, 'structural')).toBe(true);
+    expect(hasEdge(WS, PRIO, 'has-priority')).toBe(true);
   });
 
   it('resolves an array FK (squad → each member person)', () => {
