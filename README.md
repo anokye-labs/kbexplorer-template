@@ -313,6 +313,16 @@ The [graph provider architecture](spec-providers-overview) is the next major evo
 
 The [link assessment](spec-link-assessment) tool already provides graph health analysis — orphan detection, broken references, coverage gaps.
 
+## Releases & versioning
+
+Releases are cut as immutable git tags (`vX.Y.Z`) with matching GitHub Releases.
+Host repos that vendor this template should **pin to a tag**, not track `main`.
+
+- **[CHANGELOG.md](CHANGELOG.md)** — notable changes per release.
+- **[docs/compatibility.md](docs/compatibility.md)** — template ↔ kbexplorer CLI
+  compatibility matrix and the pinning contract (`kbexplorer doctor` treats a
+  tag-pinned install as satisfied).
+
 ## License
 
 [MIT](LICENSE)
