@@ -10,6 +10,7 @@ import {
   fetchLocalCommits,
   readContentModel,
   readThemeFile,
+  detectHostRoot,
 } from '../generate-manifest.js';
 
 const FIXTURES = resolve(import.meta.dirname, '__fixtures__');
@@ -35,6 +36,80 @@ beforeAll(() => {
 
 afterAll(() => {
   rmSync(FIXTURES, { recursive: true, force: true });
+});
+
+// ── detectHostRoot (#220) ──────────────────────────────────
+
+describe('detectHostRoot (#220 host-root detection)', () => {
+  const HR = resolve(FIXTURES, '__hostroot__');
+
+  /** Create a directory with an optional package.json name and/or .git marker. */
+  function makeDir(path, { pkgName, git } = {}) {
+    mkdirSync(path, { recursive: true });
+    if (pkgName !== undefined) {
+      writeFileSync(resolve(path, 'package.json'), JSON.stringify({ name: pkgName }));
+    }
+    if (git) writeFileSync(resolve(path, '.git'), 'gitdir: ../.git/modules/x');
+    return path;
+  }
+
+  afterAll(() => {
+    rmSync(HR, { recursive: true, force: true });
+  });
+
+  it('honors an explicit VITE_KB_HOST_ROOT override regardless of layout', () => {
+    const override = makeDir(resolve(HR, 'explicit-host'), { pkgName: 'whatever', git: true });
+    // kbRootDir is irrelevant when the override is set.
+    const result = detectHostRoot(resolve(HR, 'does-not-matter'), {
+      VITE_KB_HOST_ROOT: override,
+    });
+    expect(result).toBe(resolve(override));
+  });
+
+  it('ignores a blank/whitespace-only VITE_KB_HOST_ROOT override', () => {
+    const standalone = makeDir(resolve(HR, 'standalone-blank'), { pkgName: 'kbexplorer-template' });
+    expect(detectHostRoot(standalone, { VITE_KB_HOST_ROOT: '   ' })).toBe(standalone);
+  });
+
+  it('detects the host root for a VENDORED layout (.kbexplorer one level deep)', () => {
+    // host/ (git + package.json) containing host/.kbexplorer/ (the template)
+    const host = makeDir(resolve(HR, 'vendored-host'), { pkgName: 'my-host-repo', git: true });
+    const kb = makeDir(resolve(host, '.kbexplorer'), { pkgName: 'kbexplorer-template' });
+    expect(detectHostRoot(kb, {})).toBe(host);
+  });
+
+  it('detects the host root for a SUBMODULE layout (deeper nesting)', () => {
+    // host/ (git + pkg) → host/vendor/ (no boundary) → host/vendor/.kbexplorer/
+    const host = makeDir(resolve(HR, 'submodule-host'), { pkgName: 'my-host-repo', git: true });
+    makeDir(resolve(host, 'vendor'));
+    const kb = makeDir(resolve(host, 'vendor', '.kbexplorer'), { pkgName: 'kbexplorer' });
+    expect(detectHostRoot(kb, {})).toBe(host);
+  });
+
+  it('walks past a kbexplorer-named ancestor to the real host boundary', () => {
+    // Defensive: an enclosing dir whose package.json is also a template name
+    // must not be treated as the host.
+    const host = makeDir(resolve(HR, 'nested-host'), { pkgName: 'real-host', git: true });
+    const inner = makeDir(resolve(host, 'kbexplorer'), { pkgName: 'kbexplorer' });
+    const kb = makeDir(resolve(inner, '.kbexplorer'), { pkgName: 'kbexplorer-template' });
+    expect(detectHostRoot(kb, {})).toBe(host);
+  });
+
+  it('returns the template root for a STANDALONE template checkout', () => {
+    // Template dir not named `.kbexplorer` → no enclosing host is inferred,
+    // even if some unrelated repo happens to sit above it.
+    makeDir(resolve(HR, 'workspace'), { pkgName: 'unrelated-parent', git: true });
+    const standalone = makeDir(resolve(HR, 'workspace', 'kbexplorer-template'), {
+      pkgName: 'kbexplorer-template',
+      git: true,
+    });
+    expect(detectHostRoot(standalone, {})).toBe(standalone);
+  });
+
+  it('returns the given root when it is not the kbexplorer template', () => {
+    const notTemplate = makeDir(resolve(HR, '.kbexplorer-imposter'), { pkgName: 'something-else' });
+    expect(detectHostRoot(notTemplate, {})).toBe(notTemplate);
+  });
 });
 
 // ── readContentModel ───────────────────────────────────────
