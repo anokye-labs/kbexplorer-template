@@ -28,20 +28,80 @@ import yaml from 'yaml';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const kbRoot = resolve(__dirname, '..');
 
-// Detect if running as submodule
-function detectHostRoot() {
-  const parentRoot = resolve(kbRoot, '..', '..');
+// Package names that identify the kbexplorer template itself (any of its
+// historical/current names). A directory whose package.json carries one of
+// these is the template, never the enclosing host repo.
+const KB_TEMPLATE_PKG_NAMES = new Set(['kbexplorer', 'kbexplorer-template']);
+
+// Directory name the template uses once installed inside a host repo (both for
+// the vendored copy and the git submodule). Used as the signal that we are an
+// installed instance with a host above us, rather than a standalone checkout.
+const KB_INSTALL_DIR_NAME = '.kbexplorer';
+
+/**
+ * Read a directory's package.json `name`, or null if missing/unparseable.
+ * @param {string} dir
+ * @returns {string|null}
+ */
+function readPkgName(dir) {
   try {
-    const pkg = JSON.parse(readFileSync(resolve(kbRoot, 'package.json'), 'utf-8'));
-    if (pkg.name === 'kbexplorer') {
-      // Check if parent looks like a host repo
-      if (existsSync(resolve(parentRoot, '.git')) && existsSync(resolve(parentRoot, 'package.json'))) {
-        const parentPkg = JSON.parse(readFileSync(resolve(parentRoot, 'package.json'), 'utf-8'));
-        if (parentPkg.name !== 'kbexplorer') return parentRoot;
-      }
-    }
-  } catch { /* ignore */ }
-  return kbRoot;
+    return JSON.parse(readFileSync(resolve(dir, 'package.json'), 'utf-8')).name ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A directory is a "host boundary" if it looks like the root of a repo or
+ * package (has a `.git` entry — file or dir — or a package.json) AND it is not
+ * the kbexplorer template itself.
+ * @param {string} dir
+ * @returns {boolean}
+ */
+function isHostBoundary(dir) {
+  const hasGit = existsSync(resolve(dir, '.git'));
+  const hasPkg = existsSync(resolve(dir, 'package.json'));
+  if (!hasGit && !hasPkg) return false;
+  const name = hasPkg ? readPkgName(dir) : null;
+  if (name && KB_TEMPLATE_PKG_NAMES.has(name)) return false;
+  return true;
+}
+
+/**
+ * Resolve the host repository root whose content the manifest should capture.
+ *
+ * Resolution order (data-driven — no source string-patching required):
+ *   1. An explicit `VITE_KB_HOST_ROOT` env value always wins.
+ *   2. If we are not the kbexplorer template, the kbRoot is the host.
+ *   3. If the template is checked out standalone (its directory is not named
+ *      `.kbexplorer`), there is no enclosing host — return kbRoot.
+ *   4. Otherwise the template is installed inside a host. Walk up from the
+ *      parent directory to the nearest enclosing repo/package boundary that is
+ *      not the template itself. This handles BOTH the vendored layout
+ *      (`host/.kbexplorer`, one level deep) and the git-submodule layout
+ *      (deeper nesting) without assuming a fixed depth.
+ *
+ * @param {string} [kbRootDir=kbRoot] - The kbexplorer template root.
+ * @param {NodeJS.ProcessEnv} [env=process.env] - Environment to read overrides from.
+ * @returns {string} Absolute path to the host root (or kbRootDir when none).
+ */
+export function detectHostRoot(kbRootDir = kbRoot, env = process.env) {
+  const envRoot = env.VITE_KB_HOST_ROOT?.trim();
+  if (envRoot) return resolve(envRoot);
+
+  const ownName = readPkgName(kbRootDir);
+  if (!ownName || !KB_TEMPLATE_PKG_NAMES.has(ownName)) return kbRootDir;
+
+  if (basename(kbRootDir) !== KB_INSTALL_DIR_NAME) return kbRootDir;
+
+  let dir = dirname(kbRootDir);
+  while (true) {
+    if (isHostBoundary(dir)) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return kbRootDir;
 }
 
 const hostRoot = detectHostRoot();
