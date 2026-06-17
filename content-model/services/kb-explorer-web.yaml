@@ -1,0 +1,14 @@
+"@type": service
+id: kb-explorer-web
+name: KB Explorer Web
+description: >
+  The static web frontend that renders the knowledge graph. Deployed to
+  Azure Static Web Apps and reads content from GitHub at runtime.
+team: graph-platform
+serviceTreeId: 7e4a1c20-91a2-4d3e-9f0b-2c6d8e1a4b55
+serviceTreeUrl: "https://servicetree.msftcloudes.com/#/ServiceModel/Service/Profile/7e4a1c20-91a2-4d3e-9f0b-2c6d8e1a4b55"
+catalogInfoPath: services/kb-explorer-web/catalog-info.yaml
+repoPath: anokye-labs/kbexplorer-template
+repoUrl: "https://github.com/anokye-labs/kbexplorer-template"
+systems-of-record:
+  - gh-repo
