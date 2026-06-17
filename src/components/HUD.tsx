@@ -39,12 +39,13 @@ import {
   MoreHorizontalRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode } from '../types';
-import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
-import type { TrimResult } from '../types';
+import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, getView, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
+import type { TrimResult, GraphLayoutMode } from '../types';
 import type { ThemeMode } from '../hooks/useTheme';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { resolveImageUrl } from '../api';
 import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
+import { countReportsToParticipants } from '../engine/reports-to-layout';
 import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
 
 export type DockPosition = 'bottom' | 'left' | 'right' | 'top';
@@ -493,12 +494,29 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
     });
   }, []);
 
+  // Layout strategy requested by the active view (org tree vs force constellation).
+  const viewLayout: GraphLayoutMode = getView(activeView)?.layout ?? 'force';
+
   // Filter graph: view → cluster collapse → trim to limits
   const trimResult = React.useMemo<TrimResult>(() => {
-    let g = filterGraphToView(graph, activeView);
+    const viewGraph = filterGraphToView(graph, activeView);
+    // Org tree: the resolver already scoped + capped the graph to the reporting
+    // hierarchy. Skip cluster-collapse and degree-trim (which assume a force
+    // constellation with a hub) so the whole tree renders. Report how many of
+    // the org's people are shown so the "showing N of M" note stays honest.
+    if (viewLayout === 'reports-to') {
+      const total = countReportsToParticipants(graph);
+      return {
+        graph: viewGraph,
+        trimmed: viewGraph.nodes.length < total,
+        totalNodes: total,
+        totalEdges: viewGraph.edges.length,
+      };
+    }
+    let g = viewGraph;
     if (collapsedClusters.size > 0) g = collapseGraphClusters(g, collapsedClusters);
     return trimGraphToLimits(g, currentNodeId, detailLevel, Infinity);
-  }, [graph, activeView, collapsedClusters, currentNodeId, detailLevel]);
+  }, [graph, activeView, viewLayout, collapsedClusters, currentNodeId, detailLevel]);
 
   const filteredGraph = trimResult.graph;
 
@@ -668,6 +686,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
       fitOnStabilize: !currentNodeId || filteredGraph.nodes.length < 60,
       emphasizeNodeId: currentNodeId,
       interactive: true,
+      layout: viewLayout,
       auditSlot: 'map-overlay',
     });
     network.once('stabilized', () => {
@@ -678,6 +697,11 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
       network.moveTo({ scale: Math.max(scale, 0.3) });
       setOverlayZoom(Math.round(network.getScale() * 100));
     });
+    // Org tree has physics disabled, so `stabilized` never fires — sync the
+    // zoom indicator on the next frame instead.
+    if (viewLayout === 'reports-to' && typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => setOverlayZoom(Math.round(network.getScale() * 100)));
+    }
     network.on('zoom', () => {
       setOverlayZoom(Math.round(network.getScale() * 100));
     });
@@ -686,7 +710,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
 
     return () => { network.destroy(); overlayNetworkRef.current = null; overlayEmphasisRef.current = null; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapExpanded, filteredGraph, config]);
+  }, [mapExpanded, filteredGraph, config, viewLayout]);
 
   // Sidebar live graph (left/right dock)
   const isVertical = dock === 'left' || dock === 'right';
@@ -718,11 +742,16 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
         nodeSizeRange: [28, 44],
         nodeSizeStep: 3,
         labelMaxLength: 18,
+        layout: viewLayout,
         auditSlot: 'hud-sidebar',
       });
       network.once('stabilized', () => {
         setSidebarZoom(Math.round(network.getScale() * 100));
       });
+      // Org tree has physics disabled → sync the zoom indicator next frame.
+      if (viewLayout === 'reports-to' && typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(() => setSidebarZoom(Math.round(network.getScale() * 100)));
+      }
       network.on('zoom', () => {
         setSidebarZoom(Math.round(network.getScale() * 100));
       });
@@ -741,7 +770,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVertical, collapsed, filteredGraph, isDark]);
+  }, [isVertical, collapsed, filteredGraph, isDark, viewLayout]);
 
   // Update selection + focus + neighborhood emphasis when currentNodeId changes (no rebuild)
   useEffect(() => {
