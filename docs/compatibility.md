@@ -1,8 +1,9 @@
 # Compatibility Matrix & Release Pinning
 
 This document defines how **kbexplorer-template** releases line up with the
-**kbexplorer CLI** (`anokye-labs/kbexplorer`), and the contract a host repository
-follows when it vendors the template.
+**kbexplorer CLI** — published as the [`@anokye-labs/kbexplorer`](https://www.npmjs.com/package/@anokye-labs/kbexplorer)
+npm package from the [`anokye-labs/kbexplorer-cli`](https://github.com/anokye-labs/kbexplorer-cli)
+repo — and the contract a host repository follows when it vendors the template.
 
 > **TL;DR** — Vendor the template at an **immutable tag** (`vX.Y.Z`), not a moving
 > branch. A tag-pinned install is reproducible and is treated as **satisfied** by
@@ -24,7 +25,8 @@ line, patch/minor CLI releases are expected to remain compatible; a new template
 When in doubt, pin **both** sides:
 
 - the template, to a tag in the table above, and
-- the CLI, to a released CLI tag (the CLI's `init --ref vX.Y.Z` selects it).
+- the CLI, to a released `@anokye-labs/kbexplorer` version (the CLI's
+  `init --ref vX.Y.Z` selects the template tag at bootstrap time).
 
 ---
 
@@ -37,18 +39,19 @@ at an **immutable git tag**:
   than leaving it on `main`:
 
   ```bash
-  git submodule add https://github.com/anokye-labs/kbexplorer.git .kbexplorer
+  git submodule add https://github.com/anokye-labs/kbexplorer-template.git .kbexplorer
   git -C .kbexplorer checkout v0.2.0          # pin to an immutable tag
-  git add .kbexplorer && git commit -m "chore: pin kbexplorer to v0.2.0"
+  git add .kbexplorer && git commit -m "chore: pin kbexplorer-template to v0.2.0"
   ```
 
-- **CLI bootstrap** — the kbexplorer CLI selects the same ref at init time:
+- **CLI bootstrap** — the kbexplorer CLI selects the same template ref at init time:
 
   ```bash
-  kbexplorer init --ref v0.2.0
+  npx @anokye-labs/kbexplorer init --ref v0.2.0
   ```
 
-  > The `init --ref` resolution itself lives in the CLI repo; this template only
+  > The `init --ref` resolution itself lives in the
+  > [CLI repo](https://github.com/anokye-labs/kbexplorer-cli); this template only
   > documents which tags are valid targets (see the matrix above).
 
 Tracking a branch (`main`) instead of a tag is **not** reproducible: the upstream
@@ -88,9 +91,15 @@ satisfied because the checkout now resolves to an immutable tag.
 
 ## Cutting a new template release (maintainers)
 
-Bumping `package.json` `version` is necessary but not sufficient — a release is only
-reproducible once an **immutable tag and GitHub Release** exist. After the version
-bump merges to `main`:
+The compatibility matrix above and [`CHANGELOG.md`](../CHANGELOG.md) are updated **in
+the same version-bump PR** as `package.json` `version`, so that the documented matrix
+and release notes are already correct on `main` before any tag exists. Bumping the
+version and updating these docs is necessary but not sufficient — a release is only
+*reproducible* once an **immutable tag and GitHub Release** also exist.
+
+After the version-bump PR (which already added this release's matrix row and CHANGELOG
+entry) merges to `main`, cut the tag and release so they reflect what `main` already
+documents:
 
 ```bash
 git checkout main && git pull
@@ -102,5 +111,6 @@ gh release create v0.2.0 \
   --notes-file <(sed -n '/^## \[0.2.0\]/,/^## \[0.1.0\]/p' CHANGELOG.md)
 ```
 
-Then add the new tag to the [compatibility matrix](#template--cli-compatibility-matrix)
-and the [`CHANGELOG.md`](../CHANGELOG.md) in the **next** change.
+Because the matrix and CHANGELOG were already updated in the merged PR, the pushed tag
+and its release notes are accurate the moment they are created — no follow-up doc edit
+is required for this release.
