@@ -60,6 +60,17 @@ The agent performs these steps in order:
    It creates `.env.kbexplorer`, `content/config.yaml`, adds npm scripts, and
    installs dependencies automatically.
 
+   **Pin to a release tag (reproducible installs).** After adding the submodule,
+   check it out at an immutable tag rather than leaving it on `main`:
+   ```bash
+   git -C .kbexplorer checkout v0.2.0    # see docs/compatibility.md for valid tags
+   git add .kbexplorer && git commit -m "chore: pin kbexplorer to v0.2.0"
+   ```
+   A tag-pinned checkout is reproducible and is treated as **satisfied** by
+   `kbexplorer doctor` (no branch-tracking warning). See the
+   [compatibility matrix](../../../docs/compatibility.md) for which template tag
+   works with which CLI version.
+
 3. **Start the explorer** (agent runs this):
    ```bash
    npm run kb:dev
@@ -163,6 +174,17 @@ Inform the user that automated validation requires playwright-cli:
 - **Build fails**: Run `npm run kb:install` to ensure dependencies are installed.
 - **Config not loading**: Ensure `content/config.yaml` exists in the target repo
   at the expected path.
+- **`doctor` warns "Template tracks branch …"**: the vendored checkout is on a
+  moving branch instead of a release tag. Pin it to an immutable tag to clear the
+  warning:
+  ```bash
+  git -C .kbexplorer fetch --tags
+  git -C .kbexplorer checkout v0.2.0
+  git add .kbexplorer && git commit -m "chore: pin kbexplorer to v0.2.0"
+  ```
+  Re-run `kbexplorer doctor` — the branch-tracking check now reports satisfied.
+  See [`docs/compatibility.md`](../../../docs/compatibility.md) for the full
+  pinning contract and the template ↔ CLI compatibility matrix.
 
 ## Content Generation
 

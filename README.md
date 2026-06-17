@@ -311,7 +311,19 @@ The [graph provider architecture](spec-providers-overview) is the next major evo
 - **[Views and projections](spec-views)** — filtered views, on-demand expansion, and external providers
 - **[Multi-layer identity](spec-multi-layer-identity)** — same entity recognized across providers
 
+For supplying organizational data from an external pipeline, see the [Work-Graph Vocabulary](docs/work-graph-vocabulary.md) and the [BYO People Feed contract](docs/byo-people-feed.md) — the supported way to feed `person` descriptors (e.g. from a Microsoft Graph org snapshot) that pass validation and render in the bespoke person view.
+
 The [link assessment](spec-link-assessment) tool already provides graph health analysis — orphan detection, broken references, coverage gaps.
+
+## Releases & versioning
+
+Releases are cut as immutable git tags (`vX.Y.Z`) with matching GitHub Releases.
+Host repos that vendor this template should **pin to a tag**, not track `main`.
+
+- **[CHANGELOG.md](CHANGELOG.md)** — notable changes per release.
+- **[docs/compatibility.md](docs/compatibility.md)** — template ↔ kbexplorer CLI
+  compatibility matrix and the pinning contract (`kbexplorer doctor` treats a
+  tag-pinned install as satisfied).
 
 ## License
 
