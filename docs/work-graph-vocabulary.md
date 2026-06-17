@@ -88,7 +88,7 @@ manager: kwame        # person id → reports-to edge
 ```
 
 **Required fields:** `@type`, `id`, `name`
-**Optional fields:** `alias` (string — the alias handle referenced by `team.lead`, `team.members`), `role`, `email`, `manager` (person id → `reports-to` edge)
+**Optional fields:** `alias` (string — the alias handle that is the target of alias-FK edges, e.g. `team.lead` / `squad.dri`), `role`, `email`, `manager` (person id → `reports-to` edge)
 
 > `alias` is the aliasField for `person` in `conventions.yaml`. Only `team.lead` is an alias-FK (resolves via the person's alias, falling back to id); `team.members` and all other person references are id-FKs. For simplicity, new descriptors should keep `id === alias`.
 
