@@ -1,6 +1,7 @@
 import type { ViewerProps } from './GenericStructuredView';
+import type { KBNode } from '../../types';
 import { EntityHeader } from './spine-shared';
-import { nativeTypeOf } from './spine-data';
+import { nativeTypeOf, resolveRef } from './spine-data';
 
 /** Render a simple key/value row when the value is present. */
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -27,6 +28,17 @@ function NodeLink({ to, label }: { to: string; label: string }) {
       {label}
     </a>
   );
+}
+
+/**
+ * Render a foreign-key field value (e.g. a person's `manager` or `team`) as a
+ * navigable graph link when it resolves to a node id via the node's JSON-LD
+ * context, falling back to plain text when it cannot be resolved (e.g. a
+ * work-derived person node that carries no context). SSR-safe.
+ */
+function RefLink({ node, kind, value }: { node: KBNode; kind: string; value: string }) {
+  const to = resolveRef(node, kind, value);
+  return to ? <NodeLink to={to} label={value} /> : <>{value}</>;
 }
 
 /**
@@ -73,8 +85,8 @@ export function PersonView({ node }: ViewerProps) {
           {(alias ?? login) && (
             <Row label="GitHub"><code className="kb-structured-code">@{alias ?? login}</code></Row>
           )}
-          {team && <Row label="Team">{team}</Row>}
-          {manager && <Row label="Reports to">{manager}</Row>}
+          {team && <Row label="Team"><RefLink node={node} kind="team" value={team} /></Row>}
+          {manager && <Row label="Reports to"><RefLink node={node} kind="person" value={manager} /></Row>}
           {email && (
             <Row label="Email">
               <a className="kb-structured-link" href={`mailto:${email}`}>{email}</a>

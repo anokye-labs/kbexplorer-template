@@ -17,6 +17,7 @@ export function arrayField(d: Record<string, unknown>, key: string): unknown[] {
 }
 
 /**
+/**
  * Resolve a foreign-key field value to a human-readable label.
  *
  * The content-model builder accepts an FK entry as either a bare reference
@@ -43,6 +44,67 @@ export function fkLabel(v: unknown): string | null {
 /** Map an array of FK entries to their display labels, dropping unusable ones. */
 export function fkLabels(items: unknown[]): string[] {
   return items.map(fkLabel).filter((s): s is string => s != null);
+}
+
+/**
+ * Read the JSON-LD `@context` prefix → URN-base map from a node's envelope.
+ *
+ * The content-model builder emits an object-shaped `@context` (CURIE prefix →
+ * base, plus `@base`). A string/array context (or none) carries no inline
+ * prefixes, so this returns `{}`. Each base value may be a bare string or a
+ * `{ "@id": "…" }` object — both shapes are read, mirroring how the schema
+ * reader parses the context itself.
+ */
+export function ldContextOf(node: Pick<KBNode, 'jsonld'>): Record<string, string> {
+  const ctx = node.jsonld?.['@context'];
+  if (!ctx || typeof ctx !== 'string' && (typeof ctx !== 'object' || Array.isArray(ctx))) {
+    return {};
+  }
+  if (typeof ctx === 'string') return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(ctx as Record<string, unknown>)) {
+    if (typeof v === 'string') out[k] = v;
+    else if (v && typeof v === 'object') {
+      const iri = (v as Record<string, unknown>)['@id'];
+      if (typeof iri === 'string') out[k] = iri;
+    }
+  }
+  return out;
+}
+
+/**
+ * Resolve a foreign-key reference (e.g. a person `manager` id, or a `team` id)
+ * to the canonical graph node id (URN) it points at — the same way the
+ * content-model builder mints node ids — so a viewer can render it as a
+ * navigable `#/node/<id>` link.
+ *
+ * The URN base is read from the source node's own JSON-LD `@context` (never
+ * hardcoded), keeping this pure and SSR-safe. Returns `null` when the reference
+ * cannot be resolved (no context base for `kind`, e.g. a work-derived person
+ * node) so callers can fall back to plain text rather than emit a broken link.
+ *
+ * Accepted reference shapes:
+ *  - already-expanded URN (`kg://…`)            → returned verbatim
+ *  - CURIE (`person:ada`) whose prefix is known → `<base><local>`
+ *  - bare id (`ada`)                            → `<base[kind]><id>`
+ */
+export function resolveRef(
+  node: Pick<KBNode, 'jsonld'>,
+  kind: string,
+  ref: string,
+): string | null {
+  const value = ref.trim();
+  if (!value) return null;
+  if (value.includes('://')) return value; // already a full URN
+  const ctx = ldContextOf(node);
+  const colon = value.indexOf(':');
+  if (colon > 0) {
+    const prefix = value.slice(0, colon);
+    const base = ctx[prefix];
+    if (typeof base === 'string') return `${base}${value.slice(colon + 1)}`;
+  }
+  const base = ctx[kind];
+  return typeof base === 'string' ? `${base}${value}` : null;
 }
 
 /**

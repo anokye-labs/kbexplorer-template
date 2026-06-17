@@ -13,6 +13,7 @@ import { CycleView } from '../CycleView';
 import { OrgView } from '../OrgView';
 import { ServiceView } from '../ServiceView';
 import { DecisionView } from '../DecisionView';
+import { PersonView } from '../PersonView';
 
 function makeNode(entityType: string, data: Record<string, unknown>): KBNode {
   const id = `kg://test/${entityType}`;
@@ -221,5 +222,52 @@ describe('spine viewers — registration + resolution (#164, #165)', () => {
       }
       expect(typeof resolved).toBe('function');
     }
+  });
+});
+
+describe('PersonView — navigable reporting-line links (C1 / #278)', () => {
+  const LD_CONTEXT = {
+    '@base': 'kg://xbox.com/',
+    person: 'kg://xbox.com/people/',
+    team: 'kg://xbox.com/teams/',
+  };
+
+  /** A content-model person descriptor node carrying the JSON-LD @context. */
+  function personNode(data: Record<string, unknown>): KBNode {
+    const id = 'kg://xbox.com/people/ben';
+    return {
+      ...makeNode('person', data),
+      id,
+      identity: id,
+      jsonld: { '@id': id, '@type': 'person', '@context': LD_CONTEXT },
+    };
+  }
+
+  it('renders the manager (Reports to) value as a link to the person node', () => {
+    const html = render(PersonView, personNode({ name: 'Ben Carter', manager: 'ada' }));
+    expect(html).toContain('Reports to');
+    expect(html).toContain('data-node-id="kg://xbox.com/people/ada"');
+    expect(html).toContain('href="#/node/kg%3A%2F%2Fxbox.com%2Fpeople%2Fada"');
+  });
+
+  it('renders the team value as a link to the team node', () => {
+    const html = render(PersonView, personNode({ name: 'Ben Carter', team: 'graph-platform' }));
+    expect(html).toContain('data-node-id="kg://xbox.com/teams/graph-platform"');
+    expect(html).toContain('href="#/node/kg%3A%2F%2Fxbox.com%2Fteams%2Fgraph-platform"');
+  });
+
+  it('expands a CURIE manager reference via the context prefix', () => {
+    const html = render(PersonView, personNode({ name: 'Ben Carter', manager: 'person:ada' }));
+    expect(html).toContain('data-node-id="kg://xbox.com/people/ada"');
+  });
+
+  it('falls back to plain text when the node carries no @context (work-derived person)', () => {
+    const node = makeNode('person', { name: '@octocat', manager: 'ada', team: 'graph-platform' });
+    node.jsonld = { '@id': node.id, '@type': 'person' }; // no @context
+    const html = render(PersonView, node);
+    expect(html).toContain('Reports to');
+    expect(html).toContain('ada');
+    expect(html).toContain('graph-platform');
+    expect(html).not.toContain('data-node-id');
   });
 });
