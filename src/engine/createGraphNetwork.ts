@@ -158,6 +158,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         ? [34, 52]
         : [44, 64];
   const nodeSizeRange = options.nodeSizeRange ?? adaptiveDefault;
+  // Largest node diameter — the base unit for hierarchical-tree spacing so the
+  // org tree scales with the same sizing primitive as the constellation.
+  const maxNodeSize = nodeSizeRange[1];
 
   const degrees = getNodeDegrees(graph);
   const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
@@ -393,12 +396,19 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         // Explicit per-node `level` drives placement; we do NOT use
         // sortMethod:'directed' (our edges are report→manager, which would
         // invert the tree). Levels are authoritative.
+        //
+        // Spacing is derived from the node-size primitive (`nodeSizeRange`)
+        // rather than hard-coded pixels, so the tree breathes proportionally
+        // as nodes scale down for larger orgs — consistent with the project's
+        // no-fixed-pixels sizing convention. Multiples are relative to the
+        // largest node diameter (vertical gap between ranks > sibling gap;
+        // sub-tree gap widest to keep branches legible).
         hierarchical: {
           enabled: true,
           direction: 'UD',
-          levelSeparation: 160,
-          nodeSpacing: 130,
-          treeSpacing: 220,
+          levelSeparation: Math.round(maxNodeSize * 3.6),
+          nodeSpacing: Math.round(maxNodeSize * 3),
+          treeSpacing: Math.round(maxNodeSize * 5),
           blockShifting: true,
           edgeMinimization: true,
           parentCentralization: true,
@@ -451,9 +461,17 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   // the initial fit/focus. Idempotent so it can be driven from `stabilized`
   // (force layout) or from rAF/afterDrawing (hierarchical layout, where physics
   // is disabled and `stabilized` never fires).
+  //
+  // For the hierarchical path the finalize callback is deferred (rAF/timeout),
+  // so a fast unmount + `network.destroy()` could otherwise fire it against a
+  // destroyed network. We track a `disposed` flag and cancel any pending handle
+  // when destroy() is called.
+  let disposed = false;
+  let rafHandle: number | null = null;
+  let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
   let finalized = false;
   const finalizeLayout = () => {
-    if (finalized) return;
+    if (finalized || disposed) return;
     finalized = true;
     // Kill physics immediately — no more drifting
     network.setOptions({ physics: { enabled: false } });
@@ -565,16 +583,33 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
 
   // Drive finalization. Force layout finalizes on `stabilized`; the org tree
   // (physics off) finalizes on the next frame, with `afterDrawing` as a
-  // belt-and-suspenders fallback. `finalizeLayout` is idempotent.
+  // belt-and-suspenders fallback. `finalizeLayout` is idempotent and bails if
+  // the network has already been disposed.
   network.once('stabilized', finalizeLayout);
   if (hierarchical) {
     if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(finalizeLayout);
+      rafHandle = requestAnimationFrame(() => { rafHandle = null; finalizeLayout(); });
     } else {
-      setTimeout(finalizeLayout, 0);
+      timeoutHandle = setTimeout(() => { timeoutHandle = null; finalizeLayout(); }, 0);
     }
     network.once('afterDrawing', finalizeLayout);
   }
+
+  // Wrap destroy so deferred finalize callbacks can't run on a torn-down
+  // network. Callers keep using `network.destroy()` exactly as before.
+  const originalDestroy = network.destroy.bind(network);
+  network.destroy = () => {
+    disposed = true;
+    if (rafHandle !== null && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(rafHandle);
+      rafHandle = null;
+    }
+    if (timeoutHandle !== null) {
+      clearTimeout(timeoutHandle);
+      timeoutHandle = null;
+    }
+    originalDestroy();
+  };
 
   if (auditSlot) {
     registerNetworkForAudit(network, container, auditSlot);

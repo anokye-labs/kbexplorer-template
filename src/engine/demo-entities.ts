@@ -81,7 +81,13 @@ export function registerDemoEntityTypes(): void {
   registerViewer('squad', SquadView);
 }
 
-/** Whether the large synthetic-org demo seam is enabled for this session. */
+/**
+ * Whether the large synthetic-org demo seam is enabled for this session.
+ *
+ * Query-param only (`?demo=bigorg`) — deliberately NOT backed by localStorage.
+ * The persisted `kbe-*` keys are part of this repo's settings contract; this is
+ * a throwaway scale-testing seam, so it stays ephemeral and leaves no trace.
+ */
 export function isBigOrgDemoEnabled(): boolean {
   try {
     if (typeof window !== 'undefined') {
@@ -93,11 +99,9 @@ export function isBigOrgDemoEnabled(): boolean {
         const hp = new URLSearchParams(hash.slice(qIndex + 1));
         if (hp.get('demo') === 'bigorg') return true;
       }
-      const flag = window.localStorage?.getItem('kbe-demo-bigorg');
-      if (flag === '1' || flag === 'true') return true;
     }
   } catch {
-    /* access to window/localStorage may be denied; treat as disabled */
+    /* access to window may be denied; treat as disabled */
   }
   return false;
 }
