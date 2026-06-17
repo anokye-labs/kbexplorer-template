@@ -139,6 +139,27 @@ describe('spine viewers — rendering (T2.5 + T2.6 / #164, #165)', () => {
     expect(html).not.toContain('<a');
   });
 
+  it('ServiceView resolves inline-object FK entries for team + systems-of-record (#275 review)', () => {
+    const html = render(ServiceView, makeNode('service', {
+      name: 'Object Refs Service',
+      team: { id: 'graph-platform', name: 'Graph Platform' },
+      'systems-of-record': [
+        { id: 'gh-repo', name: 'GitHub Repo' },
+        'gh-issues',
+        { name: 'No Id Here' }, // bad-ref shape (builder diagnoses) → still has a usable name
+        { url: 'https://x' },    // neither name nor id → dropped, no blank list item
+      ],
+    }));
+    // inline-object team renders its name, not "[object Object]"
+    expect(html).toContain('Graph Platform');
+    expect(html).not.toContain('[object Object]');
+    // usable entries render; unusable ones are dropped (no empty <li>)
+    expect(html).toContain('GitHub Repo');
+    expect(html).toContain('gh-issues');
+    expect(html).toContain('No Id Here');
+    expect(html).not.toContain('<li></li>');
+  });
+
   it('DecisionView renders deciders, status pill and context (#275)', () => {
     const html = render(DecisionView, makeNode('decision', {
       name: 'ADR-001: Adopt schema-driven content model',
@@ -166,6 +187,21 @@ describe('spine viewers — rendering (T2.5 + T2.6 / #164, #165)', () => {
     expect(html).toContain('Bare ADR');
     expect(html).not.toContain('Deciders');
     expect(html).not.toContain('Affects');
+  });
+
+  it('DecisionView resolves inline-object FK entries for deciders + affects (#275 review)', () => {
+    const html = render(DecisionView, makeNode('decision', {
+      name: 'Object Refs ADR', status: 'accepted',
+      deciders: [{ id: 'adwoa', name: 'Adwoa Mensah' }, 'kwame', { url: 'https://x' }],
+      'affects-workstreams': [{ id: 'kb-explorer', name: 'KB Explorer' }],
+      'affects-missions': ['q1-uplift'],
+    }));
+    expect(html).not.toContain('[object Object]');
+    expect(html).toContain('Adwoa Mensah'); // inline-object decider → name
+    expect(html).toContain('kwame');        // scalar decider
+    expect(html).toContain('KB Explorer');  // inline-object affected workstream → name
+    expect(html).toContain('q1-uplift');    // scalar affected mission
+    expect(html).not.toContain('<li></li>'); // unusable { url } entry dropped
   });
 });
 

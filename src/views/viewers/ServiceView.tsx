@@ -1,6 +1,6 @@
 import type { ViewerProps } from './GenericStructuredView';
 import { EntityHeader, Row, ScalarList } from './spine-shared';
-import { arrayField, dataOf, nativeTypeOf } from './spine-data';
+import { arrayField, dataOf, fkLabel, fkLabels, nativeTypeOf } from './spine-data';
 
 /**
  * Bespoke viewer for `service` entities (Feature H — #275).
@@ -18,13 +18,16 @@ export function ServiceView({ node }: ViewerProps) {
   const d = dataOf(node.data);
   const name = (d.name as string) ?? node.title;
   const description = d.description as string | undefined;
-  const team = d.team as string | undefined;
+  // `team` may be a bare id string or an inline object FK ({ id, name }).
+  const team = fkLabel(d.team);
   const serviceTreeId = d.serviceTreeId as string | undefined;
   const serviceTreeUrl = d.serviceTreeUrl as string | undefined;
   const catalogInfoPath = d.catalogInfoPath as string | undefined;
   const repoPath = d.repoPath as string | undefined;
   const repoUrl = d.repoUrl as string | undefined;
-  const systemsOfRecord = arrayField(d, 'systems-of-record');
+  // Entries may be id strings or inline objects; drop any that carry no usable
+  // name/id (the builder diagnoses these as bad-ref) so we never render a blank.
+  const systemsOfRecord = fkLabels(arrayField(d, 'systems-of-record'));
 
   return (
     <div className="kb-structured-view kb-service-view">
@@ -56,19 +59,10 @@ export function ServiceView({ node }: ViewerProps) {
             )}
           </Row>
           <Row label="Tracked in">
-            {systemsOfRecord.length > 0 ? <ScalarList items={systemsOfRecord.map(refLabel)} /> : null}
+            {systemsOfRecord.length > 0 ? <ScalarList items={systemsOfRecord} /> : null}
           </Row>
         </tbody>
       </table>
     </div>
   );
-}
-
-/** Render a system-of-record reference (id string or `{ id }` object) as a label. */
-function refLabel(v: unknown): string {
-  if (v && typeof v === 'object') {
-    const r = v as Record<string, unknown>;
-    return String(r.name ?? r.id ?? '');
-  }
-  return String(v);
 }

@@ -1,6 +1,6 @@
 import type { ViewerProps } from './GenericStructuredView';
 import { EntityHeader, Pill, Row, ScalarList } from './spine-shared';
-import { arrayField, dataOf, nativeTypeOf } from './spine-data';
+import { arrayField, dataOf, fkLabels, nativeTypeOf } from './spine-data';
 
 /**
  * Bespoke viewer for `decision` entities (Feature H — #275).
@@ -20,10 +20,12 @@ export function DecisionView({ node }: ViewerProps) {
   const date = d.date as string | undefined;
   const context = d.context as string | undefined;
   const consequences = d.consequences as string | undefined;
-  const deciders = arrayField(d, 'deciders');
+  const deciders = fkLabels(arrayField(d, 'deciders'));
   const affectsWorkstreams = arrayField(d, 'affects-workstreams');
   const affectsMissions = arrayField(d, 'affects-missions');
-  const affects = [...affectsWorkstreams, ...affectsMissions];
+  // FK entries may be id strings or inline objects ({ id, name }); resolve to a
+  // usable label and drop any without one so we never render "[object Object]".
+  const affects = fkLabels([...affectsWorkstreams, ...affectsMissions]);
 
   return (
     <div className="kb-structured-view kb-decision-view">
