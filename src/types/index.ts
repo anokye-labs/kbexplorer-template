@@ -1,6 +1,7 @@
 /** Core data types for the kbexplorer knowledge graph. */
 
 import { resolveNodeLayer } from '../engine/node-types/registry';
+import { projectReportsToTree } from '../engine/reports-to-layout';
 
 /**
  * How a node's content should be rendered.
@@ -461,12 +462,21 @@ function filterByPredicate(graph: KBGraph, predicate: (n: KBNode) => boolean): K
 
 // ── Graph Views ────────────────────────────────────────────
 
+/** Layout strategy a view requests for the live graph canvas. */
+export type GraphLayoutMode = 'force' | 'reports-to'
+
 /** A named view projection over the graph */
 export interface GraphView {
   id: string
   name: string
   icon: string
   color: string
+  /**
+   * Layout strategy for this view's graph. Defaults to the force-directed
+   * constellation when omitted. `'reports-to'` renders a hierarchical org tree
+   * keyed on the reporting relation (#279).
+   */
+  layout?: GraphLayoutMode
   /** Resolve this view — custom logic, not just a filter */
   resolve: (graph: KBGraph) => KBGraph
 }
@@ -530,6 +540,16 @@ export const BUILT_IN_VIEWS: GraphView[] = [
       const visibleIds = new Set([...externalIds, ...neighborIds])
       return filterByPredicate(graph, n => visibleIds.has(n.id))
     },
+  },
+  {
+    id: 'org',
+    name: 'Org',
+    icon: 'Organization',
+    // Matches the `reports-to` relation colour so the org tree reads as a
+    // first-class projection of the reporting hierarchy (#279).
+    color: '#a371f7',
+    layout: 'reports-to',
+    resolve: (graph) => projectReportsToTree(graph),
   },
 ]
 
