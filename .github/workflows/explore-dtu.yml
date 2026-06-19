@@ -52,7 +52,7 @@ jobs:
       EXPLORE_APP_PORT: '4319'
       EXPLORE_WRITE_BRIEF: '1'      # always write the brief artifact in CI
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
