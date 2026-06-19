@@ -45,7 +45,7 @@
     "marked": "^18.0.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.2",
+    "react-router-dom": "^7.18.0",
     "vis-data": "^8.0.4",
     "vis-network": "^10.1.0",
     "yaml": "^2.9.0"
@@ -56,7 +56,7 @@
     "@types/node": "^26.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "eslint": "^10.2.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -64,7 +64,7 @@
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",
     "typescript": "~6.0.2",
-    "typescript-eslint": "^8.57.0",
+    "typescript-eslint": "^8.61.1",
     "vite": "^8.0.5",
     "vitest": "^4.1.4"
   }
