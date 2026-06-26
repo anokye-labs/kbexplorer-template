@@ -39,7 +39,7 @@
     "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
-    "@fluentui/react-components": "^9.73.7",
+    "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",
     "marked": "^18.0.0",
