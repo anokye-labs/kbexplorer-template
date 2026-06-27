@@ -1,10 +1,64 @@
 {
-  "source": {
-    "owner": "anokye-labs",
-    "repo": "kbexplorer-template",
-    "path": "content",
-    "branch": "main"
+  "configRaw": "title: \"Test KB\"\nclusters: {}",
+  "themeFileRaw": null,
+  "authoredContent": {
+    "content/overview.md": "---\nid: overview\ntitle: Overview\ncluster: docs\n---\n# Overview\nHello.",
+    "content/wiki/setup.md": "---\nid: setup\ntitle: Setup Guide\ncluster: guide\n---\n# Setup\nSteps."
   },
+  "tree": [
+    {
+      "path": "README.md",
+      "type": "blob",
+      "size": 25
+    },
+    {
+      "path": "content",
+      "type": "tree"
+    },
+    {
+      "path": "content/config.yaml",
+      "type": "blob",
+      "size": 29
+    },
+    {
+      "path": "content/overview.md",
+      "type": "blob",
+      "size": 68
+    },
+    {
+      "path": "content/wiki",
+      "type": "tree"
+    },
+    {
+      "path": "content/wiki/setup.md",
+      "type": "blob",
+      "size": 66
+    },
+    {
+      "path": "package.json",
+      "type": "blob",
+      "size": 20
+    },
+    {
+      "path": "src",
+      "type": "tree"
+    },
+    {
+      "path": "src/App.tsx",
+      "type": "blob",
+      "size": 32
+    },
+    {
+      "path": "src/engine",
+      "type": "tree"
+    },
+    {
+      "path": "src/engine/graph.ts",
+      "type": "blob",
+      "size": 31
+    }
+  ],
+  "readme": "# Test Repo\n\nHello world.",
   "issues": [
     {
       "number": 363,
@@ -4680,65 +4734,671 @@
       "head_branch": "feature/repo-setup"
     }
   ],
-  "commits": [],
-  "releases": [],
-  "tree": [
+  "commits": [
     {
-      "path": "README.md",
-      "type": "blob",
-      "size": 25
+      "sha": "87d089dc79e1dbeae895cc391de1102edc1243de",
+      "commit": {
+        "message": "chore(deps): bump actions/checkout from 4 to 7 (#287)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-19T17:06:32-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "content",
-      "type": "tree"
+      "sha": "f51520a6dd07485c6508cd5d2a8729b092ffac56",
+      "commit": {
+        "message": "chore(deps-dev): bump @vitejs/plugin-react from 6.0.1 to 6.0.2 (#288)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-19T16:59:47-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "content/config.yaml",
-      "type": "blob",
-      "size": 29
+      "sha": "7e108be708642dcb876d9c9a5c8e3e5d2b0ccbe9",
+      "commit": {
+        "message": "chore(deps-dev): bump typescript-eslint from 8.58.0 to 8.61.1 (#289)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-19T16:53:01-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "content/overview.md",
-      "type": "blob",
-      "size": 68
+      "sha": "70712bf79b8ea09c9996683444e021234774dba7",
+      "commit": {
+        "message": "chore(deps): bump react-router-dom from 7.17.0 to 7.18.0 (#290)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-19T16:46:00-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "content/wiki",
-      "type": "tree"
+      "sha": "d73f25093902464ad41d7d5e30f54140242ae9fd",
+      "commit": {
+        "message": "chore(deps-dev): bump @types/node from 24.12.2 to 26.0.0 (#292)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-19T16:36:15-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "content/wiki/setup.md",
-      "type": "blob",
-      "size": 66
+      "sha": "c5f6888cc71ade6866ae89defaea4f616ed66e48",
+      "commit": {
+        "message": "Feature H: First-class service + decision kinds (viewers + edge rules) (#286)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-16T18:26:34-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "package.json",
-      "type": "blob",
-      "size": 20
+      "sha": "12fe5a1925a0c0266d133796ddc96a9320713258",
+      "commit": {
+        "message": "feat(graph): reports-to org tree layout (#279) (#285)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-16T18:19:19-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "src",
-      "type": "tree"
+      "sha": "6cc655c4705e88ac67ec3d471ff9b78b21c9bc52",
+      "commit": {
+        "message": "docs: BYO person-descriptor feed contract (Task C3, #280) (#281)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-16T18:11:13-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "src/App.tsx",
-      "type": "blob",
-      "size": 32
+      "sha": "9ec5ed4e0245669d225a9a143045984a7d9c8cf7",
+      "commit": {
+        "message": "chore(release): pin template to v0.2.0 + compatibility matrix (#283)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-16T18:04:18-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "src/engine",
-      "type": "tree"
+      "sha": "d6740ea7dc40ffece4b9c4c570ab4015f1e8a76b",
+      "commit": {
+        "message": "feat(person): render reporting-line manager/team as navigable graph links (#278) (#284)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-16T17:54:23-07:00"
+        }
+      },
+      "html_url": ""
     },
     {
-      "path": "src/engine/graph.ts",
-      "type": "blob",
-      "size": 31
+      "sha": "c92cd7c4968c62dce02682768aba24e2dcf915c6",
+      "commit": {
+        "message": "fix(manifest): host-root detection for vendored installs (#220) (#282)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-16T17:47:08-07:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "e75ffa85e4e4f700a5bf909145f3e2daa22b5600",
+      "commit": {
+        "message": "chore(deps): bump vis-network from 10.0.2 to 10.1.0 (#226)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-16T15:14:19-07:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "74c7178cf8f4256493a58c640641b72bd2aa74c0",
+      "commit": {
+        "message": "chore(deps): bump yaml from 2.8.3 to 2.9.0 (#228)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-16T15:04:36-07:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "9cb42cc587e3d8c3934e3ef0b160878feef84ae9",
+      "commit": {
+        "message": "chore(deps-dev): bump @playwright/test from 1.59.1 to 1.60.0 (#227)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-16T14:56:15-07:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "4ea2d8deea52313bc2f3676fc1ec8116fc294fd6",
+      "commit": {
+        "message": "chore(deps-dev): bump @types/react from 19.2.14 to 19.2.17 (#225)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-16T14:43:34-07:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "8842daef3102b86c01804eb2844ef67f3c2e8d1d",
+      "commit": {
+        "message": "chore(deps): bump vis-data from 8.0.3 to 8.0.4 (#224)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-16T14:36:08-07:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "05293d8e63554ad2514e82096f4bbd83b2a4a502",
+      "commit": {
+        "message": "chore(deps): bump actions/upload-pages-artifact from 3 to 5 (#223)",
+        "author": {
+          "name": "dependabot[bot]",
+          "date": "2026-06-16T14:27:44-07:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "d9b469f20db0ee9bc19cdda43c9d86a90e88fdee",
+      "commit": {
+        "message": "fix(deps): remove unused gray-matter to clear js-yaml advisory (#272)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-16T14:16:43-07:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "582013fb845e87b7683fa0e4a6c6903ca66f15f6",
+      "commit": {
+        "message": "fix(graph): repair sensemaking — anchor work nodes to repo-meta, fold work cluster, tune visual density (#270)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-14T16:41:27-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "f8ca87879fe4837425a297d4265b481fbe2a5fd6",
+      "commit": {
+        "message": "docs: TESTING.md — test pyramid + CI orchestration + holdout discipline (#268)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T04:23:40-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "7d32bc59f42e3db031df47a9a71d92637ba18529",
+      "commit": {
+        "message": "feat(dtu): exploratory-agent harness — stage the DTU + brief for probing sessions (#267)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T03:59:00-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "41743bb5eb609c79f9dacbc8f2b34e20bca329ac",
+      "commit": {
+        "message": "feat(review): visual-regression gate + stable capture-report (drop bytes churn) (#266)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T03:42:16-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "5f41d509fc9b82e485c832352b62c6a24bfa5b52",
+      "commit": {
+        "message": "test(gitea): work-graph mutations (team/workstream/release) reflected on refresh (#264)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T03:25:32-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "df869e21fdac24adde14b001046b92f5c7acbeb4",
+      "commit": {
+        "message": "test(full-loop): actor → twin → CLI regen → app render → verify (#263)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T02:59:30-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "bf4daf27c6bf32995d6747a83b36220f434d9400",
+      "commit": {
+        "message": "fix(constellation): orphan handling, label LOD, single legend (#262)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T02:19:41-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "b20a3befe3690f0a1af73f2045840cace2c045ab",
+      "commit": {
+        "message": "fix(hud): mobile reflow + remove placeholder minimap (#261)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T01:22:38-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "fb697e12bbcef35281b8e8fecc956a090d7297cb",
+      "commit": {
+        "message": "fix(theme): re-ramp node icons, rail icons, and source badge per theme (#260)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T01:12:47-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "3490b8612203d8d92e70eaa69ee386ef5373a708",
+      "commit": {
+        "message": "fix(deps): bump uuid to 13.0.2 to resolve GHSA-w5hq-g745-h8pq (#245) (#246)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T00:44:08-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "8e45ba2c11d76de49a5b43e0d96a71c4e72ed00e",
+      "commit": {
+        "message": "feat(review): canonical screenshot capture script for design review (#244)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T00:24:42-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "7e40a41128baad3f407d051b0adf3f0198e2323e",
+      "commit": {
+        "message": "feat(landing): reading-first landing mode with collapsed graph (#253)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-13T00:17:31-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "f19de8c190c0bfee4f5494e58284b497b679cf1e",
+      "commit": {
+        "message": "feat(engine): person nodes aggregating active work (#247)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T21:52:02-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "7ebd258eccaf9eeb6af77ce2d8d18a5ed8efdf3e",
+      "commit": {
+        "message": "feat(search): build-time index + HUD button + Ctrl-K palette (#243)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T21:24:34-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "8761ad562379811a6b47c8f55819d06fce710763",
+      "commit": {
+        "message": "feat(engine): release nodes with edges to shipped PRs/issues (#242)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T21:17:31-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "ec084ea9a9da08a5191717e73ce94f9acb4f0713",
+      "commit": {
+        "message": "feat(content-model): work-graph vocabulary — team/workstream/priority/person/system-of-record (#241)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T21:00:19-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "75c1b172111ef854d11ee37142aa434494820d0b",
+      "commit": {
+        "message": "feat(editor): source-of-truth editor with GitHub PR write-back handoff (#205)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T13:36:15-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "2505231ef3608f890b35c9d8b26497118647bc21",
+      "commit": {
+        "message": "docs: mention HUD theme palette chooser alongside the t shortcut (#231)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T12:26:35-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "de7fe9c6c77db44dea3cca9219f136ab0ff2306f",
+      "commit": {
+        "message": "Add HUD theme palette chooser for all themes (#222)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T11:58:12-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "1a4f0744829b4fc24b0e1ff1b75fc4d7cbec26f6",
+      "commit": {
+        "message": "docs(theming): add example named themes and external-theming guide pages (#219)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T10:43:42-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "288a4c944dca84ce31d971a7a0c079eaf129674e",
+      "commit": {
+        "message": "feat(content-model): cross-repo vocabulary/synonym mapping (#153) (#204)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-12T09:18:01-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "2bcbe7a4b585127066cc70134413644b6abd860b",
+      "commit": {
+        "message": "T5.3: Custom JS theme-module URL loader (Option D) (#217)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T23:49:50-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "1421b4ba49ec59e5407fd607ada19339affde0ee",
+      "commit": {
+        "message": "T5.1: load theme definitions from a dedicated host-repo file (#216)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T23:10:41-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "ed8b4a697f4ddd4184aff19e009e3f5ec7faf296",
+      "commit": {
+        "message": "T5.2: Raw CSS override sheet from host repo (Option C) (#215)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T22:56:08-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "76761f6354604b81e86c352f523282ca474ce91b",
+      "commit": {
+        "message": "T4.2: per-page accent/theme via frontmatter (#198) (#214)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T22:34:15-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "8b80919a81996774c4c3aac67ba36ccf62c44fc6",
+      "commit": {
+        "message": "T4.1: per-cluster token deltas as scoped CSS vars (#197) (#213)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T22:08:27-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "c7b1e7b263308b1493388fe1a25d9a8a13e7985a",
+      "commit": {
+        "message": "T2.4: extend theme cycle + persistence to config themes; bump CACHE_VERSION (#212)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T21:46:28-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "f3587344381ac4bd59c333a9a3e17072a67cb45b",
+      "commit": {
+        "message": "T2.2: build THEME_MAP dynamically from config brand/tokens/themes (#211)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T21:17:16-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "8ddf62b53f104acf89ee14f2dff389394f5d0777",
+      "commit": {
+        "message": "T3.2: dynamic favicon swap from branding.favicon (#196) (#210)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T20:55:50-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "566467db093125644811ce4c62b0b40a986cddf3",
+      "commit": {
+        "message": "T2.1: extend KBConfig.theme schema (brand, tokens, themes) (#208)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T20:44:01-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "d31b904c52c78ee49258b56ffdb4bf464ead73ed",
+      "commit": {
+        "message": "T3.1: add branding.logo and render on HomePage + HUD (#195) (#209)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T20:37:32-04:00"
+        }
+      },
+      "html_url": ""
+    },
+    {
+      "sha": "125bf13796cf159f35792f7f2f2b972d3c225170",
+      "commit": {
+        "message": "T2.3: seed-color → BrandVariants (16-stop) generator (#192) (#207)",
+        "author": {
+          "name": "Hoop Somuah",
+          "date": "2026-06-11T20:23:39-04:00"
+        }
+      },
+      "html_url": ""
     }
   ],
-  "files": {
-    "README.md": "# Test Repo\n\nHello world.",
-    "content/config.yaml": "title: \"Test KB\"\nclusters: {}",
-    "content/overview.md": "---\nid: overview\ntitle: Overview\ncluster: docs\n---\n# Overview\nHello.",
-    "content/wiki/setup.md": "---\nid: setup\ntitle: Setup Guide\ncluster: guide\n---\n# Setup\nSteps."
-  }
+  "branches": [
+    {
+      "name": "dependabot/npm_and_yarn/fluentui/react-components-9.74.2",
+      "protected": false
+    },
+    {
+      "name": "dependabot/npm_and_yarn/playwright/test-1.61.1",
+      "protected": false
+    },
+    {
+      "name": "dependabot/npm_and_yarn/types/node-26.0.1",
+      "protected": false
+    },
+    {
+      "name": "dependabot/npm_and_yarn/vitejs/plugin-react-6.0.3",
+      "protected": false
+    },
+    {
+      "name": "dependabot/npm_and_yarn/vitest-4.1.9",
+      "protected": false
+    },
+    {
+      "name": "feat/visual-tests-narrative",
+      "protected": false
+    },
+    {
+      "name": "feature/kb-generate-content",
+      "protected": false
+    },
+    {
+      "name": "feature/local-data",
+      "protected": false
+    },
+    {
+      "name": "feature/repo-setup",
+      "protected": true
+    },
+    {
+      "name": "fix/dock-top-sidebar",
+      "protected": false
+    },
+    {
+      "name": "fix/expanded-visual-tests",
+      "protected": false
+    },
+    {
+      "name": "fix/graph-labels",
+      "protected": false
+    },
+    {
+      "name": "fix/hud-and-map-polish",
+      "protected": false
+    },
+    {
+      "name": "fix/sidebar-grip-position",
+      "protected": false
+    },
+    {
+      "name": "hoopsomuah/dtu-gitea-harness",
+      "protected": false
+    },
+    {
+      "name": "hoopsomuah/fix-detect-host-root",
+      "protected": false
+    },
+    {
+      "name": "hoopsomuah/wbs-builder-skill",
+      "protected": false
+    },
+    {
+      "name": "main",
+      "protected": true
+    }
+  ],
+  "repoMetadata": {
+    "name": "kbexplorer-template",
+    "description": "Interactive Knowledge Base Explorer — React + TypeScript on Azure. Explore knowledge graphs built from GitHub repos and authored markdown content.",
+    "html_url": "https://github.com/anokye-labs/kbexplorer-template",
+    "homepage": "https://anokye-labs.github.io/kbexplorer-template/",
+    "default_branch": "main",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "private": false,
+    "topics": [],
+    "primary_language": "TypeScript",
+    "languages": [
+      {
+        "name": "JavaScript",
+        "size": 292079
+      },
+      {
+        "name": "HTML",
+        "size": 362
+      },
+      {
+        "name": "TypeScript",
+        "size": 2487578
+      },
+      {
+        "name": "CSS",
+        "size": 16182
+      }
+    ],
+    "owner": {
+      "login": "anokye-labs",
+      "avatar_url": ""
+    }
+  },
+  "nodemapRaw": null,
+  "nodemapFiles": {},
+  "nodemapDirs": {},
+  "structuredNodeMapRaw": null,
+  "structuralFiles": {},
+  "contentModel": null,
+  "generatedAt": "2026-06-27T02:50:27.748Z"
 }

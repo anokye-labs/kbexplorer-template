@@ -178,9 +178,17 @@ nodes by `id`; edges by `(from,to,type,relation)`; clusters by `id`; `related`
 keys sorted, value arrays keep ranked order) so two builds serialize to
 identical bytes.
 
+Both golden tests are **hermetic** — they never touch the gitignored,
+environment-generated `src/generated/repo-manifest.json`. Instead a snapshot of
+it is committed at `tests/golden/fixtures/manifest.json` and is the single source
+of truth for both fixtures. The local test drives the loader's extracted pure
+builder `buildKnowledgeBaseFromManifest(manifest, config)` (in `local-loader.ts`)
+with that fixture; `build-remote-fixture.mjs` reshapes the same fixture into
+`fixtures/remote-api.json` for the remote test.
+
 Golden tests (run by `npm test`, regenerate with `npm run golden:update`):
-- `tests/golden/local-graph.test.ts` — local manifest build vs
-  `local-graph.golden.json`.
+- `tests/golden/local-graph.test.ts` — local build from `fixtures/manifest.json`
+  vs `local-graph.golden.json`.
 - `tests/golden/remote-graph.test.ts` — remote build against **recorded**
   fixtures (`fixtures/remote-api.json` + `fixtures/wikipedia.json`), hermetic
   (no network), vs `remote-graph.golden.json`.

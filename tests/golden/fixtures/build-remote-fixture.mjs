@@ -1,12 +1,12 @@
 /**
  * Phase 0 / T0.2 — derive a recorded GitHub-API fixture from the committed
- * `repo-manifest.json`.
+ * manifest fixture (`tests/golden/fixtures/manifest.json`).
  *
- * The manifest is itself the recording of this repo's GitHub API responses
- * (it's produced by `scripts/generate-manifest.js`). This script reshapes it
- * into the response shapes the remote loader's API functions return, so the
- * remote-mode golden test can run hermetically (no network): the test mocks
- * `src/api` to serve from this fixture.
+ * The manifest is itself a recording of this repo's GitHub API responses
+ * (it's produced by `scripts/generate-manifest.js` and snapshotted here). This
+ * script reshapes it into the response shapes the remote loader's API
+ * functions return, so the remote-mode golden test can run hermetically (no
+ * network): the test mocks `src/api` to serve from this fixture.
  *
  * Run: `node tests/golden/fixtures/build-remote-fixture.mjs`
  */
@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const manifestPath = join(here, '../../../src/generated/repo-manifest.json');
+const manifestPath = join(here, 'manifest.json');
 const outPath = join(here, 'remote-api.json');
 
 const m = JSON.parse(readFileSync(manifestPath, 'utf8'));

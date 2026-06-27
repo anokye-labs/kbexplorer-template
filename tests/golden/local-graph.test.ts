@@ -1,10 +1,12 @@
 /**
  * Phase 0 / T0.1 — golden snapshot of the local-mode KBGraph.
  *
- * Builds the KBGraph via the local loader (the same path the app uses with
- * `VITE_KB_LOCAL=true`, which imports the committed `repo-manifest.json`),
- * serializes it deterministically, and diffs byte-for-byte against the
- * committed golden fixture under `tests/golden/`.
+ * Builds the KBGraph via the local loader's pure builder
+ * (`buildKnowledgeBaseFromManifest`) fed a committed manifest fixture
+ * (`fixtures/manifest.json`) — the same transform the app runs with
+ * `VITE_KB_LOCAL=true`, minus the ambient/gitignored generated manifest so the
+ * snapshot is hermetic and stable in CI. Serializes deterministically and
+ * diffs byte-for-byte against the committed golden fixture under `tests/golden/`.
  *
  * This is a guardrail, not a refactor: any change that alters the produced
  * graph must regenerate the fixture (`npm run golden:update`) so the diff is
@@ -15,13 +17,28 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { loadLocalKnowledgeBase } from '../../src/engine/local-loader';
+import {
+  buildConfigFromManifest,
+  buildKnowledgeBaseFromManifest,
+  type RepoManifest,
+} from '../../src/engine/local-loader';
 import { serializeGraph } from './serialize';
 import { installWikipediaFetchMock } from './wikipedia-mock';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const GOLDEN = join(here, 'local-graph.golden.json');
+const MANIFEST = join(here, 'fixtures', 'manifest.json');
 const UPDATE = process.env.UPDATE_GOLDEN === '1';
+
+function loadManifestFixture(): RepoManifest {
+  return JSON.parse(readFileSync(MANIFEST, 'utf8')) as RepoManifest;
+}
+
+async function buildLocalGraph() {
+  const manifest = loadManifestFixture();
+  const config = buildConfigFromManifest(manifest);
+  return buildKnowledgeBaseFromManifest(manifest, config);
+}
 
 describe('golden: local-mode KBGraph', () => {
   beforeEach(() => {
@@ -32,7 +49,7 @@ describe('golden: local-mode KBGraph', () => {
   });
 
   it('serializes byte-for-byte identical to the committed golden fixture', async () => {
-    const { graph } = await loadLocalKnowledgeBase();
+    const { graph } = await buildLocalGraph();
     const serialized = serializeGraph(graph);
     if (UPDATE) {
       writeFileSync(GOLDEN, serialized);
@@ -43,8 +60,8 @@ describe('golden: local-mode KBGraph', () => {
 
   it('is deterministic: two builds produce identical bytes', async () => {
     const [a, b] = await Promise.all([
-      loadLocalKnowledgeBase(),
-      loadLocalKnowledgeBase(),
+      buildLocalGraph(),
+      buildLocalGraph(),
     ]);
     expect(serializeGraph(a.graph)).toBe(serializeGraph(b.graph));
   });
