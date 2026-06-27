@@ -25,14 +25,14 @@ import {
   type Theme,
   type VisualMode,
 } from '@anokye-labs/kbexplorer-core';
-import { resolveNodeLayer } from '../engine/node-types/registry';
-import { projectReportsToTree } from '../engine/reports-to-layout';
 
 /**
  * Re-export the pure graph + config contract from `@anokye-labs/kbexplorer-core`
- * so existing `../types` imports keep working unchanged. The styling, layout,
- * view, node-layer and default-config logic below stays template-local — it is
- * representation/engine concern, not pure data.
+ * so existing `../types` imports keep working unchanged. The default-config
+ * logic and the pure graph projections below (collapse/trim) stay template-local
+ * but engine-free; styling, layer and view representation now live under
+ * `../representation` (Phase 2 / F2 #309) so this module imports nothing from the
+ * engine at load.
  */
 export {
   buildJsonLd,
@@ -59,6 +59,24 @@ export {
   type Theme,
   type VisualMode,
 };
+
+/**
+ * Backward-compatible re-exports of the representation styling moved to
+ * `../representation/styles` (Phase 2 / T2.1 #310). These are pure data — no
+ * engine import — so re-exporting them keeps `../types` engine-free at load.
+ * New code should import these from `../representation/styles` directly.
+ */
+export {
+  EDGE_TYPE_WEIGHTS,
+  EDGE_TYPE_STYLES,
+  RELATION_STYLES,
+  NODE_LAYER_META,
+  getEdgeStyle,
+  getEdgeLegendKey,
+  getEdgeWeight,
+  type EdgeTypeStyle,
+  type NodeLayer,
+} from '../representation/styles';
 
 
 /** A single entry in nodemap.yaml */
@@ -90,12 +108,6 @@ export interface NodeMap {
   nodes: NodeMapEntry[];
 }
 
-
-
-
-
-
-
 /**
  * The open relationship taxonomy carried by {@link KBEdge.relation}.
  *
@@ -118,335 +130,6 @@ export type KnownRelation =
   | 'assigned-to'
   | 'authored'
   | 'member-of';
-
-/** Default weights per edge type — higher = tighter layout clustering */
-export const EDGE_TYPE_WEIGHTS: Record<KnownEdgeType, number> = {
-  contains: 5.0,
-  derived_from: 3.0,
-  imports: 2.0,
-  references: 2.0,
-  frontmatter: 1.5,
-  cross_references: 1.5,
-  modifies: 1.0,
-  closes: 2.0,
-  mentions: 0.5,
-  related: 0.3,
-};
-
-/** Visual style for each edge type */
-export interface EdgeTypeStyle {
-  color: string;
-  dashes: boolean | number[];
-  width: number;
-  label: string;
-}
-
-export const EDGE_TYPE_STYLES: Record<KnownEdgeType, EdgeTypeStyle> = {
-  contains:         { color: '#a0adb8', dashes: false,      width: 2,   label: 'Contains' },
-  derived_from:     { color: '#e8a854', dashes: false,      width: 2,   label: 'Derived from' },
-  imports:          { color: '#a78bfa', dashes: false,      width: 1.5, label: 'Imports' },
-  references:       { color: '#79c0ff', dashes: false,      width: 1.5, label: 'References' },
-  frontmatter:      { color: '#7ee787', dashes: [6, 4],     width: 1.5, label: 'Frontmatter' },
-  cross_references: { color: '#f9a8d4', dashes: false,      width: 1.5, label: 'Cross-ref' },
-  modifies:         { color: '#e3b341', dashes: [4, 4],     width: 1.5, label: 'Modifies' },
-  closes:           { color: '#56d364', dashes: false,      width: 2,   label: 'Closes' },
-  mentions:         { color: '#b1bac4', dashes: [3, 4],     width: 1.2, label: 'Mentions' },
-  related:          { color: '#8b949e', dashes: [3, 3],     width: 1.2, label: 'Related' },
-};
-
-/** Visual styles for the relation taxonomy (rendered data-drivenly in the legend). */
-export const RELATION_STYLES: Record<KnownRelation, EdgeTypeStyle> = {
-  leads:            { color: '#f0883e', dashes: false,     width: 2.5, label: 'Leads' },
-  staffs:           { color: '#3fb950', dashes: false,     width: 1.5, label: 'Staffs' },
-  'reports-to':     { color: '#a371f7', dashes: false,     width: 1.8, label: 'Reports to' },
-  structural:       { color: '#a0adb8', dashes: false,     width: 2,   label: 'Structural' },
-  derived:          { color: '#e8a854', dashes: [6, 4],    width: 1.5, label: 'Derived' },
-  deprecated:       { color: '#8b949e', dashes: [2, 3],    width: 1.2, label: 'Deprecated' },
-  // Work-graph organizational-layer relations (#233)
-  owns:             { color: '#4A9CC8', dashes: false,     width: 2,   label: 'Owns' },
-  'has-priority':   { color: '#E8A838', dashes: [4, 3],    width: 1.8, label: 'Has priority' },
-  'tracked-in':     { color: '#a371f7', dashes: [6, 3],    width: 1.5, label: 'Tracked in' },
-  // Person-node active-work relations (#235)
-  'assigned-to':    { color: '#56d364', dashes: false,     width: 1.8, label: 'Assigned to' },
-  'authored':       { color: '#79c0ff', dashes: [4, 3],    width: 1.5, label: 'Authored' },
-  'member-of':      { color: '#f0883e', dashes: false,     width: 1.8, label: 'Member of' },
-};
-
-const DEFAULT_RELATION_STYLE: EdgeTypeStyle = { color: '#79c0ff', dashes: [2, 2], width: 1.5, label: 'Related' };
-
-/** Title-case an arbitrary relation/edge key for display in the legend. */
-function humanizeKey(key: string): string {
-  return key
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase());
-}
-
-/**
- * Resolve the visual style for an edge, data-drivenly.
- *
- * Precedence: explicit `relation` (taxonomy → known style; otherwise a default
- * style with a humanized label) → known `type` style → for an unknown (open)
- * `type`, the neutral `related` visual style but with the actual type string
- * humanized as the label so new edge kinds still render distinctly in the
- * legend. This is the single source of truth used by both the graph renderer
- * and the legend so new relations show up without code edits.
- */
-export function getEdgeStyle(edge: { type?: EdgeType; relation?: string }): EdgeTypeStyle {
-  if (edge.relation) {
-    const known = RELATION_STYLES[edge.relation as KnownRelation];
-    if (known) return known;
-    return { ...DEFAULT_RELATION_STYLE, label: humanizeKey(edge.relation) };
-  }
-  const t = (edge.type ?? 'related') as KnownEdgeType;
-  const known = EDGE_TYPE_STYLES[t];
-  if (known) return known;
-  // Open/unknown edge type: keep the neutral `related` visual treatment but
-  // preserve the actual type string as a humanized label so F2/F3 relations are
-  // distinguishable in the data-driven legend.
-  return { ...EDGE_TYPE_STYLES.related, label: humanizeKey(edge.type as string) };
-}
-
-/** The legend key for an edge — its relation when present, else its type. */
-export function getEdgeLegendKey(edge: { type?: EdgeType; relation?: string }): string {
-  return edge.relation ?? (edge.type as string) ?? 'related';
-}
-
-/** Resolve the layout weight for an edge type (open-safe). */
-export function getEdgeWeight(type: EdgeType | undefined): number {
-  return EDGE_TYPE_WEIGHTS[(type ?? 'related') as KnownEdgeType] ?? 1;
-}
-
-export type NodeLayer = 'file' | 'content' | 'work';
-
-export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string }> = {
-  file:    { label: 'Files',   color: '#9A8A78' },
-  content: { label: 'Content', color: '#58a6ff' },
-  work:    { label: 'Work',    color: '#d29922' },
-};
-
-/**
- * Classify a node into a graph layer.
- *
- * Registry-driven: resolution delegates to the node-type registry
- * ({@link resolveNodeLayer}), which honors `entityType` first, then the
- * `source.type`, falling back to `'file'`. Built-in source types are registered
- * with their historical layer mapping so existing graphs classify identically.
- */
-export function getNodeLayer(node: KBNode): NodeLayer {
-  return resolveNodeLayer(node);
-}
-
-/** Check if a file node is a redundant content/ tree entry (has an authored counterpart). */
-export function isContentTreeNode(node: KBNode): boolean {
-  if (node.source.type !== 'file') return false;
-  const path = (node.source as { path: string }).path;
-  return path.startsWith('content/') || path === 'content';
-}
-
-/**
- * Filter graph to a single layer view.
- * - Files: only file-layer nodes
- * - Content: authored nodes + referenced file nodes (excluding content/ tree duplicates)
- * - Work: issues, PRs, commits
- */
-export function filterGraphToLayer(graph: KBGraph, layer: NodeLayer): KBGraph {
-  if (layer === 'file') {
-    return filterByPredicate(graph, n => getNodeLayer(n) === 'file');
-  }
-
-  if (layer === 'content') {
-    // Start with all content nodes
-    const contentIds = new Set<string>();
-    for (const n of graph.nodes) {
-      if (getNodeLayer(n) === 'content') contentIds.add(n.id);
-    }
-
-    // Identity-aware: find file nodes that share identity with content nodes
-    // and remap their edges to the content node
-    const identityToContentId = new Map<string, string>();
-    for (const n of graph.nodes) {
-      if (n.identity && contentIds.has(n.id)) {
-        identityToContentId.set(n.identity, n.id);
-      }
-    }
-    const fileIdToContentId = new Map<string, string>();
-    for (const n of graph.nodes) {
-      if (n.identity && !contentIds.has(n.id) && identityToContentId.has(n.identity)) {
-        fileIdToContentId.set(n.id, identityToContentId.get(n.identity)!);
-      }
-    }
-
-    // Add file nodes referenced by content nodes (but not content/ tree duplicates or identity-mapped)
-    const referencedFileIds = new Set<string>();
-    for (const e of graph.edges) {
-      if (contentIds.has(e.from) && !contentIds.has(e.to) && !fileIdToContentId.has(e.to)) {
-        const target = graph.nodes.find(n => n.id === e.to);
-        if (target && getNodeLayer(target) === 'file' && !isContentTreeNode(target)) {
-          referencedFileIds.add(e.to);
-        }
-      }
-      if (contentIds.has(e.to) && !contentIds.has(e.from) && !fileIdToContentId.has(e.from)) {
-        const target = graph.nodes.find(n => n.id === e.from);
-        if (target && getNodeLayer(target) === 'file' && !isContentTreeNode(target)) {
-          referencedFileIds.add(e.from);
-        }
-      }
-    }
-    const visibleIds = new Set([...contentIds, ...referencedFileIds]);
-
-    // Filter nodes
-    const nodes = graph.nodes.filter(n => visibleIds.has(n.id));
-
-    // Filter edges — remap identity-linked file node refs to their content counterpart
-    const remap = (id: string) => fileIdToContentId.get(id) ?? id;
-    const edgeSeen = new Set<string>();
-    const edges: KBEdge[] = [];
-    for (const e of graph.edges) {
-      const from = remap(e.from);
-      const to = remap(e.to);
-      if (!visibleIds.has(from) || !visibleIds.has(to)) continue;
-      if (from === to) continue;
-      const key = `${from}→${to}→${e.type}`;
-      if (edgeSeen.has(key)) continue;
-      edgeSeen.add(key);
-      edges.push({ ...e, from, to });
-    }
-
-    const related: Record<string, string[]> = {};
-    for (const id of visibleIds) {
-      const r = (graph.related[id] ?? [])
-        .map(remap)
-        .filter(rid => rid !== id && visibleIds.has(rid));
-      const unique = [...new Set(r)];
-      if (unique.length > 0) related[id] = unique;
-    }
-    return { nodes, edges, clusters: graph.clusters, related };
-  }
-
-  // Work layer: issues, PRs, commits
-  return filterByPredicate(graph, n => getNodeLayer(n) === 'work');
-}
-
-function filterByPredicate(graph: KBGraph, predicate: (n: KBNode) => boolean): KBGraph {
-  const visibleIds = new Set<string>();
-  const nodes = graph.nodes.filter(n => {
-    if (predicate(n)) { visibleIds.add(n.id); return true; }
-    return false;
-  });
-  const edges = graph.edges.filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
-  const related: Record<string, string[]> = {};
-  for (const id of visibleIds) {
-    const r = (graph.related[id] ?? []).filter(rid => visibleIds.has(rid));
-    if (r.length > 0) related[id] = r;
-  }
-  return { nodes, edges, clusters: graph.clusters, related };
-}
-
-// ── Graph Views ────────────────────────────────────────────
-
-/** Layout strategy a view requests for the live graph canvas. */
-export type GraphLayoutMode = 'force' | 'reports-to'
-
-/** A named view projection over the graph */
-export interface GraphView {
-  id: string
-  name: string
-  icon: string
-  color: string
-  /**
-   * Layout strategy for this view's graph. Defaults to the force-directed
-   * constellation when omitted. `'reports-to'` renders a hierarchical org tree
-   * keyed on the reporting relation (#279).
-   */
-  layout?: GraphLayoutMode
-  /** Resolve this view — custom logic, not just a filter */
-  resolve: (graph: KBGraph) => KBGraph
-}
-
-/** Built-in views — each with a custom resolver */
-export const BUILT_IN_VIEWS: GraphView[] = [
-  {
-    id: 'all',
-    name: 'All',
-    icon: '',
-    color: '#ffffff',
-    resolve: (graph) => graph,
-  },
-  {
-    id: 'code',
-    name: 'Code',
-    icon: 'Code',
-    color: '#9A8A78',
-    resolve: (graph) => filterByPredicate(graph, n => {
-      const t = n.source.type
-      if (t === 'file') return true
-      // Include authored nodes in code-related clusters
-      if ((t === 'authored' || t === 'derived') &&
-        ['engine', 'data', 'infra'].includes(n.cluster)) return true
-      return false
-    }),
-  },
-  {
-    id: 'content',
-    name: 'Docs',
-    icon: 'Document',
-    color: '#58a6ff',
-    resolve: (graph) => filterGraphToLayer(graph, 'content'),
-  },
-  {
-    id: 'work',
-    name: 'Work',
-    icon: 'Wrench',
-    color: '#d29922',
-    resolve: (graph) => filterByPredicate(graph, n => {
-      const t = n.source.type
-      if (t === 'structured' && n.entityType === 'person') return true
-      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository' || t === 'release' || t === 'person'
-    }),
-  },
-  {
-    id: 'external',
-    name: 'External',
-    icon: 'Globe',
-    color: '#79C0FF',
-    resolve: (graph) => {
-      // External nodes + their 1-hop internal neighbors
-      const externalIds = new Set(
-        graph.nodes.filter(n => n.source.type === 'external').map(n => n.id)
-      )
-      const neighborIds = new Set<string>()
-      for (const e of graph.edges) {
-        if (externalIds.has(e.from)) neighborIds.add(e.to)
-        if (externalIds.has(e.to)) neighborIds.add(e.from)
-      }
-      const visibleIds = new Set([...externalIds, ...neighborIds])
-      return filterByPredicate(graph, n => visibleIds.has(n.id))
-    },
-  },
-  {
-    id: 'org',
-    name: 'Org',
-    icon: 'Organization',
-    // Matches the `reports-to` relation colour so the org tree reads as a
-    // first-class projection of the reporting hierarchy (#279).
-    color: '#a371f7',
-    layout: 'reports-to',
-    resolve: (graph) => projectReportsToTree(graph),
-  },
-]
-
-/** Get a view by ID (built-in or custom) */
-export function getView(id: string): GraphView | undefined {
-  return BUILT_IN_VIEWS.find(v => v.id === id)
-}
-
-/** Apply a view to a graph */
-export function filterGraphToView(graph: KBGraph, viewId: string): KBGraph {
-  if (viewId === 'all') return graph
-  const view = getView(viewId)
-  if (!view) return graph
-  return view.resolve(graph)
-}
 
 /**
  * Collapse specified clusters into single summary nodes.
@@ -657,19 +340,6 @@ export function trimGraphToLimits(
     totalEdges,
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /** Resolve the default source config from Vite env vars or fallback to hardcoded defaults. */
 function resolveDefaultSource(): SourceConfig {
