@@ -17,14 +17,8 @@ import {
   extractIssueRefs,
   splitIntoSections,
 } from '../engine';
-import { ProviderRegistry } from './providers';
-import { FilesProvider } from './providers/files-provider';
-import { AuthoredProvider } from './providers/authored-provider';
-import { WorkProvider } from './providers/work-provider';
-import { PersonProvider } from './providers/person-provider';
-import { StructuralProvider } from './providers/structural-provider';
-import { ContentModelProvider } from './providers/content-model-provider';
-import { orchestrateWithTransforms } from './orchestrator';
+import { ManifestSource } from './sources/manifest-source';
+import { loadKnowledgeBase } from './loader';
 import type { GHIssue, GHTreeItem, GHRelease } from '../api';
 import type { ContentModelSource } from './content-model';
 import { mergeExternalTheme, parseExternalTheme } from '../theme/externalTheme';
@@ -311,30 +305,6 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
   return nodes;
 }
 
-// ── Helpers ────────────────────────────────────────────────
-
-/** Convert a simple glob pattern to a RegExp for matching file paths. */
-function globToRegex(pattern: string): RegExp {
-  let re = '';
-  for (let i = 0; i < pattern.length; i++) {
-    const c = pattern[i];
-    if (c === '*' && pattern[i + 1] === '*') {
-      re += '.*';
-      i += 1;
-      if (pattern[i + 1] === '/') i += 1;
-    } else if (c === '*') {
-      re += '[^/]*';
-    } else if (c === '?') {
-      re += '[^/]';
-    } else if ('.+^${}()|[]\\'.includes(c)) {
-      re += '\\' + c;
-    } else {
-      re += c;
-    }
-  }
-  return new RegExp(`^${re}$`);
-}
-
 // ── Full Local Load ────────────────────────────────────────
 
 /**
@@ -369,60 +339,7 @@ export async function buildKnowledgeBaseFromManifest(
   manifest: RepoManifest,
   config: KBConfig,
 ): Promise<{ graph: KBGraph; config: KBConfig }> {
-  // ── Register providers ──────────────────────────────────
-  const registry = new ProviderRegistry();
-
-  registry.register(
-    new FilesProvider(manifest.tree as GHTreeItem[], config.source.repo),
-  );
-
-  const listFiles = async (pattern: string): Promise<string[]> => {
-    const regex = globToRegex(pattern);
-    return Object.keys(manifest.nodemapFiles ?? {}).filter(p => regex.test(p));
-  };
-
-  registry.register(
-    new AuthoredProvider(
-      manifest.authoredContent,
-      manifest.nodemapRaw,
-      manifest.nodemapFiles,
-      manifest.nodemapDirs,
-      listFiles,
-    ),
-  );
-
-  registry.register(
-    new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null, manifest.releases ?? []),
-  );
-
-  // People derived from GitHub activity (#235). Local-manifest PRs do not
-  // carry author/assignees yet (kbexplorer-cli follow-up), so local-mode
-  // person derivation comes from issues; the provider tolerates the gap.
-  registry.register(new PersonProvider(manifest.issues, manifest.pullRequests));
-
-  // ── Structural discovery (.github → repository node) ────
-  if (manifest.structuralFiles && Object.keys(manifest.structuralFiles).length > 0) {
-    registry.register(
-      new StructuralProvider(manifest.structuralFiles, manifest.structuredNodeMapRaw ?? null),
-    );
-  }
-
-  // Content-model spine (F2). Safe no-op when the manifest carries no
-  // content-model source — emits nothing and leaves existing output unchanged.
-  registry.register(new ContentModelProvider(manifest.contentModel ?? null));
-
-  // ── Register external providers from config ────────────
-  if (config.providers && config.providers.length > 0) {
-    const { loadExternalProviders } = await import('./plugin-loader');
-    const externals = loadExternalProviders(config.providers);
-    for (const p of externals) registry.register(p);
-  }
-
-  // ── Collect provider nodes, run the shared transform stage, build graph ─
-  const graph = await orchestrateWithTransforms(registry, config, {
-    readme: manifest.readme ?? null,
-  });
-  return { graph, config };
+  return loadKnowledgeBase(new ManifestSource(manifest, config), config);
 }
 
 export async function loadLocalKnowledgeBase(): Promise<{
