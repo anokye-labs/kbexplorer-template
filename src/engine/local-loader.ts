@@ -32,7 +32,7 @@ import { mergeExternalTheme, parseExternalTheme } from '../theme/externalTheme';
 
 // ── Manifest Types ─────────────────────────────────────────
 
-interface RepoManifest {
+export interface RepoManifest {
   configRaw: string | null;
   authoredContent: Record<string, string>;
   tree: Array<{ path: string; type: 'blob' | 'tree'; size?: number }>;
@@ -126,8 +126,8 @@ export async function detectLocalMode(): Promise<boolean> {
 
 // ── Local Config ───────────────────────────────────────────
 
-export async function loadLocalConfig(): Promise<KBConfig> {
-  const manifest = await loadManifest();
+/** Derive the resolved KBConfig from an in-memory manifest (pure; no I/O). */
+export function buildConfigFromManifest(manifest: RepoManifest | null): KBConfig {
   if (!manifest?.configRaw) return { ...DEFAULT_CONFIG };
 
   try {
@@ -143,6 +143,10 @@ export async function loadLocalConfig(): Promise<KBConfig> {
   } catch {
     return { ...DEFAULT_CONFIG };
   }
+}
+
+export async function loadLocalConfig(): Promise<KBConfig> {
+  return buildConfigFromManifest(await loadManifest());
 }
 
 // ── Local Authored Content ─────────────────────────────────
@@ -353,8 +357,19 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
     return { graph, config };
   }
 
-  const config = await loadLocalConfig();
+  const config = buildConfigFromManifest(manifest);
+  return buildKnowledgeBaseFromManifest(manifest, config);
+}
 
+/**
+ * Build the local-mode KBGraph from an in-memory manifest + resolved config.
+ * Extracted so a committed manifest fixture can drive a hermetic golden
+ * snapshot (Phase 0) without depending on the ambient generated manifest.
+ */
+export async function buildKnowledgeBaseFromManifest(
+  manifest: RepoManifest,
+  config: KBConfig,
+): Promise<{ graph: KBGraph; config: KBConfig }> {
   // ── Register providers ──────────────────────────────────
   const registry = new ProviderRegistry();
 
