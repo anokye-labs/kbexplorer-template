@@ -83,7 +83,10 @@ jobs:
 
   build:
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Deploy on a push to main (human merges) OR an explicit dispatch. The
+    # auto-merge workflow dispatches this after a bot merge, because pushes made
+    # by GITHUB_TOKEN don't trigger the `push` event (anti-recursion). #377
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
