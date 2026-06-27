@@ -9,7 +9,6 @@
  * - standard: issues + PRs + README + tree + authored content
  * - full: standard + commits
  */
-import { marked } from 'marked'
 import type { KBGraph, KBConfig, SourceConfig } from '../types'
 import { DEFAULT_CONFIG } from '../types'
 import {
@@ -22,13 +21,7 @@ import {
   fetchReleases,
 } from '../api'
 import type { GHIssue, GHTreeItem, GHCommit, GHRelease } from '../api'
-import {
-  loadConfig,
-  extractClusters,
-  buildGraph,
-  extractIssueRefs,
-  splitIntoSections,
-} from '../engine'
+import { loadConfig } from '../engine'
 import { ProviderRegistry } from './providers'
 import { FilesProvider } from './providers/files-provider'
 import { AuthoredProvider } from './providers/authored-provider'
@@ -36,7 +29,7 @@ import { WorkProvider } from './providers/work-provider'
 import { PersonProvider } from './providers/person-provider'
 import { StructuralProvider } from './providers/structural-provider'
 import { ContentModelProvider } from './providers/content-model-provider'
-import { collectProviderNodes } from './orchestrator'
+import { orchestrateWithTransforms } from './orchestrator'
 import { applyExternalThemeFile } from '../theme/externalTheme'
 
 export type ResolutionPreset = 'summary' | 'standard' | 'full'
@@ -226,95 +219,7 @@ export async function loadRemoteKnowledgeBase(
     for (const p of externals) registry.register(p)
   }
 
-  // ── Collect nodes from providers ───────────────────────
-  const allNodes = await collectProviderNodes(registry, config)
-
-  // ── Post-processing: README + cross-linking ────────────
-  const issueNodes = allNodes.filter(n => n.source.type === 'issue')
-  const dirNodes = allNodes.filter(n => n.provider === 'files')
-
-  if (data.readme) {
-    const readme = data.readme
-    const readmeConns: Array<{ to: string; description: string }> = []
-    const lower = readme.toLowerCase()
-
-    const issueRefs = extractIssueRefs(readme)
-    for (const num of issueRefs) {
-      const id = `issue-${num}`
-      if (issueNodes.some(n => n.id === id)) {
-        readmeConns.push({ to: id, description: `References #${num}` })
-      }
-    }
-    for (const node of issueNodes) {
-      if (readmeConns.some(c => c.to === node.id)) continue
-      const titleWords = node.title.toLowerCase().split(/\s+/).filter(w => w.length > 3)
-      if (titleWords.length === 0) continue
-      const matchCount = titleWords.filter(w => lower.includes(w)).length
-      if (matchCount >= Math.ceil(titleWords.length * 0.6)) {
-        readmeConns.push({ to: node.id, description: 'Mentions' })
-      }
-    }
-    for (const dir of dirNodes) {
-      const dirName = dir.title.replace(/\/$/, '')
-      if (lower.includes(`${dirName}/`) || lower.includes(`\`${dirName}\``)) {
-        readmeConns.push({ to: dir.id, description: `References ${dirName}/` })
-      }
-    }
-    readmeConns.push({ to: 'repo-root', description: 'Documents' })
-
-    // Extract inline markdown links
-    const readmeConnectedTo = new Set(readmeConns.map(c => c.to))
-    for (const m of readme.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)) {
-      const target = m[2].trim()
-      if (target.startsWith('http') || target.startsWith('#') || target.startsWith('/')) continue
-      if (target.match(/\.(png|jpg|jpeg|gif|svg|webp|md)$/i)) continue
-      if (readmeConnectedTo.has(target)) continue
-      readmeConns.push({ to: target, description: m[1] })
-      readmeConnectedTo.add(target)
-    }
-
-    const html = marked.parse(readme, { async: false }) as string
-    allNodes.push({
-      id: 'readme', title: 'README', cluster: 'docs',
-      content: html, rawContent: readme, emoji: 'Document',
-      parent: 'repo-root',
-      identity: 'urn:content:readme',
-      connections: readmeConns, source: { type: 'readme' },
-    })
-  }
-
-  // Auto-link issues → directories
-  const dirNames = dirNodes.map(d => d.title.replace(/\/$/, ''))
-  for (const node of issueNodes) {
-    for (let i = 0; i < dirNames.length; i++) {
-      const dir = dirNames[i]
-      if (node.rawContent && (
-        node.rawContent.includes(`${dir}/`) ||
-        node.rawContent.includes(`\`${dir}\``) ||
-        node.rawContent.toLowerCase().includes(dir.toLowerCase())
-      )) {
-        node.connections.push({ to: dirNodes[i].id, description: `References ${dir}/` })
-      }
-    }
-  }
-
-  // Split issues with 2+ headings
-  const expandedIssues = []
-  for (const node of issueNodes) {
-    const sectionNodes = splitIntoSections(
-      node.id, node.title, node.rawContent, node.cluster, node.emoji ?? 'Pin',
-      node.source, [...issueNodes, ...dirNodes],
-    )
-    if (sectionNodes.length > 0) {
-      const idx = allNodes.indexOf(node)
-      if (idx >= 0) allNodes.splice(idx, 1)
-      expandedIssues.push(...sectionNodes)
-    }
-  }
-  allNodes.push(...expandedIssues)
-
-  // ── Build final graph ──────────────────────────────────
-  const clusters = extractClusters(allNodes, config)
-  const graph = buildGraph(allNodes, clusters)
+  // ── Collect provider nodes, run the shared transform stage, build graph ─
+  const graph = await orchestrateWithTransforms(registry, config, { readme: data.readme })
   return { graph, config }
 }
