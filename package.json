@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@anokye-labs/kbexplorer-core": "git+https://github.com/anokye-labs/kbexplorer-core.git#3fb5086ee8596c1a9a7b12914007d13576747000",
-    "@fluentui/react-components": "^9.73.7",
+    "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",
     "marked": "^18.0.0",
@@ -59,7 +59,7 @@
     "@types/node": "^26.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^10.2.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
