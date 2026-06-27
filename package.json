@@ -10,6 +10,8 @@
     "build:local": "npm run prebuild && tsc -b && VITE_KB_LOCAL=true vite build",
     "lint": "eslint .",
     "test": "vitest run --config vitest.config.ts",
+    "golden:fixtures": "node tests/golden/fixtures/build-remote-fixture.mjs",
+    "golden:update": "node tests/golden/fixtures/build-remote-fixture.mjs && UPDATE_GOLDEN=1 vitest run --config vitest.config.ts tests/golden",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:gitea": "playwright test --config playwright.gitea.config.ts",
@@ -39,7 +41,7 @@
     "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
-    "@fluentui/react-components": "^9.73.7",
+    "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",
     "marked": "^18.0.0",

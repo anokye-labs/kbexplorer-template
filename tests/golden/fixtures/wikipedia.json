@@ -1,0 +1,906 @@
+{
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Knowledge_graph": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Knowledge graph",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Knowledge graph</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q33002955",
+      "titles": {
+        "canonical": "Knowledge_graph",
+        "normalized": "Knowledge graph",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Knowledge graph</span></span>"
+      },
+      "pageid": 64418530,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Conceptual_Diagram_-_Example.svg/330px-Conceptual_Diagram_-_Example.svg.png",
+        "width": 330,
+        "height": 248
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Conceptual_Diagram_-_Example.svg/960px-Conceptual_Diagram_-_Example.svg.png",
+        "width": 609,
+        "height": 458
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1361095856",
+      "tid": "e6dd96ff-70b1-11f1-8d67-f2c66b113c52",
+      "timestamp": "2026-06-25T16:21:21Z",
+      "description": "Type of knowledge base",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Knowledge_graph",
+          "revisions": "https://en.wikipedia.org/wiki/Knowledge_graph?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Knowledge_graph?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Knowledge_graph"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Knowledge_graph",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Knowledge_graph",
+          "edit": "https://en.wikipedia.org/wiki/Knowledge_graph?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Knowledge_graph"
+        }
+      },
+      "extract": "In knowledge representation and reasoning, a knowledge graph is a knowledge base that uses a graph-structured data model or topology to represent and operate on data. Knowledge graphs are often used to store interlinked descriptions of entities – objects, events, situations or abstract concepts – while also encoding the free-form semantics or relationships underlying these entities.",
+      "extract_html": "<p>In knowledge representation and reasoning, a <b>knowledge graph</b> is a knowledge base that uses a graph-structured data model or topology to represent and operate on data. Knowledge graphs are often used to store interlinked descriptions of entities – objects, events, situations or abstract concepts – while also encoding the free-form semantics or relationships underlying these entities.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Force-directed_graph_drawing": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Force-directed graph drawing",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Force-directed graph drawing</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q3076841",
+      "titles": {
+        "canonical": "Force-directed_graph_drawing",
+        "normalized": "Force-directed graph drawing",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Force-directed graph drawing</span></span>"
+      },
+      "pageid": 710331,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/SocialNetworkAnalysis.png/330px-SocialNetworkAnalysis.png",
+        "width": 330,
+        "height": 213
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/SocialNetworkAnalysis.png/3840px-SocialNetworkAnalysis.png",
+        "width": 5459,
+        "height": 3529
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1347519133",
+      "tid": "7193c286-3240-11f1-b7bd-3da8555c0b9f",
+      "timestamp": "2026-04-07T05:12:59Z",
+      "description": "Physical simulation to visualize graphs",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Force-directed_graph_drawing",
+          "revisions": "https://en.wikipedia.org/wiki/Force-directed_graph_drawing?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Force-directed_graph_drawing?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Force-directed_graph_drawing"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Force-directed_graph_drawing",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Force-directed_graph_drawing",
+          "edit": "https://en.wikipedia.org/wiki/Force-directed_graph_drawing?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Force-directed_graph_drawing"
+        }
+      },
+      "extract": "Force-directed graph drawing algorithms are a class of algorithms for drawing graphs in an aesthetically-pleasing way. Their purpose is to position the nodes of a graph in two-dimensional or three-dimensional space so that all the edges are of more or less equal length and there are as few crossing edges as possible, by assigning forces among the set of edges and the set of nodes, based on their relative positions, and then using these forces either to simulate the motion of the edges and nodes or to minimize their energy.",
+      "extract_html": "<p><b>Force-directed graph drawing</b> algorithms are a class of algorithms for drawing graphs in an aesthetically-pleasing way. Their purpose is to position the nodes of a graph in two-dimensional or three-dimensional space so that all the edges are of more or less equal length and there are as few crossing edges as possible, by assigning forces among the set of edges and the set of nodes, based on their relative positions, and then using these forces either to simulate the motion of the edges and nodes or to minimize their energy.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Graph_(abstract_data_type)": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Graph (abstract data type)",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Graph (abstract data type)</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q2479726",
+      "titles": {
+        "canonical": "Graph_(abstract_data_type)",
+        "normalized": "Graph (abstract data type)",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Graph (abstract data type)</span></span>"
+      },
+      "pageid": 557931,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Directed.svg/330px-Directed.svg.png",
+        "width": 330,
+        "height": 297
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Directed.svg/250px-Directed.svg.png",
+        "width": 250,
+        "height": 225
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1357528269",
+      "tid": "dbf476b8-5f02-11f1-934e-b117a934bd03",
+      "timestamp": "2026-06-03T04:15:31Z",
+      "description": "Abstract data type in computer science",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Graph_(abstract_data_type)",
+          "revisions": "https://en.wikipedia.org/wiki/Graph_(abstract_data_type)?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Graph_(abstract_data_type)?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Graph_(abstract_data_type)"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Graph_(abstract_data_type)",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Graph_(abstract_data_type)",
+          "edit": "https://en.wikipedia.org/wiki/Graph_(abstract_data_type)?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Graph_(abstract_data_type)"
+        }
+      },
+      "extract": "In computer science, a graph is an abstract data type that is meant to implement the undirected graph and directed graph concepts from the field of graph theory within mathematics.",
+      "extract_html": "<p>In computer science, a <b>graph</b> is an abstract data type that is meant to implement the undirected graph and directed graph concepts from the field of graph theory within mathematics.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Graph_theory": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Graph theory",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Graph theory</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q131476",
+      "titles": {
+        "canonical": "Graph_theory",
+        "normalized": "Graph theory",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Graph theory</span></span>"
+      },
+      "pageid": 12401,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Example_of_simple_undirected_graph_3.svg/330px-Example_of_simple_undirected_graph_3.svg.png",
+        "width": 330,
+        "height": 218
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Example_of_simple_undirected_graph_3.svg/120px-Example_of_simple_undirected_graph_3.svg.png",
+        "width": 97,
+        "height": 64
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1358806038",
+      "tid": "99531dd0-653c-11f1-9c91-cfe01a4f51b2",
+      "timestamp": "2026-06-11T02:23:57Z",
+      "description": "Area of discrete mathematics",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Graph_theory",
+          "revisions": "https://en.wikipedia.org/wiki/Graph_theory?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Graph_theory?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Graph_theory"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Graph_theory",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Graph_theory",
+          "edit": "https://en.wikipedia.org/wiki/Graph_theory?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Graph_theory"
+        }
+      },
+      "extract": "In mathematics and computer science, graph theory is the study of graphs, which are mathematical structures used to model pairwise relations between objects. A graph in this context is made up of vertices which are connected by edges. A distinction is made between undirected graphs, where edges link two vertices symmetrically, and directed graphs, where edges link two vertices asymmetrically. Graphs are one of the principal objects of study in discrete mathematics.",
+      "extract_html": "<p>In mathematics and computer science, <b>graph theory</b> is the study of graphs, which are mathematical structures used to model pairwise relations between objects. A graph in this context is made up of vertices which are connected by edges. A distinction is made between undirected graphs, where edges link two vertices symmetrically, and directed graphs, where edges link two vertices asymmetrically. Graphs are one of the principal objects of study in discrete mathematics.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Network_science": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Network science",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Network science</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q2434424",
+      "titles": {
+        "canonical": "Network_science",
+        "normalized": "Network science",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Network science</span></span>"
+      },
+      "pageid": 16981683,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Internet_map_1024.jpg/330px-Internet_map_1024.jpg",
+        "width": 330,
+        "height": 330
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Internet_map_1024.jpg",
+        "width": 1280,
+        "height": 1280
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1356024701",
+      "tid": "22b5e0bb-5818-11f1-b86c-921b083b3508",
+      "timestamp": "2026-05-25T09:00:11Z",
+      "description": "Academic field",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Network_science",
+          "revisions": "https://en.wikipedia.org/wiki/Network_science?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Network_science?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Network_science"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Network_science",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Network_science",
+          "edit": "https://en.wikipedia.org/wiki/Network_science?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Network_science"
+        }
+      },
+      "extract": "Network science is an academic field which studies complex networks such as telecommunication networks, computer networks, biological networks, cognitive and semantic networks, and social networks, considering distinct elements or actors represented by nodes and the connections between the elements or actors as links. The field draws on theories and methods including graph theory from mathematics, statistical mechanics from physics, data mining and information visualization from computer science, inferential modeling from statistics, and social structure from sociology. The United States National Research Council defines network science as \"the study of network representations of physical, biological, and social phenomena leading to predictive models of these phenomena.\"",
+      "extract_html": "<p><b>Network science</b> is an academic field which studies complex networks such as telecommunication networks, computer networks, biological networks, cognitive and semantic networks, and social networks, considering distinct elements or actors represented by <i>nodes</i> and the connections between the elements or actors as <i>links</i>. The field draws on theories and methods including graph theory from mathematics, statistical mechanics from physics, data mining and information visualization from computer science, inferential modeling from statistics, and social structure from sociology. The United States National Research Council defines network science as \"the study of network representations of physical, biological, and social phenomena leading to predictive models of these phenomena.\"</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Small-world_network": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Small-world network",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Small-world network</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q840026",
+      "titles": {
+        "canonical": "Small-world_network",
+        "normalized": "Small-world network",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Small-world network</span></span>"
+      },
+      "pageid": 1457254,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Small-world-network-example.png/330px-Small-world-network-example.png",
+        "width": 330,
+        "height": 274
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/3/37/Small-world-network-example.png",
+        "width": 653,
+        "height": 542
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1356134998",
+      "tid": "cfca4083-588c-11f1-9824-ec8350832658",
+      "timestamp": "2026-05-25T22:55:23Z",
+      "description": "Graph where most nodes are reachable in a small number of steps",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Small-world_network",
+          "revisions": "https://en.wikipedia.org/wiki/Small-world_network?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Small-world_network?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Small-world_network"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Small-world_network",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Small-world_network",
+          "edit": "https://en.wikipedia.org/wiki/Small-world_network?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Small-world_network"
+        }
+      },
+      "extract": "A small-world network is a graph characterized by a high clustering coefficient and low distances. In an example of a social network, high clustering implies the high probability that two friends of one person are friends themselves. The low distances, on the other hand, mean that there is a short chain of social connections between any two people. Specifically, a small-world network is defined to be a network where the typical distance L between two randomly chosen nodes grows proportionally to the logarithm of the number of nodes N in the network, that is:",
+      "extract_html": "<p>A <b>small-world network</b> is a graph characterized by a high clustering coefficient and low distances. In an example of a social network, high clustering implies the high probability that two friends of one person are friends themselves. The low distances, on the other hand, mean that there is a short chain of social connections between any two people. Specifically, a small-world network is defined to be a network where the typical distance <i>L</i> between two randomly chosen nodes grows proportionally to the logarithm of the number of nodes <i>N</i> in the network, that is:</p><dl><dd><span class=\"mwe-math-element mwe-math-element-inline\"><img src=\"https://wikimedia.org/api/rest_v1/media/math/render/svg/4923042aa0384aed8ab3b1c38bffb40a5a265109\" class=\"mwe-math-fallback-image-inline mw-invert skin-invert\" aria-hidden=\"true\" style=\"vertical-align:-0.671ex;width:10.104ex;height:2.509ex\" /></span></dd></dl>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Breadth-first_search": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Breadth-first search",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Breadth-first search</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q325904",
+      "titles": {
+        "canonical": "Breadth-first_search",
+        "normalized": "Breadth-first search",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Breadth-first search</span></span>"
+      },
+      "pageid": 97026,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/4/46/Animated_BFS.gif",
+        "width": 187,
+        "height": 175
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/4/46/Animated_BFS.gif",
+        "width": 187,
+        "height": 175
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1354179802",
+      "tid": "2608cd0e-4fd3-11f1-b218-af0a694a3064",
+      "timestamp": "2026-05-14T20:26:12Z",
+      "description": "Algorithm to search the nodes of a graph",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Breadth-first_search",
+          "revisions": "https://en.wikipedia.org/wiki/Breadth-first_search?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Breadth-first_search?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Breadth-first_search"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Breadth-first_search",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Breadth-first_search",
+          "edit": "https://en.wikipedia.org/wiki/Breadth-first_search?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Breadth-first_search"
+        }
+      },
+      "extract": "Breadth-first search (BFS) is an algorithm for searching a tree data structure for a node that satisfies a given property. It starts at the tree root and explores all nodes at the present depth prior to moving on to the nodes at the next depth level. Extra memory, usually a queue, is needed to keep track of the child nodes that were encountered but not yet explored.",
+      "extract_html": "<p><b>Breadth-first search</b> (<b>BFS</b>) is an algorithm for searching a tree data structure for a node that satisfies a given property. It starts at the tree root and explores all nodes at the present depth prior to moving on to the nodes at the next depth level. Extra memory, usually a queue, is needed to keep track of the child nodes that were encountered but not yet explored.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Single-page_application": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Single-page application",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Single-page application</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q1990286",
+      "titles": {
+        "canonical": "Single-page_application",
+        "normalized": "Single-page application",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Single-page application</span></span>"
+      },
+      "pageid": 18925845,
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1360044257",
+      "tid": "19423e64-6b60-11f1-882d-08810e0a06b4",
+      "timestamp": "2026-06-18T21:53:11Z",
+      "description": "Web application that interacts with the user by dynamically rewriting a web page",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Single-page_application",
+          "revisions": "https://en.wikipedia.org/wiki/Single-page_application?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Single-page_application?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Single-page_application"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Single-page_application",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Single-page_application",
+          "edit": "https://en.wikipedia.org/wiki/Single-page_application?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Single-page_application"
+        }
+      },
+      "extract": "A single-page application (SPA) is a web application or website that interacts with the user by dynamically rewriting the current web page with new data from the web server, instead of the default method of loading entire new pages. The goal is faster transitions that make the website feel more like a native app.",
+      "extract_html": "<p>A <b>single-page application</b> (<b>SPA</b>) is a web application or website that interacts with the user by dynamically rewriting the current web page with new data from the web server, instead of the default method of loading entire new pages. The goal is faster transitions that make the website feel more like a native app.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/React_(software)": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "React (software)",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">React (software)</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q19399674",
+      "titles": {
+        "canonical": "React_(software)",
+        "normalized": "React (software)",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">React (software)</span></span>"
+      },
+      "pageid": 44926137,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/React_Logo_SVG.svg/330px-React_Logo_SVG.svg.png",
+        "width": 330,
+        "height": 304
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/React_Logo_SVG.svg/960px-React_Logo_SVG.svg.png",
+        "width": 512,
+        "height": 472
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1356015816",
+      "tid": "06f70e8f-5809-11f1-9b1d-c0d6f8453611",
+      "timestamp": "2026-05-25T07:12:02Z",
+      "description": "JavaScript library for building user interfaces",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/React_(software)",
+          "revisions": "https://en.wikipedia.org/wiki/React_(software)?action=history",
+          "edit": "https://en.wikipedia.org/wiki/React_(software)?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:React_(software)"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/React_(software)",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/React_(software)",
+          "edit": "https://en.wikipedia.org/wiki/React_(software)?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:React_(software)"
+        }
+      },
+      "extract": "React is a free and open-source front-end JavaScript library that aims to make building user interfaces based on components more \"seamless\". It is maintained by Meta and a community of individual developers and companies. According to the 2025 Stack Overflow Developer Survey, React is one of the most commonly used web technologies.",
+      "extract_html": "<p><b>React</b> is a free and open-source front-end JavaScript library that aims to make building user interfaces based on components more \"seamless\". It is maintained by Meta and a community of individual developers and companies. According to the 2025 Stack Overflow Developer Survey, React is one of the most commonly used web technologies.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/TypeScript": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "TypeScript",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">TypeScript</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q978185",
+      "titles": {
+        "canonical": "TypeScript",
+        "normalized": "TypeScript",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">TypeScript</span></span>"
+      },
+      "pageid": 8157205,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Typescript.svg/330px-Typescript.svg.png",
+        "width": 330,
+        "height": 330
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Typescript.svg/330px-Typescript.svg.png",
+        "width": 260,
+        "height": 260
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1360320972",
+      "tid": "d8216b7c-6cd8-11f1-b392-349f46e1bf37",
+      "timestamp": "2026-06-20T18:50:02Z",
+      "description": "Programming language and superset of JavaScript",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/TypeScript",
+          "revisions": "https://en.wikipedia.org/wiki/TypeScript?action=history",
+          "edit": "https://en.wikipedia.org/wiki/TypeScript?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:TypeScript"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/TypeScript",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/TypeScript",
+          "edit": "https://en.wikipedia.org/wiki/TypeScript?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:TypeScript"
+        }
+      },
+      "extract": "TypeScript (TS) is a high-level programming language that adds static typing with optional type annotations to JavaScript. It is designed for developing large applications. It transpiles to JavaScript. It is developed by Microsoft as free and open-source software released under an Apache License 2.0.",
+      "extract_html": "<p><b>TypeScript</b> (<b>TS</b>) is a high-level programming language that adds static typing with optional type annotations to JavaScript. It is designed for developing large applications. It transpiles to JavaScript. It is developed by Microsoft as free and open-source software released under an Apache License 2.0.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Fluent_Design_System": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Fluent Design System",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Fluent Design System</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q29900635",
+      "titles": {
+        "canonical": "Fluent_Design_System",
+        "normalized": "Fluent Design System",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Fluent Design System</span></span>"
+      },
+      "pageid": 54019506,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Fluent_design_light_mode.png/330px-Fluent_design_light_mode.png",
+        "width": 330,
+        "height": 264
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Fluent_design_light_mode.png",
+        "width": 850,
+        "height": 680
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1360881136",
+      "tid": "f3b79cea-6f92-11f1-a12f-e763d4c8e66e",
+      "timestamp": "2026-06-24T06:07:17Z",
+      "description": "Design system created by Microsoft in 2017",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Fluent_Design_System",
+          "revisions": "https://en.wikipedia.org/wiki/Fluent_Design_System?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Fluent_Design_System?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Fluent_Design_System"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Fluent_Design_System",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Fluent_Design_System",
+          "edit": "https://en.wikipedia.org/wiki/Fluent_Design_System?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Fluent_Design_System"
+        }
+      },
+      "extract": "Fluent Design System is a design language developed in 2017 by Microsoft. Fluent Design is a revamp of Microsoft Design Language 2 (\"Metro\") that includes guidelines for the designs and interactions used within software designed for the company's Windows 10 and Windows 11 devices and platforms. The system is based on five key components: light, depth, motion, material, and scale. The new design language includes more prominent use of motion, depth, and translucency effects.",
+      "extract_html": "<p><b>Fluent Design System</b> is a design language developed in 2017 by Microsoft. Fluent Design is a revamp of Microsoft Design Language 2 (\"Metro\") that includes guidelines for the designs and interactions used within software designed for the company's Windows 10 and Windows 11 devices and platforms. The system is based on five key components: light, depth, motion, material, and scale. The new design language includes more prominent use of motion, depth, and translucency effects.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/WebGL": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "WebGL",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">WebGL</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q375913",
+      "titles": {
+        "canonical": "WebGL",
+        "normalized": "WebGL",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">WebGL</span></span>"
+      },
+      "pageid": 24336445,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/WebGL_Logo.svg/330px-WebGL_Logo.svg.png",
+        "width": 330,
+        "height": 138
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/WebGL_Logo.svg/960px-WebGL_Logo.svg.png",
+        "width": 512,
+        "height": 214
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1350693416",
+      "tid": "6d88c35d-3f0d-11f1-9a96-c2cc21a1945e",
+      "timestamp": "2026-04-23T12:10:33Z",
+      "description": "JavaScript bindings for OpenGL in web browsers",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/WebGL",
+          "revisions": "https://en.wikipedia.org/wiki/WebGL?action=history",
+          "edit": "https://en.wikipedia.org/wiki/WebGL?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:WebGL"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/WebGL",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/WebGL",
+          "edit": "https://en.wikipedia.org/wiki/WebGL?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:WebGL"
+        }
+      },
+      "extract": "WebGL is a JavaScript API for rendering interactive 2D and 3D graphics within any compatible web browser without the use of plug-ins. WebGL is fully integrated with other web standards, allowing GPU-accelerated usage of physics, image processing, and effects in the HTML canvas. WebGL elements can be mixed with other HTML elements and composited with other parts of the page or page background.",
+      "extract_html": "<p><b>WebGL</b> is a JavaScript API for rendering interactive 2D and 3D graphics within any compatible web browser without the use of plug-ins. WebGL is fully integrated with other web standards, allowing GPU-accelerated usage of physics, image processing, and effects in the HTML canvas. WebGL elements can be mixed with other HTML elements and composited with other parts of the page or page background.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Markdown": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Markdown",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Markdown</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q1193600",
+      "titles": {
+        "canonical": "Markdown",
+        "normalized": "Markdown",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Markdown</span></span>"
+      },
+      "pageid": 2415885,
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1360037307",
+      "tid": "dc267dce-6b58-11f1-80fc-45052bc6770d",
+      "timestamp": "2026-06-18T21:01:22Z",
+      "description": "Plain text markup language",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Markdown",
+          "revisions": "https://en.wikipedia.org/wiki/Markdown?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Markdown?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Markdown"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Markdown",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Markdown",
+          "edit": "https://en.wikipedia.org/wiki/Markdown?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Markdown"
+        }
+      },
+      "extract": "Markdown is a lightweight markup language for creating formatted text using a plain-text editor. John Gruber created Markdown in 2004 as an easy-to-read markup language. Markdown is widely used for blogging, instant messaging, and large language models, and also used elsewhere in online forums, collaborative software, documentation pages, and readme files.",
+      "extract_html": "<p><b>Markdown</b> is a lightweight markup language for creating formatted text using a plain-text editor. John Gruber created Markdown in 2004 as an easy-to-read markup language. Markdown is widely used for blogging, instant messaging, and large language models, and also used elsewhere in online forums, collaborative software, documentation pages, and readme files.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/YAML": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "YAML",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">YAML</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q281876",
+      "titles": {
+        "canonical": "YAML",
+        "normalized": "YAML",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">YAML</span></span>"
+      },
+      "pageid": 326530,
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1358134953",
+      "tid": "0e90bc57-61e4-11f1-8ea2-890ad7d99a16",
+      "timestamp": "2026-06-06T20:12:35Z",
+      "description": "Human-readable data serialization language",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/YAML",
+          "revisions": "https://en.wikipedia.org/wiki/YAML?action=history",
+          "edit": "https://en.wikipedia.org/wiki/YAML?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:YAML"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/YAML",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/YAML",
+          "edit": "https://en.wikipedia.org/wiki/YAML?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:YAML"
+        }
+      },
+      "extract": "YAML is a human-readable data serialization language. It is commonly used for configuration files and in applications where data is being stored or transmitted. YAML targets many of the same communications applications as Extensible Markup Language (XML) but has a minimal syntax that intentionally differs from Standard Generalized Markup Language (SGML). It uses Python-style indentation to indicate nesting and does not require quotes around most string values.",
+      "extract_html": "<p><b>YAML</b> is a human-readable data serialization language. It is commonly used for configuration files and in applications where data is being stored or transmitted. YAML targets many of the same communications applications as Extensible Markup Language (XML) but has a minimal syntax that intentionally differs from Standard Generalized Markup Language (SGML). It uses Python-style indentation to indicate nesting and does not require quotes around most string values.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Content_management_system": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Content management system",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Content management system</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q131093",
+      "titles": {
+        "canonical": "Content_management_system",
+        "normalized": "Content management system",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Content management system</span></span>"
+      },
+      "pageid": 75885,
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1356611394",
+      "tid": "fded9208-5ad3-11f1-b13e-e4c34d8465b0",
+      "timestamp": "2026-05-28T20:29:57Z",
+      "description": "Software for managing digital content",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Content_management_system",
+          "revisions": "https://en.wikipedia.org/wiki/Content_management_system?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Content_management_system?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Content_management_system"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Content_management_system",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Content_management_system",
+          "edit": "https://en.wikipedia.org/wiki/Content_management_system?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Content_management_system"
+        }
+      },
+      "extract": "A content management system (CMS) is a computer software used to manage the creation and modification of digital content .\nIt is typically used for enterprise content management (ECM) and web content management (WCM). ECM typically supports multiple users in a collaborative environment, by integrating document management, digital asset management, and record retention. Alternatively, WCM is the collaborative authoring for websites and may include text and embed graphics, photos, video, audio, maps, and program code that display content and interact with the user. ECM typically includes a WCM function.",
+      "extract_html": "<p>A <b>content management system</b> (<b>CMS</b>) is a computer software used to manage the creation and modification of digital content .\nIt is typically used for enterprise content management (ECM) and web content management (WCM). ECM typically supports multiple users in a collaborative environment, by integrating document management, digital asset management, and record retention. Alternatively, WCM is the collaborative authoring for websites and may include text and embed graphics, photos, video, audio, maps, and program code that display content and interact with the user. ECM typically includes a WCM function.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Continuous_integration": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Continuous integration",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Continuous integration</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q965769",
+      "titles": {
+        "canonical": "Continuous_integration",
+        "normalized": "Continuous integration",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Continuous integration</span></span>"
+      },
+      "pageid": 1774081,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Continuous_Integration.jpg/330px-Continuous_Integration.jpg",
+        "width": 330,
+        "height": 174
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Continuous_Integration.jpg",
+        "width": 834,
+        "height": 440
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1360645593",
+      "tid": "5adc2d18-6e6f-11f1-a35d-3f30e87b72fc",
+      "timestamp": "2026-06-22T19:19:57Z",
+      "description": "Software development practice",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Continuous_integration",
+          "revisions": "https://en.wikipedia.org/wiki/Continuous_integration?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Continuous_integration?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Continuous_integration"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Continuous_integration",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Continuous_integration",
+          "edit": "https://en.wikipedia.org/wiki/Continuous_integration?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Continuous_integration"
+        }
+      },
+      "extract": "Continuous integration (CI) is the practice of integrating source code changes frequently and ensuring that the integrated codebase is in a workable state. Typically, developers merge changes to an integration branch, and an automated system builds and tests the software system. \nOften, the automated process runs on each commit or runs on a schedule such as once a day. Grady Booch first proposed the term CI in 1991, although he did not advocate integrating multiple times a day, but later, CI came to include that aspect.",
+      "extract_html": "<p><b>Continuous integration</b> (<b>CI</b>) is the practice of integrating source code changes frequently and ensuring that the integrated codebase is in a workable state. Typically, developers merge changes to an integration branch, and an automated system builds and tests the software system. \nOften, the automated process runs on each commit or runs on a schedule such as once a day. Grady Booch first proposed the term CI in 1991, although he did not advocate integrating multiple times a day, but later, CI came to include that aspect.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Software_testing": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Software testing",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Software testing</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q188522",
+      "titles": {
+        "canonical": "Software_testing",
+        "normalized": "Software testing",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Software testing</span></span>"
+      },
+      "pageid": 29090,
+      "thumbnail": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/TestingCup-Polish-Championship-in-Software-Testing-Katowice-2016.jpg/330px-TestingCup-Polish-Championship-in-Software-Testing-Katowice-2016.jpg",
+        "width": 330,
+        "height": 220
+      },
+      "originalimage": {
+        "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/TestingCup-Polish-Championship-in-Software-Testing-Katowice-2016.jpg/3840px-TestingCup-Polish-Championship-in-Software-Testing-Katowice-2016.jpg",
+        "width": 5472,
+        "height": 3648
+      },
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1360872830",
+      "tid": "5d30abe3-6f85-11f1-aa44-ae2481c41104",
+      "timestamp": "2026-06-24T04:30:01Z",
+      "description": "Checking software against expectations",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Software_testing",
+          "revisions": "https://en.wikipedia.org/wiki/Software_testing?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Software_testing?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Software_testing"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Software_testing",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Software_testing",
+          "edit": "https://en.wikipedia.org/wiki/Software_testing?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Software_testing"
+        }
+      },
+      "extract": "Software testing is the act of checking whether software meets its intended objectives and satisfies expectations.",
+      "extract_html": "<p><b>Software testing</b> is the act of checking whether software meets its intended objectives and satisfies expectations.</p>"
+    }
+  },
+  "https://en.wikipedia.org/api/rest_v1/page/summary/Digital_twin": {
+    "ok": true,
+    "status": 200,
+    "json": {
+      "type": "standard",
+      "title": "Digital twin",
+      "displaytitle": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Digital twin</span></span>",
+      "namespace": {
+        "id": 0,
+        "text": ""
+      },
+      "wikibase_item": "Q25099680",
+      "titles": {
+        "canonical": "Digital_twin",
+        "normalized": "Digital twin",
+        "display": "<span lang=\"en\" dir=\"ltr\"><span class=\"mw-page-title-main\">Digital twin</span></span>"
+      },
+      "pageid": 47896295,
+      "lang": "en",
+      "dir": "ltr",
+      "revision": "1359969562",
+      "tid": "4e22aca6-6b08-11f1-b6d7-8fb01f849679",
+      "timestamp": "2026-06-18T11:24:44Z",
+      "description": "Digital replica of a living or non-living physical entity",
+      "description_source": "local",
+      "content_urls": {
+        "desktop": {
+          "page": "https://en.wikipedia.org/wiki/Digital_twin",
+          "revisions": "https://en.wikipedia.org/wiki/Digital_twin?action=history",
+          "edit": "https://en.wikipedia.org/wiki/Digital_twin?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Digital_twin"
+        },
+        "mobile": {
+          "page": "https://en.wikipedia.org/wiki/Digital_twin",
+          "revisions": "https://en.wikipedia.org/wiki/Special:History/Digital_twin",
+          "edit": "https://en.wikipedia.org/wiki/Digital_twin?action=edit",
+          "talk": "https://en.wikipedia.org/wiki/Talk:Digital_twin"
+        }
+      },
+      "extract": "A digital twin is a computational model of an intended or actual real-world physical product, system, or process that serves as a digital counterpart of it for purposes such as simulation, integration, testing, monitoring, and maintenance.",
+      "extract_html": "<p>A <b>digital twin</b> is a computational model of an intended or actual real-world physical product, system, or process that serves as a digital counterpart of it for purposes such as simulation, integration, testing, monitoring, and maintenance.</p>"
+    }
+  }
+}
