@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import { collapseGraphClusters } from '../index';
 import {
   getNodeLayer,
   isContentTreeNode,
   filterGraphToLayer,
-  collapseGraphClusters,
-} from '../index';
+} from '../../representation/graph-layers';
 import type { KBNode, KBGraph, KBEdge, Cluster } from '../index';
 
 // ── Fixtures ───────────────────────────────────────────────

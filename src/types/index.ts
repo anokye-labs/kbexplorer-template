@@ -1,30 +1,83 @@
 /** Core data types for the kbexplorer knowledge graph. */
 
-import { resolveNodeLayer } from '../engine/node-types/registry';
-import { projectReportsToTree } from '../engine/reports-to-layout';
+import {
+  buildJsonLd,
+  type BrandingConfig,
+  type Cluster,
+  type Connection,
+  type DisplayMode,
+  type EdgeSource,
+  type EdgeType,
+  type ExternalProviderConfig,
+  type FluentBrandRamp,
+  type FluentBrandRampKey,
+  type JsonLd,
+  type KBConfig,
+  type KBEdge,
+  type KBGraph,
+  type KBNode,
+  type KnownDisplayMode,
+  type KnownEdgeType,
+  type NodeSource,
+  type NodeSourceFile,
+  type PageTheme,
+  type SourceConfig,
+  type Theme,
+  type VisualMode,
+} from '@anokye-labs/kbexplorer-core';
 
 /**
- * How a node's content should be rendered.
- *
- * This is an **open** union: the listed values keep editor autocomplete, while
- * `(string & {})` allows new display modes (and registry-driven `'entity'`
- * viewers) to be introduced without editing this core type. `'entity'` is the
- * escape hatch that routes a node to a viewer resolved from the viewer registry
- * by its `entityType` / JSON-LD `@type`.
+ * Re-export the pure graph + config contract from `@anokye-labs/kbexplorer-core`
+ * so existing `../types` imports keep working unchanged. The default-config
+ * logic and the pure graph projections below (collapse/trim) stay template-local
+ * but engine-free; styling, layer and view representation now live under
+ * `../representation` (Phase 2 / F2 #309) so this module imports nothing from the
+ * engine at load.
  */
-export type KnownDisplayMode =
-  | 'prose'
-  | 'code'
-  | 'file-list'
-  | 'tree'
-  | 'table'
-  | 'diagram'
-  | 'homepage'
-  | 'gallery'
-  | 'icon-detail'
-  | 'repository'
-  | 'entity';
-export type DisplayMode = KnownDisplayMode | (string & {});
+export {
+  buildJsonLd,
+  type BrandingConfig,
+  type Cluster,
+  type Connection,
+  type DisplayMode,
+  type EdgeSource,
+  type EdgeType,
+  type ExternalProviderConfig,
+  type FluentBrandRamp,
+  type FluentBrandRampKey,
+  type JsonLd,
+  type KBConfig,
+  type KBEdge,
+  type KBGraph,
+  type KBNode,
+  type KnownDisplayMode,
+  type KnownEdgeType,
+  type NodeSource,
+  type NodeSourceFile,
+  type PageTheme,
+  type SourceConfig,
+  type Theme,
+  type VisualMode,
+};
+
+/**
+ * Backward-compatible re-exports of the representation styling moved to
+ * `../representation/styles` (Phase 2 / T2.1 #310). These are pure data — no
+ * engine import — so re-exporting them keeps `../types` engine-free at load.
+ * New code should import these from `../representation/styles` directly.
+ */
+export {
+  EDGE_TYPE_WEIGHTS,
+  EDGE_TYPE_STYLES,
+  RELATION_STYLES,
+  NODE_LAYER_META,
+  getEdgeStyle,
+  getEdgeLegendKey,
+  getEdgeWeight,
+  type EdgeTypeStyle,
+  type NodeLayer,
+} from '../representation/styles';
+
 
 /** A single entry in nodemap.yaml */
 export interface NodeMapEntry {
@@ -56,165 +109,6 @@ export interface NodeMap {
 }
 
 /**
- * A JSON-LD envelope carried by a typed / structured node.
- *
- * `@id` should reuse the node's canonical `identity` URN so representations of
- * the same real-world entity line up across providers. `@type` is the open
- * node-type discriminator (a registry key such as `'person'` or `'team'`) and
- * is NEVER derived from a file path. Additional LD properties may be carried as
- * arbitrary keys.
- */
-export interface JsonLd {
-  '@context'?: string | Record<string, unknown> | Array<string | Record<string, unknown>>;
-  '@id': string;
-  '@type': string | string[];
-  [key: string]: unknown;
-}
-
-/** A node in the knowledge graph. */
-export interface KBNode {
-  id: string;
-  title: string;
-  cluster: string;
-  content: string; // HTML rendered from markdown
-  rawContent: string; // Original markdown
-  emoji?: string;
-  image?: string; // path relative to repo root (heroes mode)
-  sprite?: string; // path relative to repo root (sprites mode)
-  parent?: string; // parent node id (for hierarchy)
-  nodeType?: 'parent' | 'section'; // parent has children, section is a child
-  /** How this node's content should be rendered */
-  display?: DisplayMode;
-  connections: Connection[];
-  /** Canonical identity URN linking representations across providers */
-  identity?: string;
-  /** Whether this node's content was machine-derived (can be re-generated) */
-  derived?: boolean;
-  /** Source of this node: authored markdown or GitHub artifact */
-  source: NodeSource;
-  /** Which provider created this node */
-  provider?: string;
-  /**
-   * Open node-type identifier — the registry key that selects this node's
-   * graph layer, default cluster and viewer (e.g. `'person'`, `'team'`).
-   * Additive: when absent the node behaves exactly as before.
-   */
-  entityType?: string;
-  /** JSON-LD envelope: `@context` / `@id` / `@type` plus arbitrary LD properties. */
-  jsonld?: JsonLd;
-  /** Arbitrary structured-data bag rendered by typed (or the generic) viewers. */
-  data?: Record<string, unknown>;
-  /**
-   * The underlying **source-of-truth** entity file this node was projected from
-   * (F5 — #152). Present only for nodes backed by a writable YAML/JSON file in
-   * the content model. Lets the in-app editor load and edit the *real* file (not
-   * the JSON-LD projection, so F2's mappings stay pure & reversible) and hand the
-   * change off to GitHub's authenticated web UI as a pull request — no secrets,
-   * no git write from the browser. Absent for derived / README / structural
-   * nodes, which therefore expose no editor affordance (a safe no-op).
-   */
-  sourceFile?: NodeSourceFile;
-  /**
-   * Optional per-page theming declared in this node's frontmatter. When present
-   * its deltas restyle ONLY this node's page (scoped CSS vars in ReadingView);
-   * the global theme and document root are never mutated. Absent → no change.
-   */
-  pageTheme?: PageTheme;
-}
-
-/**
- * Pointer to a node's writable source-of-truth file (F5 — #152).
- *
- * `path` is repo-relative (e.g. `content-model/people/ada.yaml`) so GitHub
- * deep-links can be built from the configured repo coordinates; `raw` is the
- * verbatim file text the editor edits; `format` selects the parser used to
- * validate edits before any handoff.
- */
-export interface NodeSourceFile {
-  /** Repo-relative path of the file, e.g. `content-model/people/ada.yaml`. */
-  path: string;
-  /** Verbatim file content — the editable source of truth. */
-  raw: string;
-  /** Parser format used to validate edits before the GitHub PR handoff. */
-  format: 'yaml' | 'json';
-}
-
-/**
- * Per-page (per-node) theme overrides, parsed from a node's frontmatter.
- *
- * All three fields are optional and additive — an absent/empty `PageTheme`
- * leaves the page rendering with the active global theme. When applied, the
- * layering order is: named `theme` (lowest) → `accent` brand recolor →
- * `tokens` (highest), so explicit token deltas always win. Page-level deltas
- * also win over cluster-level deltas (T4.1) for any overlapping token.
- */
-export interface PageTheme {
-  /**
-   * Brand seed/accent color (hex, e.g. "#C04040"). Generates a Fluent brand
-   * ramp and recolors only the brand-family tokens on top of the active theme.
-   */
-  accent?: string;
-  /**
-   * Arbitrary Fluent design-token deltas (token name → CSS value). Highest
-   * precedence within the page; same shape as `theme.tokens` / cluster tokens.
-   */
-  tokens?: Partial<Record<string, string>>;
-  /**
-   * Named theme key (`config.theme.themes.<name>` or a built-in dark/light/
-   * sepia) whose tokens become the page's base before accent/tokens layer on.
-   */
-  theme?: string;
-}
-
-/**
- * Build a JSON-LD envelope for a node, reusing its `identity` URN as `@id`.
- * Additive helper — does not mutate the node.
- *
- * The reserved LD keys (`@context` / `@id` / `@type`) are written LAST so that
- * arbitrary `data` properties can never override them — this preserves the
- * contract guarantee that `@id` reuses the identity URN and `@type` is never
- * path-derived.
- */
-export function buildJsonLd(
-  node: Pick<KBNode, 'id' | 'identity'>,
-  type: string | string[],
-  data: Record<string, unknown> = {},
-  context: JsonLd['@context'] = 'https://schema.org',
-): JsonLd {
-  return {
-    ...data,
-    '@context': context,
-    '@id': node.identity ?? `kg://node/${node.id}`,
-    '@type': type,
-  };
-}
-
-/** Built-in edge types produced by the engine's structural/content analysis. */
-export type KnownEdgeType =
-  | 'contains'
-  | 'derived_from'
-  | 'imports'
-  | 'references'
-  | 'frontmatter'
-  | 'mentions'
-  | 'cross_references'
-  | 'modifies'
-  | 'closes'
-  | 'related';
-
-/**
- * Edge type discriminator.
- *
- * Open union: known types keep autocomplete while `(string & {})` lets new
- * structural edge kinds exist without editing this core type. Visual styling
- * and weights for arbitrary edges/relations are resolved via {@link getEdgeStyle}
- * and {@link getEdgeWeight} rather than direct record lookups.
- */
-export type EdgeType = KnownEdgeType | (string & {});
-
-export type EdgeSource = 'inline' | 'frontmatter' | 'inferred';
-
-/**
  * The open relationship taxonomy carried by {@link KBEdge.relation}.
  *
  * These six relations come from the content model and are rendered in the
@@ -236,335 +130,6 @@ export type KnownRelation =
   | 'assigned-to'
   | 'authored'
   | 'member-of';
-
-/** Default weights per edge type — higher = tighter layout clustering */
-export const EDGE_TYPE_WEIGHTS: Record<KnownEdgeType, number> = {
-  contains: 5.0,
-  derived_from: 3.0,
-  imports: 2.0,
-  references: 2.0,
-  frontmatter: 1.5,
-  cross_references: 1.5,
-  modifies: 1.0,
-  closes: 2.0,
-  mentions: 0.5,
-  related: 0.3,
-};
-
-/** Visual style for each edge type */
-export interface EdgeTypeStyle {
-  color: string;
-  dashes: boolean | number[];
-  width: number;
-  label: string;
-}
-
-export const EDGE_TYPE_STYLES: Record<KnownEdgeType, EdgeTypeStyle> = {
-  contains:         { color: '#a0adb8', dashes: false,      width: 2,   label: 'Contains' },
-  derived_from:     { color: '#e8a854', dashes: false,      width: 2,   label: 'Derived from' },
-  imports:          { color: '#a78bfa', dashes: false,      width: 1.5, label: 'Imports' },
-  references:       { color: '#79c0ff', dashes: false,      width: 1.5, label: 'References' },
-  frontmatter:      { color: '#7ee787', dashes: [6, 4],     width: 1.5, label: 'Frontmatter' },
-  cross_references: { color: '#f9a8d4', dashes: false,      width: 1.5, label: 'Cross-ref' },
-  modifies:         { color: '#e3b341', dashes: [4, 4],     width: 1.5, label: 'Modifies' },
-  closes:           { color: '#56d364', dashes: false,      width: 2,   label: 'Closes' },
-  mentions:         { color: '#b1bac4', dashes: [3, 4],     width: 1.2, label: 'Mentions' },
-  related:          { color: '#8b949e', dashes: [3, 3],     width: 1.2, label: 'Related' },
-};
-
-/** Visual styles for the relation taxonomy (rendered data-drivenly in the legend). */
-export const RELATION_STYLES: Record<KnownRelation, EdgeTypeStyle> = {
-  leads:            { color: '#f0883e', dashes: false,     width: 2.5, label: 'Leads' },
-  staffs:           { color: '#3fb950', dashes: false,     width: 1.5, label: 'Staffs' },
-  'reports-to':     { color: '#a371f7', dashes: false,     width: 1.8, label: 'Reports to' },
-  structural:       { color: '#a0adb8', dashes: false,     width: 2,   label: 'Structural' },
-  derived:          { color: '#e8a854', dashes: [6, 4],    width: 1.5, label: 'Derived' },
-  deprecated:       { color: '#8b949e', dashes: [2, 3],    width: 1.2, label: 'Deprecated' },
-  // Work-graph organizational-layer relations (#233)
-  owns:             { color: '#4A9CC8', dashes: false,     width: 2,   label: 'Owns' },
-  'has-priority':   { color: '#E8A838', dashes: [4, 3],    width: 1.8, label: 'Has priority' },
-  'tracked-in':     { color: '#a371f7', dashes: [6, 3],    width: 1.5, label: 'Tracked in' },
-  // Person-node active-work relations (#235)
-  'assigned-to':    { color: '#56d364', dashes: false,     width: 1.8, label: 'Assigned to' },
-  'authored':       { color: '#79c0ff', dashes: [4, 3],    width: 1.5, label: 'Authored' },
-  'member-of':      { color: '#f0883e', dashes: false,     width: 1.8, label: 'Member of' },
-};
-
-const DEFAULT_RELATION_STYLE: EdgeTypeStyle = { color: '#79c0ff', dashes: [2, 2], width: 1.5, label: 'Related' };
-
-/** Title-case an arbitrary relation/edge key for display in the legend. */
-function humanizeKey(key: string): string {
-  return key
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase());
-}
-
-/**
- * Resolve the visual style for an edge, data-drivenly.
- *
- * Precedence: explicit `relation` (taxonomy → known style; otherwise a default
- * style with a humanized label) → known `type` style → for an unknown (open)
- * `type`, the neutral `related` visual style but with the actual type string
- * humanized as the label so new edge kinds still render distinctly in the
- * legend. This is the single source of truth used by both the graph renderer
- * and the legend so new relations show up without code edits.
- */
-export function getEdgeStyle(edge: { type?: EdgeType; relation?: string }): EdgeTypeStyle {
-  if (edge.relation) {
-    const known = RELATION_STYLES[edge.relation as KnownRelation];
-    if (known) return known;
-    return { ...DEFAULT_RELATION_STYLE, label: humanizeKey(edge.relation) };
-  }
-  const t = (edge.type ?? 'related') as KnownEdgeType;
-  const known = EDGE_TYPE_STYLES[t];
-  if (known) return known;
-  // Open/unknown edge type: keep the neutral `related` visual treatment but
-  // preserve the actual type string as a humanized label so F2/F3 relations are
-  // distinguishable in the data-driven legend.
-  return { ...EDGE_TYPE_STYLES.related, label: humanizeKey(edge.type as string) };
-}
-
-/** The legend key for an edge — its relation when present, else its type. */
-export function getEdgeLegendKey(edge: { type?: EdgeType; relation?: string }): string {
-  return edge.relation ?? (edge.type as string) ?? 'related';
-}
-
-/** Resolve the layout weight for an edge type (open-safe). */
-export function getEdgeWeight(type: EdgeType | undefined): number {
-  return EDGE_TYPE_WEIGHTS[(type ?? 'related') as KnownEdgeType] ?? 1;
-}
-
-export type NodeLayer = 'file' | 'content' | 'work';
-
-export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string }> = {
-  file:    { label: 'Files',   color: '#9A8A78' },
-  content: { label: 'Content', color: '#58a6ff' },
-  work:    { label: 'Work',    color: '#d29922' },
-};
-
-/**
- * Classify a node into a graph layer.
- *
- * Registry-driven: resolution delegates to the node-type registry
- * ({@link resolveNodeLayer}), which honors `entityType` first, then the
- * `source.type`, falling back to `'file'`. Built-in source types are registered
- * with their historical layer mapping so existing graphs classify identically.
- */
-export function getNodeLayer(node: KBNode): NodeLayer {
-  return resolveNodeLayer(node);
-}
-
-/** Check if a file node is a redundant content/ tree entry (has an authored counterpart). */
-export function isContentTreeNode(node: KBNode): boolean {
-  if (node.source.type !== 'file') return false;
-  const path = (node.source as { path: string }).path;
-  return path.startsWith('content/') || path === 'content';
-}
-
-/**
- * Filter graph to a single layer view.
- * - Files: only file-layer nodes
- * - Content: authored nodes + referenced file nodes (excluding content/ tree duplicates)
- * - Work: issues, PRs, commits
- */
-export function filterGraphToLayer(graph: KBGraph, layer: NodeLayer): KBGraph {
-  if (layer === 'file') {
-    return filterByPredicate(graph, n => getNodeLayer(n) === 'file');
-  }
-
-  if (layer === 'content') {
-    // Start with all content nodes
-    const contentIds = new Set<string>();
-    for (const n of graph.nodes) {
-      if (getNodeLayer(n) === 'content') contentIds.add(n.id);
-    }
-
-    // Identity-aware: find file nodes that share identity with content nodes
-    // and remap their edges to the content node
-    const identityToContentId = new Map<string, string>();
-    for (const n of graph.nodes) {
-      if (n.identity && contentIds.has(n.id)) {
-        identityToContentId.set(n.identity, n.id);
-      }
-    }
-    const fileIdToContentId = new Map<string, string>();
-    for (const n of graph.nodes) {
-      if (n.identity && !contentIds.has(n.id) && identityToContentId.has(n.identity)) {
-        fileIdToContentId.set(n.id, identityToContentId.get(n.identity)!);
-      }
-    }
-
-    // Add file nodes referenced by content nodes (but not content/ tree duplicates or identity-mapped)
-    const referencedFileIds = new Set<string>();
-    for (const e of graph.edges) {
-      if (contentIds.has(e.from) && !contentIds.has(e.to) && !fileIdToContentId.has(e.to)) {
-        const target = graph.nodes.find(n => n.id === e.to);
-        if (target && getNodeLayer(target) === 'file' && !isContentTreeNode(target)) {
-          referencedFileIds.add(e.to);
-        }
-      }
-      if (contentIds.has(e.to) && !contentIds.has(e.from) && !fileIdToContentId.has(e.from)) {
-        const target = graph.nodes.find(n => n.id === e.from);
-        if (target && getNodeLayer(target) === 'file' && !isContentTreeNode(target)) {
-          referencedFileIds.add(e.from);
-        }
-      }
-    }
-    const visibleIds = new Set([...contentIds, ...referencedFileIds]);
-
-    // Filter nodes
-    const nodes = graph.nodes.filter(n => visibleIds.has(n.id));
-
-    // Filter edges — remap identity-linked file node refs to their content counterpart
-    const remap = (id: string) => fileIdToContentId.get(id) ?? id;
-    const edgeSeen = new Set<string>();
-    const edges: KBEdge[] = [];
-    for (const e of graph.edges) {
-      const from = remap(e.from);
-      const to = remap(e.to);
-      if (!visibleIds.has(from) || !visibleIds.has(to)) continue;
-      if (from === to) continue;
-      const key = `${from}→${to}→${e.type}`;
-      if (edgeSeen.has(key)) continue;
-      edgeSeen.add(key);
-      edges.push({ ...e, from, to });
-    }
-
-    const related: Record<string, string[]> = {};
-    for (const id of visibleIds) {
-      const r = (graph.related[id] ?? [])
-        .map(remap)
-        .filter(rid => rid !== id && visibleIds.has(rid));
-      const unique = [...new Set(r)];
-      if (unique.length > 0) related[id] = unique;
-    }
-    return { nodes, edges, clusters: graph.clusters, related };
-  }
-
-  // Work layer: issues, PRs, commits
-  return filterByPredicate(graph, n => getNodeLayer(n) === 'work');
-}
-
-function filterByPredicate(graph: KBGraph, predicate: (n: KBNode) => boolean): KBGraph {
-  const visibleIds = new Set<string>();
-  const nodes = graph.nodes.filter(n => {
-    if (predicate(n)) { visibleIds.add(n.id); return true; }
-    return false;
-  });
-  const edges = graph.edges.filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
-  const related: Record<string, string[]> = {};
-  for (const id of visibleIds) {
-    const r = (graph.related[id] ?? []).filter(rid => visibleIds.has(rid));
-    if (r.length > 0) related[id] = r;
-  }
-  return { nodes, edges, clusters: graph.clusters, related };
-}
-
-// ── Graph Views ────────────────────────────────────────────
-
-/** Layout strategy a view requests for the live graph canvas. */
-export type GraphLayoutMode = 'force' | 'reports-to'
-
-/** A named view projection over the graph */
-export interface GraphView {
-  id: string
-  name: string
-  icon: string
-  color: string
-  /**
-   * Layout strategy for this view's graph. Defaults to the force-directed
-   * constellation when omitted. `'reports-to'` renders a hierarchical org tree
-   * keyed on the reporting relation (#279).
-   */
-  layout?: GraphLayoutMode
-  /** Resolve this view — custom logic, not just a filter */
-  resolve: (graph: KBGraph) => KBGraph
-}
-
-/** Built-in views — each with a custom resolver */
-export const BUILT_IN_VIEWS: GraphView[] = [
-  {
-    id: 'all',
-    name: 'All',
-    icon: '',
-    color: '#ffffff',
-    resolve: (graph) => graph,
-  },
-  {
-    id: 'code',
-    name: 'Code',
-    icon: 'Code',
-    color: '#9A8A78',
-    resolve: (graph) => filterByPredicate(graph, n => {
-      const t = n.source.type
-      if (t === 'file') return true
-      // Include authored nodes in code-related clusters
-      if ((t === 'authored' || t === 'derived') &&
-        ['engine', 'data', 'infra'].includes(n.cluster)) return true
-      return false
-    }),
-  },
-  {
-    id: 'content',
-    name: 'Docs',
-    icon: 'Document',
-    color: '#58a6ff',
-    resolve: (graph) => filterGraphToLayer(graph, 'content'),
-  },
-  {
-    id: 'work',
-    name: 'Work',
-    icon: 'Wrench',
-    color: '#d29922',
-    resolve: (graph) => filterByPredicate(graph, n => {
-      const t = n.source.type
-      if (t === 'structured' && n.entityType === 'person') return true
-      return t === 'issue' || t === 'pull_request' || t === 'commit' || t === 'branch' || t === 'workflow' || t === 'repository' || t === 'release' || t === 'person'
-    }),
-  },
-  {
-    id: 'external',
-    name: 'External',
-    icon: 'Globe',
-    color: '#79C0FF',
-    resolve: (graph) => {
-      // External nodes + their 1-hop internal neighbors
-      const externalIds = new Set(
-        graph.nodes.filter(n => n.source.type === 'external').map(n => n.id)
-      )
-      const neighborIds = new Set<string>()
-      for (const e of graph.edges) {
-        if (externalIds.has(e.from)) neighborIds.add(e.to)
-        if (externalIds.has(e.to)) neighborIds.add(e.from)
-      }
-      const visibleIds = new Set([...externalIds, ...neighborIds])
-      return filterByPredicate(graph, n => visibleIds.has(n.id))
-    },
-  },
-  {
-    id: 'org',
-    name: 'Org',
-    icon: 'Organization',
-    // Matches the `reports-to` relation colour so the org tree reads as a
-    // first-class projection of the reporting hierarchy (#279).
-    color: '#a371f7',
-    layout: 'reports-to',
-    resolve: (graph) => projectReportsToTree(graph),
-  },
-]
-
-/** Get a view by ID (built-in or custom) */
-export function getView(id: string): GraphView | undefined {
-  return BUILT_IN_VIEWS.find(v => v.id === id)
-}
-
-/** Apply a view to a graph */
-export function filterGraphToView(graph: KBGraph, viewId: string): KBGraph {
-  if (viewId === 'all') return graph
-  const view = getView(viewId)
-  if (!view) return graph
-  return view.resolve(graph)
-}
 
 /**
  * Collapse specified clusters into single summary nodes.
@@ -774,355 +339,6 @@ export function trimGraphToLimits(
     totalNodes,
     totalEdges,
   }
-}
-
-export interface Connection {
-  to: string;
-  type?: EdgeType;
-  description: string;
-  source?: EdgeSource;
-  weight?: number;
-  /** Optional relationship label from the relation taxonomy (carried onto the edge). */
-  relation?: string;
-}
-
-export interface Cluster {
-  id: string;
-  name: string;
-  color: string;
-  /**
-   * Optional cluster-scoped Fluent token overrides (token name → CSS value),
-   * carried from `config.clusters.<id>.tokens`. Applied only on cluster-scoped
-   * surfaces (cards, badges, reading header) as scoped CSS variables; the
-   * global theme is never mutated. Same shape as `theme.tokens`.
-   */
-  tokens?: Partial<Record<string, string>>;
-}
-
-/** Computed graph data, ready for visualization. */
-export interface KBGraph {
-  nodes: KBNode[];
-  edges: KBEdge[];
-  clusters: Cluster[];
-  related: Record<string, string[]>; // nodeId → related nodeIds (max 8)
-}
-
-export interface KBEdge {
-  from: string;
-  to: string;
-  type: EdgeType;
-  description: string;
-  source: EdgeSource;
-  weight: number;
-  /**
-   * Open relationship label from the relation taxonomy
-   * (leads | staffs | reports-to | structural | derived | deprecated, or any
-   * custom string). Drives legend + edge styling via {@link getEdgeStyle} when
-   * present; orthogonal to the structural `type`.
-   */
-  relation?: string;
-}
-
-/** Visual identity mode. */
-export type VisualMode = 'sprites' | 'heroes' | 'emoji' | 'none';
-
-/** Theme preference. */
-export type Theme = 'dark' | 'light' | 'sepia';
-
-/** The 16 stop keys of a Fluent brand color ramp ("10".."160"). */
-export type FluentBrandRampKey =
-  | '10' | '20' | '30' | '40' | '50' | '60' | '70' | '80'
-  | '90' | '100' | '110' | '120' | '130' | '140' | '150' | '160';
-
-/**
- * A Fluent brand color ramp keyed by stop ("10".."160"). Typed as `Partial`
- * so configs may omit stops, but keys are constrained to the 16 valid slots
- * (arbitrary keys won't type-check). A complete ramp supplies all 16.
- */
-export type FluentBrandRamp = Partial<Record<FluentBrandRampKey, string>>;
-
-/** Content source configuration. */
-export interface SourceConfig {
-  owner: string;
-  repo: string;
-  path?: string; // content directory within repo (authored mode)
-  branch?: string; // default: main
-}
-
-/** Where a node originated from. */
-export type NodeSource =
-  | { type: 'authored'; file: string }
-  | { type: 'issue'; number: number; state: string; labels: string[] }
-  | { type: 'pull_request'; number: number; state: string }
-  | { type: 'commit'; sha: string }
-  | { type: 'file'; path: string }
-  | { type: 'readme' }
-  | { type: 'section'; parentSource: NodeSource }
-  | { type: 'derived'; generator: string }
-  | { type: 'external'; provider: string }
-  | { type: 'branch'; name: string; protected: boolean }
-  | { type: 'workflow'; path: string }
-  | { type: 'repository'; owner: string; repo: string }
-  /**
-   * Generic, registry-driven source for typed/structured nodes. This is the
-   * open escape hatch: new node types reuse `structured` and identify
-   * themselves via `entityType` (a node-type registry key) instead of each
-   * requiring a bespoke `NodeSource` variant. `ref` optionally records the
-   * upstream record id the node was mapped from.
-   */
-  | { type: 'structured'; entityType: string; ref?: string }
-  /** A GitHub release (tag, name, release notes, prerelease flag). */
-  | { type: 'release'; tag: string; prerelease: boolean }
-  /**
-   * A person node derived from GitHub activity (author/assignee on active
-   * issues / PRs). When a content-model person descriptor matches (same
-   * alias/login), `linked` is set to true and the identity URN is reused
-   * from the descriptor rather than minted fresh.
-   */
-  | { type: 'person'; login: string; linked: boolean };
-
-/** Optional site branding assets (logo, favicon, etc.). All fields optional/additive. */
-export interface BrandingConfig {
-  /** Repo-relative path to a logo image, resolved via resolveImageUrl(). */
-  logo?: string;
-  /**
-   * Repo-relative path to a favicon image, resolved via resolveImageUrl() and
-   * swapped into the document's <link rel="icon"> at runtime. When unset, the
-   * static /favicon.svg from index.html is left untouched.
-   */
-  favicon?: string;
-  /**
-   * Repo-relative path (or absolute URL) to a raw CSS file injected as the LAST
-   * <link rel="stylesheet"> in <head> at runtime. Repo-relative paths are
-   * resolved via resolveImageUrl() (same host-repo asset path the logo/favicon
-   * use); absolute URLs (http(s):// or protocol-relative //) are used verbatim.
-   * This is the "raw escape hatch" (Option C): host repos can override
-   * --colorNeutral*, --colorBrand*, and --kbe-* CSS variables (and any other
-   * surface) the structured token system can't express — without touching the
-   * .kbexplorer submodule. Injected after FluentProvider/app styles so its
-   * declarations win the cascade. When unset, nothing is injected and any
-   * previously injected sheet is removed.
-   */
-  css?: string;
-}
-
-/** Configuration for an external provider plugin */
-export interface ExternalProviderConfig {
-  /** Provider type identifier */
-  type: 'wikipedia' | 'orgchart' | 'custom';
-  /** Human-readable name */
-  name?: string;
-  /** Cluster to assign nodes to */
-  cluster?: string;
-  /** Provider-specific options */
-  options?: Record<string, unknown>;
-}
-
-/** Full knowledge base configuration (from config.yaml). */
-export interface KBConfig {
-  title: string;
-  subtitle?: string;
-  author?: string;
-  date?: string;
-  source: SourceConfig;
-  clusters: Record<
-    string,
-    {
-      name: string;
-      color: string;
-      /**
-       * Optional cluster-scoped Fluent design-token overrides (token name → CSS
-       * value), reusing the same shape as `theme.tokens`. Applied only to
-       * cluster-scoped surfaces (node cards, badges, the reading header for
-       * nodes in this cluster) as scoped CSS variables — the global
-       * dark/light/sepia/config themes are unaffected. Additive and optional.
-       */
-      tokens?: Partial<Record<string, string>>;
-    }
-  >;
-  visuals: {
-    mode: VisualMode;
-    fallback: VisualMode;
-    hero?: {
-      overlay?: 'dark-gradient' | 'light-gradient' | 'none';
-      height?: string;
-      animation?: 'reveal' | 'fade' | 'none';
-    };
-    hud?: {
-      blurBackground?: boolean;
-      blurOpacity?: number;
-    };
-    graph?: {
-      nodeImages?: boolean;
-      nodeSizeByConnections?: boolean;
-    };
-  };
-  theme: {
-    default: Theme;
-    font?: {
-      heading?: string;
-      body?: string;
-      mono?: string;
-    };
-    /**
-     * Global brand color override. Two accepted forms:
-     *   1. A single seed hex string (e.g. "#4A9CC8") — used to generate a full
-     *      Fluent brand ramp via `createDarkTheme`/`createLightTheme`.
-     *   2. A Fluent ramp object keyed by stop ("10".."160"); a complete ramp
-     *      supplies all 16 stops (e.g. { "10": "#020305", ..., "160": "#EAF3F8" })
-     *      and is used verbatim.
-     * Schema only for now; wiring happens in T2.2.
-     */
-    brand?: string | FluentBrandRamp;
-    /**
-     * Arbitrary Fluent design-token overrides (token name → CSS value),
-     * applied on top of the active base theme. Example:
-     *   { colorNeutralBackground1: "#101418", borderRadiusMedium: "8px" }
-     * Schema only for now; wiring happens in T2.2.
-     */
-    tokens?: Partial<Record<string, string>>;
-    /**
-     * Named custom theme variants. Each variant may specify its own brand
-     * (seed hex or ramp), token overrides, and the base theme it derives from
-     * ('dark' or 'light'). Schema only for now; wiring happens in T2.2.
-     */
-    themes?: Record<
-      string,
-      {
-        brand?: string | FluentBrandRamp;
-        tokens?: Partial<Record<string, string>>;
-        base?: 'dark' | 'light';
-      }
-    >;
-    /**
-     * Optional repo-relative path to a *dedicated theme file* in the HOST repo
-     * (e.g. "content/themes/extra.yaml" or ".kbe/theme.yaml"). It is fetched at
-     * runtime exactly like config.yaml (same source/auth, and from the local
-     * manifest in local mode) and parsed to the SAME shape as `config.theme`
-     * (optional top-level `default` / `brand` / `tokens`, plus a `themes` map of
-     * named variants). Its contents are merged into the dynamic THEME_MAP so a
-     * host repo can define or override named themes WITHOUT editing the
-     * `.kbexplorer` submodule or inlining everything here.
-     *
-     * Precedence: the external file WINS over the inline `config.theme` for
-     * same-named theme keys and for top-level brand/tokens/default (it is the
-     * more specific escape hatch). Unset ⇒ no fetch and a pure no-op fallback;
-     * a missing/unreachable/malformed file is ignored (warning only) and the
-     * THEME_MAP equals the config-only result.
-     */
-    themesFile?: string;
-    /**
-     * Optional path/URL to a custom ESM **JavaScript module** in the HOST repo
-     * that exports a fully-built Fluent `Theme` (named export `theme`, a
-     * `themes` record of name → Theme, or a default export), OR a
-     * `BrandVariants` ramp / seed hex (export `brandVariants` / `brand` / `seed`,
-     * with optional `base: 'dark' | 'light'`) that kbexplorer turns into a Theme
-     * via `generateBrandVariants`. The module is dynamically `import()`ed at
-     * runtime and its theme(s) registered into the dynamic THEME_MAP so they are
-     * selectable and cyclable. This is the most powerful theming escape hatch —
-     * full programmatic control without editing the `.kbexplorer` submodule.
-     *
-     * ⚠️ SECURITY: setting this dynamically `import()`s and EXECUTES
-     * host-provided JavaScript in the page. It is therefore an EXPLICIT,
-     * off-by-default opt-in — unset ⇒ no import and a pure no-op. A repo-relative
-     * path is resolved like other host assets; an absolute `http(s)://` (or
-     * protocol-relative `//`) URL is used verbatim. Self-host the module in the
-     * same repo you already trust and tighten your CSP `script-src` /
-     * `connect-src` accordingly — see the theming docs' CSP note. Any failure
-     * (network, bad module, wrong shape) logs a single warning and is a no-op
-     * (THEME_MAP unchanged), exactly like the custom-provider plugin stub.
-     */
-    moduleUrl?: string;
-    /**
-     * Name to register a single (unnamed) module-provided theme under so it
-     * appears in the cycle/selector. Defaults to `"custom"`. Ignored when the
-     * module exports a `themes` record (those keys are used) or its own `name`.
-     */
-    moduleThemeName?: string;
-  };
-  graph: {
-    physics: boolean;
-    layout: 'force-atlas-2' | 'manual';
-  };
-  features: {
-    hud: boolean;
-    minimap: boolean;
-    readingTools: boolean;
-    keyboardNav: boolean;
-    sparkAnimation: boolean;
-    /**
-     * Show the search palette (Ctrl-K / `/`) and the HUD search buttons.
-     * Optional and additive: unset means enabled, so existing host configs
-     * keep search without any change. Set `false` to opt out entirely —
-     * the palette, its shortcuts, and the HUD buttons all disappear and
-     * the search index is never built.
-     */
-    search?: boolean;
-  };
-  branding?: BrandingConfig;
-  providers?: ExternalProviderConfig[];
-  /**
-   * Person-node derivation settings (#235).
-   *
-   * Controls whether and how work-derived person nodes are materialized from
-   * GitHub activity. Person nodes appear for every GitHub login that is an
-   * author or assignee on at least `minActiveItems` open issues or PRs.
-   * Set `minActiveItems` to a higher value to exclude drive-by contributors.
-   */
-  people?: {
-    /**
-     * Minimum number of active (open) items a GitHub login must appear on
-     * (as author or assignee) before a person node is materialized.
-     * Default: 1.
-     */
-    minActiveItems?: number;
-  };
-  /**
-   * Landing-mode configuration (#238).
-   *
-   * Controls the initial view and HUD state when the user arrives at `/` with
-   * no deep-link hash. Deep links (`#/node/x`, `#/overview`) are always
-   * honored unchanged. localStorage user preferences win after first
-   * interaction (e.g. once the user expands the HUD, that choice persists).
-   *
-   * All three sub-fields are optional and additive — omit the block entirely
-   * to keep the current behavior (redirects to `/node/home`, HUD expanded).
-   */
-  landing?: {
-    /**
-     * Which view to land on:
-     * - `'reading'` — a content node in the normal ReadingView (use `node` to
-     *    pick which one; defaults to the `readme` content node, NOT the
-     *    graph-first HomePage).
-     * - `'overview'` — the card-grid overview (`/overview`).
-     * - `'graph'` — the graph-first HomePage (current default; navigates to
-     *    `/node/home` with the HUD expanded so the graph is immediately
-     *    visible).
-     * Unset is equivalent to `'graph'`.
-     */
-    view?: 'reading' | 'overview' | 'graph';
-    /**
-     * Node ID to land on for `'reading'` and `'graph'`. Ignored for
-     * `'overview'`. The default differs by view because `/node/home` is the
-     * special graph-first HomePage route: `'reading'` defaults to `'readme'`
-     * (a content node), `'graph'` defaults to `'home'` (the HomePage).
-     */
-    node?: string;
-    /**
-     * Initial HUD state for the constellation graph panel:
-     * - `'collapsed'` — HUD starts collapsed to its rail; one click expands.
-     * - `'expanded'` — HUD starts fully expanded (current default).
-     * Only applies when the user has **no** stored `kbe-hud-collapsed`
-     * preference in localStorage — user choice always wins after first
-     * interaction.
-     */
-    graph?: 'collapsed' | 'expanded';
-  };
-  bluf?: {
-    audio?: string;
-    quote?: string;
-    duration?: string;
-  };
 }
 
 /** Resolve the default source config from Vite env vars or fallback to hardcoded defaults. */

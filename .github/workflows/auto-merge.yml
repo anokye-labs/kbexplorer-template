@@ -25,6 +25,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # Lets this workflow dispatch the Pages deploy after a bot merge (#377).
+  actions: write
 
 concurrency:
   group: auto-merge
@@ -131,3 +133,21 @@ jobs:
               }
             }
             core.notice(`auto-merge: ${merged} merged, ${updated} updated, ${skipped} skipped.`);
+
+            // Pushes made by GITHUB_TOKEN don't trigger the `push` event, so a
+            // bot merge would otherwise never deploy. workflow_dispatch IS
+            // exempt from the recursion rule, so we dispatch the Pages build
+            // for the new main HEAD — but only when we actually merged. (#377)
+            if (merged > 0) {
+              try {
+                await github.rest.actions.createWorkflowDispatch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'github-pages.yml',
+                  ref: 'main',
+                });
+                core.notice('auto-merge: dispatched Pages deploy for main.');
+              } catch (e) {
+                core.warning(`auto-merge: Pages dispatch failed (${e.status || ''} ${e.message}).`);
+              }
+            }

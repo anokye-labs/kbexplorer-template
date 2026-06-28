@@ -7,8 +7,9 @@ import { DataSet } from 'vis-data';
 import { createNodeRenderer } from './nodeRenderer';
 import { getNodeDegrees } from './graph';
 import { computeReportsToLevels } from './reports-to-layout';
-import type { KBGraph, GraphLayoutMode } from '../types';
-import { getEdgeStyle } from '../types';
+import type { KBGraph } from '../types';
+import type { GraphLayoutMode } from '../representation/views';
+import { getEdgeStyle } from '../representation/styles';
 
 export interface GraphNetworkOptions {
   container: HTMLElement;

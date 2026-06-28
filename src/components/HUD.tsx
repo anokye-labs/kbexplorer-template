@@ -39,8 +39,11 @@ import {
   MoreHorizontalRegular,
 } from '@fluentui/react-icons';
 import type { KBGraph, KBConfig, KBNode } from '../types';
-import { getEdgeStyle, getEdgeLegendKey, BUILT_IN_VIEWS, getView, filterGraphToView, collapseGraphClusters, trimGraphToLimits } from '../types';
-import type { TrimResult, GraphLayoutMode } from '../types';
+import { collapseGraphClusters, trimGraphToLimits } from '../types';
+import type { TrimResult } from '../types';
+import { getEdgeStyle, getEdgeLegendKey } from '../representation/styles';
+import { BUILT_IN_VIEWS, getView, filterGraphToView } from '../representation/views';
+import type { GraphLayoutMode } from '../representation/views';
 import type { ThemeMode } from '../hooks/useTheme';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { resolveImageUrl } from '../api';
