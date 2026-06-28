@@ -24,6 +24,21 @@ import {
   type SourceConfig,
   type Theme,
   type VisualMode,
+  GRAPH_STORE_API_VERSION,
+  GRAPH_STORE_CACHE_KEY_VERSION,
+  formatContentHash,
+  formatGraphStoreCacheKey,
+  type ContentHash,
+  type ContentHashAlgorithm,
+  type ContentHashEncoding,
+  type GraphStore,
+  type GraphStoreCacheKey,
+  type GraphStoreCacheScope,
+  type GraphStoreDependency,
+  type GraphStoreEntry,
+  type GraphStoreInvalidation,
+  type GraphStoreWrite,
+  type ProviderResult,
 } from '@anokye-labs/kbexplorer-core';
 
 /**
@@ -58,6 +73,21 @@ export {
   type SourceConfig,
   type Theme,
   type VisualMode,
+  GRAPH_STORE_API_VERSION,
+  GRAPH_STORE_CACHE_KEY_VERSION,
+  formatContentHash,
+  formatGraphStoreCacheKey,
+  type ContentHash,
+  type ContentHashAlgorithm,
+  type ContentHashEncoding,
+  type GraphStore,
+  type GraphStoreCacheKey,
+  type GraphStoreCacheScope,
+  type GraphStoreDependency,
+  type GraphStoreEntry,
+  type GraphStoreInvalidation,
+  type GraphStoreWrite,
+  type ProviderResult,
 };
 
 /**
