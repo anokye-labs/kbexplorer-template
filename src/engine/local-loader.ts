@@ -13,26 +13,19 @@ import {
   parseMarkdownFile,
   issueToNode,
   treeToNodes,
-  extractClusters,
   buildGraph,
   extractIssueRefs,
   splitIntoSections,
 } from '../engine';
-import { ProviderRegistry } from './providers';
-import { FilesProvider } from './providers/files-provider';
-import { AuthoredProvider } from './providers/authored-provider';
-import { WorkProvider } from './providers/work-provider';
-import { PersonProvider } from './providers/person-provider';
-import { StructuralProvider } from './providers/structural-provider';
-import { ContentModelProvider } from './providers/content-model-provider';
-import { collectProviderNodes } from './orchestrator';
+import { ManifestSource } from './sources/manifest-source';
+import { loadKnowledgeBase } from './loader';
 import type { GHIssue, GHTreeItem, GHRelease } from '../api';
 import type { ContentModelSource } from './content-model';
 import { mergeExternalTheme, parseExternalTheme } from '../theme/externalTheme';
 
 // ── Manifest Types ─────────────────────────────────────────
 
-interface RepoManifest {
+export interface RepoManifest {
   configRaw: string | null;
   authoredContent: Record<string, string>;
   tree: Array<{ path: string; type: 'blob' | 'tree'; size?: number }>;
@@ -126,8 +119,8 @@ export async function detectLocalMode(): Promise<boolean> {
 
 // ── Local Config ───────────────────────────────────────────
 
-export async function loadLocalConfig(): Promise<KBConfig> {
-  const manifest = await loadManifest();
+/** Derive the resolved KBConfig from an in-memory manifest (pure; no I/O). */
+export function buildConfigFromManifest(manifest: RepoManifest | null): KBConfig {
   if (!manifest?.configRaw) return { ...DEFAULT_CONFIG };
 
   try {
@@ -143,6 +136,10 @@ export async function loadLocalConfig(): Promise<KBConfig> {
   } catch {
     return { ...DEFAULT_CONFIG };
   }
+}
+
+export async function loadLocalConfig(): Promise<KBConfig> {
+  return buildConfigFromManifest(await loadManifest());
 }
 
 // ── Local Authored Content ─────────────────────────────────
@@ -308,30 +305,6 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
   return nodes;
 }
 
-// ── Helpers ────────────────────────────────────────────────
-
-/** Convert a simple glob pattern to a RegExp for matching file paths. */
-function globToRegex(pattern: string): RegExp {
-  let re = '';
-  for (let i = 0; i < pattern.length; i++) {
-    const c = pattern[i];
-    if (c === '*' && pattern[i + 1] === '*') {
-      re += '.*';
-      i += 1;
-      if (pattern[i + 1] === '/') i += 1;
-    } else if (c === '*') {
-      re += '[^/]*';
-    } else if (c === '?') {
-      re += '[^/]';
-    } else if ('.+^${}()|[]\\'.includes(c)) {
-      re += '\\' + c;
-    } else {
-      re += c;
-    }
-  }
-  return new RegExp(`^${re}$`);
-}
-
 // ── Full Local Load ────────────────────────────────────────
 
 /**
@@ -353,155 +326,20 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
     return { graph, config };
   }
 
-  const config = await loadLocalConfig();
+  const config = buildConfigFromManifest(manifest);
+  return buildKnowledgeBaseFromManifest(manifest, config);
+}
 
-  // ── Register providers ──────────────────────────────────
-  const registry = new ProviderRegistry();
-
-  registry.register(
-    new FilesProvider(manifest.tree as GHTreeItem[], config.source.repo),
-  );
-
-  const listFiles = async (pattern: string): Promise<string[]> => {
-    const regex = globToRegex(pattern);
-    return Object.keys(manifest.nodemapFiles ?? {}).filter(p => regex.test(p));
-  };
-
-  registry.register(
-    new AuthoredProvider(
-      manifest.authoredContent,
-      manifest.nodemapRaw,
-      manifest.nodemapFiles,
-      manifest.nodemapDirs,
-      listFiles,
-    ),
-  );
-
-  registry.register(
-    new WorkProvider(manifest.issues, manifest.pullRequests, manifest.commits, manifest.branches ?? [], manifest.repoMetadata ?? null, manifest.releases ?? []),
-  );
-
-  // People derived from GitHub activity (#235). Local-manifest PRs do not
-  // carry author/assignees yet (kbexplorer-cli follow-up), so local-mode
-  // person derivation comes from issues; the provider tolerates the gap.
-  registry.register(new PersonProvider(manifest.issues, manifest.pullRequests));
-
-  // ── Structural discovery (.github → repository node) ────
-  if (manifest.structuralFiles && Object.keys(manifest.structuralFiles).length > 0) {
-    registry.register(
-      new StructuralProvider(manifest.structuralFiles, manifest.structuredNodeMapRaw ?? null),
-    );
-  }
-
-  // Content-model spine (F2). Safe no-op when the manifest carries no
-  // content-model source — emits nothing and leaves existing output unchanged.
-  registry.register(new ContentModelProvider(manifest.contentModel ?? null));
-
-  // ── Register external providers from config ────────────
-  if (config.providers && config.providers.length > 0) {
-    const { loadExternalProviders } = await import('./plugin-loader');
-    const externals = loadExternalProviders(config.providers);
-    for (const p of externals) registry.register(p);
-  }
-
-  // ── Collect nodes from providers ────────────────────────
-  const allNodes = await collectProviderNodes(registry, config);
-
-  // ── Post-processing: transforms not yet in providers ────
-
-  // Identify node subsets for scoped transforms
-  const issueNodes = allNodes.filter(
-    n => n.source.type === 'issue',
-  );
-  const dirNodes = allNodes.filter(
-    n => n.provider === 'files',
-  );
-
-  // README node (cross-references issues + dirs)
-  if (manifest.readme) {
-    const readme = manifest.readme;
-    const readmeConns: Array<{ to: string; description: string }> = [];
-    const lower = readme.toLowerCase();
-
-    const issueRefs = extractIssueRefs(readme);
-    for (const num of issueRefs) {
-      const id = `issue-${num}`;
-      if (issueNodes.some(n => n.id === id)) {
-        readmeConns.push({ to: id, description: `References #${num}` });
-      }
-    }
-    for (const node of issueNodes) {
-      if (readmeConns.some(c => c.to === node.id)) continue;
-      const titleWords = node.title.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-      if (titleWords.length === 0) continue;
-      const matchCount = titleWords.filter(w => lower.includes(w)).length;
-      if (matchCount >= Math.ceil(titleWords.length * 0.6)) {
-        readmeConns.push({ to: node.id, description: 'Mentions' });
-      }
-    }
-    for (const dir of dirNodes) {
-      const dirName = dir.title.replace(/\/$/, '');
-      if (lower.includes(`${dirName}/`) || lower.includes(`\`${dirName}\``)) {
-        readmeConns.push({ to: dir.id, description: `References ${dirName}/` });
-      }
-    }
-    readmeConns.push({ to: 'repo-root', description: 'Documents' });
-
-    // Extract inline markdown links from README body: [text](target)
-    const readmeConnectedTo = new Set(readmeConns.map(c => c.to));
-    for (const m of readme.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)) {
-      const target = m[2].trim();
-      if (target.startsWith('http') || target.startsWith('#') || target.startsWith('/')) continue;
-      if (target.match(/\.(png|jpg|jpeg|gif|svg|webp|md)$/i)) continue;
-      if (readmeConnectedTo.has(target)) continue;
-      readmeConns.push({ to: target, description: m[1] });
-      readmeConnectedTo.add(target);
-    }
-
-    const html = marked.parse(readme, { async: false }) as string;
-    allNodes.push({
-      id: 'readme', title: 'README', cluster: 'docs',
-      content: html, rawContent: readme, emoji: 'Document',
-      parent: 'repo-root',
-      identity: 'urn:content:readme',
-      connections: readmeConns, source: { type: 'readme' },
-    });
-  }
-
-  // Auto-link issues → directories (before splitting so connections stay on original nodes)
-  const dirNames = dirNodes.map(d => d.title.replace(/\/$/, ''));
-  for (const node of issueNodes) {
-    for (let i = 0; i < dirNames.length; i++) {
-      const dir = dirNames[i];
-      if (node.rawContent && (
-        node.rawContent.includes(`${dir}/`) ||
-        node.rawContent.includes(`\`${dir}\``) ||
-        node.rawContent.toLowerCase().includes(dir.toLowerCase())
-      )) {
-        node.connections.push({ to: dirNodes[i].id, description: `References ${dir}/` });
-      }
-    }
-  }
-
-  // Split issues with 2+ headings into parent + section nodes
-  const expandedIssues: KBNode[] = [];
-  for (const node of issueNodes) {
-    const sectionNodes = splitIntoSections(
-      node.id, node.title, node.rawContent, node.cluster, node.emoji ?? 'Pin',
-      node.source, [...issueNodes, ...dirNodes],
-    );
-    if (sectionNodes.length > 0) {
-      const idx = allNodes.indexOf(node);
-      if (idx >= 0) allNodes.splice(idx, 1);
-      expandedIssues.push(...sectionNodes);
-    }
-  }
-  allNodes.push(...expandedIssues);
-
-  // ── Build final graph ───────────────────────────────────
-  const clusters = extractClusters(allNodes, config);
-  const graph = buildGraph(allNodes, clusters);
-  return { graph, config };
+/**
+ * Build the local-mode KBGraph from an in-memory manifest + resolved config.
+ * Extracted so a committed manifest fixture can drive a hermetic golden
+ * snapshot (Phase 0) without depending on the ambient generated manifest.
+ */
+export async function buildKnowledgeBaseFromManifest(
+  manifest: RepoManifest,
+  config: KBConfig,
+): Promise<{ graph: KBGraph; config: KBConfig }> {
+  return loadKnowledgeBase(new ManifestSource(manifest, config), config);
 }
 
 export async function loadLocalKnowledgeBase(): Promise<{

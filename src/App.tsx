@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HashRouter, Routes, Route, Navigate, useParams, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter, useLocation, useNavigate } from 'react-router-dom';
 import { FluentProvider, type Theme as FluentTheme } from '@fluentui/react-components';
 import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { useTheme, isDarkTheme } from './hooks/useTheme';
@@ -15,19 +15,13 @@ import { HUD } from './components/HUD';
 import type { DockPosition } from './components/HUD';
 import { SearchPalette } from './components/SearchPalette';
 import { useSearchIndex } from './search/useSearchIndex';
-import { ReadingView } from './views/ReadingView';
-import { OverviewView } from './views/OverviewView';
-import { HomePage } from './views/HomePage';
+import type { ReactNode } from 'react';
+import { representationRegistry } from './representation';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ErrorScreen } from './components/ErrorScreen';
 import './styles/visuals.css';
 import './styles/reading.css';
 import './styles/responsive.css';
-
-function ReadingRoute({ graph, config, theme }: { graph: import('./types').KBGraph; config: import('./types').KBConfig; theme: FluentTheme }) {
-  const { id } = useParams<{ id: string }>();
-  return <ReadingView graph={graph} config={config} nodeId={id ?? ''} theme={theme} />;
-}
 
 function useCurrentNodeId(): string | null {
   const location = useLocation();
@@ -160,17 +154,17 @@ function Explorer({ themeMode, fluentTheme, isDark, setThemeMode, applyConfig, c
 
   const landingPath = resolveLandingPath(config);
 
+  // Render the graph through the `spa` representation, selected by name from the
+  // registry — the same pure graph the json-ld / llm-context targets consume.
+  // The `spa` target renders synchronously to a ReactNode; the registry's
+  // generic render signature allows async targets, so narrow it here.
+  const spaView = representationRegistry
+    .resolve<ReactNode>('spa')
+    .render(graph, { config, fluentTheme, landingPath }) as ReactNode;
+
   return (
     <>
-      <div style={paddingStyle}>
-        <Routes>
-          <Route path="/" element={<Navigate to={landingPath} replace />} />
-          <Route path="/node/home" element={<HomePage graph={graph} config={config} />} />
-          <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
-          <Route path="/node/:id" element={<ReadingRoute graph={graph} config={config} theme={fluentTheme} />} />
-          <Route path="*" element={<Navigate to={landingPath} replace />} />
-        </Routes>
-      </div>
+      <div style={paddingStyle}>{spaView}</div>
       <HUD
           graph={graph}
           config={config}

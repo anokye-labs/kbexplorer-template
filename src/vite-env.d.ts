@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_KB_TITLE?: string;
   readonly VITE_BASE_PATH?: string;
   readonly VITE_KB_LOCAL?: string;
+  readonly VITE_SEARCH_SERVICE_URL?: string;
 }
 
 interface ImportMeta {

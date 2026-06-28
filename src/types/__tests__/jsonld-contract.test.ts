@@ -4,11 +4,11 @@ import {
   getEdgeStyle,
   getEdgeLegendKey,
   getEdgeWeight,
-  getNodeLayer,
   RELATION_STYLES,
   EDGE_TYPE_STYLES,
   EDGE_TYPE_WEIGHTS,
 } from '../index';
+import { getNodeLayer } from '../../representation/graph-layers';
 import type { KBNode, DisplayMode, EdgeType, JsonLd } from '../index';
 
 function makeNode(overrides: Partial<KBNode> & Pick<KBNode, 'id' | 'source'>): KBNode {
