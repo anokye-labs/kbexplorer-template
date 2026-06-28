@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { GraphStoreCacheKey, ProviderResult } from '../../../types';
+import type { GraphStoreCacheKey } from '../../../types';
+import type { ProviderResult } from '../../providers';
 import { formatGraphStoreCacheKey } from '../../../types';
 import { MemorySqliteByteStore } from '../sqlite-runtime';
 import { SQLiteGraphStore } from '../sqlite-graph-store';

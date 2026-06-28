@@ -38,7 +38,6 @@ import {
   type GraphStoreEntry,
   type GraphStoreInvalidation,
   type GraphStoreWrite,
-  type ProviderResult,
 } from '@anokye-labs/kbexplorer-core';
 
 /**
@@ -87,7 +86,6 @@ export {
   type GraphStoreEntry,
   type GraphStoreInvalidation,
   type GraphStoreWrite,
-  type ProviderResult,
 };
 
 /**

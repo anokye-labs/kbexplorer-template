@@ -7,9 +7,8 @@ import type {
   GraphStoreWrite,
   KBConfig,
   KBNode,
-  ProviderResult,
 } from '../../../types';
-import { ProviderRegistry, type GraphProvider } from '../../providers';
+import { ProviderRegistry, type GraphProvider, type ProviderResult } from '../../providers';
 import { orchestrateWithProviderResultStore } from '../store-orchestrator';
 
 const key: GraphStoreCacheKey = {

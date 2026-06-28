@@ -5,8 +5,8 @@ import type {
   GraphStoreEntry,
   GraphStoreInvalidation,
   GraphStoreWrite,
-  ProviderResult,
 } from '../../types';
+import type { ProviderResult } from '../providers';
 import {
   GRAPH_STORE_API_VERSION,
   GRAPH_STORE_CACHE_KEY_VERSION,
@@ -47,9 +47,7 @@ export class SQLiteGraphStore<Value = ProviderResult> implements GraphStore<Valu
     byteStore?: SqliteByteStore,
   ): Promise<SQLiteGraphStore<Value>> {
     const { db, persist } = await openPersistedDatabase(byteStore);
-    const store = new SQLiteGraphStore<Value>(db, persist);
-    await store.persist();
-    return store;
+    return new SQLiteGraphStore<Value>(db, persist);
   }
 
   async get(key: GraphStoreCacheKey): Promise<GraphStoreEntry<Value> | undefined> {

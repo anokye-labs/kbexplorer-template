@@ -1,7 +1,7 @@
-import type { KBConfig, KBGraph, KBNode, GraphStore, ProviderResult } from '../../types';
+import type { KBConfig, KBGraph, KBNode, GraphStore } from '../../types';
 import { extractClusters } from '../parser';
 import { buildGraph } from '../graph';
-import type { ProviderRegistry } from '../providers';
+import type { ProviderRegistry, ProviderResult } from '../providers';
 import {
   collectProviderNodes,
 } from '../orchestrator';
