@@ -204,6 +204,17 @@ describe('loadExternalProviders', () => {
     ])
   })
 
+  it('warns and skips a non-local (bare/absolute/URL) module specifier', async () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const providers = await loadExternalProviders([
+      { type: 'custom', name: 'Remote', module: 'https://evil.example/provider.js' },
+      { type: 'custom', name: 'Bare', module: 'some-npm-package' },
+    ])
+    expect(providers).toHaveLength(0)
+    expect(spy).toHaveBeenCalledTimes(2)
+    spy.mockRestore()
+  })
+
   it('warns and skips when a module specifier cannot be resolved', async () => {
     const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const providers = await loadExternalProviders([

@@ -54,7 +54,9 @@ providers:
 ```
 
 - `module` — ES-module specifier. When present it takes precedence over `type`,
-  and `type` is just an advisory label.
+  and `type` is just an advisory label. **F5a only loads local modules**: the
+  specifier must be relative (`./` or `../`); bare/absolute/URL specifiers are
+  rejected with a warning (third-party npm package specifiers arrive in F5b).
 - `options` — free-form, passed straight through to your factory via
   `config.options`.
 - `cluster` / `name` — surfaced on `config` for your factory to use.

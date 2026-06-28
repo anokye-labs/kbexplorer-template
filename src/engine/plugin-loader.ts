@@ -52,6 +52,15 @@ async function loadModuleProvider(
 ): Promise<GraphProvider | null> {
   const specifier = config.module
   if (!specifier) return null
+  // F5a scopes loading to *local* modules: only relative specifiers are allowed.
+  // This keeps arbitrary bare/absolute/URL specifiers (which could execute
+  // unexpected code) out; third-party package specifiers arrive in F5b.
+  if (!specifier.startsWith('./') && !specifier.startsWith('../')) {
+    console.warn(
+      `[kbexplorer] Provider module "${specifier}" is not a local (\`./\` or \`../\`) specifier; only local modules are supported (third-party packages: F5b). Skipping.`,
+    )
+    return null
+  }
   try {
     const mod = (await import(/* @vite-ignore */ specifier)) as Partial<ProviderModule>
     const factory = mod.default
