@@ -41,7 +41,7 @@
     "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
-    "@anokye-labs/kbexplorer-core": "git+https://github.com/anokye-labs/kbexplorer-core.git#5d3bd6385f4be16f5b9c35a340dae9478ba7e1f6",
+    "@anokye-labs/kbexplorer-core": "git+https://github.com/anokye-labs/kbexplorer-core.git#e33fd6aeb3483c64a87b5d5ee1a847bb277f7fda",
     "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",
@@ -54,6 +54,7 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
+    "@anokye-labs/kbexplorer-example-quotes": "file:examples/quotes-provider",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^26.0.0",
