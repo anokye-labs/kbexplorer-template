@@ -4,6 +4,7 @@ import { OrgChartProvider } from '../../providers/orgchart-provider'
 import { loadExternalProviders } from '../../plugin-loader'
 import type { ExternalProviderConfig } from '../../../types'
 import { DEFAULT_CONFIG } from '../../../types'
+import { PROVIDER_API_VERSION } from '@anokye-labs/kbexplorer-core'
 
 // ── WikipediaProvider ──────────────────────────────────────
 
@@ -142,21 +143,21 @@ describe('OrgChartProvider', () => {
 // ── Plugin Loader ──────────────────────────────────────────
 
 describe('loadExternalProviders', () => {
-  it('creates Wikipedia and OrgChart providers from config', () => {
+  it('creates Wikipedia and OrgChart providers from config', async () => {
     const configs: ExternalProviderConfig[] = [
       { type: 'wikipedia', name: 'Wiki', options: { articles: [] } },
       { type: 'orgchart', name: 'Team', options: { people: [] } },
     ]
 
-    const providers = loadExternalProviders(configs)
+    const providers = await loadExternalProviders(configs)
     expect(providers).toHaveLength(2)
     expect(providers[0].id).toBe('wikipedia-wiki')
     expect(providers[1].id).toBe('orgchart-team')
   })
 
-  it('warns on unknown provider type', () => {
+  it('warns and skips a custom type with no module specifier', async () => {
     const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const providers = loadExternalProviders([
+    const providers = await loadExternalProviders([
       { type: 'custom', name: 'Test' },
     ])
     expect(providers).toHaveLength(0)
@@ -164,8 +165,164 @@ describe('loadExternalProviders', () => {
     spy.mockRestore()
   })
 
-  it('handles empty config array', () => {
-    const providers = loadExternalProviders([])
+  it('handles empty config array', async () => {
+    const providers = await loadExternalProviders([])
     expect(providers).toHaveLength(0)
+  })
+
+  // ── Local ES-module loading (F5a) ──────────────────────────
+  it('loads a local ES-module provider by specifier and contributes nodes', async () => {
+    const providers = await loadExternalProviders([
+      {
+        type: 'glossary',
+        name: 'Glossary',
+        cluster: 'reference',
+        module: './providers/examples/glossary-provider',
+        options: {
+          terms: [
+            {
+              id: 'knowledge-graph',
+              term: 'Knowledge Graph',
+              definition: 'A graph of entities and relationships.',
+              connections: ['graph-engine'],
+            },
+          ],
+        },
+      },
+    ])
+
+    expect(providers).toHaveLength(1)
+    expect(providers[0].id).toBe('glossary-glossary')
+
+    const result = await providers[0].resolve(DEFAULT_CONFIG, [])
+    expect(result.nodes).toHaveLength(1)
+    expect(result.nodes[0].id).toBe('glossary-knowledge-graph')
+    expect(result.nodes[0].title).toBe('Knowledge Graph')
+    expect(result.nodes[0].cluster).toBe('reference')
+    expect(result.nodes[0].source).toEqual({ type: 'external', provider: 'glossary-glossary' })
+    expect(result.nodes[0].connections).toEqual([
+      { to: 'graph-engine', description: 'Defines' },
+    ])
+  })
+
+  it('warns and skips absolute / URL / scheme module specifiers (no remote code)', async () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const providers = await loadExternalProviders([
+      { type: 'custom', name: 'Remote', module: 'https://evil.example/provider.js' },
+      { type: 'custom', name: 'File', module: 'file:///etc/passwd' },
+      { type: 'custom', name: 'Node', module: 'node:fs' },
+      { type: 'custom', name: 'Absolute', module: '/usr/lib/provider.js' },
+    ])
+    expect(providers).toHaveLength(0)
+    expect(spy).toHaveBeenCalledTimes(4)
+    expect(spy.mock.calls.every(([msg]) => /not a local .* or bare npm package/.test(String(msg)))).toBe(true)
+    spy.mockRestore()
+  })
+
+  it('warns and skips when a module specifier cannot be resolved', async () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const providers = await loadExternalProviders([
+      { type: 'custom', name: 'Broken', module: './providers/examples/does-not-exist' },
+    ])
+    expect(providers).toHaveLength(0)
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
+
+  // ── Third-party npm-package loading (F5b) ──────────────────
+  it('loads a third-party provider by bare package specifier and contributes nodes', async () => {
+    const providers = await loadExternalProviders([
+      {
+        type: 'quotes',
+        name: 'Quotes',
+        cluster: 'reference',
+        module: '@anokye-labs/kbexplorer-example-quotes',
+        options: {
+          quotes: [
+            {
+              id: 'kay',
+              text: 'The best way to predict the future is to invent it.',
+              author: 'Alan Kay',
+              connections: ['graph-engine'],
+            },
+          ],
+        },
+      },
+    ])
+
+    expect(providers).toHaveLength(1)
+    expect(providers[0].id).toBe('quotes-quotes')
+
+    const result = await providers[0].resolve(DEFAULT_CONFIG, [])
+    expect(result.nodes).toHaveLength(1)
+    expect(result.nodes[0].id).toBe('quote-kay')
+    expect(result.nodes[0].title).toBe('Alan Kay')
+    expect(result.nodes[0].cluster).toBe('reference')
+    expect(result.nodes[0].source).toEqual({ type: 'external', provider: 'quotes-quotes' })
+    expect(result.nodes[0].connections).toEqual([
+      { to: 'graph-engine', description: 'Quoted in' },
+    ])
+  })
+
+  it('orders a bare-specifier provider after its declared dependency', async () => {
+    const { ProviderRegistry } = await import('../../providers')
+    const providers = await loadExternalProviders([
+      { type: 'quotes', name: 'Quotes', module: '@anokye-labs/kbexplorer-example-quotes', options: { quotes: [] } },
+      { type: 'wikipedia', name: 'Wiki', options: { articles: [] } },
+    ])
+    const registry = new ProviderRegistry()
+    for (const p of providers) registry.register(p)
+    expect(registry.getExecutionOrder().map((p) => p.id)).toEqual([
+      'quotes-quotes',
+      'wikipedia-wiki',
+    ])
+  })
+
+  it('skips a provider that targets an incompatible contract version, naming the reason', async () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.doMock('@kbexplorer-test/incompatible-version-provider', () => ({
+      apiVersion: '2.0.0',
+      default: (config: ExternalProviderConfig) => ({
+        id: `bad-${config.name ?? 'x'}`,
+        name: 'Bad',
+        async resolve() {
+          return { nodes: [], edges: [] }
+        },
+      }),
+    }))
+    const providers = await loadExternalProviders([
+      { type: 'custom', name: 'Future', module: '@kbexplorer-test/incompatible-version-provider' },
+    ])
+    expect(providers).toHaveLength(0)
+    const message = String(spy.mock.calls.at(-1)?.[0] ?? '')
+    expect(message).toContain('@kbexplorer-test/incompatible-version-provider')
+    expect(message).toContain('2.0.0')
+    expect(message).toMatch(/major/)
+    spy.mockRestore()
+    vi.doUnmock('@kbexplorer-test/incompatible-version-provider')
+  })
+
+  it('skips a provider that requires an unsupported capability, naming it', async () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.doMock('@kbexplorer-test/needs-sources-provider', () => ({
+      apiVersion: PROVIDER_API_VERSION,
+      capabilities: ['sources'],
+      default: (config: ExternalProviderConfig) => ({
+        id: `needs-${config.name ?? 'x'}`,
+        name: 'Needs Sources',
+        async resolve() {
+          return { nodes: [], edges: [] }
+        },
+      }),
+    }))
+    const providers = await loadExternalProviders([
+      { type: 'custom', name: 'Sourcey', module: '@kbexplorer-test/needs-sources-provider' },
+    ])
+    expect(providers).toHaveLength(0)
+    const message = String(spy.mock.calls.at(-1)?.[0] ?? '')
+    expect(message).toContain('@kbexplorer-test/needs-sources-provider')
+    expect(message).toContain('sources')
+    spy.mockRestore()
+    vi.doUnmock('@kbexplorer-test/needs-sources-provider')
   })
 })

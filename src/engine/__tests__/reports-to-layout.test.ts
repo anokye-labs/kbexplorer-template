@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { KBGraph, KBNode, KBEdge } from '../../types';
-import { BUILT_IN_VIEWS, getView, filterGraphToView } from '../../types';
+import { BUILT_IN_VIEWS, getView, filterGraphToView } from '../../representation/views';
 import {
   REPORTS_TO_RELATION,
   isPersonNode,
