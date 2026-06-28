@@ -271,8 +271,11 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
     return items;
   }, [textResults, semanticOnly, filteredSuggestions]);
 
-  // Reset active index when results change
-  useEffect(() => { setActiveIdx(0); }, [query]);
+  const handleQueryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setActiveIdx(0);
+  }, []);
+
 
   // Focus input on mount
   useEffect(() => {
@@ -328,7 +331,6 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
   let globalIdx = 0;
 
   return (
-    /* eslint-disable jsx-a11y/no-static-element-interactions */
     <div
       className={styles.overlay}
       onClick={handleOverlayClick}
@@ -358,7 +360,7 @@ export function SearchPalette({ index, onClose, onNavigate }: SearchPaletteProps
             aria-label="Search knowledge base"
             placeholder={semantic.enabled ? 'Search nodes… (text + semantic)' : 'Search nodes… (type to start)'}
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={handleQueryChange}
             onKeyDown={handleKeyDown}
             autoComplete="off"
             spellCheck={false}

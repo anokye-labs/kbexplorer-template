@@ -77,13 +77,13 @@ describe('golden: remote-mode KBGraph (hermetic, recorded fixtures)', () => {
 
   it('serializes byte-for-byte identical to the committed golden fixture', async () => {
     const { loadRemoteKnowledgeBase } = await import('../../src/engine/remote-loader');
-    const { serializeGraph } = await import('./serialize');
+    const { normalizeGoldenText, serializeGraph } = await import('./serialize');
     const { graph } = await loadRemoteKnowledgeBase(fixture.source, 'standard');
     const serialized = serializeGraph(graph);
     if (UPDATE) {
       writeFileSync(GOLDEN, serialized);
     }
-    const golden = readFileSync(GOLDEN, 'utf8');
+    const golden = normalizeGoldenText(readFileSync(GOLDEN, 'utf8'));
     expect(serialized).toBe(golden);
   });
 
