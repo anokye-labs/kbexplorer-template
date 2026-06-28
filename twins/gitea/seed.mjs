@@ -51,11 +51,42 @@ function snapshotPushMain(owner, repo) {
   log(`force-pushing snapshot ${commit.slice(0, 8)} → ${owner}/${repo}@main`);
   git(['push', '--force', remote, `${commit}:refs/heads/main`], env);
   if (existsSync(indexFile)) rmSync(indexFile);
-  // Make sure main is the default branch even on a repo created without auto-init.
+  // The repo is created with auto_init (born non-empty); this force-push just
+  // replaces that initial commit so `main` mirrors the working tree.
 }
 
 async function setDefaultBranch(owner, repo, branch) {
   await gitea('PATCH', `/repos/${owner}/${repo}`, { default_branch: branch }).catch(() => {});
+}
+
+/**
+ * Gate any pull-request operation on the repo being genuinely pull-ready.
+ *
+ * Gitea's `/repos/{owner}/{repo}/pulls` route is guarded by `mustAllowPulls`,
+ * which 404s (with the generic API NotFound `/api/swagger` body) whenever
+ * `CanEnablePulls()` is false — i.e. while the repo is still flagged empty. We
+ * create the repo with auto_init so it is non-empty from birth, but also poll
+ * the repo metadata here so a still-empty repo (e.g. a warm twin from before
+ * this fix) fails loudly with an actionable message instead of a cryptic 404.
+ */
+async function waitForRepoReady(owner, repo, branch, { timeoutMs = 20000 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  let detail = 'no response from Gitea';
+  while (Date.now() < deadline) {
+    const meta = await gitea('GET', `/repos/${owner}/${repo}`);
+    if (meta.ok && meta.json && meta.json.empty === false) {
+      const head = await gitea('GET', `/repos/${owner}/${repo}/branches/${encodeURIComponent(branch)}`);
+      if (head.ok) return;
+      detail = `default branch "${branch}" not resolvable yet (${head.status})`;
+    } else {
+      detail = meta.ok ? 'repo still reports empty (is_empty=true)' : `repo metadata ${meta.status}`;
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  throw new Error(
+    `repo ${owner}/${repo} is not pull-ready (${detail}); ` +
+    'Gitea disables the pulls route on empty repos. Try `npm run dtu:reset`.',
+  );
 }
 
 const BASELINE_ISSUES = [
@@ -103,9 +134,12 @@ async function main() {
   log(`seeding ${owner}/${repo}@${branch}`);
 
   await ensureOrg(owner);
-  await ensureRepo(owner, repo, { autoInit: false });
+  await ensureRepo(owner, repo, { autoInit: true });
   snapshotPushMain(owner, repo);
   await setDefaultBranch(owner, repo, branch);
+  // Block until Gitea reports the repo non-empty with `branch` resolvable, so the
+  // pulls route is enabled before seedSourceEditPr/listPulls touch it.
+  await waitForRepoReady(owner, repo, branch);
 
   let created = 0;
   for (const spec of BASELINE_ISSUES) {

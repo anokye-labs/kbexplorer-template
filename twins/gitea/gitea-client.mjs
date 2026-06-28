@@ -52,8 +52,17 @@ export async function ensureOrg(owner) {
   return { created: res.ok };
 }
 
-/** Create the repo under the org if missing (idempotent). No auto-init: seed pushes a snapshot. */
-export async function ensureRepo(owner, repo, { autoInit = false } = {}) {
+/**
+ * Create the repo under the org if missing (idempotent).
+ *
+ * Born non-empty via `auto_init` (an in-process initial commit, NOT a push hook):
+ * Gitea enables the Pull Requests unit only when `CanEnablePulls()` is true
+ * (`!IsMirror && !IsEmpty`), so an *empty* repo makes `GET /pulls` 404 with the
+ * generic API NotFound (`/api/swagger`) body. The seed's `snapshotPushMain` then
+ * force-pushes the working-tree snapshot over that initial commit, so `main`
+ * still mirrors the real repo while the repo is never empty.
+ */
+export async function ensureRepo(owner, repo, { autoInit = true } = {}) {
   const get = await gitea('GET', `/repos/${owner}/${repo}`);
   if (get.ok) return { created: false };
   const res = await gitea('POST', `/orgs/${owner}/repos`, {
