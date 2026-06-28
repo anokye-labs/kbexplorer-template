@@ -54,14 +54,25 @@ class MemoryGraphStore implements GraphStore<ProviderResult> {
     });
   }
 
-  async delete(): Promise<boolean> {
-    const count = this.entries.size;
-    this.entries.clear();
-    return count > 0;
+  async delete(key: GraphStoreCacheKey): Promise<boolean> {
+    return this.entries.delete(`${key.providerId}:${key.contentHash.digest}`);
   }
 
-  async invalidate(_match: GraphStoreInvalidation): Promise<number> {
-    return await this.delete() ? 1 : 0;
+  async invalidate(match: GraphStoreInvalidation): Promise<number> {
+    let deleted = 0;
+    for (const [cacheKey, entry] of this.entries) {
+      if (
+        (!match.scope || match.scope === entry.key.scope) &&
+        (!match.providerId || match.providerId === entry.key.providerId) &&
+        (!match.sourceId || match.sourceId === entry.key.sourceId) &&
+        (!match.variant || match.variant === entry.key.variant) &&
+        (!match.contentHash || match.contentHash.digest === entry.key.contentHash.digest)
+      ) {
+        this.entries.delete(cacheKey);
+        deleted++;
+      }
+    }
+    return deleted;
   }
 }
 
