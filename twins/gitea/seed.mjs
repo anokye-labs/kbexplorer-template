@@ -73,13 +73,22 @@ async function waitForRepoReady(owner, repo, branch, { timeoutMs = 20000 } = {})
   const deadline = Date.now() + timeoutMs;
   let detail = 'no response from Gitea';
   while (Date.now() < deadline) {
-    const meta = await gitea('GET', `/repos/${owner}/${repo}`);
-    if (meta.ok && meta.json && meta.json.empty === false) {
-      const head = await gitea('GET', `/repos/${owner}/${repo}/branches/${encodeURIComponent(branch)}`);
-      if (head.ok) return;
-      detail = `default branch "${branch}" not resolvable yet (${head.status})`;
-    } else {
-      detail = meta.ok ? 'repo still reports empty (is_empty=true)' : `repo metadata ${meta.status}`;
+    try {
+      const meta = await gitea('GET', `/repos/${owner}/${repo}`);
+      if (meta.ok && meta.json && meta.json.empty === false) {
+        const head = await gitea('GET', `/repos/${owner}/${repo}/branches/${encodeURIComponent(branch)}`);
+        if (head.ok) return;
+        detail = `default branch "${branch}" not resolvable yet (${head.status})`;
+      } else {
+        detail = meta.ok ? 'repo still reports empty (is_empty=true)' : `repo metadata ${meta.status}`;
+      }
+    } catch (err) {
+      // Gitea can be briefly unreachable during bring-up; gitea()'s underlying
+      // fetch() throws on transient connection errors/timeouts. Swallow those and
+      // keep polling until the deadline rather than aborting the seed — that is
+      // the whole point of the readiness gate. A genuinely never-ready repo still
+      // fails loudly at the timeout below.
+      detail = `transient fetch error: ${err?.message ?? err}`;
     }
     await new Promise((r) => setTimeout(r, 500));
   }
