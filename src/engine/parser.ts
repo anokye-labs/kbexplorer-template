@@ -226,8 +226,8 @@ export function issueToNode(issue: GHIssue, options: IssueToNodeOptions = {}): K
   const assigneeList = issue.assignees?.length
     ? issue.assignees.map(a => `@${a.login}`).join(', ')
     : '';
-  const created = new Date(issue.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  const updated = new Date(issue.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const created = new Date(issue.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+  const updated = new Date(issue.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
   const metaLines = [
     `${stateEmoji} **${issue.state.toUpperCase()}** · #${issue.number}`,

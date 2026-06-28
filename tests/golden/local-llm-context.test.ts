@@ -18,6 +18,7 @@ import {
 } from '../../src/engine/local-loader';
 import { renderLlmContext } from '../../src/representation/targets/llm-context';
 import { installWikipediaFetchMock } from './wikipedia-mock';
+import { readGolden } from './golden';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const GOLDEN = join(here, 'local-llm-context.golden.md');
@@ -45,7 +46,7 @@ describe('golden: local-mode llm-context representation (F6 #337)', () => {
     const { graph } = await buildLocalGraph();
     const pack = renderLlmContext(graph, { anchors: [ANCHOR], tokenBudget: TOKEN_BUDGET });
     if (UPDATE) writeFileSync(GOLDEN, pack);
-    expect(pack).toBe(readFileSync(GOLDEN, 'utf8'));
+    expect(pack).toBe(readGolden(GOLDEN));
   });
 
   it('is anchored, budgeted and navigable: never the whole graph', async () => {

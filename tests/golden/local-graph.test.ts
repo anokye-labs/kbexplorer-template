@@ -24,6 +24,7 @@ import {
 } from '../../src/engine/local-loader';
 import { serializeGraph } from './serialize';
 import { installWikipediaFetchMock } from './wikipedia-mock';
+import { readGolden } from './golden';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const GOLDEN = join(here, 'local-graph.golden.json');
@@ -54,7 +55,7 @@ describe('golden: local-mode KBGraph', () => {
     if (UPDATE) {
       writeFileSync(GOLDEN, serialized);
     }
-    const golden = readFileSync(GOLDEN, 'utf8');
+    const golden = readGolden(GOLDEN);
     expect(serialized).toBe(golden);
   });
 
