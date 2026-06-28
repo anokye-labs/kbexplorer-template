@@ -45,7 +45,20 @@ export default defineConfig({
     },
     {
       // Real app (dev server) in remote/repo-aware mode, pointed at the adapter.
-      command: `node ./node_modules/vite/bin/vite.js --port ${APP_PORT} --strictPort`,
+      //
+      // `ensure-manifest-stub.mjs` writes a minimal stub
+      // src/generated/repo-manifest.json (only if absent) so Vite's
+      // import-analysis can resolve the static import of it in
+      // src/engine/local-loader.ts. A bare `vite` dev server never runs
+      // `prebuild`, so in a fresh CI checkout that gitignored file is missing and
+      // the server 500s on import resolution — the app never boots and every
+      // gitea spec fails. Chaining the stub ahead of `vite` (rather than writing
+      // it in globalSetup, which Playwright starts concurrently with the
+      // webServers) is race-free: the file exists before Vite's first transform.
+      // The stub does NOT run generate-manifest.js and makes NO GitHub/`gh`
+      // calls; the app runs in REMOTE mode (no VITE_KB_LOCAL) and never reads the
+      // manifest at runtime — it exists solely to satisfy the resolver.
+      command: `node twins/gitea/ensure-manifest-stub.mjs && node ./node_modules/vite/bin/vite.js --port ${APP_PORT} --strictPort`,
       url: `http://localhost:${APP_PORT}`,
       reuseExistingServer: !process.env.CI,
       timeout: 60000,
