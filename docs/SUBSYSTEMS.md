@@ -45,10 +45,15 @@ the identical `KBGraph` shape (re-exported from core via `src/types/index.ts`).
 The pure cross-layer contracts live in the separate package and are re-exported
 from `src/types/index.ts` for back-compat:
 
-- graph + config: `KBNode`, `KBEdge`, `KBGraph`, `KBConfig`, identity/URN (`kg://`),
+- graph + config: `KBNode`, `KBEdge`, `KBGraph`, `KBConfig`, identity/URN helpers,
   relation taxonomy, JSON-LD helpers (`buildJsonLd`);
 - the layer interfaces: `Source` / `Resource` / `Affordance` / `Link`,
   `GraphProvider`, `Representation`.
+
+> **Two URN schemes — don't conflate them.** Engine **node identity** is a `urn:*`
+> URN (e.g. `urn:file:<path>`), minted by `assignIdentity` (`src/engine/identity.ts`).
+> The navigable **`kg://`** scheme is a *representation* concern — the inter-node
+> hyperlinks the `json-ld` / `llm-context` targets emit (e.g. `kg://node/<id>`).
 
 `src/types/index.ts` imports **nothing from the engine at load** — enforced by
 `src/types/__tests__/no-engine-import.test.ts` (Phase 2) — so the data types can
@@ -63,8 +68,8 @@ acquisition paths produce, so the loader wires providers once.
 
 | Source | File | Affordances |
 |--------|------|-------------|
-| `ManifestSource` | `sources/manifest-source.ts` | every resource `['read']` only — a frozen snapshot has no staging area |
-| `GitHubApiSource` | `sources/github-api-source.ts` | composite **Git ≠ GitHub** families; **per-retrieval** affordances |
+| `ManifestSource` | `src/engine/sources/manifest-source.ts` | every resource `['read']` only — a frozen snapshot has no staging area |
+| `GitHubApiSource` | `src/engine/sources/github-api-source.ts` | composite **Git ≠ GitHub** families; **per-retrieval** affordances |
 
 **Per-retrieval situational affordances (§4A).** A source declares a *possible*
 universe (`possibleAffordances`), but each retrieved `Resource` carries the
@@ -173,9 +178,9 @@ a target name to its implementation; `representationRegistry`
 
 | Target | File | Output |
 |--------|------|--------|
-| `spa` | `targets/spa.tsx` | the interactive explorer website (React route tree) |
-| `json-ld` | `targets/json-ld.ts` | deterministic, canonicalized JSON-LD `@graph` |
-| `llm-context` | `targets/llm-context.ts` | **neighbor-anchored**, token-budgeted Markdown pack |
+| `spa` | `src/representation/targets/spa.tsx` | the interactive explorer website (React route tree) |
+| `json-ld` | `src/representation/targets/json-ld.ts` | deterministic, canonicalized JSON-LD `@graph` |
+| `llm-context` | `src/representation/targets/llm-context.ts` | **neighbor-anchored**, token-budgeted Markdown pack |
 
 `json-ld` and `llm-context` consume only the pure graph and **never import the
 engine/loader** — enforced statically by
