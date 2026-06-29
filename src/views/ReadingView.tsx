@@ -203,16 +203,31 @@ function diagramErrorMessage(error: unknown): string {
   return 'Unknown Mermaid render error.';
 }
 
+function isSvgRoot(element: Element): element is SVGSVGElement {
+  return element.nodeName.toLowerCase() === 'svg'
+    && element.namespaceURI === 'http://www.w3.org/2000/svg';
+}
+
+function normalizeMermaidSvgForXml(svg: string): string {
+  // Mermaid can emit HTML-style breaks inside foreignObject labels; XML parsing
+  // requires them to be self-closed before we import the SVG node.
+  return svg.replace(/<br>/gi, '<br/>');
+}
+
 function parseMermaidSvg(svg: string): SVGSVGElement {
-  const doc = new DOMParser().parseFromString(svg, 'image/svg+xml');
+  const doc = new DOMParser().parseFromString(normalizeMermaidSvgForXml(svg), 'image/svg+xml');
   const parserError = doc.querySelector('parsererror');
   const svgElement = doc.documentElement;
-  if (parserError || svgElement.nodeName.toLowerCase() !== 'svg') {
-    throw new Error('Mermaid returned invalid SVG.');
+  if (parserError) {
+    const parserMessage = parserError.textContent?.trim().split('\n')[0];
+    throw new Error(`Mermaid returned invalid SVG${parserMessage ? `: ${parserMessage}` : '.'}`);
   }
-  const imported = document.importNode(svgElement, true);
-  if (!(imported instanceof SVGSVGElement)) {
-    throw new Error('Mermaid returned invalid SVG.');
+  if (!isSvgRoot(svgElement)) {
+    throw new Error(`Mermaid returned invalid SVG root "${svgElement.nodeName}".`);
+  }
+  const imported: Element = document.importNode(svgElement, true);
+  if (!isSvgRoot(imported)) {
+    throw new Error(`Mermaid returned invalid imported SVG root "${imported.nodeName}".`);
   }
   return imported;
 }
