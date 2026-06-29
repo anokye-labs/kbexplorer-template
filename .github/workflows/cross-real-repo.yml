@@ -1,0 +1,68 @@
+name: Cross-real-repo smoke — live GitHubApiSource path
+
+# Opt-in / scheduled ONLY. Deliberately NOT part of the fast PR gate and NEVER a
+# required check: it drives the REAL remote loader (src/api/github.ts →
+# GitHubApiSource → loadKnowledgeBase) against the LIVE https://api.github.com
+# for a few small, varied, stable PUBLIC repos and asserts KBGraph invariants.
+#
+# It restores the "does the app actually work against a real GitHub repo" leg
+# that was lost when the kbexplorer-pilot-fixture repo was archived (DTU bit-rot
+# audit #394, P2). The twins (static fixture + Gitea) cover response SHAPES;
+# this covers real-repo SHAPES. See scripts/smoke-real-repos.mjs for the curated
+# target list and rationale.
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Optional single repo to smoke on demand (owner/repo). Leave blank to smoke the full curated list.'
+        type: string
+        required: false
+        default: ''
+  schedule:
+    # Nightly at 06:00 UTC (offset from DTU at 04:30 and visual-regression at 05:15).
+    - cron: '0 6 * * *'
+
+concurrency:
+  group: cross-real-repo-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  cross-real-repo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Drive the real GitHub API path. GH_TOKEN is the default, read-only
+      # workflow token — sufficient for public repos and ~1,000 req/hr, which
+      # keeps the paginated fetches well clear of the unauthenticated 60/hr cap.
+      # On workflow_dispatch, an optional `repo` input narrows the run to one
+      # target; on schedule it is blank, so the full curated list is smoked.
+      - name: Run cross-real-repo smoke
+        run: node scripts/smoke-real-repos.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SMOKE_REPO: ${{ inputs.repo }}
+          SMOKE_LOG: cross-real-repo-smoke.json
+
+      # Always upload the JSON run log so a red run is inspectable without
+      # re-running (which real-repo shapes / token rate could perturb).
+      - name: Upload smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-real-repo-smoke-${{ github.run_number }}
+          path: cross-real-repo-smoke.json
+          retention-days: 14
+          if-no-files-found: warn

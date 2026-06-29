@@ -45,3 +45,7 @@ review/screenshots/
 review/diffs/
 # Visual-regression diff report — transient run artifact.
 review/visual-diff-report.json
+
+# Cross-real-repo smoke run log — transient artifact (uploaded by the scheduled
+# workflow, never committed). See scripts/smoke-real-repos.mjs.
+cross-real-repo-smoke.json
