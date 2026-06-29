@@ -21,7 +21,7 @@ The prose uses a `.kb-prose` CSS class with Fluent token values. A font sizer co
 
 ## Content Rendering
 
-Node content arrives as pre-rendered HTML from the [parser](parser). The view injects it via `dangerouslySetInnerHTML` and applies theme styles. Inline links to other nodes (`[text](node-id)`) are clickable and navigate within the app. File path references became clickable in [#51](https://github.com/anokye-labs/kbexplorer-template/issues/51).
+Node content arrives as pre-rendered HTML from the [parser](parser). The view injects it into a themed prose container. Inline links to other nodes (`[text](node-id)`) are clickable and navigate within the app. File path references became clickable in [#51](https://github.com/anokye-labs/kbexplorer-template/issues/51). Mermaid fenced diagrams render as SVG in place while keeping the source available for debugging; invalid or unsupported diagram blocks stay visibly attached to their raw source instead of failing silently.
 
 ## Keyboard Navigation
 

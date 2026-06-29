@@ -22,4 +22,13 @@ test.describe('Display Modes', () => {
     await page.waitForTimeout(3000);
     await expect(page.locator('.kb-prose h1, .kb-prose h2').first()).toBeVisible({ timeout: 10000 });
   });
+
+  test('Mermaid fenced diagrams render visually with source available', async ({ page }) => {
+    await page.goto('/#/node/content-model-ingestion', { timeout: 60000 });
+    const diagram = page.locator('.kb-diagram[data-diagram-language="mermaid"]').first();
+
+    await expect(diagram).toBeVisible({ timeout: 10000 });
+    await expect(diagram.locator('svg')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.kb-diagram-source').first()).toContainText('flowchart TD');
+  });
 });

@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import {
   makeStyles,
   tokens,
@@ -25,6 +26,11 @@ import { IconGallery } from '../components/IconGallery';
 import { resolveViewer } from './viewers';
 import { SourceEditor } from './SourceEditor';
 import { canEditSource } from '../engine/source-edit';
+import {
+  diagramLanguageFromClassName,
+  getDiagramRenderPlan,
+  isDiagramCodeLanguage,
+} from './diagram';
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -159,6 +165,208 @@ const useStyles = makeStyles({
 
 /* ── Display-mode helper components ─────────────────────────── */
 
+type MermaidApi = typeof import('mermaid').default;
+
+let mermaidImport: Promise<MermaidApi> | null = null;
+let mermaidRenderSequence = 0;
+
+function nextMermaidRenderId(): string {
+  mermaidRenderSequence += 1;
+  return `kb-mermaid-${mermaidRenderSequence}`;
+}
+
+async function loadMermaid(isDark: boolean): Promise<MermaidApi> {
+  mermaidImport ??= import('mermaid').then(mod => mod.default);
+  const mermaid = await mermaidImport;
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'strict',
+    theme: isDark ? 'dark' : 'default',
+  });
+  return mermaid;
+}
+
+async function renderMermaid(source: string, isDark: boolean) {
+  const mermaid = await loadMermaid(isDark);
+  return mermaid.render(nextMermaidRenderId(), source);
+}
+
+function diagramErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown Mermaid render error.';
+}
+
+function DiagramFallback({
+  message,
+  source,
+  severity = 'error',
+}: {
+  message: string;
+  source: string;
+  severity?: 'error' | 'warning';
+}) {
+  return (
+    <div className="kb-diagram-block">
+      <div className="kb-diagram-fallback" data-severity={severity} role={severity === 'error' ? 'alert' : undefined}>
+        {message}
+      </div>
+      <pre className="kb-code-display"><code>{source}</code></pre>
+    </div>
+  );
+}
+
+function MermaidDiagram({ source, isDark }: { source: string; isDark: boolean }) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [status, setStatus] = useState<'loading' | 'rendered' | 'error'>('loading');
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    let cancelled = false;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.textContent = '';
+    setStatus('loading');
+    setError('');
+
+    void (async () => {
+      try {
+        const { svg, bindFunctions } = await renderMermaid(source, isDark);
+        if (cancelled) return;
+        canvas.innerHTML = svg;
+        bindFunctions?.(canvas);
+        setStatus('rendered');
+      } catch (err) {
+        if (cancelled) return;
+        canvas.textContent = '';
+        setError(diagramErrorMessage(err));
+        setStatus('error');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isDark, source]);
+
+  return (
+    <figure className="kb-diagram" data-diagram-language="mermaid">
+      {status === 'loading' && (
+        <Caption1 className="kb-diagram-status">Rendering Mermaid diagram...</Caption1>
+      )}
+      <div ref={canvasRef} className="kb-diagram-canvas" aria-hidden={status !== 'rendered'} />
+      {status === 'error' && (
+        <DiagramFallback message={`Mermaid render failed: ${error}`} source={source} />
+      )}
+      {status === 'rendered' && (
+        <details className="kb-diagram-source">
+          <summary>Diagram source</summary>
+          <pre className="kb-code-display"><code>{source}</code></pre>
+        </details>
+      )}
+    </figure>
+  );
+}
+
+function createDiagramMessage(message: string, severity: 'error' | 'warning'): HTMLDivElement {
+  const el = document.createElement('div');
+  el.className = 'kb-diagram-fallback';
+  el.dataset.severity = severity;
+  if (severity === 'error') el.setAttribute('role', 'alert');
+  el.textContent = message;
+  return el;
+}
+
+function wrapRenderedProseDiagram(pre: HTMLPreElement, svg: string, bindFunctions?: (element: Element) => void) {
+  const figure = document.createElement('figure');
+  figure.className = 'kb-diagram kb-diagram--prose';
+  figure.dataset.diagramLanguage = 'mermaid';
+
+  const canvas = document.createElement('div');
+  canvas.className = 'kb-diagram-canvas';
+  canvas.innerHTML = svg;
+  figure.append(canvas);
+  bindFunctions?.(canvas);
+
+  const details = document.createElement('details');
+  details.className = 'kb-diagram-source';
+  const summary = document.createElement('summary');
+  summary.textContent = 'Diagram source';
+  details.append(summary);
+
+  pre.before(figure);
+  figure.after(details);
+  details.append(pre);
+}
+
+function ProseContent({
+  html,
+  isDark,
+  style,
+}: {
+  html: string;
+  isDark: boolean;
+  style?: CSSProperties;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    root.innerHTML = html;
+    let cancelled = false;
+
+    const codeBlocks = Array.from(root.querySelectorAll<HTMLElement>('pre > code'));
+
+    void (async () => {
+      for (const code of codeBlocks) {
+        if (cancelled) return;
+        const language = diagramLanguageFromClassName(code.className);
+        if (!isDiagramCodeLanguage(language)) continue;
+
+        const pre = code.parentElement;
+        if (!(pre instanceof HTMLPreElement)) continue;
+
+        const plan = getDiagramRenderPlan(code.textContent ?? '', language);
+        if (plan.kind !== 'mermaid') {
+          pre.before(createDiagramMessage(plan.reason, 'warning'));
+          continue;
+        }
+
+        try {
+          const { svg, bindFunctions } = await renderMermaid(plan.source, isDark);
+          if (cancelled) return;
+          wrapRenderedProseDiagram(pre, svg, bindFunctions);
+        } catch (err) {
+          if (cancelled) return;
+          pre.before(createDiagramMessage(`Mermaid render failed: ${diagramErrorMessage(err)}`, 'error'));
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [html, isDark]);
+
+  return (
+    <div
+      ref={rootRef}
+      className="kb-prose"
+      style={style}
+    />
+  );
+}
+
+function DiagramView({ content, isDark }: { content: string; isDark: boolean }) {
+  const plan = getDiagramRenderPlan(content);
+  return plan.kind === 'mermaid'
+    ? <MermaidDiagram source={plan.source} isDark={isDark} />
+    : <DiagramFallback message={plan.reason} source={plan.source} severity="warning" />;
+}
+
 interface TreeEntry {
   name: string;
   depth: number;
@@ -274,7 +482,7 @@ function TableView({ content }: { content: string }) {
   );
 }
 
-function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config?: KBConfig) {
+function renderContent(node: KBNode, linkedHtml: string, isDark: boolean, graph?: KBGraph, config?: KBConfig) {
   switch (node.display) {
     case 'code':
       return <pre className="kb-code-display"><code>{node.rawContent}</code></pre>;
@@ -285,14 +493,7 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
     case 'table':
       return <TableView content={node.rawContent} />;
     case 'diagram':
-      return (
-        <div>
-          <Caption1 style={{ display: 'block', marginBottom: tokens.spacingVerticalS, color: tokens.colorNeutralForeground3 }}>
-            Diagram rendering coming soon
-          </Caption1>
-          <pre className="kb-code-display"><code>{node.rawContent}</code></pre>
-        </div>
-      );
+      return <DiagramView content={node.rawContent} isDark={isDark} />;
     case 'homepage':
       return (
         <div>
@@ -316,14 +517,14 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
               </div>
             </ConstellationHero>
           )}
-          <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />
+          <ProseContent html={linkedHtml} isDark={isDark} />
           {graph && config && <HomePageWidgets graph={graph} config={config} />}
         </div>
       );
     case 'gallery':
       return (
         <div>
-          <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />
+          <ProseContent html={linkedHtml} isDark={isDark} />
           <IconGallery />
         </div>
       );
@@ -333,13 +534,13 @@ function renderContent(node: KBNode, linkedHtml: string, graph?: KBGraph, config
         <div>
           <Viewer node={node} />
           {node.content?.trim() && (
-            <div className="kb-prose" style={{ marginTop: '1.5rem' }} dangerouslySetInnerHTML={{ __html: linkedHtml }} />
+            <ProseContent html={linkedHtml} isDark={isDark} style={{ marginTop: '1.5rem' }} />
           )}
         </div>
       );
     }
     default:
-      return <div className="kb-prose" dangerouslySetInnerHTML={{ __html: linkedHtml }} />;
+      return <ProseContent html={linkedHtml} isDark={isDark} />;
   }
 }
 
@@ -584,7 +785,7 @@ export function ReadingView({ graph, config, nodeId, theme }: ReadingViewProps) 
 
       {/* Body: prose + connections */}
       <div className={`${styles.body} kb-reading-body`}>
-        {renderContent(node, linkifyContent(node.content), graph, config)}
+        {renderContent(node, linkifyContent(node.content), isDark, graph, config)}
 
         {/* Child nodes (subfolders, sections) */}
         {(() => {
