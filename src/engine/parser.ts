@@ -39,7 +39,7 @@ interface AuthoredFrontmatter {
   parent?: string;
   derived?: boolean;
   display?: import('../types').DisplayMode;
-  connections?: Array<{ to: string; description: string }>;
+  connections?: Array<Pick<Connection, 'to'> & Partial<Omit<Connection, 'to' | 'source'>>>;
   accent?: string;
   tokens?: Partial<Record<string, string>>;
   theme?: string;
@@ -87,9 +87,11 @@ export function parseMarkdownFile(path: string, raw: string): KBNode {
   // Start with frontmatter connections
   const connections: Connection[] = (fm.connections ?? []).map(c => ({
     to: c.to,
-    type: 'frontmatter' as const,
+    type: c.type ?? 'frontmatter',
     description: c.description ?? '',
     source: 'frontmatter' as const,
+    ...(c.weight !== undefined ? { weight: c.weight } : {}),
+    ...(c.relation ? { relation: c.relation } : {}),
   }));
 
   // Extract inline markdown links: [text](target)

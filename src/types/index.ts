@@ -205,7 +205,7 @@ export function collapseGraphClusters(graph: KBGraph, collapsedIds: Set<string>)
     const from = remap(e.from);
     const to = remap(e.to);
     if (from === to) continue; // skip intra-cluster edges
-    const key = `${from}→${to}→${e.type}`;
+    const key = `${from}\u0000${to}\u0000${e.type}\u0000${e.relation ?? ''}`;
     if (edgeSeen.has(key)) continue;
     edgeSeen.add(key);
     edges.push({ ...e, from, to });

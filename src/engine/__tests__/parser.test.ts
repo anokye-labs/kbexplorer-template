@@ -40,6 +40,34 @@ Body text.`;
     expect(node.identity).toBe('urn:content:test-node');
   });
 
+  it('preserves typed relation metadata from authored connections', () => {
+    const raw = `---
+id: source
+title: Source
+cluster: engine
+connections:
+  - to: target
+    type: imports
+    relation: structural
+    description: "Imports target"
+    weight: 4
+---
+
+Body.`;
+
+    const node = parseMarkdownFile('content/source.md', raw);
+    expect(node.connections).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        to: 'target',
+        type: 'imports',
+        relation: 'structural',
+        description: 'Imports target',
+        weight: 4,
+        source: 'frontmatter',
+      }),
+    ]));
+  });
+
   it('generates id from filename when no frontmatter id', () => {
     const raw = '# Just a heading\n\nSome content.';
     const node = parseMarkdownFile('content/my-page.md', raw);
