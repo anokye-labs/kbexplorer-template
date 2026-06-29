@@ -25,6 +25,13 @@ source:
                                     #   Omit for repo-aware mode.
   branch: main                      # Optional. Git branch (default: main).
 
+# Structured content / content-model source
+structuredContent:
+  path: content-model               # Optional. Repo-relative directory containing
+                                    #   teamops.yaml, index/context.jsonld, schema/,
+                                    #   and entity YAML/JSON files. Defaults to
+                                    #   top-level content-model/ for compatibility.
+
 # Cluster definitions — group nodes by topic
 clusters:
   cluster-key:                      # Key referenced in node frontmatter.
@@ -249,6 +256,7 @@ These Vite env vars override config values at build/dev time:
 | `VITE_KB_REPO` | GitHub repo name | `my-project` |
 | `VITE_KB_BRANCH` | Target branch | `main` |
 | `VITE_KB_PATH` | Content directory | `content` |
+| `VITE_KB_STRUCTURED_CONTENT_PATH` | Structured-content directory | `content-model` |
 | `VITE_KB_TITLE` | Page title | `My KB` |
 | `VITE_BASE_PATH` | Deployment base path | `/docs/kb/` |
 | `VITE_ENV_DIR` | Directory to load .env from | `../../` |

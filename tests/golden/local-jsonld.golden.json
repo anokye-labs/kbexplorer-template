@@ -448,6 +448,60 @@
     },
     {
       "@context": "https://schema.org",
+      "@id": "urn:file:structured-content",
+      "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "urn:file:structured-content/index"
+        },
+        {
+          "@id": "urn:file:structured-content/people"
+        },
+        {
+          "@id": "urn:file:structured-content/schema"
+        },
+        {
+          "@id": "urn:file:structured-content/teamops.yaml"
+        }
+      ],
+      "name": "structured-content/"
+    },
+    {
+      "@context": "https://schema.org",
+      "@id": "urn:file:structured-content/index",
+      "@type": "Thing",
+      "name": "structured-content/index/"
+    },
+    {
+      "@context": "https://schema.org",
+      "@id": "urn:file:structured-content/people",
+      "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "urn:file:structured-content/people/ada.yaml"
+        }
+      ],
+      "name": "structured-content/people/"
+    },
+    {
+      "@context": "https://schema.org",
+      "@id": "urn:file:structured-content/schema",
+      "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "urn:file:structured-content/schema/conventions.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/lifecycle.yaml"
+        }
+      ],
+      "name": "structured-content/schema/"
+    },
+    {
+      "@context": "https://schema.org",
       "@id": "urn:file:content/config.yaml",
       "@type": "Thing",
       "name": "config.yaml"
@@ -481,6 +535,36 @@
       "@id": "urn:file:src/engine/graph.ts",
       "@type": "Thing",
       "name": "graph.ts"
+    },
+    {
+      "@context": "https://schema.org",
+      "@id": "urn:file:structured-content/people/ada.yaml",
+      "@type": "Thing",
+      "name": "ada.yaml"
+    },
+    {
+      "@context": "https://schema.org",
+      "@id": "urn:file:structured-content/schema/conventions.yaml",
+      "@type": "Thing",
+      "name": "conventions.yaml"
+    },
+    {
+      "@context": "https://schema.org",
+      "@id": "urn:file:structured-content/schema/edges.yaml",
+      "@type": "Thing",
+      "name": "edges.yaml"
+    },
+    {
+      "@context": "https://schema.org",
+      "@id": "urn:file:structured-content/schema/lifecycle.yaml",
+      "@type": "Thing",
+      "name": "lifecycle.yaml"
+    },
+    {
+      "@context": "https://schema.org",
+      "@id": "urn:file:structured-content/teamops.yaml",
+      "@type": "Thing",
+      "name": "teamops.yaml"
     },
     {
       "@context": "https://schema.org",
@@ -671,6 +755,18 @@
           "@id": "urn:file:/"
         },
         {
+          "@id": "urn:file:structured-content/schema/conventions.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/lifecycle.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/teamops.yaml"
+        },
+        {
           "@id": "urn:issue:12"
         }
       ],
@@ -680,6 +776,17 @@
       "@context": "https://schema.org",
       "@id": "kg://node/issue-147/adopted-model",
       "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/lifecycle.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/teamops.yaml"
+        }
+      ],
       "name": "Adopted model"
     },
     {
@@ -869,6 +976,12 @@
           "@id": "urn:file:src/engine"
         },
         {
+          "@id": "urn:file:structured-content/schema/conventions.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        },
+        {
           "@id": "urn:issue:12"
         },
         {
@@ -913,12 +1026,25 @@
       "@context": "https://schema.org",
       "@id": "kg://node/issue-149/what",
       "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        }
+      ],
       "name": "What"
     },
     {
       "@context": "https://schema.org",
       "@id": "kg://node/issue-149/why",
       "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "urn:file:structured-content/schema/conventions.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        }
+      ],
       "name": "Why"
     },
     {
@@ -1515,6 +1641,18 @@
           "@id": "urn:file:src/engine"
         },
         {
+          "@id": "urn:file:structured-content/schema/conventions.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/lifecycle.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/teamops.yaml"
+        },
+        {
           "@id": "urn:issue:12"
         }
       ],
@@ -1536,6 +1674,9 @@
         },
         {
           "@id": "urn:file:src/engine"
+        },
+        {
+          "@id": "urn:file:structured-content/teamops.yaml"
         }
       ],
       "name": "Scope"
@@ -1570,6 +1711,9 @@
           "@id": "urn:file:/"
         },
         {
+          "@id": "urn:file:structured-content/schema/conventions.yaml"
+        },
+        {
           "@id": "urn:issue:12"
         }
       ],
@@ -1585,6 +1729,11 @@
       "@context": "https://schema.org",
       "@id": "kg://node/issue-161/scope",
       "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "urn:file:structured-content/schema/conventions.yaml"
+        }
+      ],
       "name": "Scope"
     },
     {
@@ -1612,6 +1761,9 @@
         },
         {
           "@id": "urn:file:/"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
         }
       ],
       "name": "Task: Edge resolution (FK flavors + derived + stubs + relation typing)"
@@ -1626,6 +1778,11 @@
       "@context": "https://schema.org",
       "@id": "kg://node/issue-162/scope",
       "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        }
+      ],
       "name": "Scope"
     },
     {
@@ -4128,6 +4285,12 @@
         },
         {
           "@id": "urn:file:package.json"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
+        },
+        {
+          "@id": "urn:file:structured-content/teamops.yaml"
         }
       ],
       "name": "Epic: kbexplorer-template adoption-readiness for gaming-microsoft/personalization"
@@ -4145,6 +4308,9 @@
         },
         {
           "@id": "urn:file:content"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
         },
         {
           "@id": "urn:issue:273"
@@ -4171,6 +4337,9 @@
         },
         {
           "@id": "urn:file:src/engine"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
         },
         {
           "@id": "urn:issue:273"
@@ -4211,6 +4380,9 @@
         },
         {
           "@id": "urn:file:content"
+        },
+        {
+          "@id": "urn:file:structured-content/teamops.yaml"
         },
         {
           "@id": "urn:issue:273"
@@ -4254,6 +4426,9 @@
         },
         {
           "@id": "urn:file:content"
+        },
+        {
+          "@id": "urn:file:structured-content/schema/edges.yaml"
         },
         {
           "@id": "urn:issue:273"
@@ -9189,6 +9364,17 @@
     },
     {
       "@context": "https://schema.org",
+      "@id": "kg://example.com/people/ada",
+      "@type": "person",
+      "isRelatedTo": [
+        {
+          "@id": "kg://node/repo-meta"
+        }
+      ],
+      "name": "Ada Lovelace"
+    },
+    {
+      "@context": "https://schema.org",
       "@id": "urn:content:overview",
       "@type": "Thing",
       "isRelatedTo": [
@@ -12342,6 +12528,9 @@
         },
         {
           "@id": "urn:file:src"
+        },
+        {
+          "@id": "urn:file:structured-content"
         }
       ],
       "name": "kbexplorer"

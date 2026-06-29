@@ -1,5 +1,5 @@
 {
-  "configRaw": "title: \"Test KB\"\nclusters: {}",
+  "configRaw": "title: \"Test KB\"\nstructuredContent:\n  path: structured-content\nclusters: {}",
   "themeFileRaw": null,
   "authoredContent": {
     "content/overview.md": "---\nid: overview\ntitle: Overview\ncluster: docs\n---\n# Overview\nHello.",
@@ -33,6 +33,52 @@
       "path": "content/wiki/setup.md",
       "type": "blob",
       "size": 66
+    },
+    {
+      "path": "structured-content",
+      "type": "tree"
+    },
+    {
+      "path": "structured-content/index",
+      "type": "tree"
+    },
+    {
+      "path": "structured-content/index/context.jsonld",
+      "type": "blob",
+      "size": 53
+    },
+    {
+      "path": "structured-content/people",
+      "type": "tree"
+    },
+    {
+      "path": "structured-content/people/ada.yaml",
+      "type": "blob",
+      "size": 46
+    },
+    {
+      "path": "structured-content/schema",
+      "type": "tree"
+    },
+    {
+      "path": "structured-content/schema/conventions.yaml",
+      "type": "blob",
+      "size": 93
+    },
+    {
+      "path": "structured-content/schema/edges.yaml",
+      "type": "blob",
+      "size": 39
+    },
+    {
+      "path": "structured-content/schema/lifecycle.yaml",
+      "type": "blob",
+      "size": 33
+    },
+    {
+      "path": "structured-content/teamops.yaml",
+      "type": "blob",
+      "size": 108
     },
     {
       "path": "package.json",
@@ -5399,6 +5445,16 @@
   "nodemapDirs": {},
   "structuredNodeMapRaw": null,
   "structuralFiles": {},
-  "contentModel": null,
+  "contentModel": {
+    "root": "structured-content",
+    "files": {
+      "teamops.yaml": "identity:\n  authority: example.com\n  defaultOrg: core\norgs:\n  - id: core\n    name: Core\n    default: true\n",
+      "index/context.jsonld": "{\"@context\":{\"person\":\"kg://example.com/people/\"}}\n",
+      "schema/conventions.yaml": "typeField: \"@type\"\nidField: id\nkinds:\n  person:\n    path: people\n    orgScoped: false\n",
+      "schema/edges.yaml": "edges: []\nderived: []\ndeprecated: []\n",
+      "schema/lifecycle.yaml": "bands:\n  durable:\n    - person\n",
+      "people/ada.yaml": "\"@type\": person\nid: ada\nname: Ada Lovelace\n"
+    }
+  },
   "generatedAt": "2026-06-27T02:50:27.748Z"
 }

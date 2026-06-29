@@ -17,22 +17,16 @@ Created: Jun 10, 2026 · Updated: Jun 10, 2026
 
 ## Expanded neighbors
 
-### What
+### Adopted model
 
-`kg://node/issue-147/what` · contains · weight 5.00
+`kg://node/issue-147/adopted-model` · contains · weight 5.00
 
-Replace kbexplorer-template's **closed, compile-time** node-type system — hardcoded `NodeSource` / `DisplayMode` / `EdgeType` unions, a `renderContent` switch, and bespoke per-source providers — with an **open, data-driven** one:
-
-- **JSON-LD node internals** (`@id` / `@type` / typed `data`) on `KBNode`.
-- A **node-type registry** that declares each type's discovery, mapping, cluster, layer, relations, and viewer in one place.
-- A **viewer registry keyed by `@type`** with a generic structured fallback (total coverage; bespoke viewers are additive).
-- **Schema-driven content-model ingestion** that builds the graph from entity files (the model documented in `content-model.md`).
-- **Repo-structural discovery**: `.github` workflows, Actions, and templates become nodes linked to the repository node.
+We adopt the proven three-layer model from `content-model.md`: **identity** (`teamops.yaml` → `kg://` URN authority/org) → **shape** (`schema/conventions.yaml`, `edges.yaml`, `lifecycle.yaml`, `entities/*.schema.json`, `index/context.jsonld`) → **content** (one file per entity). URN = JSON-LD `@id`; kind = `@type` (never inferred from path); `edges.yaml` is the relationship manifest; a 5-pass builder walks files → resolves edges → derives → clusters → stubs unresolved targets.
 
 ## Navigate — follow `kg://` links for more
 
+- [What](kg://node/issue-147/what) · contains · weight 5.00 · `node/issue-147/what`
 - [Why](kg://node/issue-147/why) · contains · weight 5.00 · `node/issue-147/why`
-- [Adopted model](kg://node/issue-147/adopted-model) · contains · weight 5.00 · `node/issue-147/adopted-model`
 - [Scope boundaries](kg://node/issue-147/scope-boundaries) · contains · weight 5.00 · `node/issue-147/scope-boundaries`
 - [Success definition](kg://node/issue-147/success-definition) · contains · weight 5.00 · `node/issue-147/success-definition`
 - [Children](kg://node/issue-147/children) · contains · weight 5.00 · `node/issue-147/children`
