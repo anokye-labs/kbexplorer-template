@@ -87,6 +87,18 @@ describe('golden: remote-mode KBGraph (hermetic, recorded fixtures)', () => {
     expect(serialized).toBe(golden);
   });
 
+  it('ingests configured structured content in remote mode', async () => {
+    const { loadRemoteKnowledgeBase } = await import('../../src/engine/remote-loader');
+    const { graph } = await loadRemoteKnowledgeBase(fixture.source, 'standard');
+    const structured = graph.nodes.filter(node => node.provider === 'content-model');
+    expect(structured.length).toBeGreaterThan(0);
+    expect(structured.some(node => node.source.type === 'structured')).toBe(true);
+    expect(structured.some(node =>
+      node.source.type === 'structured' &&
+      node.sourceFile?.path.startsWith('structured-content/'),
+    )).toBe(true);
+  });
+
   it('is hermetic: every network fetch is served from a recording', async () => {
     const fetchSpy = installWikipediaFetchMock();
     const { loadRemoteKnowledgeBase } = await import('../../src/engine/remote-loader');

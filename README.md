@@ -121,6 +121,9 @@ source:
   path: content          # omit for repo-aware mode
   branch: main
 
+structuredContent:
+  path: content-model    # optional; defaults to top-level content-model/
+
 clusters:
   concept:
     name: Concepts

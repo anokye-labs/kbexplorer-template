@@ -36,6 +36,11 @@ if (typeof m.configRaw === 'string') files[`${source.path}/config.yaml`] = m.con
 if (typeof m.structuredNodeMapRaw === 'string') files['node-map.yaml'] = m.structuredNodeMapRaw;
 for (const [path, content] of Object.entries(m.authoredContent ?? {})) files[path] = content;
 for (const [path, content] of Object.entries(m.structuralFiles ?? {})) files[path] = content;
+if (m.contentModel?.root && m.contentModel?.files) {
+  for (const [path, content] of Object.entries(m.contentModel.files)) {
+    files[`${m.contentModel.root}/${path}`] = content;
+  }
+}
 
 const fixture = {
   source,

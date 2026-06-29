@@ -1,6 +1,11 @@
 title: "kbexplorer"
 subtitle: "Interactive Knowledge Base Explorer"
 
+structuredContent:
+  # Repo-relative directory for schema-driven descriptors. Defaults to
+  # content-model/ when unset; host repos can point this at another path.
+  path: content-model
+
 theme:
   # Built-in modes are dark / light / sepia. Press `t` to cycle through every
   # mode below (built-ins first, then these named themes in order).
