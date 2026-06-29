@@ -11,6 +11,22 @@ import type { KBGraph } from '../types';
 import type { GraphLayoutMode } from '../representation/views';
 import { getEdgeStyle } from '../representation/styles';
 
+/**
+ * Fixed seed for vis-network's force-directed initial placement.
+ *
+ * forceAtlas2 stabilization is deterministic given fixed initial positions and
+ * a fixed iteration count, but vis-network seeds the *initial* random layout
+ * from a fresh RNG on every construction. Without a fixed `layout.randomSeed`
+ * the constellation therefore stabilizes to a different arrangement on every
+ * load — which (a) reshuffles the map on each visit and (b) makes the L5
+ * visual-regression captures non-reproducible run-to-run (graph surfaces drift
+ * 6-17% between two identical-OS, identical-code captures, so refreshed
+ * baselines could never go green). Pinning the seed makes both the rendered map
+ * and the captured baselines deterministic. Positions are computed live (never
+ * cached), so this needs no CACHE_VERSION bump.
+ */
+const LAYOUT_RANDOM_SEED = 1779;
+
 export interface GraphNetworkOptions {
   container: HTMLElement;
   graph: KBGraph;
@@ -416,7 +432,10 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
           shakeTowards: 'roots',
         },
       }
-    : undefined;
+    : // Force mode: pin the initial-placement RNG so the stabilized layout is
+      // deterministic across reloads and across CI captures (see
+      // LAYOUT_RANDOM_SEED).
+      { randomSeed: LAYOUT_RANDOM_SEED };
 
   const network = new Network(container, { nodes, edges }, {
     nodes: {
@@ -668,6 +687,9 @@ export function computeGraphPositions(
   const edges = new DataSet(edgeData);
 
   const net = new Network(tempDiv, { nodes, edges }, {
+    // Same fixed seed as the live force network so minimap positions are
+    // deterministic too (stable HUD minimap + reproducible captures).
+    layout: { randomSeed: LAYOUT_RANDOM_SEED },
     physics: {
       solver: 'forceAtlas2Based',
       forceAtlas2Based: {
