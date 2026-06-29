@@ -1,197 +1,226 @@
-# SUBSYSTEMS — current data flow (Phase 0 inventory)
+# SUBSYSTEMS — current data flow
 
-> **Status:** descriptive, not aspirational. This documents how the template
-> builds a `KBGraph` *today*, before the Phase 3 decoupling refactor. Its main
-> job is to **name every place post-processing happens outside a provider** so
-> Phase 3 has a complete inventory to migrate. Where the code has a known seam
-> or smell, it is called out as a **⚠︎ Phase 3 target**.
+> **Status:** descriptive of the codebase **after** the Epic #298 decoupling
+> (Phases 0–6, all merged). It documents the stabilized **four-layer pipeline**
+> — **Sources → Providers → Engine (pure `KBGraph`) → Representation** — backed
+> by the shared `@anokye-labs/kbexplorer-core` contracts package. For the
+> historical Phase-0 inventory (the two "fat loaders" and out-of-provider
+> post-processing this refactor removed), see the file history of this doc.
 
 ## Pipeline at a glance
 
 ```
-                 ┌──────────────────────────────────────────────┐
-   source data   │  loader  (local-loader.ts | remote-loader.ts) │
-  (manifest /    │   • resolve config                            │
-   GitHub API)   │   • construct + register providers            │
-                 │   • collectProviderNodes(registry, config)    │ ← orchestrator
-                 │   • POST-PROCESSING (outside providers) ⚠︎     │
-                 │   • extractClusters(allNodes, config)         │ ← parser
-                 │   • buildGraph(allNodes, clusters)            │ ← graph engine
-                 └───────────────────────┬──────────────────────┘
-                                         │  KBGraph { nodes, edges, clusters, related }
-                                         ▼
-                                  views / representations
-                       (vis-network SPA · per-node viewers · JSON-LD)
+   system of record            ┌──────────────── ENGINE ────────────────┐
+   (manifest / GitHub API)      │  loadKnowledgeBase(source, config)      │
+        │                       │   • source.getRepoData()  → RepoData    │
+        ▼                       │   • registerProviders(registry, data)   │
+  ┌───────────────┐  RepoData   │   • + external providers (config.providers)
+  │    SOURCE      │ ──────────▶ │   • orchestrateWithTransforms(...)      │
+  │ Manifest /     │            │       – collectProviderNodes (ordered)  │
+  │ GitHubApi      │            │       – applyTransforms (ordered stage)  │
+  │ (RepoSource)   │            │       – extractClusters                  │
+  └───────────────┘            │       – buildGraph  → KBGraph            │
+                                └───────────────────┬─────────────────────┘
+                                                    │  pure KBGraph
+                                                    ▼
+                                       ┌──────── REPRESENTATION ────────┐
+                                       │  RepresentationRegistry         │
+                                       │   spa · json-ld · llm-context   │
+                                       └─────────────────────────────────┘
 ```
 
-Two entry points, one shared shape:
+Both runtime entry points are now **thin wrappers** over the single engine
+entrypoint; they differ only in which `Source` they construct:
 
-| Mode | Entry point | Source of data |
-|------|-------------|----------------|
-| local (`VITE_KB_LOCAL=true`) | `loadLocalKnowledgeBase()` → `loadLocalKnowledgeBaseV2()` in `src/engine/local-loader.ts` | pre-built `src/generated/repo-manifest.json` |
-| remote (default) | `loadRemoteKnowledgeBase()` in `src/engine/remote-loader.ts` | live GitHub API via `src/api` |
+| Mode | Entry point | Source |
+|------|-------------|--------|
+| local (`VITE_KB_LOCAL=true`) | `loadLocalKnowledgeBase()` in `src/engine/local-loader.ts` | `ManifestSource` over the pre-built `src/generated/repo-manifest.json` |
+| remote (default) | `loadRemoteKnowledgeBase()` in `src/engine/remote-loader.ts` | `GitHubApiSource` over the live GitHub API |
 
-Both converge on the **same** orchestrator → post-processing → `buildGraph`
-sequence, and both emit the identical `KBGraph` interface (`src/types/index.ts`).
+Both call `loadKnowledgeBase(source, config)` (`src/engine/loader.ts`) and emit
+the identical `KBGraph` shape (re-exported from core via `src/types/index.ts`).
 
-## Layers
+## Shared contracts — `@anokye-labs/kbexplorer-core` (Phase 1)
 
-### 1. Loaders — `src/engine/local-loader.ts`, `src/engine/remote-loader.ts`
+The pure cross-layer contracts live in the separate package and are re-exported
+from `src/types/index.ts` for back-compat:
 
-Responsibilities today (per loader, **duplicated**):
+- graph + config: `KBNode`, `KBEdge`, `KBGraph`, `KBConfig`, identity/URN helpers,
+  relation taxonomy, JSON-LD helpers (`buildJsonLd`);
+- the layer interfaces: `Source` / `Resource` / `Affordance` / `Link`,
+  `GraphProvider`, `Representation`.
 
-1. Resolve `KBConfig` (`loadLocalConfig()` / `config` off the fetched data).
-2. Construct providers from source-shaped data and `registry.register(...)` them.
-3. Call `collectProviderNodes(registry, config)`.
-4. **Run post-processing transforms that are not in any provider** (see §6).
-5. `extractClusters(allNodes, config)` then `buildGraph(allNodes, clusters)`.
+> **Two URN schemes — don't conflate them.** Engine **node identity** is a `urn:*`
+> URN (e.g. `urn:file:<path>`), minted by `assignIdentity` (`src/engine/identity.ts`).
+> The navigable **`kg://`** scheme is a *representation* concern — the inter-node
+> hyperlinks the `json-ld` / `llm-context` targets emit (e.g. `kg://node/<id>`).
 
-⚠︎ **Phase 3 target:** steps 2 and 4 are ~150 lines that are near-identical
-between the two loaders. The provider wiring differs only in *where the bytes
-come from* (manifest vs API); the post-processing in step 4 is copy-pasted. This
-is the single biggest source of drift between local and remote output.
+`src/types/index.ts` imports **nothing from the engine at load** — enforced by
+`src/types/__tests__/no-engine-import.test.ts` (Phase 2) — so the data types can
+be consumed as pure data by every representation target.
 
-### 2. Provider registry + orchestrator — `src/engine/providers.ts`, `src/engine/orchestrator.ts`
+## Layer 1 — Sources — `src/engine/sources/**`
 
-- `ProviderRegistry` holds providers and exposes `getExecutionOrder()`
-  (dependency-ordered via each provider's `dependencies: string[]`).
-- `collectProviderNodes(registry, config)` runs providers **in order**, passing
-  the **accumulated `allNodes`** to each `provider.resolve(config, existingNodes)`
-  so later providers can read/augment earlier output. Each provider returns
-  `{ nodes, edges }`; the orchestrator currently collects **nodes only** here
-  (edges are recomputed in `buildGraph` from `node.connections` + `parent`).
-- `orchestrate()` is the all-in-one variant (collect → clusters → buildGraph);
-  the loaders deliberately use `collectProviderNodes` instead so they can splice
-  in post-processing before `buildGraph`.
+A **`RepoSource`** (`src/engine/sources/repo-data.ts`) both implements the pure
+`Source` contract from core and exposes the engine-facing
+`getRepoData(): Promise<RepoData>`. `RepoData` is the normalized superset both
+acquisition paths produce, so the loader wires providers once.
 
-### 3. Providers — `src/engine/providers/*`
+| Source | File | Affordances |
+|--------|------|-------------|
+| `ManifestSource` | `src/engine/sources/manifest-source.ts` | every resource `['read']` only — a frozen snapshot has no staging area |
+| `GitHubApiSource` | `src/engine/sources/github-api-source.ts` | composite **Git ≠ GitHub** families; **per-retrieval** affordances |
 
-Each implements `GraphProvider { id, name, dependencies, resolve() }`.
+**Per-retrieval situational affordances (§4A).** A source declares a *possible*
+universe (`possibleAffordances`), but each retrieved `Resource` carries the
+affordances allowed *now* plus hypermedia `links`. The same git file comes back
+`['read']` from a plain read and `['read','write','stage']` against a writable
+worktree; once staged it additionally carries a first-class
+`{ rel: STAGING_AREA_REL, href }` link to the retrievable staging area. **Git ≠
+GitHub:** `GitHubApiSource` exposes Git resources (`file`/`tree`/`commit`/
+`staging-area`, addressed `git://`) separately from GitHub resources
+(`issue`/`pull-request`/`release`, addressed `github://`); PR `merge`/`comment`
+never leak onto git resources. Contract tests: `src/engine/__tests__/sources.test.ts`.
 
-| Provider | Emits | Identity assigned |
-|----------|-------|-------------------|
-| `FilesProvider` | directory/`tree` nodes | `urn:file:<path>` |
-| `AuthoredProvider` | authored markdown nodes (+ node-map) | `urn:content:<id>` |
-| `WorkProvider` | issues, PRs, commits, releases, repo-root | `urn:issue:…` etc. |
-| `PersonProvider` | people derived from GitHub activity | `urn:person:<login>` |
-| `StructuralProvider` | repository node from `.github/**` | (structural) |
-| `ContentModelProvider` | content-model spine (no-op if absent) | — |
-| external (`WikipediaProvider`, `OrgChartProvider`, …) | reference nodes | provider-scoped |
+## Layer 2 — Providers — `src/engine/providers/**`, `src/engine/providers.ts`
 
-External providers are loaded from `config.providers` via
-`loadExternalProviders()` in `src/engine/plugin-loader.ts`.
+Each provider implements `GraphProvider { id, name, dependencies?, resolve() }`
+and returns `{ nodes, edges }`. `ProviderRegistry` (`src/engine/providers.ts`)
+topologically sorts by each provider's `dependencies`, so a provider can read
+earlier providers' output via `existingNodes`.
 
-⚠︎ **Phase 3 / Phase 5 target:** `plugin-loader.ts` hardcodes a `switch` over
-known `type`s and warns *"Custom provider type not yet supported"* for anything
-else — 3rd-party/local-ESM providers cannot actually load yet.
+Built-ins wired by `registerProviders()` (`src/engine/loader.ts`), conditional on
+what the `RepoData` bundle actually carries (absent inputs → safe no-op):
 
-### 4. Identity — `src/engine/identity.ts`
+| Provider | Emits |
+|----------|-------|
+| `FilesProvider` | directory / `tree` nodes (`urn:file:<path>`) |
+| `AuthoredProvider` | authored-markdown nodes (+ node-map) |
+| `WorkProvider` | issues, PRs, commits, releases, repo-root |
+| `PersonProvider` | people derived from GitHub activity |
+| `StructuralProvider` | repository node from `.github/**` |
+| `ContentModelProvider` | content-model spine (no-op if absent) |
 
-- `assignIdentity(node)` derives a canonical `urn:` from `node.source`. It is
-  **not** a separate pipeline pass: providers (and `parser.ts`) call it as they
-  mint nodes. The README post-processing block hand-sets
-  `identity: 'urn:content:readme'` inline.
-- `buildIdentityIndex(nodes)` maps `identity → [nodeId, …]` for the **view**
-  layer to merge representations that share an identity. There is **no
-  identity-based node merge during graph construction today** — the "merge" is a
-  read-time concern in views, not a build-time dedupe.
+**Pluggable providers (Phase 5).** External providers declared under
+`config.providers` are loaded by `src/engine/plugin-loader.ts`:
 
-⚠︎ **Phase 3 note:** the "identity-merge" stage named in the plan does not exist
-as a build step yet; today identity is (a) assigned per-node at creation and
-(b) indexed for views. Phase 3 should decide whether merge becomes a real pass.
+- **local ES module (F5a)** — a relative `module: ./...` specifier is dynamic
+  imported and its `defineProvider()` default export instantiated. No core/engine
+  change required.
+- **3rd-party npm (F5b)** — a **bare** specifier (`pkg`, `@scope/pkg`,
+  `pkg/subpath`) resolves from `node_modules`; absolute/URL specifiers are
+  **rejected** (no remote code execution). Third-party modules are guarded by
+  `checkProviderCompatibility()` (provider-API version + declared capabilities)
+  and **skipped with a clear reason** if incompatible, never crashing the build.
 
-### 5. Graph engine — `src/engine/graph.ts` (`buildGraph`) + clustering in `src/engine/parser.ts`
+The built-in `WikipediaProvider` / `OrgChartProvider` remain resolvable by `type`.
+Examples: `src/engine/providers/examples/glossary-provider.ts` (local),
+`examples/quotes-provider/` (npm). Author guide: [`providers.md`](./providers.md).
+
+## Layer 3 — Engine — `src/engine/loader.ts`, `orchestrator.ts`, `transforms.ts`, `graph.ts`
+
+`loadKnowledgeBase(source, config)` is the single assembly path:
+
+1. `source.getRepoData()` → `RepoData`.
+2. `registerProviders(registry, data)` + external providers from `config.providers`.
+3. `orchestrateWithTransforms(registry, config, { readme })`:
+   - **collect** — `collectProviderNodes` runs providers in dependency order,
+     threading the accumulated `allNodes` into each `resolve`;
+   - **transform** — `applyTransforms` runs the ordered post-provider stage
+     (below);
+   - **cluster** — `extractClusters` (`src/engine/parser.ts`);
+   - **build** — `buildGraph` (`src/engine/graph.ts`).
+
+### Ordered transform stage — `src/engine/transforms.ts` (Phase 3)
+
+The ~150 lines of post-processing that used to be **duplicated inline in both
+loaders** are now discrete, ordered `GraphTransform`s run by the orchestrator.
+`DEFAULT_TRANSFORMS` (order is significant):
+
+1. `readmeTransform` — synthesize the README node and cross-link it to issues
+   (explicit refs, ≥60% fuzzy title match, directory mentions, inline markdown
+   links) + a forced `→ repo-root` edge.
+2. `issueDirectoryLinkTransform` — link each issue to directories its body
+   references (runs **before** the split so links stay on the original node).
+3. `issueSplitTransform` — split any issue with 2+ headings into parent +
+   per-section nodes.
+
+Loaders carry **no** post-processing; they only build the `TransformContext`
+(the source README) and hand it to the orchestrator.
+
+### Graph engine — `src/engine/graph.ts`
 
 `buildGraph(nodes, clusters)`:
 
-1. `buildEdges` — turns each `node.connections[]` into deduped `KBEdge`s (keyed
-   by unordered pair) and adds `parent → child` `contains` edges. Edge weight
-   comes from `conn.weight ?? getEdgeWeight(type)`.
-2. **Orphan reattachment** — any node touched by no edge is linked to a
-   connected same-cluster sibling, else the highest-degree **hub** node, with an
-   inferred `related` edge.
+1. `buildEdges` — each `node.connections[]` → deduped `KBEdge` (keyed by
+   unordered pair) + `parent → child` `contains` edges; weight from
+   `conn.weight ?? getEdgeWeight(type)`.
+2. **Orphan reattachment** — any edge-less node links to a connected same-cluster
+   sibling, else the highest-degree hub, via an inferred `related` edge.
 3. `computeRelated` — per node, ranks neighbors by max edge weight (tie-break:
-   neighbor degree) and keeps the top **12** → `related: Record<id, id[]>`.
+   degree), keeps the top **12** → `related: Record<id, id[]>`.
 
-Result: `KBGraph { nodes, edges, clusters, related }` (`src/types/index.ts`).
+Result: pure `KBGraph { nodes, edges, clusters, related }`.
 
-⚠︎ **Phase 3 note:** orphan reattachment and the README/auto-link transforms
-(§6) are the things that make output sensitive to node-set changes; they belong
-behind explicit, testable seams.
+### Identity — `src/engine/identity.ts`
 
-### 6. ⚠︎ Post-processing OUTSIDE any provider (the Phase 3 migration list)
+`assignIdentity(node)` derives a canonical `urn:` from `node.source`; providers
+and the transform stage call it as they mint nodes. `buildIdentityIndex(nodes)`
+maps `identity → [nodeId…]` for the **view** layer to merge representations that
+share an identity (a read-time concern, not a build-time dedupe).
 
-These run in **both** loaders, after `collectProviderNodes` and before
-`buildGraph`. They are the explicit inventory Phase 3 must relocate into
-providers/transforms. Code: `local-loader.ts` ~L410–499, `remote-loader.ts`
-~L232–314 (near-identical).
+## Layer 4 — Representation — `src/representation/**` (Phases 2 & 6)
 
-1. **README node creation + cross-linking.** Builds a synthetic `id: 'readme'`
-   node and computes its `connections` by:
-   - explicit issue refs (`extractIssueRefs`) → `issue-<n>`;
-   - **fuzzy title match** — issue linked if ≥60% of its >3-char title words
-     appear in the README text (`Mentions`);
-   - directory mentions (`dir/` or `` `dir` ``);
-   - a forced `→ repo-root` (`Documents`) edge;
-   - inline markdown links `[text](target)` to in-graph node ids.
-   Then renders `content` HTML via `marked`.
-2. **Issue → directory auto-linking.** For every issue node, scans `rawContent`
-   for each directory name (`dir/`, `` `dir` ``, or case-insensitive substring)
-   and pushes a `References dir/` connection. ⚠︎ substring matching is noisy.
-3. **Issue splitting into sections.** `splitIntoSections(...)` (from
-   `parser.ts`) expands any issue with 2+ headings into a parent + per-section
-   nodes; the original issue node is spliced **out** of `allNodes` and the
-   section nodes pushed in. Runs *after* auto-linking so connections stay on the
-   original node before the split.
+A `Representation` takes the **pure** `KBGraph` (+ options) and produces an
+output artifact. `RepresentationRegistry` (`src/representation/registry.ts`) maps
+a target name to its implementation; `representationRegistry`
+(`src/representation/targets/index.ts`) is pre-populated with the built-ins:
 
-Other notable transforms that live in providers but behave like post-processing:
-- `PersonProvider` mutates an existing descriptor node's `data`/`connections`
-  in place (active-work enrichment) rather than only emitting new nodes.
+| Target | File | Output |
+|--------|------|--------|
+| `spa` | `src/representation/targets/spa.tsx` | the interactive explorer website (React route tree) |
+| `json-ld` | `src/representation/targets/json-ld.ts` | deterministic, canonicalized JSON-LD `@graph` |
+| `llm-context` | `src/representation/targets/llm-context.ts` | **neighbor-anchored**, token-budgeted Markdown pack |
 
-### 7. Views / representations — `src/views/**`, `src/types` (`jsonld`)
+`json-ld` and `llm-context` consume only the pure graph and **never import the
+engine/loader** — enforced statically by
+`src/representation/targets/__tests__/no-engine-import.test.ts`. `llm-context` is
+always anchored on one or more nodes and emits navigable `kg://` hypermedia links
+for relevant-but-unexpanded neighbors — it **never** serializes the whole graph.
 
-The `KBGraph` is consumed by:
-- the **vis-network SPA** (force-directed canvas + HUD minimap; positions via
-  `computeGraphPositions`);
-- **per-node viewers** selected by `src/views/viewers/registry.ts` (typed views
-  like `PersonView`, `SquadView`, `DecisionView`, …);
-- **JSON-LD** carried on `node.jsonld` (contract in
-  `src/types/__tests__/jsonld-contract.test.ts`).
-
-⚠︎ representation styling (edge colors, `BUILT_IN_VIEWS`) is still mixed into
-`src/types/index.ts`, so the graph cannot yet be consumed as pure data — a
-Phase 2/Phase 6 target. There is **no `llm-context` target yet** (Phase 6).
+Representation **styling** also lives in this layer (moved out of the core data
+types in Phase 2): `EDGE_TYPE_STYLES` / `RELATION_STYLES` / `NODE_LAYER_META`
+(`src/representation/styles.ts`) and `BUILT_IN_VIEWS` (`src/representation/views.ts`).
 
 ## Write path (affordances) — `src/engine/source-edit.ts`
 
-Read is the default flow above. Edits today go through `source-edit.ts`
+Read is the default flow above. Edits go through `source-edit.ts`
 (`canEditSource`, `buildEditUrl`, `buildHandoffUrl`, `buildUnifiedDiff`, …),
 which is GitHub-web/handoff oriented. The first-class **staging-area** resource
-and per-retrieval **affordances/links** described in the plan do **not** exist
-yet (Phase 4).
+and per-retrieval **affordances/links** now exist on the `Source` surface
+(`GitHubApiSource`, §4A) as the formal model; mutation beyond the contract is
+intentionally minimal/read-first.
 
-## Determinism & the golden guardrail (this phase)
+## Determinism & the golden guardrail
 
-`buildGraph` is deterministic for a fixed node set, but JSON key/element order is
-not guaranteed. `tests/golden/serialize.ts` canonicalizes (sorted object keys;
-nodes by `id`; edges by `(from,to,type,relation)`; clusters by `id`; `related`
-keys sorted, value arrays keep ranked order) so two builds serialize to
-identical bytes.
-
-Both golden tests are **hermetic** — they never touch the gitignored,
-environment-generated `src/generated/repo-manifest.json`. Instead a snapshot of
-it is committed at `tests/golden/fixtures/manifest.json` and is the single source
-of truth for both fixtures. The local test drives the loader's extracted pure
-builder `buildKnowledgeBaseFromManifest(manifest, config)` (in `local-loader.ts`)
-with that fixture; `build-remote-fixture.mjs` reshapes the same fixture into
-`fixtures/remote-api.json` for the remote test.
+`buildGraph` is deterministic for a fixed node set; `tests/golden/serialize.ts`
+canonicalizes (sorted object keys; nodes by `id`; edges by
+`(from,to,type,relation)`; clusters by `id`; ranked `related`) so two builds
+serialize to identical bytes. Both graph golden tests are **hermetic** — they
+read the committed `tests/golden/fixtures/manifest.json` snapshot, never the
+gitignored generated manifest.
 
 Golden tests (run by `npm test`, regenerate with `npm run golden:update`):
+
 - `tests/golden/local-graph.test.ts` — local build from `fixtures/manifest.json`
   vs `local-graph.golden.json`.
-- `tests/golden/remote-graph.test.ts` — remote build against **recorded**
-  fixtures (`fixtures/remote-api.json` + `fixtures/wikipedia.json`), hermetic
-  (no network), vs `remote-graph.golden.json`.
+- `tests/golden/remote-graph.test.ts` — remote build against recorded fixtures,
+  hermetic (no network), vs `remote-graph.golden.json`.
+- `tests/golden/local-jsonld.test.ts` — the `json-ld` representation vs
+  `local-jsonld.golden.json`.
+- `tests/golden/local-llm-context.test.ts` — the `llm-context` representation vs
+  `local-llm-context.golden.md`.
 
-Any change to the flow above must regenerate the goldens, making the diff
-reviewable — which is exactly the guardrail the Phase 3 refactor needs.
+Every phase of the decoupling kept these byte-identical until a seam was
+intentionally flipped; any change to the flow above must regenerate the goldens
+so the diff is reviewable.

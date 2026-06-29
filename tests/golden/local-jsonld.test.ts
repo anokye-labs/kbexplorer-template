@@ -18,7 +18,7 @@ import {
 } from '../../src/engine/local-loader';
 import { serializeGraphJsonLd } from '../../src/representation/targets/json-ld';
 import { installWikipediaFetchMock } from './wikipedia-mock';
-import { readGolden } from './golden';
+import { normalizeGoldenText } from './serialize';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const GOLDEN = join(here, 'local-jsonld.golden.json');
@@ -43,7 +43,7 @@ describe('golden: local-mode json-ld representation (F6 #336)', () => {
     const { graph } = await buildLocalGraph();
     const serialized = serializeGraphJsonLd(graph);
     if (UPDATE) writeFileSync(GOLDEN, serialized);
-    expect(serialized).toBe(readGolden(GOLDEN));
+    expect(serialized).toBe(normalizeGoldenText(readFileSync(GOLDEN, 'utf8')));
   });
 
   it('is deterministic: two builds produce identical bytes', async () => {

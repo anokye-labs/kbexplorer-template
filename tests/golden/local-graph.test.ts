@@ -22,9 +22,8 @@ import {
   buildKnowledgeBaseFromManifest,
   type RepoManifest,
 } from '../../src/engine/local-loader';
-import { serializeGraph } from './serialize';
+import { normalizeGoldenText, serializeGraph } from './serialize';
 import { installWikipediaFetchMock } from './wikipedia-mock';
-import { readGolden } from './golden';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const GOLDEN = join(here, 'local-graph.golden.json');
@@ -55,7 +54,7 @@ describe('golden: local-mode KBGraph', () => {
     if (UPDATE) {
       writeFileSync(GOLDEN, serialized);
     }
-    const golden = readGolden(GOLDEN);
+    const golden = normalizeGoldenText(readFileSync(GOLDEN, 'utf8'));
     expect(serialized).toBe(golden);
   });
 
