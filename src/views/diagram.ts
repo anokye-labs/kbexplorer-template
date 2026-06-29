@@ -1,6 +1,6 @@
 export type DiagramRenderPlan =
   | { kind: 'mermaid'; source: string; language: 'mermaid' }
-  | { kind: 'unsupported'; source: string; language: string; reason: string };
+  | { kind: 'unsupported'; source: string; language?: string; reason: string };
 
 const MERMAID_LANGUAGES = new Set(['mermaid', 'mmd']);
 const DIAGRAM_LANGUAGES = new Set([
@@ -111,11 +111,14 @@ export function getDiagramRenderPlan(
     return { kind: 'mermaid', source, language: 'mermaid' };
   }
 
-  const fallbackLanguage = language ?? 'diagram';
+  const fallbackLanguage = language;
+  const reason = fallbackLanguage && fallbackLanguage !== 'diagram'
+    ? `Unsupported diagram language "${fallbackLanguage}". Supported diagram blocks currently render Mermaid.`
+    : 'Unsupported diagram content. Supported diagram blocks currently render Mermaid.';
   return {
     kind: 'unsupported',
     source,
     language: fallbackLanguage,
-    reason: `Unsupported diagram language "${fallbackLanguage}". Supported diagram blocks currently render Mermaid.`,
+    reason,
   };
 }

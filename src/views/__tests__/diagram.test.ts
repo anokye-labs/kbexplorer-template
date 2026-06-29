@@ -40,6 +40,15 @@ describe('diagram rendering helpers', () => {
     expect(plan.reason).toContain('Unsupported diagram language "plantuml"');
   });
 
+  it('uses a generic fallback message when no language is known', () => {
+    const plan = getDiagramRenderPlan('A -> B');
+
+    expect(plan.kind).toBe('unsupported');
+    if (plan.kind !== 'unsupported') throw new Error('Expected unsupported diagram plan');
+    expect(plan.language).toBeUndefined();
+    expect(plan.reason).toBe('Unsupported diagram content. Supported diagram blocks currently render Mermaid.');
+  });
+
   it('recognizes diagram language classes without treating ordinary code as diagrams', () => {
     expect(diagramLanguageFromClassName('language-mermaid')).toBe('mermaid');
     expect(diagramLanguageFromClassName('hljs language-plantuml')).toBe('plantuml');

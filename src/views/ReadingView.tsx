@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import {
   makeStyles,
@@ -166,8 +166,10 @@ const useStyles = makeStyles({
 /* ── Display-mode helper components ─────────────────────────── */
 
 type MermaidApi = typeof import('mermaid').default;
+type MermaidTheme = 'dark' | 'default';
 
 let mermaidImport: Promise<MermaidApi> | null = null;
+let initializedMermaidTheme: MermaidTheme | null = null;
 let mermaidRenderSequence = 0;
 
 function nextMermaidRenderId(): string {
@@ -176,13 +178,17 @@ function nextMermaidRenderId(): string {
 }
 
 async function loadMermaid(isDark: boolean): Promise<MermaidApi> {
+  const theme: MermaidTheme = isDark ? 'dark' : 'default';
   mermaidImport ??= import('mermaid').then(mod => mod.default);
   const mermaid = await mermaidImport;
-  mermaid.initialize({
-    startOnLoad: false,
-    securityLevel: 'strict',
-    theme: isDark ? 'dark' : 'default',
-  });
+  if (initializedMermaidTheme !== theme) {
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme,
+    });
+    initializedMermaidTheme = theme;
+  }
   return mermaid;
 }
 
@@ -195,6 +201,20 @@ function diagramErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
   return 'Unknown Mermaid render error.';
+}
+
+function parseMermaidSvg(svg: string): SVGSVGElement {
+  const doc = new DOMParser().parseFromString(svg, 'image/svg+xml');
+  const parserError = doc.querySelector('parsererror');
+  const svgElement = doc.documentElement;
+  if (parserError || svgElement.nodeName.toLowerCase() !== 'svg') {
+    throw new Error('Mermaid returned invalid SVG.');
+  }
+  const imported = document.importNode(svgElement, true);
+  if (!(imported instanceof SVGSVGElement)) {
+    throw new Error('Mermaid returned invalid SVG.');
+  }
+  return imported;
 }
 
 function DiagramFallback({
@@ -233,8 +253,9 @@ function MermaidDiagram({ source, isDark }: { source: string; isDark: boolean })
     void (async () => {
       try {
         const { svg, bindFunctions } = await renderMermaid(source, isDark);
+        const svgElement = parseMermaidSvg(svg);
         if (cancelled) return;
-        canvas.innerHTML = svg;
+        canvas.replaceChildren(svgElement);
         bindFunctions?.(canvas);
         setStatus('rendered');
       } catch (err) {
@@ -278,14 +299,14 @@ function createDiagramMessage(message: string, severity: 'error' | 'warning'): H
   return el;
 }
 
-function wrapRenderedProseDiagram(pre: HTMLPreElement, svg: string, bindFunctions?: (element: Element) => void) {
+function wrapRenderedProseDiagram(pre: HTMLPreElement, svgElement: SVGSVGElement, bindFunctions?: (element: Element) => void) {
   const figure = document.createElement('figure');
   figure.className = 'kb-diagram kb-diagram--prose';
   figure.dataset.diagramLanguage = 'mermaid';
 
   const canvas = document.createElement('div');
   canvas.className = 'kb-diagram-canvas';
-  canvas.innerHTML = svg;
+  canvas.replaceChildren(svgElement);
   figure.append(canvas);
   bindFunctions?.(canvas);
 
@@ -311,7 +332,7 @@ function ProseContent({
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = rootRef.current;
     if (!root) return;
 
@@ -337,8 +358,9 @@ function ProseContent({
 
         try {
           const { svg, bindFunctions } = await renderMermaid(plan.source, isDark);
+          const svgElement = parseMermaidSvg(svg);
           if (cancelled) return;
-          wrapRenderedProseDiagram(pre, svg, bindFunctions);
+          wrapRenderedProseDiagram(pre, svgElement, bindFunctions);
         } catch (err) {
           if (cancelled) return;
           pre.before(createDiagramMessage(`Mermaid render failed: ${diagramErrorMessage(err)}`, 'error'));
