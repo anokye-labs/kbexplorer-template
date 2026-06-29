@@ -221,6 +221,7 @@ function normalizeRepoRelativeDir(raw) {
   value = value.replace(/\/+$/g, '');
   if (
     !value ||
+    /^[a-zA-Z]:\//.test(value) ||
     isAbsolute(value) ||
     value.startsWith('/') ||
     value.includes('://') ||

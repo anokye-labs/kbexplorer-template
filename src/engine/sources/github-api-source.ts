@@ -39,7 +39,7 @@ import type { GHIssue, GHTreeItem, GHCommit, GHRelease } from '../../api';
 import { loadConfig } from '../../engine';
 import { applyExternalThemeFile } from '../../theme/externalTheme';
 import type { ContentModelSource } from '../content-model';
-import { resolveStructuredContentPath } from '../structured-content';
+import { hasExplicitStructuredContentPath, resolveStructuredContentPath } from '../structured-content';
 import type { RepoData, RepoSource } from './repo-data';
 
 export type ResolutionPreset = 'summary' | 'standard' | 'full';
@@ -340,13 +340,19 @@ export class GitHubApiSource implements RepoSource {
 
   private async fetchContentModel(config: KBConfig): Promise<ContentModelSource | null> {
     const root = resolveStructuredContentPath(config);
+    const explicitPath = hasExplicitStructuredContentPath(config);
     try {
       const contentModelTree = await fetchTree(this.source, root);
       const paths = contentModelTree
         .filter(item => item.type === 'blob')
         .map(item => item.path)
         .filter(path => !path.slice(root.length + 1).split('/').some(segment => segment.startsWith('.')));
-      if (paths.length === 0) return null;
+      if (paths.length === 0) {
+        if (explicitPath) {
+          console.warn(`[github-api-source] No structured content files found at configured path ${root}`);
+        }
+        return null;
+      }
 
       const files = await fetchFiles(this.source, paths);
       const sourceFiles: Record<string, string> = {};
@@ -355,7 +361,14 @@ export class GitHubApiSource implements RepoSource {
         sourceFiles[relativePath] = content;
       }
 
-      return Object.keys(sourceFiles).length > 0 ? { root, files: sourceFiles } : null;
+      if (Object.keys(sourceFiles).length === 0) {
+        if (explicitPath) {
+          console.warn(`[github-api-source] Structured content path ${root} was listed but no files could be fetched`);
+        }
+        return null;
+      }
+
+      return { root, files: sourceFiles };
     } catch (error) {
       console.warn(`[github-api-source] Failed to fetch structured content from ${root}:`, error);
       return null;

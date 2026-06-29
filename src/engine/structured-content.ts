@@ -45,3 +45,15 @@ export function resolveStructuredContentPath(
   const normalizedConfig = normalizeRepoRelativeDir(configured);
   return normalizedConfig ?? DEFAULT_STRUCTURED_CONTENT_PATH;
 }
+
+export function hasExplicitStructuredContentPath(
+  config: KBConfig,
+  env: EnvLike = import.meta.env,
+): boolean {
+  const envValue = env.VITE_KB_STRUCTURED_CONTENT_PATH ?? env.VITE_KB_CONTENT_MODEL_PATH;
+  if (normalizeRepoRelativeDir(envValue)) return true;
+
+  const cfg = config as StructuredContentAwareConfig;
+  const configured = cfg.structuredContent?.path ?? cfg.contentModel?.path;
+  return normalizeRepoRelativeDir(configured) !== null;
+}

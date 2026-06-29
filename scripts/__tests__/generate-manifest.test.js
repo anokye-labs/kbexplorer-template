@@ -162,7 +162,17 @@ describe('readContentModel (T2.4 / #163)', () => {
     expect(resolveStructuredContentPath(configRaw, {
       VITE_KB_STRUCTURED_CONTENT_PATH: 'ops/model',
     })).toBe('ops/model');
+    expect(resolveStructuredContentPath(configRaw, {
+      VITE_KB_CONTENT_MODEL_PATH: 'legacy/model',
+    })).toBe('legacy/model');
     expect(resolveStructuredContentPath('title: Test KB\n', {})).toBe('content-model');
+  });
+
+  it('rejects Windows absolute structured-content paths on every host', () => {
+    expect(resolveStructuredContentPath('structuredContent:\n  path: C:\\tmp\\model\n', {})).toBe('content-model');
+    expect(resolveStructuredContentPath('title: Test KB\n', {
+      VITE_KB_STRUCTURED_CONTENT_PATH: 'C:\\tmp\\model',
+    })).toBe('content-model');
   });
 
   it('returns null for an empty content-model directory', () => {
