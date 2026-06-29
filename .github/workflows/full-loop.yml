@@ -20,11 +20,6 @@ name: Full-loop scenario (layer 4)
 # documents for exactly this CI / non-standard-layout case.
 on:
   workflow_dispatch: {}
-  push:
-    # TEMP (pre-merge verification only — removed before merge): lets this
-    # branch-only workflow run in real CI, since workflow_dispatch resolves the
-    # definition from the default branch where this file does not yet exist.
-    branches: [hoopsomuah-ci-full-loop-nightly]
   schedule:
     # Nightly at 04:45 UTC. Offset from the other DTU jobs so they don't pile up:
     # dtu-gitea 04:30 · this 04:45 · visual-regression 05:15 · explore-dtu 06:00.
