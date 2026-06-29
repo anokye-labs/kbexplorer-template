@@ -1,0 +1,90 @@
+name: Full-loop scenario (layer 4)
+
+# Opt-in / scheduled ONLY. Deliberately NOT part of the fast PR gate.
+#
+# Runs the layer-4 full-loop deployment scenario on the *static* substrate
+# (FULL_LOOP_SUBSTRATE=static, the default): an actor mutates an in-process
+# mutable GitHub twin, the kbexplorer CLI regenerates the manifest from that twin
+# (KBEXPLORER_GH_API_BASE), the app serves the freshly generated manifest in
+# local mode, and the spec asserts the mutation renders in the graph.
+#
+# Unlike dtu-gitea.yml / explore-dtu.yml, the static substrate needs **no Podman
+# and no live Gitea** — so this is a lightweight Node + Playwright job. We
+# deliberately do NOT bring up Podman here: the live-Gitea (`gitea`) substrate is
+# out of scope for this nightly (see playwright.full-loop.config.ts and #269).
+#
+# The full-loop globalSetup (e2e/full-loop/global-setup.mts) runs the REAL CLI
+# from a sibling checkout of anokye-labs/kbexplorer-cli. actions/checkout cannot
+# place a repo outside $GITHUB_WORKSPACE, so we check the CLI out into a
+# subdirectory and point KBEXPLORER_CLI_PATH at it — the override the globalSetup
+# documents for exactly this CI / non-standard-layout case.
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Nightly at 04:45 UTC. Offset from the other DTU jobs so they don't pile up:
+    # dtu-gitea 04:30 · this 04:45 · visual-regression 05:15 · explore-dtu 06:00.
+    - cron: '45 4 * * *'
+
+concurrency:
+  group: full-loop-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  full-loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # The full-loop globalSetup resolves the CLI from KBEXPLORER_CLI_PATH first,
+      # falling back to the ../kbexplorer-cli sibling. actions/checkout cannot
+      # write outside $GITHUB_WORKSPACE, so we check the CLI out under the
+      # workspace and point the override at it.
+      KBEXPLORER_CLI_PATH: ${{ github.workspace }}/kbexplorer-cli
+    steps:
+      - name: Check out template (app under test)
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          # Pin the npm cache key to the template lockfile; the CLI checkout (added
+          # below) also ships a package-lock.json and we don't want it to muddy the key.
+          cache-dependency-path: package-lock.json
+
+      - name: Check out kbexplorer-cli (full-loop runs the real CLI)
+        uses: actions/checkout@v7
+        with:
+          repository: anokye-labs/kbexplorer-cli
+          path: kbexplorer-cli
+
+      - name: Install template dependencies
+        run: npm ci
+
+      - name: Install CLI dependencies
+        # globalSetup imports the CLI's src/lib/manifest.js directly. The CLI is
+        # currently dependency-free, so this is effectively a no-op today, but it
+        # keeps the nightly correct if the CLI ever grows runtime dependencies.
+        working-directory: kbexplorer-cli
+        run: npm ci
+
+      - name: Install Playwright (chromium + system deps)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run full-loop scenario (static substrate)
+        # static = no Podman/Gitea; the mutable twin lives in-process during
+        # globalSetup. CI=true (set by the runner) enables a single retry.
+        env:
+          FULL_LOOP_SUBSTRATE: static
+        run: npm run test:e2e:full-loop
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-full-loop
+          path: playwright-report-full-loop/
+          retention-days: 7
+          if-no-files-found: ignore
