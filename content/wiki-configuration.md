@@ -31,6 +31,15 @@ The [parser](parser)'s `extractClusters()` uses these. Auto-generated clusters r
 
 The [content pipeline](content-pipeline) supports two modes: **Authored** (markdown with frontmatter) and **Repo-aware** (live data from [GitHub API](github-api)). The [KB loader](kb-loader) routes between modes. See [Content Modes](wiki-content-modes).
 
+Structured descriptors are configured separately from authored markdown:
+
+```yaml
+structuredContent:
+  path: content-model
+```
+
+The path is repo-relative and defaults to top-level `content-model/`. Local manifest generation and remote/runtime loading both use this value.
+
 ## HUD Configuration
 
 The [HUD](hud) dock position and layer toggle states persist in localStorage. Minimap adapts to dock orientation.

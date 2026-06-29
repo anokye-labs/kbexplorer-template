@@ -73,8 +73,9 @@ export interface RepoManifest {
   structuralFiles?: Record<string, string>;
   /**
    * Optional content-model source (F2): schema files + entity files keyed by
-   * path relative to a `content-model/` root. Absent (null) in repos without a
-   * content model — the ContentModelProvider is then a safe no-op.
+   * path relative to `structuredContent.path` (default `content-model/`). Absent
+   * (null) in repos without a content model — the ContentModelProvider is then a
+   * safe no-op.
    */
   contentModel?: ContentModelSource | null;
   /**

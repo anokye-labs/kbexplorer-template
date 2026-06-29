@@ -21,7 +21,7 @@ export function isLocalMode(): boolean {
 
 ## The Manifest
 
-The [build scripts](build-scripts) generate `src/generated/repo-manifest.json` at build time. This `RepoManifest` interface captures everything the API would have returned: `configRaw`, `authoredContent` (path→markdown map), `tree` (GHTreeItem array), `readme`, `issues`, `pullRequests`, `commits`, plus `nodemapRaw` and `nodemapFiles` for the [node mapping](node-mapping) system. The manifest script ([#30](https://github.com/anokye-labs/kbexplorer-template/issues/30)) walks the file system and calls `gh` CLI for GitHub data.
+The [build scripts](build-scripts) generate `src/generated/repo-manifest.json` at build time. This `RepoManifest` interface captures everything the API would have returned: `configRaw`, `authoredContent` (path→markdown map), `tree` (GHTreeItem array), `readme`, `issues`, `pullRequests`, `commits`, `contentModel` from `structuredContent.path`, plus `nodemapRaw` and `nodemapFiles` for the [node mapping](node-mapping) system. The manifest script ([#30](https://github.com/anokye-labs/kbexplorer-template/issues/30)) walks the file system and calls `gh` CLI for GitHub data.
 
 ## Loading Pipeline
 
