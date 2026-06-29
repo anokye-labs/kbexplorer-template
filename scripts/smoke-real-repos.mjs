@@ -86,8 +86,9 @@ import { dirname, resolve } from 'node:path';
 import { writeFileSync } from 'node:fs';
 
 // ── Editable target list ───────────────────────────────────────────────────
-// `branch` defaults to the repo's default; set it explicitly when that is not
-// `main`. `path` opts a repo into authored-content ingestion. The `expect`
+// `branch` falls back to `'main'` (there is no default-branch discovery), so
+// set it explicitly for any repo whose default branch is not `main` (e.g.
+// `master`). `path` opts a repo into authored-content ingestion. The `expect`
 // flags gate the per-repo (non-universal) invariants — set a flag true only
 // when that family is STABLY present, so the assertion can't go flaky.
 const TARGET_REPOS = [
@@ -134,7 +135,10 @@ let stats = freshStats();
 /** Is this a secondary/abuse rate-limit response (403/429 asking us to wait)? */
 function isSecondaryRateLimit(res) {
   if (res.status === 429) return true;
-  if (res.status === 403 && (res.headers.get('Retry-After') || /secondary rate limit/i.test(res.headers.get('X-GitHub-Request-Id') || ''))) return true;
+  // GitHub signals a secondary/abuse limit with a 403 carrying a Retry-After
+  // hint. (We deliberately don't body-sniff: that needs res.clone() + async and
+  // the status/Retry-After signal is sufficient for a bounded retry.)
+  if (res.status === 403 && res.headers.get('Retry-After')) return true;
   return false;
 }
 /** Is this a primary rate-limit exhaustion (403 with remaining=0)? */
