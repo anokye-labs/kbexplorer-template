@@ -192,6 +192,11 @@
       "@context": "https://schema.org",
       "@id": "kg://node/branch-main",
       "@type": "Thing",
+      "isRelatedTo": [
+        {
+          "@id": "kg://node/repo-meta"
+        }
+      ],
       "name": "main"
     },
     {
@@ -714,10 +719,25 @@
           "@id": "kg://node/issue-147/why"
         },
         {
+          "@id": "kg://node/issue-149"
+        },
+        {
+          "@id": "kg://node/issue-150"
+        },
+        {
+          "@id": "kg://node/issue-152"
+        },
+        {
+          "@id": "kg://node/issue-153"
+        },
+        {
           "@id": "kg://node/issue-155"
         },
         {
           "@id": "kg://node/issue-167"
+        },
+        {
+          "@id": "kg://node/issue-179"
         },
         {
           "@id": "kg://node/issue-29"
@@ -823,6 +843,12 @@
           "@id": "kg://node/issue-148/why"
         },
         {
+          "@id": "kg://node/issue-154"
+        },
+        {
+          "@id": "kg://node/issue-155"
+        },
+        {
           "@id": "kg://node/issue-156"
         },
         {
@@ -918,6 +944,18 @@
         },
         {
           "@id": "kg://node/issue-149/why"
+        },
+        {
+          "@id": "kg://node/issue-161"
+        },
+        {
+          "@id": "kg://node/issue-163"
+        },
+        {
+          "@id": "kg://node/issue-164"
+        },
+        {
+          "@id": "kg://node/issue-179"
         },
         {
           "@id": "kg://node/issue-29"
@@ -1033,6 +1071,15 @@
           "@id": "kg://node/issue-150/why"
         },
         {
+          "@id": "kg://node/issue-166"
+        },
+        {
+          "@id": "kg://node/issue-167"
+        },
+        {
+          "@id": "kg://node/issue-168"
+        },
+        {
           "@id": "kg://node/issue-41"
         },
         {
@@ -1110,6 +1157,12 @@
         },
         {
           "@id": "kg://node/issue-159"
+        },
+        {
+          "@id": "kg://node/issue-169"
+        },
+        {
+          "@id": "kg://node/issue-170"
         },
         {
           "@id": "kg://node/issue-179"
@@ -2364,6 +2417,15 @@
           "@id": "kg://node/issue-182/why"
         },
         {
+          "@id": "kg://node/issue-183"
+        },
+        {
+          "@id": "kg://node/issue-185"
+        },
+        {
+          "@id": "kg://node/issue-186"
+        },
+        {
           "@id": "kg://node/issue-193"
         },
         {
@@ -2529,6 +2591,9 @@
           "@id": "kg://node/issue-184/why"
         },
         {
+          "@id": "kg://node/issue-193"
+        },
+        {
           "@id": "urn:file:/"
         },
         {
@@ -2600,6 +2665,12 @@
           "@id": "kg://node/issue-185/why"
         },
         {
+          "@id": "kg://node/issue-195"
+        },
+        {
+          "@id": "kg://node/issue-196"
+        },
+        {
           "@id": "urn:file:/"
         },
         {
@@ -2656,6 +2727,9 @@
         },
         {
           "@id": "kg://node/issue-186/why"
+        },
+        {
+          "@id": "kg://node/issue-197"
         },
         {
           "@id": "urn:file:/"
@@ -3700,6 +3774,9 @@
           "@id": "kg://node/issue-237"
         },
         {
+          "@id": "kg://node/issue-238"
+        },
+        {
           "@id": "urn:file:/"
         }
       ],
@@ -4002,6 +4079,9 @@
         },
         {
           "@id": "urn:issue:259"
+        },
+        {
+          "@id": "urn:issue:269"
         },
         {
           "@id": "urn:issue:34"
@@ -4413,6 +4493,12 @@
         },
         {
           "@id": "urn:issue:17"
+        },
+        {
+          "@id": "urn:issue:34"
+        },
+        {
+          "@id": "urn:issue:37"
         }
       ],
       "name": "Replace GitHub API with local data for self-exploration"
@@ -4581,6 +4667,12 @@
         },
         {
           "@id": "kg://node/issue-299/why"
+        },
+        {
+          "@id": "kg://node/issue-300"
+        },
+        {
+          "@id": "kg://node/issue-301"
         },
         {
           "@id": "urn:file:/"
@@ -5105,6 +5197,9 @@
         },
         {
           "@id": "kg://node/issue-309/why"
+        },
+        {
+          "@id": "kg://node/issue-310"
         },
         {
           "@id": "kg://node/issue-311"
@@ -6053,6 +6148,9 @@
           "@id": "kg://node/issue-330"
         },
         {
+          "@id": "kg://node/issue-331"
+        },
+        {
           "@id": "kg://node/issue-332"
         },
         {
@@ -6463,6 +6561,9 @@
           "@id": "kg://node/issue-338/why"
         },
         {
+          "@id": "kg://node/issue-339"
+        },
+        {
           "@id": "urn:file:/"
         }
       ],
@@ -6572,6 +6673,12 @@
         },
         {
           "@id": "kg://node/issue-340/why"
+        },
+        {
+          "@id": "kg://node/issue-341"
+        },
+        {
+          "@id": "kg://node/issue-343"
         },
         {
           "@id": "urn:file:/"
@@ -6780,7 +6887,25 @@
           "@id": "kg://node/issue-344/why"
         },
         {
+          "@id": "kg://node/issue-345"
+        },
+        {
           "@id": "kg://node/issue-346"
+        },
+        {
+          "@id": "kg://node/issue-348"
+        },
+        {
+          "@id": "kg://node/issue-354"
+        },
+        {
+          "@id": "kg://node/issue-357"
+        },
+        {
+          "@id": "kg://node/issue-360"
+        },
+        {
+          "@id": "kg://node/issue-363"
         },
         {
           "@id": "kg://node/issue-41"
@@ -6867,6 +6992,9 @@
         },
         {
           "@id": "kg://node/issue-345/why"
+        },
+        {
+          "@id": "kg://node/issue-346"
         },
         {
           "@id": "urn:file:/"
@@ -7053,6 +7181,9 @@
           "@id": "kg://node/issue-348/why"
         },
         {
+          "@id": "kg://node/issue-349"
+        },
+        {
           "@id": "urn:file:/"
         },
         {
@@ -7213,6 +7344,12 @@
           "@id": "kg://node/issue-351/why"
         },
         {
+          "@id": "kg://node/issue-352"
+        },
+        {
+          "@id": "kg://node/issue-353"
+        },
+        {
           "@id": "urn:file:/"
         },
         {
@@ -7370,6 +7507,9 @@
           "@id": "kg://node/issue-354/why"
         },
         {
+          "@id": "kg://node/issue-355"
+        },
+        {
           "@id": "urn:file:/"
         },
         {
@@ -7522,6 +7662,9 @@
         },
         {
           "@id": "kg://node/issue-357/why"
+        },
+        {
+          "@id": "kg://node/issue-358"
         },
         {
           "@id": "urn:file:/"
@@ -7693,6 +7836,9 @@
         },
         {
           "@id": "kg://node/issue-360/why"
+        },
+        {
+          "@id": "kg://node/issue-361"
         },
         {
           "@id": "urn:file:/"
@@ -7972,10 +8118,16 @@
           "@id": "kg://node/issue-41"
         },
         {
+          "@id": "kg://node/issue-42"
+        },
+        {
           "@id": "kg://node/issue-43"
         },
         {
           "@id": "kg://node/issue-44"
+        },
+        {
+          "@id": "kg://node/issue-45"
         },
         {
           "@id": "urn:file:/"
@@ -8810,6 +8962,9 @@
         },
         {
           "@id": "urn:file:/"
+        },
+        {
+          "@id": "urn:issue:56"
         }
       ],
       "name": "Epic: Sense-making — make the graph human-readable at any scale"
@@ -8983,6 +9138,9 @@
         },
         {
           "@id": "kg://node/issue-57/tasks"
+        },
+        {
+          "@id": "kg://node/issue-58"
         },
         {
           "@id": "urn:file:/"
@@ -10002,6 +10160,9 @@
       "isRelatedTo": [
         {
           "@id": "kg://node/repo-meta"
+        },
+        {
+          "@id": "urn:issue:178"
         }
       ],
       "name": "Add wbs-builder skill: GitHub Epic/Feature/Task WBS builder"
@@ -11250,6 +11411,9 @@
       "isRelatedTo": [
         {
           "@id": "kg://node/repo-meta"
+        },
+        {
+          "@id": "urn:issue:93"
         }
       ],
       "name": "chore(deps-dev): Bump eslint from 9.39.4 to 10.2.0"
@@ -11641,13 +11805,709 @@
       "@type": "Thing",
       "isRelatedTo": [
         {
+          "@id": "kg://node/branch-dependabot/npm_and_yarn/fluentui/react-components-9.74.2"
+        },
+        {
+          "@id": "kg://node/branch-dependabot/npm_and_yarn/playwright/test-1.61.1"
+        },
+        {
+          "@id": "kg://node/branch-dependabot/npm_and_yarn/types/node-26.0.1"
+        },
+        {
+          "@id": "kg://node/branch-dependabot/npm_and_yarn/vitejs/plugin-react-6.0.3"
+        },
+        {
+          "@id": "kg://node/branch-dependabot/npm_and_yarn/vitest-4.1.9"
+        },
+        {
+          "@id": "kg://node/branch-feat/visual-tests-narrative"
+        },
+        {
+          "@id": "kg://node/branch-feature/kb-generate-content"
+        },
+        {
+          "@id": "kg://node/branch-feature/local-data"
+        },
+        {
+          "@id": "kg://node/branch-feature/repo-setup"
+        },
+        {
+          "@id": "kg://node/branch-fix/dock-top-sidebar"
+        },
+        {
+          "@id": "kg://node/branch-fix/expanded-visual-tests"
+        },
+        {
+          "@id": "kg://node/branch-fix/graph-labels"
+        },
+        {
+          "@id": "kg://node/branch-fix/hud-and-map-polish"
+        },
+        {
+          "@id": "kg://node/branch-fix/sidebar-grip-position"
+        },
+        {
+          "@id": "kg://node/branch-hoopsomuah/dtu-gitea-harness"
+        },
+        {
+          "@id": "kg://node/branch-hoopsomuah/fix-detect-host-root"
+        },
+        {
+          "@id": "kg://node/branch-hoopsomuah/wbs-builder-skill"
+        },
+        {
           "@id": "kg://node/branch-main"
+        },
+        {
+          "@id": "kg://node/commits"
         },
         {
           "@id": "urn:content:readme"
         },
         {
           "@id": "urn:file:/"
+        },
+        {
+          "@id": "urn:issue:10"
+        },
+        {
+          "@id": "urn:issue:11"
+        },
+        {
+          "@id": "urn:issue:12"
+        },
+        {
+          "@id": "urn:issue:13"
+        },
+        {
+          "@id": "urn:issue:14"
+        },
+        {
+          "@id": "urn:issue:16"
+        },
+        {
+          "@id": "urn:issue:17"
+        },
+        {
+          "@id": "urn:issue:178"
+        },
+        {
+          "@id": "urn:issue:218"
+        },
+        {
+          "@id": "urn:issue:221"
+        },
+        {
+          "@id": "urn:issue:230"
+        },
+        {
+          "@id": "urn:issue:240"
+        },
+        {
+          "@id": "urn:issue:248"
+        },
+        {
+          "@id": "urn:issue:249"
+        },
+        {
+          "@id": "urn:issue:250"
+        },
+        {
+          "@id": "urn:issue:251"
+        },
+        {
+          "@id": "urn:issue:252"
+        },
+        {
+          "@id": "urn:issue:255"
+        },
+        {
+          "@id": "urn:issue:256"
+        },
+        {
+          "@id": "urn:issue:257"
+        },
+        {
+          "@id": "urn:issue:258"
+        },
+        {
+          "@id": "urn:issue:259"
+        },
+        {
+          "@id": "urn:issue:265"
+        },
+        {
+          "@id": "urn:issue:269"
+        },
+        {
+          "@id": "urn:issue:271"
+        },
+        {
+          "@id": "urn:issue:273"
+        },
+        {
+          "@id": "urn:issue:274"
+        },
+        {
+          "@id": "urn:issue:275"
+        },
+        {
+          "@id": "urn:issue:276"
+        },
+        {
+          "@id": "urn:issue:277"
+        },
+        {
+          "@id": "urn:issue:278"
+        },
+        {
+          "@id": "urn:issue:279"
+        },
+        {
+          "@id": "urn:issue:280"
+        },
+        {
+          "@id": "urn:issue:3"
+        },
+        {
+          "@id": "urn:issue:31"
+        },
+        {
+          "@id": "urn:issue:32"
+        },
+        {
+          "@id": "urn:issue:33"
+        },
+        {
+          "@id": "urn:issue:34"
+        },
+        {
+          "@id": "urn:issue:35"
+        },
+        {
+          "@id": "urn:issue:36"
+        },
+        {
+          "@id": "urn:issue:37"
+        },
+        {
+          "@id": "urn:issue:56"
+        },
+        {
+          "@id": "urn:issue:9"
+        },
+        {
+          "@id": "urn:issue:93"
+        },
+        {
+          "@id": "urn:pr:100"
+        },
+        {
+          "@id": "urn:pr:101"
+        },
+        {
+          "@id": "urn:pr:102"
+        },
+        {
+          "@id": "urn:pr:103"
+        },
+        {
+          "@id": "urn:pr:104"
+        },
+        {
+          "@id": "urn:pr:105"
+        },
+        {
+          "@id": "urn:pr:106"
+        },
+        {
+          "@id": "urn:pr:107"
+        },
+        {
+          "@id": "urn:pr:108"
+        },
+        {
+          "@id": "urn:pr:109"
+        },
+        {
+          "@id": "urn:pr:110"
+        },
+        {
+          "@id": "urn:pr:111"
+        },
+        {
+          "@id": "urn:pr:112"
+        },
+        {
+          "@id": "urn:pr:113"
+        },
+        {
+          "@id": "urn:pr:114"
+        },
+        {
+          "@id": "urn:pr:115"
+        },
+        {
+          "@id": "urn:pr:116"
+        },
+        {
+          "@id": "urn:pr:117"
+        },
+        {
+          "@id": "urn:pr:118"
+        },
+        {
+          "@id": "urn:pr:119"
+        },
+        {
+          "@id": "urn:pr:120"
+        },
+        {
+          "@id": "urn:pr:121"
+        },
+        {
+          "@id": "urn:pr:122"
+        },
+        {
+          "@id": "urn:pr:123"
+        },
+        {
+          "@id": "urn:pr:124"
+        },
+        {
+          "@id": "urn:pr:125"
+        },
+        {
+          "@id": "urn:pr:126"
+        },
+        {
+          "@id": "urn:pr:127"
+        },
+        {
+          "@id": "urn:pr:128"
+        },
+        {
+          "@id": "urn:pr:129"
+        },
+        {
+          "@id": "urn:pr:130"
+        },
+        {
+          "@id": "urn:pr:131"
+        },
+        {
+          "@id": "urn:pr:132"
+        },
+        {
+          "@id": "urn:pr:133"
+        },
+        {
+          "@id": "urn:pr:134"
+        },
+        {
+          "@id": "urn:pr:135"
+        },
+        {
+          "@id": "urn:pr:136"
+        },
+        {
+          "@id": "urn:pr:137"
+        },
+        {
+          "@id": "urn:pr:138"
+        },
+        {
+          "@id": "urn:pr:139"
+        },
+        {
+          "@id": "urn:pr:140"
+        },
+        {
+          "@id": "urn:pr:141"
+        },
+        {
+          "@id": "urn:pr:142"
+        },
+        {
+          "@id": "urn:pr:143"
+        },
+        {
+          "@id": "urn:pr:144"
+        },
+        {
+          "@id": "urn:pr:145"
+        },
+        {
+          "@id": "urn:pr:146"
+        },
+        {
+          "@id": "urn:pr:15"
+        },
+        {
+          "@id": "urn:pr:171"
+        },
+        {
+          "@id": "urn:pr:173"
+        },
+        {
+          "@id": "urn:pr:174"
+        },
+        {
+          "@id": "urn:pr:175"
+        },
+        {
+          "@id": "urn:pr:176"
+        },
+        {
+          "@id": "urn:pr:177"
+        },
+        {
+          "@id": "urn:pr:18"
+        },
+        {
+          "@id": "urn:pr:180"
+        },
+        {
+          "@id": "urn:pr:181"
+        },
+        {
+          "@id": "urn:pr:19"
+        },
+        {
+          "@id": "urn:pr:2"
+        },
+        {
+          "@id": "urn:pr:20"
+        },
+        {
+          "@id": "urn:pr:202"
+        },
+        {
+          "@id": "urn:pr:203"
+        },
+        {
+          "@id": "urn:pr:204"
+        },
+        {
+          "@id": "urn:pr:205"
+        },
+        {
+          "@id": "urn:pr:206"
+        },
+        {
+          "@id": "urn:pr:207"
+        },
+        {
+          "@id": "urn:pr:208"
+        },
+        {
+          "@id": "urn:pr:209"
+        },
+        {
+          "@id": "urn:pr:21"
+        },
+        {
+          "@id": "urn:pr:210"
+        },
+        {
+          "@id": "urn:pr:211"
+        },
+        {
+          "@id": "urn:pr:212"
+        },
+        {
+          "@id": "urn:pr:213"
+        },
+        {
+          "@id": "urn:pr:214"
+        },
+        {
+          "@id": "urn:pr:215"
+        },
+        {
+          "@id": "urn:pr:216"
+        },
+        {
+          "@id": "urn:pr:217"
+        },
+        {
+          "@id": "urn:pr:219"
+        },
+        {
+          "@id": "urn:pr:22"
+        },
+        {
+          "@id": "urn:pr:222"
+        },
+        {
+          "@id": "urn:pr:223"
+        },
+        {
+          "@id": "urn:pr:224"
+        },
+        {
+          "@id": "urn:pr:225"
+        },
+        {
+          "@id": "urn:pr:226"
+        },
+        {
+          "@id": "urn:pr:227"
+        },
+        {
+          "@id": "urn:pr:228"
+        },
+        {
+          "@id": "urn:pr:229"
+        },
+        {
+          "@id": "urn:pr:23"
+        },
+        {
+          "@id": "urn:pr:231"
+        },
+        {
+          "@id": "urn:pr:24"
+        },
+        {
+          "@id": "urn:pr:241"
+        },
+        {
+          "@id": "urn:pr:242"
+        },
+        {
+          "@id": "urn:pr:243"
+        },
+        {
+          "@id": "urn:pr:244"
+        },
+        {
+          "@id": "urn:pr:246"
+        },
+        {
+          "@id": "urn:pr:247"
+        },
+        {
+          "@id": "urn:pr:25"
+        },
+        {
+          "@id": "urn:pr:253"
+        },
+        {
+          "@id": "urn:pr:26"
+        },
+        {
+          "@id": "urn:pr:260"
+        },
+        {
+          "@id": "urn:pr:261"
+        },
+        {
+          "@id": "urn:pr:262"
+        },
+        {
+          "@id": "urn:pr:263"
+        },
+        {
+          "@id": "urn:pr:264"
+        },
+        {
+          "@id": "urn:pr:266"
+        },
+        {
+          "@id": "urn:pr:267"
+        },
+        {
+          "@id": "urn:pr:268"
+        },
+        {
+          "@id": "urn:pr:27"
+        },
+        {
+          "@id": "urn:pr:270"
+        },
+        {
+          "@id": "urn:pr:272"
+        },
+        {
+          "@id": "urn:pr:28"
+        },
+        {
+          "@id": "urn:pr:281"
+        },
+        {
+          "@id": "urn:pr:282"
+        },
+        {
+          "@id": "urn:pr:283"
+        },
+        {
+          "@id": "urn:pr:284"
+        },
+        {
+          "@id": "urn:pr:285"
+        },
+        {
+          "@id": "urn:pr:286"
+        },
+        {
+          "@id": "urn:pr:287"
+        },
+        {
+          "@id": "urn:pr:288"
+        },
+        {
+          "@id": "urn:pr:289"
+        },
+        {
+          "@id": "urn:pr:290"
+        },
+        {
+          "@id": "urn:pr:291"
+        },
+        {
+          "@id": "urn:pr:292"
+        },
+        {
+          "@id": "urn:pr:293"
+        },
+        {
+          "@id": "urn:pr:294"
+        },
+        {
+          "@id": "urn:pr:295"
+        },
+        {
+          "@id": "urn:pr:296"
+        },
+        {
+          "@id": "urn:pr:297"
+        },
+        {
+          "@id": "urn:pr:38"
+        },
+        {
+          "@id": "urn:pr:4"
+        },
+        {
+          "@id": "urn:pr:5"
+        },
+        {
+          "@id": "urn:pr:6"
+        },
+        {
+          "@id": "urn:pr:60"
+        },
+        {
+          "@id": "urn:pr:61"
+        },
+        {
+          "@id": "urn:pr:62"
+        },
+        {
+          "@id": "urn:pr:63"
+        },
+        {
+          "@id": "urn:pr:64"
+        },
+        {
+          "@id": "urn:pr:65"
+        },
+        {
+          "@id": "urn:pr:66"
+        },
+        {
+          "@id": "urn:pr:68"
+        },
+        {
+          "@id": "urn:pr:7"
+        },
+        {
+          "@id": "urn:pr:70"
+        },
+        {
+          "@id": "urn:pr:72"
+        },
+        {
+          "@id": "urn:pr:73"
+        },
+        {
+          "@id": "urn:pr:74"
+        },
+        {
+          "@id": "urn:pr:75"
+        },
+        {
+          "@id": "urn:pr:76"
+        },
+        {
+          "@id": "urn:pr:77"
+        },
+        {
+          "@id": "urn:pr:78"
+        },
+        {
+          "@id": "urn:pr:79"
+        },
+        {
+          "@id": "urn:pr:8"
+        },
+        {
+          "@id": "urn:pr:80"
+        },
+        {
+          "@id": "urn:pr:81"
+        },
+        {
+          "@id": "urn:pr:82"
+        },
+        {
+          "@id": "urn:pr:83"
+        },
+        {
+          "@id": "urn:pr:84"
+        },
+        {
+          "@id": "urn:pr:85"
+        },
+        {
+          "@id": "urn:pr:86"
+        },
+        {
+          "@id": "urn:pr:87"
+        },
+        {
+          "@id": "urn:pr:88"
+        },
+        {
+          "@id": "urn:pr:89"
+        },
+        {
+          "@id": "urn:pr:90"
+        },
+        {
+          "@id": "urn:pr:91"
+        },
+        {
+          "@id": "urn:pr:92"
+        },
+        {
+          "@id": "urn:pr:94"
+        },
+        {
+          "@id": "urn:pr:95"
+        },
+        {
+          "@id": "urn:pr:96"
+        },
+        {
+          "@id": "urn:pr:97"
+        },
+        {
+          "@id": "urn:pr:98"
+        },
+        {
+          "@id": "urn:pr:99"
         }
       ],
       "name": "kbexplorer-template"
@@ -11657,6 +12517,9 @@
       "@id": "urn:file:/",
       "@type": "Thing",
       "isRelatedTo": [
+        {
+          "@id": "urn:content:readme"
+        },
         {
           "@id": "urn:file:content"
         },
