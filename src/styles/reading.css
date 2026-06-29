@@ -187,6 +187,78 @@
   font-size: inherit;
 }
 
+.kb-diagram-block {
+  max-width: var(--prose-max-width, 75%);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.kb-diagram {
+  max-width: var(--prose-max-width, 75%);
+  width: 100%;
+  margin: 1.5rem auto;
+  padding: 1rem;
+  background: var(--colorNeutralBackground2);
+  border: 1px solid var(--colorNeutralStroke2);
+  border-radius: 0.75rem;
+  overflow-x: auto;
+}
+
+.kb-prose .kb-diagram,
+.kb-prose .kb-diagram-block,
+.kb-prose .kb-diagram-source {
+  max-width: 100%;
+}
+
+.kb-diagram-canvas {
+  display: flex;
+  justify-content: center;
+}
+
+.kb-diagram-canvas svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.kb-diagram-status {
+  display: block;
+  color: var(--colorNeutralForeground3);
+  margin-bottom: 0.75rem;
+}
+
+.kb-diagram-fallback {
+  margin: 1.5rem 0 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--colorNeutralStroke2);
+  border-radius: 0.5rem;
+  background: var(--colorNeutralBackground3);
+  color: var(--colorNeutralForeground1);
+}
+
+.kb-diagram-fallback[data-severity="error"] {
+  border-color: var(--colorPaletteRedBorder2, var(--colorNeutralStroke2));
+  background: var(--colorPaletteRedBackground1, var(--colorNeutralBackground3));
+  color: var(--colorPaletteRedForeground1, var(--colorNeutralForeground1));
+}
+
+.kb-diagram-source {
+  max-width: var(--prose-max-width, 75%);
+  width: 100%;
+  margin: 0 auto 1.5rem;
+  color: var(--colorNeutralForeground3);
+}
+
+.kb-diagram-source summary {
+  cursor: pointer;
+  margin: 0.75rem 0;
+}
+
+.kb-diagram-source .kb-code-display,
+.kb-diagram-block .kb-code-display {
+  max-width: 100%;
+  margin: 0;
+}
+
 .kb-tree-display {
   font-family: var(--kbe-font-mono, 'Cascadia Code', 'Cascadia Mono', Consolas, monospace);
   font-size: var(--prose-font-size, 14px);
