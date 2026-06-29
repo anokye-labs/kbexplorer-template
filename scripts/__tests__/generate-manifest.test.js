@@ -9,6 +9,7 @@ import {
   readReadme,
   fetchLocalCommits,
   readContentModel,
+  resolveStructuredContentPath,
   readThemeFile,
   detectHostRoot,
 } from '../generate-manifest.js';
@@ -135,6 +136,33 @@ describe('readContentModel (T2.4 / #163)', () => {
     expect(source.files['people/ada.yaml']).toContain('@type');
 
     rmSync(cmDir, { recursive: true, force: true });
+  });
+
+  it('reads a configured alternate structured-content tree', () => {
+    const cmDir = resolve(FIXTURES, 'docs', 'team-model');
+    mkdirSync(resolve(cmDir, 'index'), { recursive: true });
+    mkdirSync(resolve(cmDir, 'people'), { recursive: true });
+    writeFileSync(resolve(cmDir, 'teamops.yaml'), 'authority: xbox.com\ndefaultOrg: personalization');
+    writeFileSync(resolve(cmDir, 'index', 'context.jsonld'), '{"@context":{"person":"kg://xbox.com/people/"}}');
+    writeFileSync(resolve(cmDir, 'people', 'ada.yaml'), '"@type": person\nid: ada');
+
+    const source = readContentModel(FIXTURES, 'docs/team-model');
+    expect(source).not.toBeNull();
+    expect(source.root).toBe('docs/team-model');
+    expect(source.files['teamops.yaml']).toContain('authority: xbox.com');
+    expect(source.files['index/context.jsonld']).toContain('kg://xbox.com/people/');
+    expect(source.files['people/ada.yaml']).toContain('@type');
+
+    rmSync(resolve(FIXTURES, 'docs'), { recursive: true, force: true });
+  });
+
+  it('resolves structured-content path from env, config, then default', () => {
+    const configRaw = 'structuredContent:\n  path: docs/team-model\n';
+    expect(resolveStructuredContentPath(configRaw, {})).toBe('docs/team-model');
+    expect(resolveStructuredContentPath(configRaw, {
+      VITE_KB_STRUCTURED_CONTENT_PATH: 'ops/model',
+    })).toBe('ops/model');
+    expect(resolveStructuredContentPath('title: Test KB\n', {})).toBe('content-model');
   });
 
   it('returns null for an empty content-model directory', () => {

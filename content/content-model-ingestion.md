@@ -104,11 +104,12 @@ Anything without a bespoke viewer falls back to `GenericStructuredView`, so cove
 In local mode the source is baked into the manifest at build time:
 
 ```
-content-model/  →  generate-manifest.js (readContentModel)  →  manifest.contentModel  →  local-loader → ContentModelProvider
+structuredContent.path  →  generate-manifest.js (readContentModel)  →  manifest.contentModel  →  local-loader → ContentModelProvider
 ```
 
-- `scripts/generate-manifest.js` exposes `readContentModel(root)`, which walks a `content-model/` directory into a flat `{ root, files }` map (or `null` when the directory is absent/empty). The result is written as `manifest.contentModel`. See the [manifest generator](manifest-generator) and [build scripts](build-scripts).
-- The [local loader](local-loader) always registers `new ContentModelProvider(manifest.contentModel ?? null)`; the remote loader keeps a matching no-op seam until a remote fetch path lands.
+- `scripts/generate-manifest.js` exposes `readContentModel(root, dirName)`, which walks the repo-relative directory from `structuredContent.path` into a flat `{ root, files }` map (or `null` when the directory is absent/empty). The historical top-level `content-model/` directory remains the default. The result is written as `manifest.contentModel`. See the [manifest generator](manifest-generator) and [build scripts](build-scripts).
+- The [local loader](local-loader) always registers `new ContentModelProvider(manifest.contentModel ?? null)`.
+- In remote/runtime mode, `GitHubApiSource` resolves the same `structuredContent.path`, fetches that directory through the GitHub API source abstraction, and passes the populated source to `ContentModelProvider`. When the host API cannot fetch the directory, the provider remains a safe no-op.
 
 ## The `content-model/` starter directory
 
@@ -128,3 +129,10 @@ content-model/
 ```
 
 Drop a directory shaped like this at the repo root, re-run the manifest generator, and the spine renders as typed nodes — with no engine changes, because every kind, viewer, and edge is data-driven. Repos that ship no such directory keep their existing graph untouched.
+
+To keep the directory somewhere else, set:
+
+```yaml
+structuredContent:
+  path: docs/team-model
+```

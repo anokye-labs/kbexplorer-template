@@ -38,6 +38,8 @@ import {
 import type { GHIssue, GHTreeItem, GHCommit, GHRelease } from '../../api';
 import { loadConfig } from '../../engine';
 import { applyExternalThemeFile } from '../../theme/externalTheme';
+import type { ContentModelSource } from '../content-model';
+import { resolveStructuredContentPath } from '../structured-content';
 import type { RepoData, RepoSource } from './repo-data';
 
 export type ResolutionPreset = 'summary' | 'standard' | 'full';
@@ -52,6 +54,7 @@ interface FetchedData {
   authoredContent: Record<string, string>;
   structuralFiles: Record<string, string>;
   structuredNodeMapRaw: string | null;
+  contentModel: ContentModelSource | null;
   config: KBConfig;
 }
 
@@ -128,7 +131,7 @@ export class GitHubApiSource implements RepoSource {
       releases: data.releases,
       structuralFiles: data.structuralFiles,
       structuredNodeMapRaw: data.structuredNodeMapRaw,
-      contentModel: null,
+      contentModel: data.contentModel ?? null,
       readme: data.readme,
     };
   }
@@ -280,6 +283,7 @@ export class GitHubApiSource implements RepoSource {
     const authoredContent: Record<string, string> = {};
     const structuralFiles: Record<string, string> = {};
     let structuredNodeMapRaw: string | null = null;
+    let contentModel: ContentModelSource | null = null;
 
     if (preset === 'standard' || preset === 'full') {
       const [treeResult, prResult] = await Promise.all([
@@ -303,6 +307,8 @@ export class GitHubApiSource implements RepoSource {
           // Content directory may not exist
         }
       }
+
+      contentModel = await this.fetchContentModel(config);
 
       try {
         const structuralPaths = tree
@@ -329,6 +335,30 @@ export class GitHubApiSource implements RepoSource {
       commits = await fetchCommits(source).catch(() => [] as GHCommit[]);
     }
 
-    return { issues, pullRequests, tree, readme, commits, releases, authoredContent, structuralFiles, structuredNodeMapRaw, config };
+    return { issues, pullRequests, tree, readme, commits, releases, authoredContent, structuralFiles, structuredNodeMapRaw, contentModel, config };
+  }
+
+  private async fetchContentModel(config: KBConfig): Promise<ContentModelSource | null> {
+    const root = resolveStructuredContentPath(config);
+    try {
+      const contentModelTree = await fetchTree(this.source, root);
+      const paths = contentModelTree
+        .filter(item => item.type === 'blob')
+        .map(item => item.path)
+        .filter(path => !path.slice(root.length + 1).split('/').some(segment => segment.startsWith('.')));
+      if (paths.length === 0) return null;
+
+      const files = await fetchFiles(this.source, paths);
+      const sourceFiles: Record<string, string> = {};
+      for (const [path, content] of files) {
+        const relativePath = path.startsWith(`${root}/`) ? path.slice(root.length + 1) : path;
+        sourceFiles[relativePath] = content;
+      }
+
+      return Object.keys(sourceFiles).length > 0 ? { root, files: sourceFiles } : null;
+    } catch (error) {
+      console.warn(`[github-api-source] Failed to fetch structured content from ${root}:`, error);
+      return null;
+    }
   }
 }

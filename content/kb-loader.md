@@ -27,8 +27,9 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
 1. `loadConfig()` — fetch `config.yaml` from the repo
 2. `loadRepoContent()` — fetch issues, tree, README via [GitHub API](github-api)
 3. `loadAuthoredContent()` — fetch markdown from content directory (optional)
-4. `extractClusters()` — derive clusters from all nodes via the [parser](parser)
-5. `buildGraph()` — compute edges and related nodes via the [graph engine](graph-engine)
+4. `GitHubApiSource` fetches `structuredContent.path` (default `content-model/`) and feeds `ContentModelProvider`
+5. `extractClusters()` — derive clusters from all nodes via the [parser](parser)
+6. `buildGraph()` — compute edges and related nodes via the [graph engine](graph-engine)
 
 ## Error Handling
 

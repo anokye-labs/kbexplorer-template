@@ -37,6 +37,7 @@ const KB_TEMPLATE_PKG_NAMES = new Set(['kbexplorer', 'kbexplorer-template']);
 // the vendored copy and the git submodule). Used as the signal that we are an
 // installed instance with a host above us, rather than a standalone checkout.
 const KB_INSTALL_DIR_NAME = '.kbexplorer';
+const DEFAULT_STRUCTURED_CONTENT_PATH = 'content-model';
 
 /**
  * Read a directory's package.json `name`, or null if missing/unparseable.
@@ -211,6 +212,53 @@ export function readConfig(root, contentPath = 'content') {
     }
   }
   return null;
+}
+
+function normalizeRepoRelativeDir(raw) {
+  if (typeof raw !== 'string') return null;
+  let value = raw.trim().replace(/\\/g, '/');
+  while (value.startsWith('./')) value = value.slice(2);
+  value = value.replace(/\/+$/g, '');
+  if (
+    !value ||
+    isAbsolute(value) ||
+    value.startsWith('/') ||
+    value.includes('://') ||
+    value === '..' ||
+    value.startsWith('../') ||
+    value.split('/').some(segment => segment === '' || segment === '.' || segment === '..')
+  ) {
+    return null;
+  }
+  return value;
+}
+
+/**
+ * Resolve the configured structured-content directory. The historic
+ * `content-model/` directory remains the default.
+ * @param {string|null} configRaw
+ * @param {NodeJS.ProcessEnv|Record<string,string|undefined>} [env=process.env]
+ * @returns {string}
+ */
+export function resolveStructuredContentPath(configRaw, env = process.env) {
+  const envValue = env.VITE_KB_STRUCTURED_CONTENT_PATH ?? env.VITE_KB_CONTENT_MODEL_PATH;
+  const normalizedEnv = normalizeRepoRelativeDir(envValue);
+  if (normalizedEnv) return normalizedEnv;
+
+  if (configRaw) {
+    try {
+      const parsed = yaml.parse(configRaw);
+      const configured =
+        parsed?.structuredContent?.path ??
+        parsed?.contentModel?.path;
+      const normalizedConfig = normalizeRepoRelativeDir(configured);
+      if (normalizedConfig) return normalizedConfig;
+    } catch {
+      // Unparseable config falls back to the historical default below.
+    }
+  }
+
+  return DEFAULT_STRUCTURED_CONTENT_PATH;
 }
 
 /**
@@ -621,15 +669,25 @@ export function collectNodemapData(root, nodemapRaw, tree) {
 // ── Content Model (F2) ─────────────────────────────────────
 
 /**
- * Read a `content-model/` directory (schema files + entity files) into a flat
+ * Read a structured-content directory (schema files + entity files) into a flat
  * `{ root, files }` source consumed by the ContentModelProvider. Returns null
  * when the directory is absent or empty, so the provider stays a safe no-op.
  * @param {string} root - Project root
- * @param {string} [dirName='content-model'] - Content-model directory name
+ * @param {string} [dirName='content-model'] - Repo-relative structured-content directory
  * @returns {{ root: string, files: Record<string,string> } | null}
  */
-export function readContentModel(root, dirName = 'content-model') {
-  const baseDir = resolve(root, dirName);
+export function readContentModel(root, dirName = DEFAULT_STRUCTURED_CONTENT_PATH) {
+  const normalizedDir = normalizeRepoRelativeDir(dirName);
+  if (!normalizedDir) {
+    console.warn(`[generate-manifest] Ignoring invalid structured-content path: ${dirName}`);
+    return null;
+  }
+  const baseDir = resolve(root, normalizedDir);
+  const relBaseDir = relative(root, baseDir);
+  if (relBaseDir === '' || relBaseDir.startsWith('..') || isAbsolute(relBaseDir)) {
+    console.warn(`[generate-manifest] Ignoring structured-content path outside repo: ${dirName}`);
+    return null;
+  }
   if (!existsSync(baseDir)) return null;
 
   const files = {};
@@ -657,7 +715,7 @@ export function readContentModel(root, dirName = 'content-model') {
   }
   walk(baseDir);
 
-  return Object.keys(files).length > 0 ? { root: dirName, files } : null;
+  return Object.keys(files).length > 0 ? { root: normalizedDir, files } : null;
 }
 
 // ── Main ───────────────────────────────────────────────────
@@ -676,6 +734,7 @@ export function generateManifest(root = hostRoot) {
   const structuredNodeMapRaw = readStructuredNodeMap(root);
   const structuralFiles = collectStructuralFiles(root, tree);
   const configRaw = readConfig(root, contentPath);
+  const structuredContentPath = resolveStructuredContentPath(configRaw);
 
   const manifest = {
     configRaw,
@@ -693,7 +752,7 @@ export function generateManifest(root = hostRoot) {
     nodemapDirs,
     structuredNodeMapRaw,
     structuralFiles,
-    contentModel: readContentModel(root),
+    contentModel: readContentModel(root, structuredContentPath),
     generatedAt: new Date().toISOString(),
   };
 
@@ -709,7 +768,7 @@ export function generateManifest(root = hostRoot) {
   console.log(`[generate-manifest] Repo: ${manifest.repoMetadata?.name ?? 'not available'}`);
   console.log(`[generate-manifest] Nodemap: ${nodemapRaw ? `${Object.keys(nodemapFiles).length} files, ${Object.keys(nodemapDirs).length} dirs` : 'not found'}`);
   console.log(`[generate-manifest] Structural: ${Object.keys(structuralFiles).length} .github files${structuredNodeMapRaw ? ' + node-map.yaml' : ''}`);
-  console.log(`[generate-manifest] Content model: ${manifest.contentModel ? `${Object.keys(manifest.contentModel.files).length} files` : 'not found'}`);
+  console.log(`[generate-manifest] Content model: ${manifest.contentModel ? `${Object.keys(manifest.contentModel.files).length} files from ${manifest.contentModel.root}` : `not found at ${structuredContentPath}`}`);
   console.log(`[generate-manifest] Theme file: ${manifest.themeFileRaw ? 'loaded' : 'not configured'}`);
 
   return manifest;

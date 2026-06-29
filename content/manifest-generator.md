@@ -18,7 +18,8 @@ The manifest generator (`scripts/generate-manifest.js`) is the pre-build script 
 3. **Issues** — fetched via `gh issue list` CLI command
 4. **Pull requests** — fetched via `gh pr list` CLI command
 5. **Commits** — fetched via `gh api` for recent history
-6. **Config** — `config.yaml` and `nodemap.yaml` contents
+6. **Structured content** — schema-driven descriptor files from `structuredContent.path` (default `content-model/`)
+7. **Config** — `config.yaml` and `nodemap.yaml` contents
 
 ## Vite Integration
 
@@ -35,3 +36,10 @@ Missing `GH_TOKEN` in CI silently produces empty work data. [PR #74](https://git
 ## Integration
 
 The generator is called by the [build scripts](build-scripts) and feeds the [local loader](local-loader). The [authored provider](authored-provider), [files provider](files-provider), and [work provider](work-provider) all consume manifest data.
+
+`structuredContent.path` may point at any repo-relative directory. Existing repos that use a top-level `content-model/` do not need to set it; alternate layouts can set:
+
+```yaml
+structuredContent:
+  path: docs/team-model
+```

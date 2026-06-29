@@ -16,6 +16,11 @@
       "name": "Infra"
     },
     {
+      "color": "#D4A050",
+      "id": "teamops",
+      "name": "Teamops"
+    },
+    {
       "color": "#C07840",
       "id": "work",
       "name": "Work"
@@ -730,6 +735,70 @@
     },
     {
       "description": "Contains",
+      "from": "dir-structured-content",
+      "source": "inferred",
+      "to": "dir-structured-content/index",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
+      "from": "dir-structured-content",
+      "source": "inferred",
+      "to": "dir-structured-content/people",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
+      "from": "dir-structured-content",
+      "source": "inferred",
+      "to": "dir-structured-content/schema",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
+      "from": "dir-structured-content",
+      "source": "inferred",
+      "to": "file-structured-content/teamops.yaml",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
+      "from": "dir-structured-content/people",
+      "source": "inferred",
+      "to": "file-structured-content/people/ada.yaml",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
+      "from": "dir-structured-content/schema",
+      "source": "inferred",
+      "to": "file-structured-content/schema/conventions.yaml",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
+      "from": "dir-structured-content/schema",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
+      "from": "dir-structured-content/schema",
+      "source": "inferred",
+      "to": "file-structured-content/schema/lifecycle.yaml",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
       "from": "issue-1",
       "source": "inferred",
       "to": "issue-1/acceptance-criteria",
@@ -921,6 +990,38 @@
       "description": "Mentions",
       "from": "issue-147",
       "source": "inferred",
+      "to": "file-structured-content/schema/conventions.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-147",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-147",
+      "source": "inferred",
+      "to": "file-structured-content/schema/lifecycle.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-147",
+      "source": "inferred",
+      "to": "file-structured-content/teamops.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-147",
+      "source": "inferred",
       "to": "issue-12",
       "type": "mentions",
       "weight": 0.5
@@ -1028,6 +1129,30 @@
       "to": "repo-root",
       "type": "mentions",
       "weight": 0.5
+    },
+    {
+      "description": "References edges.yaml",
+      "from": "issue-147/adopted-model",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References lifecycle.yaml",
+      "from": "issue-147/adopted-model",
+      "source": "inferred",
+      "to": "file-structured-content/schema/lifecycle.yaml",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References teamops.yaml",
+      "from": "issue-147/adopted-model",
+      "source": "inferred",
+      "to": "file-structured-content/teamops.yaml",
+      "type": "references",
+      "weight": 2
     },
     {
       "description": "Mentions",
@@ -1201,6 +1326,22 @@
       "description": "Mentions",
       "from": "issue-149",
       "source": "inferred",
+      "to": "file-structured-content/schema/conventions.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-149",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-149",
+      "source": "inferred",
       "to": "issue-12",
       "type": "mentions",
       "weight": 0.5
@@ -1322,6 +1463,30 @@
       "from": "issue-149/approach-key-files",
       "source": "inferred",
       "to": "dir-src/engine",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References edges.yaml",
+      "from": "issue-149/what",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References conventions.yaml",
+      "from": "issue-149/why",
+      "source": "inferred",
+      "to": "file-structured-content/schema/conventions.yaml",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References edges.yaml",
+      "from": "issue-149/why",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
       "type": "references",
       "weight": 2
     },
@@ -2002,6 +2167,38 @@
       "description": "Mentions",
       "from": "issue-160",
       "source": "inferred",
+      "to": "file-structured-content/schema/conventions.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-160",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-160",
+      "source": "inferred",
+      "to": "file-structured-content/schema/lifecycle.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-160",
+      "source": "inferred",
+      "to": "file-structured-content/teamops.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-160",
+      "source": "inferred",
       "to": "issue-12",
       "type": "mentions",
       "weight": 0.5
@@ -2063,6 +2260,22 @@
       "weight": 2
     },
     {
+      "description": "References teamops.yaml",
+      "from": "issue-160/scope",
+      "source": "inferred",
+      "to": "file-structured-content/teamops.yaml",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-161",
+      "source": "inferred",
+      "to": "file-structured-content/schema/conventions.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
       "description": "Mentions",
       "from": "issue-161",
       "source": "inferred",
@@ -2119,6 +2332,22 @@
       "weight": 0.5
     },
     {
+      "description": "References conventions.yaml",
+      "from": "issue-161/scope",
+      "source": "inferred",
+      "to": "file-structured-content/schema/conventions.yaml",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "Mentions",
+      "from": "issue-162",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "mentions",
+      "weight": 0.5
+    },
+    {
       "description": "Mentions",
       "from": "issue-162",
       "source": "inferred",
@@ -2157,6 +2386,14 @@
       "to": "repo-root",
       "type": "mentions",
       "weight": 0.5
+    },
+    {
+      "description": "References edges.yaml",
+      "from": "issue-162/scope",
+      "source": "inferred",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "references",
+      "weight": 2
     },
     {
       "description": "Mentions",
@@ -5218,6 +5455,22 @@
       "weight": 2
     },
     {
+      "description": "References edges.yaml/",
+      "from": "issue-273",
+      "source": "frontmatter",
+      "to": "file-structured-content/schema/edges.yaml",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References teamops.yaml/",
+      "from": "issue-273",
+      "source": "frontmatter",
+      "to": "file-structured-content/teamops.yaml",
+      "type": "references",
+      "weight": 2
+    },
+    {
       "description": "References #220",
       "from": "issue-273",
       "source": "inline",
@@ -5247,6 +5500,14 @@
       "from": "issue-274",
       "source": "frontmatter",
       "to": "dir-content",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References edges.yaml/",
+      "from": "issue-274",
+      "source": "frontmatter",
+      "to": "file-structured-content/schema/edges.yaml",
       "type": "references",
       "weight": 2
     },
@@ -5296,6 +5557,14 @@
       "from": "issue-275",
       "source": "frontmatter",
       "to": "dir-src/engine",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References edges.yaml/",
+      "from": "issue-275",
+      "source": "frontmatter",
+      "to": "file-structured-content/schema/edges.yaml",
       "type": "references",
       "weight": 2
     },
@@ -5362,6 +5631,14 @@
       "from": "issue-277",
       "source": "frontmatter",
       "to": "dir-content",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References teamops.yaml/",
+      "from": "issue-277",
+      "source": "frontmatter",
+      "to": "file-structured-content/teamops.yaml",
       "type": "references",
       "weight": 2
     },
@@ -5436,6 +5713,14 @@
       "from": "issue-279",
       "source": "frontmatter",
       "to": "dir-content",
+      "type": "references",
+      "weight": 2
+    },
+    {
+      "description": "References edges.yaml/",
+      "from": "issue-279",
+      "source": "frontmatter",
+      "to": "file-structured-content/schema/edges.yaml",
       "type": "references",
       "weight": 2
     },
@@ -11253,6 +11538,15 @@
       "weight": 2
     },
     {
+      "description": "Tracked in this repository",
+      "from": "kg://example.com/people/ada",
+      "relation": "tracked-in",
+      "source": "inferred",
+      "to": "repo-meta",
+      "type": "references",
+      "weight": 2
+    },
+    {
       "description": "Derived from",
       "from": "overview",
       "source": "inferred",
@@ -14250,6 +14544,14 @@
       "description": "Contains",
       "from": "repo-root",
       "source": "inferred",
+      "to": "dir-structured-content",
+      "type": "contains",
+      "weight": 5
+    },
+    {
+      "description": "Contains",
+      "from": "repo-root",
+      "source": "inferred",
       "to": "file-package.json",
       "type": "contains",
       "weight": 5
@@ -15034,6 +15336,74 @@
     {
       "cluster": "infra",
       "connections": [],
+      "content": "<h2>structured-content/</h2>\n<p>1 files</p>\n<ul>\n<li><code>structured-content/teamops.yaml</code></li>\n</ul>\n",
+      "emoji": "Folder",
+      "id": "dir-structured-content",
+      "identity": "urn:file:structured-content",
+      "nodeType": "parent",
+      "parent": "repo-root",
+      "provider": "files",
+      "rawContent": "## structured-content/\n\n1 files\n\n- `structured-content/teamops.yaml`",
+      "source": {
+        "path": "structured-content",
+        "type": "file"
+      },
+      "title": "structured-content/"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
+      "content": "<h2>structured-content/index/</h2>\n<p>1 files</p>\n<ul>\n<li><code>structured-content/index/context.jsonld</code></li>\n</ul>\n",
+      "emoji": "Folder",
+      "id": "dir-structured-content/index",
+      "identity": "urn:file:structured-content/index",
+      "nodeType": "section",
+      "parent": "dir-structured-content",
+      "provider": "files",
+      "rawContent": "## structured-content/index/\n\n1 files\n\n- `structured-content/index/context.jsonld`",
+      "source": {
+        "path": "structured-content/index",
+        "type": "file"
+      },
+      "title": "structured-content/index/"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
+      "content": "<h2>structured-content/people/</h2>\n<p>1 files</p>\n<ul>\n<li><code>structured-content/people/ada.yaml</code></li>\n</ul>\n",
+      "emoji": "Folder",
+      "id": "dir-structured-content/people",
+      "identity": "urn:file:structured-content/people",
+      "nodeType": "section",
+      "parent": "dir-structured-content",
+      "provider": "files",
+      "rawContent": "## structured-content/people/\n\n1 files\n\n- `structured-content/people/ada.yaml`",
+      "source": {
+        "path": "structured-content/people",
+        "type": "file"
+      },
+      "title": "structured-content/people/"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
+      "content": "<h2>structured-content/schema/</h2>\n<p>3 files</p>\n<ul>\n<li><code>structured-content/schema/conventions.yaml</code></li>\n<li><code>structured-content/schema/edges.yaml</code></li>\n<li><code>structured-content/schema/lifecycle.yaml</code></li>\n</ul>\n",
+      "emoji": "Folder",
+      "id": "dir-structured-content/schema",
+      "identity": "urn:file:structured-content/schema",
+      "nodeType": "section",
+      "parent": "dir-structured-content",
+      "provider": "files",
+      "rawContent": "## structured-content/schema/\n\n3 files\n\n- `structured-content/schema/conventions.yaml`\n- `structured-content/schema/edges.yaml`\n- `structured-content/schema/lifecycle.yaml`",
+      "source": {
+        "path": "structured-content/schema",
+        "type": "file"
+      },
+      "title": "structured-content/schema/"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
       "content": "<p><code>content/config.yaml</code></p>",
       "emoji": "Document",
       "id": "file-content/config.yaml",
@@ -15132,6 +15502,91 @@
         "type": "file"
       },
       "title": "graph.ts"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
+      "content": "<p><code>structured-content/people/ada.yaml</code></p>",
+      "emoji": "Document",
+      "id": "file-structured-content/people/ada.yaml",
+      "identity": "urn:file:structured-content/people/ada.yaml",
+      "nodeType": "section",
+      "parent": "dir-structured-content/people",
+      "provider": "files",
+      "rawContent": "structured-content/people/ada.yaml",
+      "source": {
+        "path": "structured-content/people/ada.yaml",
+        "type": "file"
+      },
+      "title": "ada.yaml"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
+      "content": "<p><code>structured-content/schema/conventions.yaml</code></p>",
+      "emoji": "Document",
+      "id": "file-structured-content/schema/conventions.yaml",
+      "identity": "urn:file:structured-content/schema/conventions.yaml",
+      "nodeType": "section",
+      "parent": "dir-structured-content/schema",
+      "provider": "files",
+      "rawContent": "structured-content/schema/conventions.yaml",
+      "source": {
+        "path": "structured-content/schema/conventions.yaml",
+        "type": "file"
+      },
+      "title": "conventions.yaml"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
+      "content": "<p><code>structured-content/schema/edges.yaml</code></p>",
+      "emoji": "Document",
+      "id": "file-structured-content/schema/edges.yaml",
+      "identity": "urn:file:structured-content/schema/edges.yaml",
+      "nodeType": "section",
+      "parent": "dir-structured-content/schema",
+      "provider": "files",
+      "rawContent": "structured-content/schema/edges.yaml",
+      "source": {
+        "path": "structured-content/schema/edges.yaml",
+        "type": "file"
+      },
+      "title": "edges.yaml"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
+      "content": "<p><code>structured-content/schema/lifecycle.yaml</code></p>",
+      "emoji": "Document",
+      "id": "file-structured-content/schema/lifecycle.yaml",
+      "identity": "urn:file:structured-content/schema/lifecycle.yaml",
+      "nodeType": "section",
+      "parent": "dir-structured-content/schema",
+      "provider": "files",
+      "rawContent": "structured-content/schema/lifecycle.yaml",
+      "source": {
+        "path": "structured-content/schema/lifecycle.yaml",
+        "type": "file"
+      },
+      "title": "lifecycle.yaml"
+    },
+    {
+      "cluster": "infra",
+      "connections": [],
+      "content": "<p><code>structured-content/teamops.yaml</code></p>",
+      "emoji": "Document",
+      "id": "file-structured-content/teamops.yaml",
+      "identity": "urn:file:structured-content/teamops.yaml",
+      "nodeType": "section",
+      "parent": "dir-structured-content",
+      "provider": "files",
+      "rawContent": "structured-content/teamops.yaml",
+      "source": {
+        "path": "structured-content/teamops.yaml",
+        "type": "file"
+      },
+      "title": "teamops.yaml"
     },
     {
       "cluster": "work",
@@ -15530,6 +15985,30 @@
           "source": "inferred",
           "to": "repo-root",
           "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/conventions.yaml",
+          "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/edges.yaml",
+          "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/lifecycle.yaml",
+          "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/teamops.yaml",
+          "type": "mentions"
         }
       ],
       "content": "<p>🟢 <strong>OPEN</strong> · #147</p>\n<p>Created: Jun 10, 2026 · Updated: Jun 10, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/147\">View on GitHub ↗</a></p>\n<hr>\n",
@@ -15547,7 +16026,26 @@
     },
     {
       "cluster": "work",
-      "connections": [],
+      "connections": [
+        {
+          "description": "References edges.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/schema/edges.yaml",
+          "type": "references"
+        },
+        {
+          "description": "References lifecycle.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/schema/lifecycle.yaml",
+          "type": "references"
+        },
+        {
+          "description": "References teamops.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/teamops.yaml",
+          "type": "references"
+        }
+      ],
       "content": "<p>We adopt the proven three-layer model from <code>content-model.md</code>: <strong>identity</strong> (<code>teamops.yaml</code> → <code>kg://</code> URN authority/org) → <strong>shape</strong> (<code>schema/conventions.yaml</code>, <code>edges.yaml</code>, <code>lifecycle.yaml</code>, <code>entities/*.schema.json</code>, <code>index/context.jsonld</code>) → <strong>content</strong> (one file per entity). URN = JSON-LD <code>@id</code>; kind = <code>@type</code> (never inferred from path); <code>edges.yaml</code> is the relationship manifest; a 5-pass builder walks files → resolves edges → derives → clusters → stubs unresolved targets.</p>\n",
       "emoji": "Pin",
       "id": "issue-147/adopted-model",
@@ -15998,6 +16496,18 @@
           "source": "inferred",
           "to": "dir-src/engine",
           "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/conventions.yaml",
+          "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/edges.yaml",
+          "type": "mentions"
         }
       ],
       "content": "<p>🟣 <strong>CLOSED</strong> · #149</p>\n<p>Created: Jun 10, 2026 · Updated: Jun 11, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/149\">View on GitHub ↗</a></p>\n<hr>\n<p><strong>Parent epic:</strong> E1 — Open, data-driven node-type engine\n<strong>Blocked by:</strong> F1 (node-type foundation)</p>\n",
@@ -16079,7 +16589,14 @@
     },
     {
       "cluster": "work",
-      "connections": [],
+      "connections": [
+        {
+          "description": "References edges.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/schema/edges.yaml",
+          "type": "references"
+        }
+      ],
       "content": "<p>Port the proven 5-pass builder from <code>content-model.md</code> §5 into the engine, <strong>driven by the repo&#39;s own schema files</strong> rather than hardcoded logic: read identity/shape/context, walk entity files, build a <code>(kind, org, id)</code> index, emit JSON-LD nodes, resolve <code>edges.yaml</code> into typed relations (with stubs for unresolved targets), and assign clusters.</p>\n",
       "emoji": "Pin",
       "id": "issue-149/what",
@@ -16096,7 +16613,20 @@
     },
     {
       "cluster": "work",
-      "connections": [],
+      "connections": [
+        {
+          "description": "References conventions.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/schema/conventions.yaml",
+          "type": "references"
+        },
+        {
+          "description": "References edges.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/schema/edges.yaml",
+          "type": "references"
+        }
+      ],
       "content": "<p>This is how the engine <strong>becomes the model</strong>. With the source repo sunset, the engine must build the graph from entity files itself. Doing it schema-driven (URN bases from <code>context.jsonld</code>, kind from <code>@type</code>, storage from <code>conventions.yaml</code>, relationships from <code>edges.yaml</code>) means a second org/repo adopts the platform by changing config — not engine code.</p>\n",
       "emoji": "Pin",
       "id": "issue-149/why",
@@ -17456,6 +17986,30 @@
           "source": "inferred",
           "to": "dir-src/engine",
           "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/conventions.yaml",
+          "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/edges.yaml",
+          "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/lifecycle.yaml",
+          "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/teamops.yaml",
+          "type": "mentions"
         }
       ],
       "content": "<p>🟣 <strong>CLOSED</strong> · #160</p>\n<p>Created: Jun 10, 2026 · Updated: Jun 11, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/160\">View on GitHub ↗</a></p>\n<hr>\n<p><strong>Parent feature:</strong> F2 — Content-model ingestion pipeline</p>\n",
@@ -17501,6 +18055,12 @@
           "description": "References src/engine/",
           "source": "inferred",
           "to": "dir-src/engine",
+          "type": "references"
+        },
+        {
+          "description": "References teamops.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/teamops.yaml",
           "type": "references"
         }
       ],
@@ -17579,6 +18139,12 @@
           "source": "inferred",
           "to": "repo-root",
           "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/conventions.yaml",
+          "type": "mentions"
         }
       ],
       "content": "<p>🟣 <strong>CLOSED</strong> · #161</p>\n<p>Created: Jun 10, 2026 · Updated: Jun 11, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/161\">View on GitHub ↗</a></p>\n<hr>\n<p><strong>Parent feature:</strong> F2 — Content-model ingestion pipeline</p>\n",
@@ -17613,7 +18179,14 @@
     },
     {
       "cluster": "work",
-      "connections": [],
+      "connections": [
+        {
+          "description": "References conventions.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/schema/conventions.yaml",
+          "type": "references"
+        }
+      ],
       "content": "<p>Implement <code>ContentModelProvider</code> (<code>GraphProvider</code>): walk each kind&#39;s storage root per <code>conventions.yaml</code>, determine org (default flat vs non-default nested per-org subdir), build a <code>(kind, org, id)</code> index, and emit JSON-LD <code>KBNode</code>s — <code>urn</code>→<code>identity</code>/<code>@id</code>, <code>kind</code>→<code>@type</code>/<code>entityType</code>, <code>fields</code>→<code>data</code>, <code>cluster</code>=kind, plus <code>lifecycle</code>/<code>fictitious</code>. Mappings must be <strong>pure &amp; reversible</strong> (see F5).</p>\n",
       "emoji": "Pin",
       "id": "issue-161/scope",
@@ -17677,6 +18250,12 @@
           "source": "inferred",
           "to": "repo-root",
           "type": "mentions"
+        },
+        {
+          "description": "Mentions",
+          "source": "inferred",
+          "to": "file-structured-content/schema/edges.yaml",
+          "type": "mentions"
         }
       ],
       "content": "<p>🟣 <strong>CLOSED</strong> · #162</p>\n<p>Created: Jun 10, 2026 · Updated: Jun 11, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/162\">View on GitHub ↗</a></p>\n<hr>\n<p><strong>Parent feature:</strong> F2 — Content-model ingestion pipeline</p>\n",
@@ -17711,7 +18290,14 @@
     },
     {
       "cluster": "work",
-      "connections": [],
+      "connections": [
+        {
+          "description": "References edges.yaml",
+          "source": "inferred",
+          "to": "file-structured-content/schema/edges.yaml",
+          "type": "references"
+        }
+      ],
       "content": "<p>Walk <code>edges.yaml</code> and resolve scalar FK, array FK, composite FK (<code>&lt;cycle&gt;:&lt;squad&gt;</code>), and alias FK (→ Person) edges; compute derived edges; honor <code>deprecated</code>. Unresolved targets become <strong>stub nodes</strong> so the graph stays connected. Type each edge into the six-relation taxonomy (<code>leads|staffs|reports-to|structural|derived|deprecated</code>).</p>\n",
       "emoji": "Pin",
       "id": "issue-162/scope",
@@ -23356,6 +23942,14 @@
           "to": "dir-content"
         },
         {
+          "description": "References edges.yaml/",
+          "to": "file-structured-content/schema/edges.yaml"
+        },
+        {
+          "description": "References teamops.yaml/",
+          "to": "file-structured-content/teamops.yaml"
+        },
+        {
           "description": "References package.json/",
           "to": "file-package.json"
         }
@@ -23398,6 +23992,10 @@
         {
           "description": "References content/",
           "to": "dir-content"
+        },
+        {
+          "description": "References edges.yaml/",
+          "to": "file-structured-content/schema/edges.yaml"
         }
       ],
       "content": "<p>🟣 <strong>CLOSED</strong> · #274</p>\n<p>Created: Jun 16, 2026 · Updated: Jun 17, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/274\">View on GitHub ↗</a></p>\n<hr>\n<p><strong>Gap C (top template priority for our adoption).</strong> kbexplorer has a <code>person</code> kind, <code>reports-to</code>/<code>leads</code> edges and a <code>PersonView</code>, but the people/org-chart experience is bring-your-own: <code>PersonView</code> renders <code>manager</code>/<code>reports-to</code> as <strong>plain text</strong>, and there is <strong>no reports-to tree layout</strong> for navigating a hundreds-person org.</p>\n<p>The <code>person-manager → reports-to</code> foreign-key edge already exists in <code>content-model/schema/edges.yaml</code>, so this is primarily <strong>view-layer</strong> work plus a documented contract for feeding person descriptors from an external (MS Graph) pipeline.</p>\n<h3>Sub-tasks</h3>\n<ul>\n<li><strong>C1</strong> — make <code>PersonView</code> <code>manager</code> / <code>team</code> / <code>reports-to</code> <strong>navigable graph links</strong> (reuse the existing <code>NodeLink</code> pattern; resolve target to the person node id/URN).</li>\n<li><strong>C2</strong> — add a <strong>reports-to tree layout</strong> that scales to a hundreds-person org.</li>\n<li><strong>C3</strong> — document the supported <strong>BYO person-descriptor / derived-JSON-LD</strong> feed contract so an external pipeline can supply <code>person</code> nodes that pass validation.</li>\n</ul>\n<h3>Acceptance</h3>\n<ul>\n<li>A hundreds-person org renders as a navigable reports-to tree.</li>\n<li><code>PersonView</code> reporting line is clickable and opens the manager&#39;s node.</li>\n<li>Reorg/provenance feeding is documented against a stable, validated contract.</li>\n</ul>\n<p><em>Implementation targets <code>main</code>. Part of the kbexplorer-template adoption-readiness epic (#273).</em></p>\n",
@@ -23446,6 +24044,10 @@
         {
           "description": "References src/engine/",
           "to": "dir-src/engine"
+        },
+        {
+          "description": "References edges.yaml/",
+          "to": "file-structured-content/schema/edges.yaml"
         }
       ],
       "content": "<p>🟣 <strong>CLOSED</strong> · #275</p>\n<p>Created: Jun 16, 2026 · Updated: Jun 17, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/275\">View on GitHub ↗</a></p>\n<hr>\n<p><strong>Gap H.</strong> A services monorepo&#39;s core entities include <strong>services</strong> (repo service → owning team, ServiceTree id, catalog-info path, repo path) and <strong>decisions</strong> (ADRs). Neither has a bespoke kind/viewer today — both fall back to <code>GenericStructuredView</code>. The spine kinds in <code>src/engine/content-model/register.ts</code> cover person/squad/workstream/mission/priority/cycle/org/team/system-of-record only.</p>\n<p><strong>Decision: build first-class kinds</strong> (not the doc-only fallback path).</p>\n<h3>Scope</h3>\n<ul>\n<li>Register <code>service</code> + <code>decision</code> as spine kinds in <code>register.ts</code> (open node-type + viewer registries — no core union edits).</li>\n<li>Add <code>ServiceView</code> + <code>DecisionView</code> in <code>src/views/viewers/</code> (className-styled, SSR-safe), bound via <code>registerContentModelTypes()</code>.</li>\n<li>Add edge rules in <code>content-model/schema/edges.yaml</code>:<ul>\n<li><code>service</code> <code>owned-by</code> → team; <code>service</code> <code>tracked-in</code> → system-of-record.</li>\n<li><code>decision</code> <code>decided-by</code> → person; <code>decision</code> <code>affects</code> → workstream/mission.</li>\n</ul>\n</li>\n<li>Add example entity files under <code>content-model/services/</code> and <code>content-model/decisions/</code>, plus conventions/lifecycle entries.</li>\n<li>Viewer-registry + spine-viewer unit tests.</li>\n</ul>\n<h3>Acceptance</h3>\n<ul>\n<li>A <code>service</code> node renders ownership + a ServiceTree/catalog link.</li>\n<li>A <code>decision</code> node renders deciders + context.</li>\n<li>Achieved without core edits (per the open node-type registry); all FK edges resolve and pass <code>validate</code>/<code>derive --check</code>.</li>\n</ul>\n<p><em>Implementation targets <code>main</code>. Part of the kbexplorer-template adoption-readiness epic (#273).</em></p>\n",
@@ -23526,6 +24128,10 @@
         {
           "description": "References content/",
           "to": "dir-content"
+        },
+        {
+          "description": "References teamops.yaml/",
+          "to": "file-structured-content/teamops.yaml"
         }
       ],
       "content": "<p>🟣 <strong>CLOSED</strong> · #277</p>\n<p>Created: Jun 16, 2026 · Updated: Jun 16, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/277\">View on GitHub ↗</a></p>\n<hr>\n<p><strong>Gap B (template side — verify &amp; close).</strong> The gaps doc claims the <code>content-model/</code> schema-config files and the field-contract vocabulary are not committed (fixtures only). <strong>This is now stale</strong>: <code>main</code> ships the real <code>content-model/</code> tree at repo root (<code>teamops.yaml</code>, <code>schema/{conventions,edges,lifecycle}.yaml</code>, <code>index/context.jsonld</code>, <code>index/vocabulary.jsonld</code>, entity files) plus <code>docs/work-graph-vocabulary.md</code>.</p>\n<h3>Scope</h3>\n<ul>\n<li>Verify the shipped schema-config + <code>work-graph-vocabulary.md</code> fully satisfy the template-side B requirement (reference/starter files with inline comments, one example instance per kind).</li>\n<li>File only the residual, if any (e.g. missing inline comments, a missing example kind, doc gaps).</li>\n<li>The <code>kbexplorer init --content-model</code> / <code>scaffold content-model</code> command is <strong>CLI-side</strong> (<code>anokye-labs/kbexplorer-cli</code>) — out of scope here; reference as a cross-repo dependency.</li>\n</ul>\n<h3>Acceptance</h3>\n<ul>\n<li>Confirmed: a fresh repo can author against the committed schema-config with documented field contracts.</li>\n<li>Any residual template gap is captured; otherwise close as satisfied.</li>\n</ul>\n<p><em>Part of the kbexplorer-template adoption-readiness epic (#273).</em></p>\n",
@@ -23618,6 +24224,10 @@
         {
           "description": "References content/",
           "to": "dir-content"
+        },
+        {
+          "description": "References edges.yaml/",
+          "to": "file-structured-content/schema/edges.yaml"
         }
       ],
       "content": "<p>🟣 <strong>CLOSED</strong> · #279</p>\n<p>Created: Jun 16, 2026 · Updated: Jun 17, 2026</p>\n<p><a href=\"https://github.com/anokye-labs/kbexplorer-template/issues/279\">View on GitHub ↗</a></p>\n<hr>\n<p>Add a <strong>reports-to tree layout</strong> for the <code>person</code> graph that scales to a hundreds-person org. The <code>person-manager -&gt; reports-to</code> FK edge already exists in <code>content-model/schema/edges.yaml</code>; this is a layout/view concern (where the layout is selected, how it scales). Validate with a large fixture.</p>\n<p>Parent: #274. Part of epic #273. Targets <code>main</code>.</p>\n",
@@ -35194,6 +35804,52 @@
       "title": "Task: finish ESLint 10 follow-up for PR #65"
     },
     {
+      "cluster": "teamops",
+      "connections": [
+        {
+          "description": "Tracked in this repository",
+          "relation": "tracked-in",
+          "source": "inferred",
+          "to": "repo-meta",
+          "type": "references"
+        }
+      ],
+      "content": "",
+      "data": {
+        "@type": "person",
+        "id": "ada",
+        "name": "Ada Lovelace"
+      },
+      "derived": true,
+      "display": "entity",
+      "entityType": "person",
+      "id": "kg://example.com/people/ada",
+      "identity": "kg://example.com/people/ada",
+      "jsonld": {
+        "@context": {
+          "person": "kg://example.com/people/"
+        },
+        "@id": "kg://example.com/people/ada",
+        "@type": "person",
+        "id": "ada",
+        "lifecycle": "durable",
+        "name": "Ada Lovelace"
+      },
+      "provider": "content-model",
+      "rawContent": "",
+      "source": {
+        "entityType": "person",
+        "ref": "ada",
+        "type": "structured"
+      },
+      "sourceFile": {
+        "format": "yaml",
+        "path": "structured-content/people/ada.yaml",
+        "raw": "\"@type\": person\nid: ada\nname: Ada Lovelace\n"
+      },
+      "title": "Ada Lovelace"
+    },
+    {
       "cluster": "docs",
       "connections": [
         {
@@ -40858,13 +41514,13 @@
     {
       "cluster": "infra",
       "connections": [],
-      "content": "<h2>kbexplorer</h2>\n<p>2 directories, 2 root files</p>\n",
+      "content": "<h2>kbexplorer</h2>\n<p>3 directories, 2 root files</p>\n",
       "emoji": "Folder",
       "id": "repo-root",
       "identity": "urn:file:/",
       "nodeType": "parent",
       "provider": "files",
-      "rawContent": "## kbexplorer\n\n2 directories, 2 root files",
+      "rawContent": "## kbexplorer\n\n3 directories, 2 root files",
       "source": {
         "path": "/",
         "type": "file"
@@ -40967,9 +41623,9 @@
       "pr-223",
       "issue-220",
       "issue-197",
+      "issue-279",
       "issue-153",
       "issue-198",
-      "issue-279",
       "issue-278",
       "issue-196",
       "issue-195",
@@ -41001,10 +41657,10 @@
       "issue-34",
       "issue-36",
       "issue-32",
+      "issue-275",
       "issue-265",
       "issue-33",
       "issue-278",
-      "issue-275",
       "issue-10",
       "issue-31"
     ],
@@ -41012,15 +41668,35 @@
       "dir-src",
       "file-src/engine/graph.ts",
       "issue-32",
-      "issue-265",
       "issue-275",
+      "issue-265",
       "issue-10",
       "issue-31",
+      "issue-160/scope",
       "issue-52/problem",
       "issue-312/scope",
       "issue-187/scope",
-      "issue-166/scope",
-      "issue-163/scope"
+      "issue-166/scope"
+    ],
+    "dir-structured-content": [
+      "repo-root",
+      "file-structured-content/teamops.yaml",
+      "dir-structured-content/schema",
+      "dir-structured-content/people",
+      "dir-structured-content/index"
+    ],
+    "dir-structured-content/index": [
+      "dir-structured-content"
+    ],
+    "dir-structured-content/people": [
+      "dir-structured-content",
+      "file-structured-content/people/ada.yaml"
+    ],
+    "dir-structured-content/schema": [
+      "file-structured-content/schema/edges.yaml",
+      "file-structured-content/schema/conventions.yaml",
+      "dir-structured-content",
+      "file-structured-content/schema/lifecycle.yaml"
     ],
     "file-content/config.yaml": [
       "dir-content",
@@ -41063,6 +41739,47 @@
       "dir-src/engine",
       "issue-59"
     ],
+    "file-structured-content/people/ada.yaml": [
+      "dir-structured-content/people"
+    ],
+    "file-structured-content/schema/conventions.yaml": [
+      "dir-structured-content/schema",
+      "issue-149/why",
+      "issue-161/scope",
+      "issue-149",
+      "issue-147",
+      "issue-160",
+      "issue-161"
+    ],
+    "file-structured-content/schema/edges.yaml": [
+      "dir-structured-content/schema",
+      "issue-273",
+      "issue-274",
+      "issue-279",
+      "issue-275",
+      "issue-147/adopted-model",
+      "issue-149/why",
+      "issue-162/scope",
+      "issue-149/what",
+      "issue-149",
+      "issue-147",
+      "issue-160"
+    ],
+    "file-structured-content/schema/lifecycle.yaml": [
+      "dir-structured-content/schema",
+      "issue-147/adopted-model",
+      "issue-147",
+      "issue-160"
+    ],
+    "file-structured-content/teamops.yaml": [
+      "dir-structured-content",
+      "issue-273",
+      "issue-277",
+      "issue-160/scope",
+      "issue-147/adopted-model",
+      "issue-147",
+      "issue-160"
+    ],
     "issue-1": [
       "issue-1/summary",
       "issue-1/acceptance-criteria",
@@ -41101,12 +41818,12 @@
       "issue-17",
       "issue-14",
       "issue-149",
+      "issue-147",
       "issue-344",
       "issue-29",
-      "issue-147",
       "issue-232",
-      "issue-347",
-      "issue-163"
+      "issue-160",
+      "issue-347"
     ],
     "issue-13": [
       "repo-meta",
@@ -41127,9 +41844,9 @@
       "issue-13"
     ],
     "issue-147": [
+      "issue-147/adopted-model",
       "issue-147/what",
       "issue-147/why",
-      "issue-147/adopted-model",
       "issue-147/scope-boundaries",
       "issue-147/success-definition",
       "issue-147/children",
@@ -41141,7 +41858,10 @@
       "issue-179/acceptance-evidence"
     ],
     "issue-147/adopted-model": [
-      "issue-147"
+      "issue-147",
+      "file-structured-content/schema/edges.yaml",
+      "file-structured-content/teamops.yaml",
+      "file-structured-content/schema/lifecycle.yaml"
     ],
     "issue-147/children": [
       "issue-147"
@@ -41190,9 +41910,9 @@
       "issue-148"
     ],
     "issue-149": [
+      "issue-149/why",
       "issue-149/approach-key-files",
       "issue-149/what",
-      "issue-149/why",
       "issue-149/acceptance-summary",
       "issue-149/tasks",
       "pr-171",
@@ -41215,10 +41935,13 @@
       "issue-149"
     ],
     "issue-149/what": [
-      "issue-149"
+      "issue-149",
+      "file-structured-content/schema/edges.yaml"
     ],
     "issue-149/why": [
-      "issue-149"
+      "issue-149",
+      "file-structured-content/schema/edges.yaml",
+      "file-structured-content/schema/conventions.yaml"
     ],
     "issue-150": [
       "issue-150/approach-key-files",
@@ -41261,9 +41984,9 @@
       "issue-172/why",
       "issue-172/evidence",
       "repo-root",
+      "issue-147",
       "issue-344",
-      "issue-29",
-      "issue-147"
+      "issue-29"
     ],
     "issue-151/acceptance-summary": [
       "issue-151"
@@ -41457,9 +42180,12 @@
       "pr-175",
       "repo-root",
       "dir-src",
-      "dir-src/engine",
       "issue-149",
-      "issue-12"
+      "dir-src/engine",
+      "issue-12",
+      "file-structured-content/schema/edges.yaml",
+      "file-structured-content/schema/conventions.yaml",
+      "file-structured-content/teamops.yaml"
     ],
     "issue-160/evidence-based-completion-criteria": [
       "issue-160"
@@ -41467,7 +42193,8 @@
     "issue-160/scope": [
       "issue-160",
       "dir-src",
-      "dir-src/engine"
+      "dir-src/engine",
+      "file-structured-content/teamops.yaml"
     ],
     "issue-160/validation-criteria": [
       "issue-160"
@@ -41482,13 +42209,15 @@
       "issue-179",
       "issue-148",
       "issue-12",
-      "issue-154"
+      "issue-154",
+      "file-structured-content/schema/conventions.yaml"
     ],
     "issue-161/evidence-based-completion-criteria": [
       "issue-161"
     ],
     "issue-161/scope": [
-      "issue-161"
+      "issue-161",
+      "file-structured-content/schema/conventions.yaml"
     ],
     "issue-161/validation-criteria": [
       "issue-161"
@@ -41499,13 +42228,15 @@
       "issue-162/evidence-based-completion-criteria",
       "pr-175",
       "repo-root",
-      "issue-149"
+      "issue-149",
+      "file-structured-content/schema/edges.yaml"
     ],
     "issue-162/evidence-based-completion-criteria": [
       "issue-162"
     ],
     "issue-162/scope": [
-      "issue-162"
+      "issue-162",
+      "file-structured-content/schema/edges.yaml"
     ],
     "issue-162/validation-criteria": [
       "issue-162"
@@ -41517,8 +42248,8 @@
       "pr-175",
       "repo-root",
       "dir-src",
-      "dir-src/engine",
       "issue-149",
+      "dir-src/engine",
       "issue-34",
       "issue-12",
       "issue-318",
@@ -41722,8 +42453,8 @@
       "repo-root",
       "dir-content",
       "issue-149",
-      "issue-29",
-      "issue-147"
+      "issue-147",
+      "issue-29"
     ],
     "issue-179/acceptance-evidence": [
       "issue-179",
@@ -42496,20 +43227,21 @@
       "repo-meta",
       "repo-root",
       "dir-content",
+      "file-structured-content/schema/edges.yaml",
+      "file-structured-content/teamops.yaml",
       "file-package.json",
       "pr-284",
       "pr-281",
       "pr-286",
       "pr-283",
       "issue-274",
-      "issue-220",
-      "issue-279",
-      "issue-278"
+      "issue-220"
     ],
     "issue-274": [
       "repo-meta",
       "repo-root",
       "dir-content",
+      "file-structured-content/schema/edges.yaml",
       "pr-284",
       "pr-281",
       "issue-273",
@@ -42523,6 +43255,7 @@
       "dir-src",
       "dir-content",
       "dir-src/engine",
+      "file-structured-content/schema/edges.yaml",
       "pr-286",
       "issue-273"
     ],
@@ -42537,6 +43270,7 @@
       "repo-meta",
       "repo-root",
       "dir-content",
+      "file-structured-content/teamops.yaml",
       "issue-273"
     ],
     "issue-278": [
@@ -42553,6 +43287,7 @@
       "repo-root",
       "commits",
       "dir-content",
+      "file-structured-content/schema/edges.yaml",
       "pr-285",
       "issue-273",
       "issue-274"
@@ -44055,8 +44790,8 @@
       "issue-42/blocked-by",
       "repo-root",
       "dir-content",
-      "issue-344",
       "issue-147",
+      "issue-344",
       "issue-54"
     ],
     "issue-41/blocked-by": [
@@ -44129,8 +44864,8 @@
       "pr-85",
       "issue-40/evolution-path-crawl-walk-run",
       "repo-root",
-      "issue-29",
       "issue-147",
+      "issue-29",
       "issue-298",
       "issue-40",
       "issue-324",
@@ -44549,6 +45284,9 @@
       "repo-root",
       "pr-65"
     ],
+    "kg://example.com/people/ada": [
+      "repo-meta"
+    ],
     "overview": [
       "file-content/overview.md"
     ],
@@ -44760,13 +45498,13 @@
       "repo-meta",
       "issue-149",
       "issue-148",
+      "issue-160",
       "issue-163",
       "issue-161",
       "issue-172",
-      "issue-160",
+      "issue-162",
       "issue-164",
       "issue-165",
-      "issue-162",
       "pr-204"
     ],
     "pr-176": [
@@ -45326,8 +46064,8 @@
       "commits",
       "issue-34",
       "issue-12",
-      "pr-138",
       "issue-273",
+      "pr-138",
       "pr-223",
       "pr-171",
       "issue-56",
@@ -45340,14 +46078,14 @@
       "dir-src",
       "dir-content",
       "file-package.json",
+      "dir-structured-content",
       "issue-34",
       "issue-12",
       "issue-273",
       "issue-56",
       "issue-17",
       "issue-274",
-      "issue-37",
-      "issue-36"
+      "issue-37"
     ],
     "setup": [
       "file-content/wiki/setup.md"
