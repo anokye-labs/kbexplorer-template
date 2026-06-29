@@ -5301,6 +5301,7 @@ interface NodeVisualProps {
  * Accepts 3- or 6-digit hex (with or without `#`); returns the input unchanged
  * when it can't be parsed or the theme is dark.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- tested helper co-located with the node viewer; HMR-only rule, no runtime impact.
 export function ensureIconContrast(hex: string | undefined, isDark: boolean): string | undefined {
   if (!hex || isDark) return hex;
   const m = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(hex);

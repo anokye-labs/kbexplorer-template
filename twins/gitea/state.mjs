@@ -23,6 +23,10 @@ export const BIN_DIR = resolve(DTU_DIR, 'bin');
 export const HARNESS = {
   giteaApi: process.env.GITEA_API ?? 'http://localhost:3000',
   container: process.env.GITEA_CONTAINER ?? 'kbe-gitea',
+  // Pinned to the 1.24 minor so the harness tracks security/bugfix patches within
+  // a known-good major.minor without surprise behavior jumps across majors. The
+  // pulls/issues REST surface the harness uses is stable across 1.24.x. Override
+  // via GITEA_IMAGE to reproduce against a specific patch if drift is suspected.
   image: process.env.GITEA_IMAGE ?? 'docker.io/gitea/gitea:1.24',
   httpPort: Number(process.env.GITEA_HTTP_PORT ?? 3000),
   twinPort: Number(process.env.TWIN_PORT ?? 3456),

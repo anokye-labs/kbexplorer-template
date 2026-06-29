@@ -54,9 +54,13 @@ providers:
 ```
 
 - `module` — ES-module specifier. When present it takes precedence over `type`,
-  and `type` is just an advisory label. **F5a only loads local modules**: the
-  specifier must be relative (`./` or `../`); bare/absolute/URL specifiers are
-  rejected with a warning (third-party npm package specifiers arrive in F5b).
+  and `type` is just an advisory label. Two specifier forms load: a **local**
+  relative path (`./` or `../`), and a **bare npm package** name (`pkg`,
+  `@scope/pkg`, `pkg/subpath`) resolved from `node_modules`. Absolute paths and
+  URL/scheme specifiers are rejected with a warning, so the loader never executes
+  arbitrary remote code. A third-party package is additionally checked against the
+  provider-API version + capabilities it declares and skipped (not crashed) if
+  incompatible.
 - `options` — free-form, passed straight through to your factory via
   `config.options`.
 - `cluster` / `name` — surfaced on `config` for your factory to use.
@@ -77,5 +81,6 @@ rely on those nodes existing in `existingNodes` when its `resolve` runs.
 ## Example
 
 See [`src/engine/providers/examples/glossary-provider.ts`](../src/engine/providers/examples/glossary-provider.ts)
-for a complete, runnable local provider authored exactly the way a third-party
-package would be (third-party npm provider packages land in F5b).
+for a complete, runnable **local** provider, and
+[`examples/quotes-provider/`](../examples/quotes-provider/) for the same contract
+published as a **third-party npm package** (loaded by a bare specifier).

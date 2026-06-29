@@ -66,3 +66,7 @@ export function canonicalGraph(graph: KBGraph): unknown {
 export function serializeGraph(graph: KBGraph): string {
   return JSON.stringify(canonicalGraph(graph), null, 2) + '\n';
 }
+
+export function normalizeGoldenText(text: string): string {
+  return text.replace(/\r\n/g, '\n');
+}
