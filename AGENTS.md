@@ -54,7 +54,13 @@ The HUD minimap uses one `<canvas ref={canvasRef}>` per dock orientation (vertic
 
 ### Themes
 
-Three themes via FluentProvider: dark (`webDarkTheme`), light (`webLightTheme`), sepia (custom `createLightTheme` with amber brand ramp).
+Three **built-in base modes** ship in code and are applied via `FluentProvider` (see `BUILTIN_MODES` / `BUILTIN_THEME_MAP` in `src/hooks/useTheme.ts`): dark (`webDarkTheme`), light (`webLightTheme`), and sepia (custom `createLightTheme` with an amber brand ramp). The names `dark`/`light`/`sepia` are reserved.
+
+On top of those, the self-repo's content config adds **named theme variants** (features F2 / F5) that derive from a `base` (dark/light) plus a `brand` seed and/or explicit `tokens`, and join the `t`-key cycle (`modesForMap` lists built-ins first, then named themes):
+- `ocean` (plus `rose`, `midnight`) — declared inline in `content/config.yaml` under `theme.themes`. `ocean` is then field-merged by the external file below (demonstrating F5 override precedence).
+- `forest` and `sandstone` — introduced only by `content/themes/extra-themes.yaml`, referenced via `theme.themesFile` (F5 / T5.1) and fetched at runtime.
+
+Because these named themes are part of the shipped config, the review / visual-regression surfaces (`scripts/review-surfaces.json`) deliberately cycle **dark / light / sepia / ocean** — the three built-ins plus the `ocean` named theme — so the captured baselines exercise the F2/F5 named-theme path, not just the built-in modes.
 
 ## Validation Strategy
 This project uses a Digital Twin Universe (DTU) for integration testing.
