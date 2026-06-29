@@ -25,8 +25,8 @@ layer is additive and opt-in above the fast PR gate.
                    │     visual-regression.yml         │  (pixelmatch baseline diff)
                    └───────────────────────────────────┘
                   ┌─────────────────────────────────────┐
-                  │  4. Full-loop scenario              │  manual / local (not yet in nightly CI)
-                  │     playwright.full-loop.config.ts  │  actor → regen → render → verify
+                  │  4. Full-loop scenario              │  nightly 04:45 UTC + manual
+                  │     full-loop.yml                   │  actor → regen → render → verify
                   └─────────────────────────────────────┘
                  ┌───────────────────────────────────────┐
                  │  3. Live-DTU scenario specs           │  nightly 04:30 UTC + manual
@@ -230,10 +230,14 @@ App port: 4318 (`FULL_LOOP_APP_PORT`). The `globalSetup`
 (`e2e/full-loop/global-setup.mts`) handles the mutable-twin setup and manifest
 regen before specs run.
 
-**Where it runs:** Manual / local only. As of this writing **no scheduled
-workflow invokes the full-loop config** — `dtu-gitea.yml` (the nightly DTU job)
-runs only `npm run test:e2e:gitea` (layer 3). Wiring the full-loop into a
-nightly job (or extending `dtu-gitea.yml` to also run it) is tracked in
+**Where it runs:** Nightly at **04:45 UTC** (`full-loop.yml` schedule) and
+on-demand via `workflow_dispatch`. Never on the PR gate. The workflow runs the
+**static substrate only** (`FULL_LOOP_SUBSTRATE=static`) — no Podman, no live
+Gitea. Because the `globalSetup` runs the **real CLI**
+(`generateManifest()` from `kbexplorer-cli`), the workflow checks out
+`anokye-labs/kbexplorer-cli` into a workspace subdirectory and points
+`KBEXPLORER_CLI_PATH` at it (the override `globalSetup` documents for CI). The
+deferred live-Gitea half remains out of scope. Wiring this nightly closed
 [#269](https://github.com/anokye-labs/kbexplorer-template/issues/269). Run it
 manually with:
 
@@ -375,6 +379,7 @@ deliberately kept off the fast PR gate.
 | pr-title | `pr-title.yml` | PR (opened / edited / sync / reopened / ready) | validates PR title not empty / not WIP / not draft |
 | linked-issue | `linked-issue.yml` | PR (all states including labeled) | requires issue reference in title or body (bots exempt) |
 | DTU — Gitea multi-agent harness | `dtu-gitea.yml` | `workflow_dispatch`, nightly **04:30 UTC** | Podman+Gitea bringup → `npm run test:e2e:gitea` (layer 3) → upload `playwright-report-gitea` → `dtu:down` |
+| Full-loop scenario (layer 4) | `full-loop.yml` | `workflow_dispatch`, nightly **04:45 UTC** | checkout `kbexplorer-cli` (→ `KBEXPLORER_CLI_PATH`) → `npm run test:e2e:full-loop` (static substrate, layer 4) → upload `playwright-report-full-loop` |
 | Visual Regression | `visual-regression.yml` | `workflow_dispatch` (`update_baselines` input), nightly **05:15 UTC** | manifest gen → build → `capture:review` → `verify:visual` (layer 5) → upload screenshots / diffs / baselines |
 | Exploratory-agent harness | `explore-dtu.yml` | `workflow_dispatch` (`skip_app`, `write_brief` inputs), nightly **06:00 UTC** | Podman+Gitea bringup → `node scripts/explore-dtu.mjs` (5-min cap) → upload `session-brief.json` → `dtu:down` (layer 6) |
 
@@ -395,7 +400,7 @@ deliberately kept off the fast PR gate.
 | Graph validate + quality gate | Yes (template only) | N/A | — |
 | Static-twin e2e (Playwright) | Yes | N/A | — |
 | Live-DTU scenario specs | **No** | N/A | Requires Podman + real Gitea container; 25-min timeout |
-| Full-loop scenario | **No** | N/A | Requires Podman / CLI sibling; 2-min per-spec timeout |
+| Full-loop scenario | **No** (nightly `full-loop.yml`) | N/A | Runs the real CLI from a sibling checkout + 2-min per-spec timeout; nightly-only by design |
 | Visual regression | **No** | N/A | Full build + real browser + OS font-render variance; intentional design changes must update baselines deliberately |
 | Exploratory-agent harness | **No** | N/A | Stages a live DTU + emits brief; no deterministic pass/fail signal |
 
