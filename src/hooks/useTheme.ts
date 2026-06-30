@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { KBConfig, FluentBrandRamp, FluentBrandRampKey } from '../types';
+import type { KBConfig, FluentBrandRamp, FluentBrandRampKey, PresentationTokens } from '../types';
 import {
   webDarkTheme,
   webLightTheme,
@@ -9,6 +9,16 @@ import {
   type BrandVariants,
 } from '@fluentui/react-components';
 import { generateBrandVariants } from '../theme/brandRamp';
+import { resolveHostFluentTheme } from '../theme/hostTheme';
+
+/**
+ * Theme key for the host-inherited Fluent theme (#404). When the SPA is embedded
+ * in a canvas host that mirrors semantic CSS vars (`--background-color-default`,
+ * `--text-color-*`, `--font-*`), `applyConfig` resolves a Fluent theme from them
+ * via {@link resolveHostFluentTheme} and registers it under this key so it joins
+ * the selectable set / `t`-cycle and can be persisted like any other theme.
+ */
+export const INHERIT_HOST_MODE = 'inherit-host';
 
 /**
  * A selectable theme key. The three built-ins (dark/light/sepia) are always
@@ -262,6 +272,16 @@ export function useTheme(): [
   // same name. Absent/empty ⇒ the map equals the config-only result (no-op).
   const applyConfig = useCallback((theme?: KBConfig['theme'], moduleThemes?: Record<string, FluentTheme>) => {
     const map = { ...buildThemeMap(theme), ...(moduleThemes ?? {}) };
+    // #404: when embedded in a canvas host that mirrors semantic CSS vars, adopt
+    // its look by resolving a Fluent theme from those vars (with the published
+    // PresentationTokens intent knobs from config). Registered last so a real
+    // host theme is always available; absent host vars ⇒ null ⇒ no-op.
+    const hostPresentation = (theme as { presentation?: PresentationTokens } | undefined)?.presentation;
+    const hostTheme = resolveHostFluentTheme(
+      typeof document !== 'undefined' ? document.documentElement : null,
+      hostPresentation,
+    );
+    if (hostTheme) map[INHERIT_HOST_MODE] = hostTheme;
     setThemeMap(map);
     const modes = modesForMap(map);
     const stored = readStoredRaw(modes);

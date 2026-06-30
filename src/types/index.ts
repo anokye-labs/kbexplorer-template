@@ -38,6 +38,8 @@ import {
   type GraphStoreEntry,
   type GraphStoreInvalidation,
   type GraphStoreWrite,
+  type PresentationTokens,
+  CANVAS_TARGET,
 } from '@anokye-labs/kbexplorer-core';
 
 /**
@@ -86,6 +88,8 @@ export {
   type GraphStoreEntry,
   type GraphStoreInvalidation,
   type GraphStoreWrite,
+  type PresentationTokens,
+  CANVAS_TARGET,
 };
 
 /**
