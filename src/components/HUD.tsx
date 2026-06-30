@@ -41,7 +41,7 @@ import {
 import type { KBGraph, KBConfig, KBNode } from '../types';
 import { collapseGraphClusters, trimGraphToLimits } from '../types';
 import type { TrimResult } from '../types';
-import { getEdgeStyle, getEdgeLegendKey } from '../representation/styles';
+import { getEdgeStyle, getEdgeLegendKey, styleColorVar } from '../representation/styles';
 import { BUILT_IN_VIEWS, getView, filterGraphToView } from '../representation/views';
 import type { GraphLayoutMode } from '../representation/views';
 import type { ThemeMode } from '../hooks/useTheme';
@@ -1021,7 +1021,7 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                     <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0' }}>
                       <svg width={18} height={8} style={{ flexShrink: 0 }}>
                         <line x1={0} y1={4} x2={18} y2={4}
-                          stroke={s.color} strokeWidth={Math.max(s.width, 1.2)}
+                          stroke={styleColorVar(s)} strokeWidth={Math.max(s.width, 1.2)}
                           strokeDasharray={Array.isArray(s.dashes) ? s.dashes.join(',') : undefined} />
                       </svg>
                       <Caption1 style={{ color: tokens.colorNeutralForeground2 }}>{label}</Caption1>

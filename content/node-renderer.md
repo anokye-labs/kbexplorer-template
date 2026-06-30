@@ -11,17 +11,21 @@ The node renderer (`src/engine/nodeRenderer.ts`) is the custom canvas drawing en
 
 ## How It Works
 
-`createNodeRenderer()` returns a draw function that vis-network calls for each node on every frame:
+`createNodeRenderer()` returns a vis-network `ctxRenderer` — a draw function vis-network calls for each node on every frame with a single args object (`{ ctx, x, y, state, style }`):
 
 ```typescript
 function createNodeRenderer(
-  iconName: string,   // Fluent icon name (e.g., "Flash", "Code")
-  color: string,      // Cluster color hex
-  size: number,       // Node radius in pixels
-  isDark: boolean,    // Dark mode flag
-  label?: string,     // Optional text label
-  disconnected?: boolean
-): (ctx: CanvasRenderingContext2D, x: number, y: number) => void
+  iconName: string | undefined, // Fluent icon name (e.g., "Flash", "Code"), or none
+  clusterColor: string,         // Cluster color hex
+  nodeSize: number,             // Node diameter in pixels
+  theme: NodeThemeSource,       // Resolved theme-source (foreground/background/icon)
+  label?: string,               // Optional text label
+  disconnected?: boolean,
+): (args: { ctx: CanvasRenderingContext2D; x: number; y: number; state: { selected: boolean; hover: boolean }; style: { size: number } }) => {
+  drawNode?: unknown;
+  drawExternalLabel?: unknown;
+  nodeDimensions: { width: number; height: number };
+}
 ```
 
 The renderer paints a rounded shape (circle, rounded square, or rounded rectangle depending on icon type), fills it with the cluster color at reduced opacity, then draws the Fluent icon as an SVG data URI overlay. Labels render below the shape in the current theme's foreground color.
@@ -34,9 +38,9 @@ The `ICON_NODE_SHAPE` map determines which shape each icon gets. The `inferNodeS
 
 The renderer embeds 150+ Fluent UI icon SVG paths in the `ICON_PATHS` dictionary — a subset of `@fluentui/react-icons` hand-selected for the knowledge graph use case. `getIconImage()` converts each icon to a canvas-drawable `Image` via SVG data URI construction and caches the result for performance. Icons are colored with their cluster color — never monochrome.
 
-## Dark Mode Rendering
+## Host Theme-Source Bridge
 
-In dark mode, background fills use lighter opacity and icon strokes invert. The `isDark` parameter flows from the [theme system](theme-system) through the [graph network](graph-network) factory. The `hexToRgba()` helper adjusts fill and stroke colors accordingly — without this, nodes would be invisible on dark backgrounds.
+Rather than branching on a binary `isDark` flag, the renderer paints from a resolved `NodeThemeSource` (`{ isDark, foreground, background, iconColor }`). `resolveNodeTheme(root, isDarkHint)` reads `--colorNeutralForeground2` / `--colorNeutralBackground1` off the graph container — which inherits the active `FluentProvider` (or a canvas host's mirrored) token variables — and derives `isDark` from the background's perceived luminance. Unset variables fall back to the prior dark/light hardcodes selected by `isDarkHint`. This lets the constellation adopt a host theme with no fork, while `hexToRgba()` still adjusts fill and stroke opacity so nodes stay visible on any background.
 
 ## Integration
 

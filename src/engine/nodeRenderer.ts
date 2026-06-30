@@ -2720,23 +2720,91 @@ export function getLabelFont(): string {
 }
 
 /**
+ * Resolved host/theme color source for node rendering.
+ *
+ * Replaces the old binary `isDark` flag: instead of branching between two
+ * hardcoded palettes, the renderer paints from theme tokens resolved from CSS
+ * variables (Fluent `colorNeutral*`, or a canvas host's mirrored equivalents).
+ * `isDark` is retained only as a derived hint for icon contrast.
+ */
+export interface NodeThemeSource {
+  /** Derived from background luminance — drives icon contrast only. */
+  isDark: boolean;
+  /** Label fill — semantic primary/secondary foreground. */
+  foreground: string;
+  /** Label outline + opaque node base — semantic surface background. */
+  background: string;
+  /** Icon glyph color, contrast-matched to the background. */
+  iconColor: string;
+}
+
+/** Whether a hex/`rgb()` background reads as dark (perceived luminance < 0.5). */
+function backgroundIsDark(bg: string, hint?: boolean): boolean {
+  const hex = /^#?([0-9a-fA-F]{6})$/.exec(bg.trim());
+  if (hex) {
+    const n = parseInt(hex[1], 16);
+    const r = (n >> 16) & 0xff, g = (n >> 8) & 0xff, b = n & 0xff;
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
+  }
+  const rgb = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(bg);
+  if (rgb) {
+    const r = +rgb[1], g = +rgb[2], b = +rgb[3];
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
+  }
+  return hint ?? true;
+}
+
+function readCssVar(root: Element | null, name: string, fallback: string): string {
+  if (!root || typeof getComputedStyle === 'undefined') return fallback;
+  try {
+    const v = getComputedStyle(root).getPropertyValue(name).trim();
+    return v || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Resolve a {@link NodeThemeSource} from the active theme's CSS variables.
+ *
+ * `root` should be an element inside the active `FluentProvider` subtree (the
+ * graph container) so it inherits that theme's token variables; a canvas host
+ * mirrors the same semantic vars, so the SPA adopts the host look with no fork.
+ * Falls back to the prior dark/light hardcodes (selected by `isDarkHint`) when a
+ * variable is unset or the DOM is unavailable (SSR/tests).
+ */
+export function resolveNodeTheme(root?: Element | null, isDarkHint?: boolean): NodeThemeSource {
+  const el = root ?? (typeof document !== 'undefined' ? document.documentElement : null);
+  const dark = isDarkHint ?? true;
+  const foreground = readCssVar(el, '--colorNeutralForeground2', dark ? '#d6d6d6' : '#242424');
+  const background = readCssVar(el, '--colorNeutralBackground1', dark ? '#1f1f1f' : '#ffffff');
+  const isDark = backgroundIsDark(background, isDarkHint);
+  return {
+    isDark,
+    foreground,
+    background,
+    iconColor: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
+  };
+}
+
+/**
  * Creates a ctxRenderer function for a vis-network custom node.
  */
 export function createNodeRenderer(
   iconName: string | undefined,
   clusterColor: string,
   nodeSize: number,
-  isDark: boolean,
+  theme: NodeThemeSource,
   label?: string,
   disconnected?: boolean,
   opts?: NodeRendererOptions,
 ){
   const shapeType: NodeShapeType = (iconName && ICON_NODE_SHAPE[iconName]) || 'circle';
-  const iconColor = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)';
+  const iconColor = theme.iconColor;
   const iconImg = iconName ? getIconImage(iconName, iconColor) : null;
-  const labelColor = isDark ? '#d6d6d6' : '#242424';
-  const labelStroke = isDark ? '#1f1f1f' : '#ffffff';
-  const bgFill = isDark ? '#1f1f1f' : '#ffffff';
+  const labelColor = theme.foreground;
+  const labelStroke = theme.background;
+  const bgFill = theme.background;
 
   return function ctxRenderer({ ctx, x, y, state }: CtxRendererArgs) {
     const s = nodeSize;
