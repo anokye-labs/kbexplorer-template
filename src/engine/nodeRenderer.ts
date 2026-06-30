@@ -2699,6 +2699,13 @@ export interface NodeRendererOptions {
    * below the node (back-compat for callers without a layout pass).
    */
   labelState?: Map<string, RendererLabelState>;
+  /**
+   * Full node title used only when the node is selected/hovered, so a focused
+   * node always shows its label even if it's normally unlabelled or was hidden by
+   * the collision pass (#435). Distinct from the normal-path `label`, which stays
+   * subject to LOD + hide-on-collide.
+   */
+  focusLabel?: string;
 }
 
 const LABEL_FONT = '11px "Segoe UI", system-ui, sans-serif';
@@ -2799,24 +2806,33 @@ export function createNodeRenderer(
     // of `nodeDimensions` so edges clip to the node body, not the label (#435).
     const id = opts?.id;
     const live = id != null ? opts?.labelState?.get(id) : undefined;
-    const labelText = live ? live.text : label;
+    const baseText = live ? live.text : label;
     const labelHidden = live ? live.hidden : false;
     const labelAnchor = live ? live.anchor : 'below';
-    if (labelText && !labelHidden) {
+    // A selected or hovered node ALWAYS shows its full label, overriding both LOD
+    // (it may be normally unlabelled) and hide-on-collide, so the focused node is
+    // never left anonymous (#435). When forced, fall back to the 'below' anchor.
+    const focused = state.selected || state.hover;
+    const focusText = baseText || (focused ? opts?.focusLabel : undefined);
+    const forced = focused && (!baseText || labelHidden);
+    const drawLabel = forced ? !!focusText : !!baseText && !labelHidden;
+    const labelText = forced ? focusText : baseText;
+    const effectiveAnchor = forced ? 'below' : labelAnchor;
+    if (drawLabel && labelText) {
       ctx.font = LABEL_FONT;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       let lx = x;
       let ly: number;
-      if (labelAnchor === 'above') {
+      if (effectiveAnchor === 'above') {
         ctx.textBaseline = 'bottom';
         ly = y - s / 2 - LABEL_GAP;
-      } else if (labelAnchor === 'left') {
+      } else if (effectiveAnchor === 'left') {
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
         lx = x - (shapeType === 'roundedRect' ? s * 0.6 : s / 2) - LABEL_GAP;
         ly = y;
-      } else if (labelAnchor === 'right') {
+      } else if (effectiveAnchor === 'right') {
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         lx = x + (shapeType === 'roundedRect' ? s * 0.6 : s / 2) + LABEL_GAP;

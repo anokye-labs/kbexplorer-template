@@ -82,3 +82,55 @@ describe('createNodeRenderer — label placement (#435)', () => {
     expect(fillTexts).toContain('fallback');
   });
 });
+
+describe('createNodeRenderer — focus override (#435)', () => {
+  const selected = (ctx: CanvasRenderingContext2D) => ({
+    ctx, x: 100, y: 100, state: { selected: true, hover: false }, style: { size: 40 },
+  });
+  const hovered = (ctx: CanvasRenderingContext2D) => ({
+    ctx, x: 100, y: 100, state: { selected: false, hover: true }, style: { size: 40 },
+  });
+
+  it('draws the label of a SELECTED node even when collision layout hid it', () => {
+    const full = 'Focused node title';
+    const labelState = new Map<string, RendererLabelState>([
+      ['n1', { text: full, anchor: 'below', hidden: true }],
+    ]);
+    const render = createNodeRenderer(undefined, '#aabbcc', 40, true, full, false, {
+      id: 'n1', labelState,
+    });
+    const { ctx, fillTexts } = makeCtx();
+    render(selected(ctx));
+    expect(fillTexts).toContain(full);
+  });
+
+  it('draws the label of a HOVERED node even when collision layout hid it', () => {
+    const full = 'Hovered node title';
+    const labelState = new Map<string, RendererLabelState>([
+      ['n1', { text: full, anchor: 'below', hidden: true }],
+    ]);
+    const render = createNodeRenderer(undefined, '#aabbcc', 40, true, full, false, {
+      id: 'n1', labelState,
+    });
+    const { ctx, fillTexts } = makeCtx();
+    render(hovered(ctx));
+    expect(fillTexts).toContain(full);
+  });
+
+  it('uses focusLabel for a normally-unlabelled node when selected', () => {
+    // No labelState entry and no static label (LOD-suppressed), but selecting it
+    // must still reveal its full title via focusLabel.
+    const title = 'Low-degree node';
+    const render = createNodeRenderer(undefined, '#aabbcc', 40, true, undefined, false, {
+      id: 'n2', labelState: new Map(), focusLabel: title,
+    });
+    const { ctx, fillTexts } = makeCtx();
+    // Not focused → nothing painted.
+    render(args(ctx));
+    expect(fillTexts).not.toContain(title);
+    // Selected → focusLabel painted.
+    const { ctx: ctx2, fillTexts: ft2 } = makeCtx();
+    render(selected(ctx2));
+    expect(ft2).toContain(title);
+  });
+});

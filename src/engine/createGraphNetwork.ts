@@ -165,6 +165,7 @@ export function buildVisNode(
     ctxRenderer: createNodeRenderer(node.emoji, color, size, options.isDark, label, disconnected, {
       id: node.id,
       labelState: options.labelState,
+      focusLabel: node.title,
     }),
     size: size / 2,
     // Audit sidecar: the rendered label is captured inside the ctxRenderer
@@ -566,9 +567,12 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       if (!pos) continue;
       const radius = labelMeta.get(id)?.radius ?? 22;
       const width = measureCtx.measureText(st.text).width;
-      // Key/high-degree nodes keep their labels first when space is tight.
+      // Key/high-degree nodes keep their labels first when space is tight; the
+      // hovered/selected node is placed first of all so it's never hidden (#435).
       const deg = degrees.get(id) ?? 0;
-      const priority = (keyNodeIds.has(id) ? 1000 : 0) + deg;
+      const priority = id === activeLabelId
+        ? Number.MAX_SAFE_INTEGER
+        : (keyNodeIds.has(id) ? 1000 : 0) + deg;
       items.push({ id, x: pos.x, y: pos.y, radius, width, height: LABEL_LINE_HEIGHT, priority });
     }
     const placements = assignLabelPlacements(items, { obstacles });
@@ -576,14 +580,33 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     for (const [id, p] of placements) {
       const st = labelState.get(id);
       if (!st) continue;
-      if (st.anchor !== p.anchor || st.hidden !== p.hidden) {
+      // The active node never hides — the renderer also force-draws it, but keep
+      // labelState consistent so a later redraw doesn't flicker it off.
+      const hidden = id === activeLabelId ? false : p.hidden;
+      if (st.anchor !== p.anchor || st.hidden !== hidden) {
         st.anchor = p.anchor;
-        st.hidden = p.hidden;
+        st.hidden = hidden;
         changed = true;
       }
     }
     if (changed) network.redraw();
   }
+
+  // Track the hovered/selected node so its label is placed first and never
+  // hidden. The renderer also force-draws a focused node from `state`, but
+  // tracking the id lets the layout pass give it a collision-free anchor and
+  // reflow neighbours around it.
+  let activeLabelId: string | null = null;
+  const setActiveLabel = (id: string | null) => {
+    if (activeLabelId === id) return;
+    activeLabelId = id;
+    recomputeLabels();
+    network.redraw();
+  };
+  network.on('hoverNode', (p: { node: string }) => setActiveLabel(p.node));
+  network.on('blurNode', () => setActiveLabel(null));
+  network.on('selectNode', (p: { nodes: string[] }) => setActiveLabel(p.nodes?.[0] ?? null));
+  network.on('deselectNode', () => setActiveLabel(null));
 
   // Re-place labels whenever positions settle or a node is dragged.
   network.on('stabilized', recomputeLabels);
