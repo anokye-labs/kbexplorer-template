@@ -35,6 +35,22 @@ import { isRichAuthoredMarkdown } from './rich-markdown/detect';
 
 const PROVIDER_ID = 'authored-rich-markdown';
 
+/** Leading YAML frontmatter block (`---\n…\n---`), tolerant of a BOM + CRLF. */
+const LEADING_FRONTMATTER_RE = /^\uFEFF?---\r?\n[\s\S]*?\r?\n---\r?\n?/;
+
+/**
+ * Strip a leading frontmatter block, defensively.
+ *
+ * The package's `ingestRichMarkdown` already returns a frontmatter-stripped body
+ * in `rawContent`, but rendering raw `---`/YAML as visible prose would be an ugly,
+ * public-facing defect. This keeps that guarantee local and version-independent:
+ * if a future package revision ever left frontmatter in `rawContent`, the prose
+ * still never shows it. A no-op for a body that has no leading frontmatter.
+ */
+function stripLeadingFrontmatter(raw: string): string {
+  return raw.replace(LEADING_FRONTMATTER_RE, '');
+}
+
 /** Map one ingested block to the template's {@link RichMarkdownBlock} contract. */
 function toTemplateBlock(block: IngestedBlock): RichMarkdownBlock {
   const out: RichMarkdownBlock = { kind: block.lang, source: block.content };
@@ -57,6 +73,8 @@ export function adaptIngestedNode(ingested: IngestedNode): KBNode {
   // (it uses the passed `cluster` option), so prefer the frontmatter value here.
   const fmCluster = typeof frontmatter.cluster === 'string' ? frontmatter.cluster.trim() : '';
   const cluster = fmCluster || ingested.cluster;
+  // Body only — never the YAML frontmatter (see stripLeadingFrontmatter).
+  const body = stripLeadingFrontmatter(ingested.rawContent);
 
   const node: KBNode = {
     id: ingested.id,
@@ -64,8 +82,8 @@ export function adaptIngestedNode(ingested: IngestedNode): KBNode {
     cluster,
     // The pure lib leaves `content` empty; render the body exactly as the engine
     // renders any node so ProseContent finds the same fences at runtime.
-    content: marked.parse(ingested.rawContent, { async: false }) as string,
-    rawContent: ingested.rawContent,
+    content: marked.parse(body, { async: false }) as string,
+    rawContent: body,
     display: 'rich-markdown',
     connections: (ingested.connections ?? []) as KBNode['connections'],
     identity: ingested.identity,

@@ -134,6 +134,23 @@ describe('AuthoredRichMarkdownProvider', () => {
     expect(nodes[0].content).toContain('language-dot');
   });
 
+  it('never renders YAML frontmatter as visible prose', async () => {
+    const provider = new AuthoredRichMarkdownProvider({ 'content/org/platform.md': richDoc });
+    const { nodes } = await provider.resolve(config, []);
+    const { content, rawContent } = nodes[0];
+
+    // The rendered prose HTML must not leak the frontmatter delimiters or keys.
+    expect(content).not.toContain('---');
+    expect(content).not.toContain('display: rich-markdown');
+    expect(content).not.toMatch(/owner\s*:/);
+    expect(content).not.toMatch(/^\s*tags\s*:/m);
+    // …and the body it renders from is itself frontmatter-free.
+    expect(rawContent).not.toContain('---');
+    expect(rawContent).not.toContain('display: rich-markdown');
+    // The frontmatter facts are still available to the structured view.
+    expect(getRichMarkdownDocument(nodes[0])!.frontmatter).toMatchObject({ owner: 'Team Atlas' });
+  });
+
   it('ignores plain authored docs (no rich opt-in)', async () => {
     const provider = new AuthoredRichMarkdownProvider({ 'content/intro.md': plainDoc });
     const { nodes, edges } = await provider.resolve(config, []);
