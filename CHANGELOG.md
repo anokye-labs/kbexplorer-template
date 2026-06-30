@@ -22,6 +22,10 @@ template ↔ kbexplorer CLI compatibility matrix and the pinning contract.
   - A **pre-built-SVG fallback contract**: any block that ships an `svg` renders it
     instead of a raw code dump, so a block never degrades to raw code when an SVG
     exists. This replaces the prior raw-code display in the prose diagram walk.
+    The provider-supplied SVG is **untrusted**, so it is rendered as an inert
+    `<img>` from a `data:image/svg+xml` URL (loaded in the browser's secure static
+    mode — no scripts, event handlers, external fetches, or `<foreignObject>` HTML
+    can execute), never parsed into the live DOM.
   - Consumes the provider shape `node.data.richMarkdown.blocks` (kbexplorer-cli#133).
   - A `?demo=richmd` seam injects a sample document so the view is viewable without
     a provider.

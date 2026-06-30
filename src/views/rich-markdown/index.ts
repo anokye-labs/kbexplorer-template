@@ -46,6 +46,7 @@ export {
 } from './renderers';
 
 export { findBlockForFence, planProseFence } from './plan';
+export { svgToImageDataUri } from './svg';
 
 export { FrontmatterFacts } from './FrontmatterFacts';
 export { RichMarkdownDocumentView } from './RichMarkdownDocumentView';

@@ -35,6 +35,7 @@ import {
   getRichMarkdownDocument,
   planProseFence,
   findBlockForFence,
+  svgToImageDataUri,
   RichMarkdownDocumentView,
   type RichMarkdownBlock,
 } from './rich-markdown';
@@ -344,29 +345,19 @@ function wrapRenderedProseDiagram(pre: HTMLPreElement, svgElement: SVGSVGElement
 }
 
 /**
- * Parse a pre-built SVG string (the block fallback contract) into an importable
- * SVG element. Mirrors {@link parseMermaidSvg} but additionally **strips any
- * `<script>` elements** — provider SVG shares the content trust boundary, so we
- * defensively remove active content before inserting it into the live document.
- */
-function parsePrebuiltSvg(svg: string): SVGSVGElement {
-  const element = parseMermaidSvg(normalizeMermaidSvgForXml(svg));
-  for (const script of Array.from(element.querySelectorAll('script'))) {
-    script.remove();
-  }
-  return element;
-}
-
-/**
  * Insert a pre-built-SVG block in place of its raw `<pre>` fence — the fallback
- * that replaces the raw-code display for blocks with no live renderer. The raw
- * source stays available, collapsed, in a `<details>` (matching the Mermaid UX),
- * so "no block falls back to raw code when an SVG exists" while the source is
- * never lost.
+ * that replaces the raw-code display for blocks with no live renderer.
+ *
+ * The provider-supplied `svg` is **untrusted**, so it is rendered as an inert
+ * `<img>` from a `data:image/svg+xml` URL (see {@link svgToImageDataUri}): the
+ * browser loads it in secure static mode, so no script, event handler, external
+ * reference, or `<foreignObject>` HTML can ever execute. It is never parsed into
+ * the live DOM. The raw source stays available, collapsed, in a `<details>`
+ * (matching the Mermaid UX), so the source is never lost.
  */
 function wrapPrebuiltSvgBlock(
   pre: HTMLPreElement,
-  svgElement: SVGSVGElement,
+  svg: string,
   opts: { kind: string; title?: string },
 ) {
   const figure = document.createElement('figure');
@@ -376,7 +367,13 @@ function wrapPrebuiltSvgBlock(
 
   const canvas = document.createElement('div');
   canvas.className = 'kb-diagram-canvas';
-  canvas.replaceChildren(svgElement);
+  const img = document.createElement('img');
+  img.className = 'kb-diagram-svg';
+  img.src = svgToImageDataUri(svg);
+  img.alt = opts.title ?? `${opts.kind} diagram`;
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  canvas.append(img);
   figure.append(canvas);
 
   if (opts.title) {
@@ -444,17 +441,12 @@ function ProseContent({
         const output = planProseFence(language, source, blocks, { isDark });
 
         if (output.type === 'svg') {
-          try {
-            const svgElement = parsePrebuiltSvg(output.svg);
-            if (cancelled) return;
-            wrapPrebuiltSvgBlock(pre, svgElement, {
-              kind: matchedBlock?.kind ?? language ?? 'block',
-              title: output.title,
-            });
-          } catch (err) {
-            if (cancelled) return;
-            pre.before(createDiagramMessage(`Block render failed: ${diagramErrorMessage(err)}`, 'error'));
-          }
+          // Untrusted provider SVG → rendered as an inert <img> data URL, never
+          // parsed into the live DOM (see wrapPrebuiltSvgBlock / svgToImageDataUri).
+          wrapPrebuiltSvgBlock(pre, output.svg, {
+            kind: matchedBlock?.kind ?? language ?? 'block',
+            title: output.title,
+          });
           continue;
         }
 
