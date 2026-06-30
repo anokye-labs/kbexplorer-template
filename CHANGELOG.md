@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- Rich-Markdown rendering: block-renderer registry, `RichMarkdownDocumentView`, inert SVG fallback (#427).
+- Authored rich-Markdown ingestion: `AuthoredRichMarkdownProvider` ingests authored docs opting in via `display: rich-markdown` frontmatter, using the `@anokye-labs/kbexplorer-provider-rich-markdown` lib (#432).
+
+
 All notable changes to **kbexplorer-template** are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
