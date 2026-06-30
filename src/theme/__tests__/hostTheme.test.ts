@@ -94,6 +94,38 @@ describe('hostSignalsToFluentTheme', () => {
     expect(t.colorNeutralBackground1).toBe('#0d1117');
   });
 
+  // Regression (#439 review): short hex and rgb() host colors must drive the
+  // base-mode + overrides correctly, not silently fall back to a dark base or
+  // be dropped by the hex-only brand generator.
+  it('selects a LIGHT base from a short-hex light background (#fff)', () => {
+    const light = hostSignalsToFluentTheme({ background: '#fff', foreground: '#111' });
+    const dark = hostSignalsToFluentTheme({ background: '#000', foreground: '#fff' });
+    expect(light.colorNeutralStroke1).not.toBe(dark.colorNeutralStroke1);
+    // Background override is normalized to #rrggbb.
+    expect(light.colorNeutralBackground1).toBe('#ffffff');
+    expect(light.colorNeutralForeground1).toBe('#111111');
+  });
+
+  it('selects a LIGHT base from an rgb() light background', () => {
+    const light = hostSignalsToFluentTheme({ background: 'rgb(245, 245, 245)', foreground: 'rgb(20, 20, 20)' });
+    const dark = hostSignalsToFluentTheme({ background: 'rgb(13, 17, 23)', foreground: 'rgb(230, 237, 243)' });
+    expect(light.colorNeutralStroke1).not.toBe(dark.colorNeutralStroke1);
+    expect(light.colorNeutralBackground1).toBe('#f5f5f5');
+    expect(dark.colorNeutralBackground1).toBe('#0d1117');
+  });
+
+  it('reseeds the brand ramp from a SHORT-HEX accent', () => {
+    const noAccent = hostSignalsToFluentTheme({ background: '#0d1117', foreground: '#fff' });
+    const shortHex = hostSignalsToFluentTheme({ background: '#0d1117', foreground: '#fff', accent: '#0af' });
+    expect(shortHex.colorBrandBackground).not.toBe(noAccent.colorBrandBackground);
+  });
+
+  it('reseeds the brand ramp from an rgb() accent', () => {
+    const noAccent = hostSignalsToFluentTheme({ background: '#0d1117', foreground: '#fff' });
+    const rgbAccent = hostSignalsToFluentTheme({ background: '#0d1117', foreground: '#fff', accent: 'rgb(47, 129, 247)' });
+    expect(rgbAccent.colorBrandBackground).not.toBe(noAccent.colorBrandBackground);
+  });
+
   it('folds PresentationTokens typography + corner radius into the theme', () => {
     const t = hostSignalsToFluentTheme(
       { background: '#0d1117', foreground: '#fff' },

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { KBConfig, FluentBrandRamp, FluentBrandRampKey } from '../types';
+import type { KBConfig, FluentBrandRamp, FluentBrandRampKey, PresentationTokens } from '../types';
 import {
   webDarkTheme,
   webLightTheme,
@@ -276,7 +276,7 @@ export function useTheme(): [
     // its look by resolving a Fluent theme from those vars (with the published
     // PresentationTokens intent knobs from config). Registered last so a real
     // host theme is always available; absent host vars ⇒ null ⇒ no-op.
-    const hostPresentation = (theme as { presentation?: import('@anokye-labs/kbexplorer-core').PresentationTokens } | undefined)?.presentation;
+    const hostPresentation = (theme as { presentation?: PresentationTokens } | undefined)?.presentation;
     const hostTheme = resolveHostFluentTheme(
       typeof document !== 'undefined' ? document.documentElement : null,
       hostPresentation,

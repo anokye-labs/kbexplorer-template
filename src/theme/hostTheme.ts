@@ -28,6 +28,7 @@ import {
 } from '@fluentui/react-components';
 import type { PresentationTokens } from '@anokye-labs/kbexplorer-core';
 import { generateBrandVariants } from './brandRamp';
+import { colorIsDark, normalizeColorToHex } from './color';
 
 /** Reads a single CSS custom property by name (with leading `--`); '' if unset. */
 export type CssVarReader = (name: string) => string;
@@ -86,22 +87,6 @@ export function hasHostTheme(signals: HostThemeSignals): boolean {
   return Boolean(signals.background || signals.foreground);
 }
 
-/** Perceived-luminance dark test for a hex or `rgb()/rgba()` color; null if unparseable. */
-function isDarkColor(color: string): boolean | null {
-  const hex = /^#?([0-9a-fA-F]{6})$/.exec(color.trim());
-  if (hex) {
-    const n = parseInt(hex[1], 16);
-    const r = (n >> 16) & 0xff, g = (n >> 8) & 0xff, b = n & 0xff;
-    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
-  }
-  const rgb = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(color);
-  if (rgb) {
-    const r = +rgb[1], g = +rgb[2], b = +rgb[3];
-    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
-  }
-  return null;
-}
-
 /** Named corner-radius steps → px (mirrors core's `CornerRadiusStep`). */
 const CORNER_STEP_PX: Record<string, number> = {
   none: 0,
@@ -118,17 +103,28 @@ const CORNER_STEP_PX: Record<string, number> = {
  * Fluent brand ramp; neutral background/foreground tokens adopt the host colors;
  * fonts adopt the host's `--font-sans`/`--font-mono`. PresentationTokens fold in
  * the intent knobs (typography size/line-height, corner radius).
+ *
+ * Host colors are normalized to `#rrggbb` via the shared color util before use,
+ * so short hex (`#fff`) and `rgb()` values drive base-mode selection, brand-ramp
+ * generation, and the neutral overrides correctly (rather than defaulting to a
+ * dark base or being dropped by the hex-only brand generator).
  */
 export function hostSignalsToFluentTheme(
   signals: HostThemeSignals,
   presentation?: PresentationTokens,
 ): FluentTheme {
-  const dark = signals.background ? (isDarkColor(signals.background) ?? true) : true;
+  const bgHex = signals.background ? normalizeColorToHex(signals.background) : null;
+  const fgHex = signals.foreground ? normalizeColorToHex(signals.foreground) : null;
+  const bgMutedHex = signals.backgroundMuted ? normalizeColorToHex(signals.backgroundMuted) : null;
+  const fgMutedHex = signals.foregroundMuted ? normalizeColorToHex(signals.foregroundMuted) : null;
+  const accentHex = signals.accent ? normalizeColorToHex(signals.accent) : null;
+
+  const dark = signals.background ? (colorIsDark(signals.background) ?? true) : true;
   let base: FluentTheme = dark ? webDarkTheme : webLightTheme;
 
-  if (signals.accent) {
+  if (accentHex) {
     try {
-      const variants = generateBrandVariants(signals.accent);
+      const variants = generateBrandVariants(accentHex);
       base = (dark ? createDarkTheme : createLightTheme)(variants);
     } catch {
       /* unparseable accent → keep the neutral base */
@@ -137,16 +133,23 @@ export function hostSignalsToFluentTheme(
 
   const overrides: Record<string, string> = {};
 
-  if (signals.background) {
-    overrides.colorNeutralBackground1 = signals.background;
-    overrides.colorNeutralBackground2 = signals.backgroundMuted ?? signals.background;
-    overrides.colorNeutralBackground3 = signals.backgroundMuted ?? signals.background;
-    overrides.colorNeutralCardBackground = signals.backgroundMuted ?? signals.background;
+  // Prefer the normalized hex; fall back to the raw value for a valid-but-
+  // unrecognized syntax so we still adopt it rather than dropping it.
+  const bg = bgHex ?? signals.background;
+  const bgMuted = bgMutedHex ?? signals.backgroundMuted ?? bg;
+  const fg = fgHex ?? signals.foreground;
+  const fgMuted = fgMutedHex ?? signals.foregroundMuted ?? fg;
+
+  if (bg) {
+    overrides.colorNeutralBackground1 = bg;
+    overrides.colorNeutralBackground2 = bgMuted ?? bg;
+    overrides.colorNeutralBackground3 = bgMuted ?? bg;
+    overrides.colorNeutralCardBackground = bgMuted ?? bg;
   }
-  if (signals.foreground) {
-    overrides.colorNeutralForeground1 = signals.foreground;
-    overrides.colorNeutralForeground2 = signals.foregroundMuted ?? signals.foreground;
-    overrides.colorNeutralForeground3 = signals.foregroundMuted ?? signals.foreground;
+  if (fg) {
+    overrides.colorNeutralForeground1 = fg;
+    overrides.colorNeutralForeground2 = fgMuted ?? fg;
+    overrides.colorNeutralForeground3 = fgMuted ?? fg;
   }
   if (signals.fontSans) overrides.fontFamilyBase = signals.fontSans;
   if (signals.fontMono) overrides.fontFamilyMonospace = signals.fontMono;
