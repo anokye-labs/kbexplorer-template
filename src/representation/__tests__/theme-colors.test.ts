@@ -3,10 +3,16 @@ import {
   styleColorVar,
   resolveStyleColor,
   withAlpha,
+  emphasisEdgeStyle,
   EDGE_TYPE_STYLES,
   RELATION_STYLES,
   NODE_LAYER_META,
 } from '../styles';
+
+/** A bare hex suffix appended to an rgb() string — the bug this guards against. */
+const INVALID_RGB_SUFFIX = /rgba?\([^)]*\)[0-9a-fA-F]{2}\b/;
+/** Accepts hex (#rrggbb), rgb(...) or rgba(...) — the valid CSS color forms we emit. */
+const VALID_COLOR = /^(#[0-9a-fA-F]{6}|rgba?\([^)]*\))$/;
 
 describe('withAlpha', () => {
   it('converts a hex color to rgba with the given alpha', () => {
@@ -21,6 +27,33 @@ describe('withAlpha', () => {
 
   it('returns the original string for an unparseable color', () => {
     expect(withAlpha('var(--x)', 0.5)).toBe('var(--x)');
+  });
+});
+
+describe('emphasisEdgeStyle', () => {
+  // The regression: focus/emphasis must never append a hex alpha suffix to a
+  // resolved rgb() color (e.g. `rgb(205, 214, 216)80`). Assert every tier emits
+  // a VALID color for BOTH a hex-fallback color and a CSS-var-resolved rgb() one.
+  for (const base of ['#a0adb8', 'rgb(205, 214, 216)']) {
+    it(`emits valid colors across all tiers for base ${base}`, () => {
+      // (maxHop, minHop) per tier: direct, tier1, tier2, distant.
+      const cases: Array<[number, number]> = [[1, 0], [2, 1], [2, 2], [5, 3]];
+      for (const [maxHop, minHop] of cases) {
+        const r = emphasisEdgeStyle(base, 2, false, maxHop, minHop, true);
+        expect(r.color).toMatch(VALID_COLOR);
+        expect(r.color).not.toMatch(INVALID_RGB_SUFFIX);
+        expect(r.width).toBeGreaterThan(0);
+      }
+    });
+  }
+
+  it('applies the expected translucency per tier', () => {
+    const c = 'rgb(205, 214, 216)';
+    expect(emphasisEdgeStyle(c, 2, false, 1, 0, true).color).toBe(c);                 // direct: full
+    expect(emphasisEdgeStyle(c, 2, false, 2, 1, true).color).toBe('rgba(205, 214, 216, 0.5)');  // tier 1
+    expect(emphasisEdgeStyle(c, 2, false, 2, 2, true).color).toBe('rgba(205, 214, 216, 0.25)'); // tier 2
+    expect(emphasisEdgeStyle(c, 2, false, 5, 3, true).color).toBe('rgba(60,60,60,0.15)');       // distant (dark)
+    expect(emphasisEdgeStyle(c, 2, false, 5, 3, false).color).toBe('rgba(180,180,180,0.15)');   // distant (light)
   });
 });
 

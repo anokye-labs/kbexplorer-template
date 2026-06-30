@@ -188,3 +188,42 @@ export function withAlpha(color: string, alpha: number): string {
   }
   return color;
 }
+
+/** Per-tier visual treatment for an edge during focus/neighborhood emphasis. */
+export interface EmphasisEdgeStyle {
+  color: string;
+  width: number;
+  dashes: boolean | number[];
+}
+
+/**
+ * Resolve an edge's emphasis treatment by hop distance from the focused node.
+ * `styleColor` is the already-resolved base color (hex OR `rgb()` from a theme
+ * var). Translucency is applied via {@link withAlpha} so the output is ALWAYS a
+ * valid CSS color — never a bare hex-suffix appended to an `rgb()` string, the
+ * bug that broke focus rendering once colors could resolve from CSS variables.
+ *
+ *  - Tier 0 (`maxHop ≤ 1`): direct neighborhood — full color, wider.
+ *  - Tier 1 (`minHop ≤ 1`): one endpoint adjacent — 50% alpha.
+ *  - Tier 2 (`maxHop ≤ 2`): 2-hop bridge — 25% alpha, thinner.
+ *  - Tier 3 (distant): theme-neutral barely-visible wash.
+ */
+export function emphasisEdgeStyle(
+  styleColor: string,
+  baseWidth: number,
+  baseDashes: boolean | number[],
+  maxHop: number,
+  minHop: number,
+  isDark: boolean,
+): EmphasisEdgeStyle {
+  if (maxHop <= 1) {
+    return { color: styleColor, width: baseWidth * 1.2, dashes: baseDashes };
+  }
+  if (minHop <= 1) {
+    return { color: withAlpha(styleColor, 0.5), width: baseWidth * 0.8, dashes: baseDashes };
+  }
+  if (maxHop <= 2) {
+    return { color: withAlpha(styleColor, 0.25), width: Math.max(baseWidth * 0.5, 0.8), dashes: baseDashes };
+  }
+  return { color: isDark ? 'rgba(60,60,60,0.15)' : 'rgba(180,180,180,0.15)', width: 0.4, dashes: false };
+}

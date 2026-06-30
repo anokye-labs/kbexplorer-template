@@ -9,7 +9,7 @@ import { getNodeDegrees } from './graph';
 import { computeReportsToLevels } from './reports-to-layout';
 import type { KBGraph } from '../types';
 import type { GraphLayoutMode } from '../representation/views';
-import { getEdgeStyle, resolveStyleColor, withAlpha } from '../representation/styles';
+import { getEdgeStyle, resolveStyleColor, emphasisEdgeStyle } from '../representation/styles';
 
 /**
  * Fixed seed for vis-network's force-directed initial placement.
@@ -358,31 +358,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       const maxHop = Math.max(fromHop, toHop);
       const minHop = Math.min(fromHop, toHop);
 
-      let color: string;
-      let width: number;
-      let dashes: boolean | number[];
-
-      if (maxHop <= 1) {
-        // Tier 0: direct neighborhood — full prominence
-        color = styleColor;
-        width = style.width * 1.2;
-        dashes = style.dashes;
-      } else if (minHop <= 1) {
-        // Tier 1: one endpoint is direct neighbor — visible but softer
-        color = withAlpha(styleColor, 0.5);
-        width = style.width * 0.8;
-        dashes = style.dashes;
-      } else if (maxHop <= 2) {
-        // Tier 2: 2-hop bridge — faint but colored
-        color = withAlpha(styleColor, 0.25);
-        width = Math.max(style.width * 0.5, 0.8);
-        dashes = style.dashes;
-      } else {
-        // Tier 3: distant — barely visible
-        color = isDark ? 'rgba(60,60,60,0.15)' : 'rgba(180,180,180,0.15)';
-        width = 0.4;
-        dashes = false;
-      }
+      const { color, width, dashes } = emphasisEdgeStyle(
+        styleColor, style.width, style.dashes, maxHop, minHop, isDark,
+      );
 
       edgeUpdates.push({
         id: ei.id,
