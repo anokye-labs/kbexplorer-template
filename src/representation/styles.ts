@@ -22,46 +22,58 @@ export const EDGE_TYPE_WEIGHTS: Record<KnownEdgeType, number> = {
   related: 0.3,
 };
 
-/** Visual style for each edge type */
+/**
+ * Visual style for each edge type.
+ *
+ * `color` is the literal hex fallback (theme-independent). `token`, when present,
+ * names a Fluent CSS variable (without the leading `--`) that the active theme —
+ * including a canvas host's mirrored tokens — resolves to a theme-adaptive color.
+ * Renderers go through {@link styleColorVar} (CSS/SVG) or {@link resolveStyleColor}
+ * (canvas) so the same style recolors under any theme while still degrading to the
+ * hex when the variable is unset. Fluent's `…Foreground2` palette ramp is used
+ * because it stays legible on both dark and light neutral backgrounds.
+ */
 export interface EdgeTypeStyle {
   color: string;
+  /** Fluent CSS-var token name (no `--`) resolved against the active theme. */
+  token?: string;
   dashes: boolean | number[];
   width: number;
   label: string;
 }
 
 export const EDGE_TYPE_STYLES: Record<KnownEdgeType, EdgeTypeStyle> = {
-  contains:         { color: '#a0adb8', dashes: false,      width: 2,   label: 'Contains' },
-  derived_from:     { color: '#e8a854', dashes: false,      width: 2,   label: 'Derived from' },
-  imports:          { color: '#a78bfa', dashes: false,      width: 1.5, label: 'Imports' },
-  references:       { color: '#79c0ff', dashes: false,      width: 1.5, label: 'References' },
-  frontmatter:      { color: '#7ee787', dashes: [6, 4],     width: 1.5, label: 'Frontmatter' },
-  cross_references: { color: '#f9a8d4', dashes: false,      width: 1.5, label: 'Cross-ref' },
-  modifies:         { color: '#e3b341', dashes: [4, 4],     width: 1.5, label: 'Modifies' },
-  closes:           { color: '#56d364', dashes: false,      width: 2,   label: 'Closes' },
-  mentions:         { color: '#b1bac4', dashes: [3, 4],     width: 1.2, label: 'Mentions' },
-  related:          { color: '#8b949e', dashes: [3, 3],     width: 1.2, label: 'Related' },
+  contains:         { color: '#a0adb8', token: 'colorPalettePlatinumForeground2',  dashes: false,  width: 2,   label: 'Contains' },
+  derived_from:     { color: '#e8a854', token: 'colorPaletteDarkOrangeForeground2', dashes: false,  width: 2,   label: 'Derived from' },
+  imports:          { color: '#a78bfa', token: 'colorPalettePurpleForeground2',     dashes: false,  width: 1.5, label: 'Imports' },
+  references:       { color: '#79c0ff', token: 'colorPaletteBlueForeground2',       dashes: false,  width: 1.5, label: 'References' },
+  frontmatter:      { color: '#7ee787', token: 'colorPaletteLightGreenForeground2', dashes: [6, 4], width: 1.5, label: 'Frontmatter' },
+  cross_references: { color: '#f9a8d4', token: 'colorPalettePinkForeground2',       dashes: false,  width: 1.5, label: 'Cross-ref' },
+  modifies:         { color: '#e3b341', token: 'colorPaletteMarigoldForeground2',   dashes: [4, 4], width: 1.5, label: 'Modifies' },
+  closes:           { color: '#56d364', token: 'colorPaletteGreenForeground2',      dashes: false,  width: 2,   label: 'Closes' },
+  mentions:         { color: '#b1bac4', token: 'colorPaletteBeigeForeground2',       dashes: [3, 4], width: 1.2, label: 'Mentions' },
+  related:          { color: '#8b949e', token: 'colorNeutralForeground3',            dashes: [3, 3], width: 1.2, label: 'Related' },
 };
 
 /** Visual styles for the relation taxonomy (rendered data-drivenly in the legend). */
 export const RELATION_STYLES: Record<KnownRelation, EdgeTypeStyle> = {
-  leads:            { color: '#f0883e', dashes: false,     width: 2.5, label: 'Leads' },
-  staffs:           { color: '#3fb950', dashes: false,     width: 1.5, label: 'Staffs' },
-  'reports-to':     { color: '#a371f7', dashes: false,     width: 1.8, label: 'Reports to' },
-  structural:       { color: '#a0adb8', dashes: false,     width: 2,   label: 'Structural' },
-  derived:          { color: '#e8a854', dashes: [6, 4],    width: 1.5, label: 'Derived' },
-  deprecated:       { color: '#8b949e', dashes: [2, 3],    width: 1.2, label: 'Deprecated' },
+  leads:            { color: '#f0883e', token: 'colorPaletteDarkOrangeForeground2', dashes: false,  width: 2.5, label: 'Leads' },
+  staffs:           { color: '#3fb950', token: 'colorPaletteGreenForeground2',      dashes: false,  width: 1.5, label: 'Staffs' },
+  'reports-to':     { color: '#a371f7', token: 'colorPalettePurpleForeground2',     dashes: false,  width: 1.8, label: 'Reports to' },
+  structural:       { color: '#a0adb8', token: 'colorPalettePlatinumForeground2',   dashes: false,  width: 2,   label: 'Structural' },
+  derived:          { color: '#e8a854', token: 'colorPaletteDarkOrangeForeground2', dashes: [6, 4], width: 1.5, label: 'Derived' },
+  deprecated:       { color: '#8b949e', token: 'colorNeutralForeground3',           dashes: [2, 3], width: 1.2, label: 'Deprecated' },
   // Work-graph organizational-layer relations (#233)
-  owns:             { color: '#4A9CC8', dashes: false,     width: 2,   label: 'Owns' },
-  'has-priority':   { color: '#E8A838', dashes: [4, 3],    width: 1.8, label: 'Has priority' },
-  'tracked-in':     { color: '#a371f7', dashes: [6, 3],    width: 1.5, label: 'Tracked in' },
+  owns:             { color: '#4A9CC8', token: 'colorPaletteSteelForeground2',      dashes: false,  width: 2,   label: 'Owns' },
+  'has-priority':   { color: '#E8A838', token: 'colorPaletteMarigoldForeground2',   dashes: [4, 3], width: 1.8, label: 'Has priority' },
+  'tracked-in':     { color: '#a371f7', token: 'colorPalettePurpleForeground2',     dashes: [6, 3], width: 1.5, label: 'Tracked in' },
   // Person-node active-work relations (#235)
-  'assigned-to':    { color: '#56d364', dashes: false,     width: 1.8, label: 'Assigned to' },
-  'authored':       { color: '#79c0ff', dashes: [4, 3],    width: 1.5, label: 'Authored' },
-  'member-of':      { color: '#f0883e', dashes: false,     width: 1.8, label: 'Member of' },
+  'assigned-to':    { color: '#56d364', token: 'colorPaletteGreenForeground2',      dashes: false,  width: 1.8, label: 'Assigned to' },
+  'authored':       { color: '#79c0ff', token: 'colorPaletteBlueForeground2',       dashes: [4, 3], width: 1.5, label: 'Authored' },
+  'member-of':      { color: '#f0883e', token: 'colorPaletteDarkOrangeForeground2', dashes: false,  width: 1.8, label: 'Member of' },
 };
 
-const DEFAULT_RELATION_STYLE: EdgeTypeStyle = { color: '#79c0ff', dashes: [2, 2], width: 1.5, label: 'Related' };
+const DEFAULT_RELATION_STYLE: EdgeTypeStyle = { color: '#79c0ff', token: 'colorPaletteBlueForeground2', dashes: [2, 2], width: 1.5, label: 'Related' };
 
 /** Title-case an arbitrary relation/edge key for display in the legend. */
 function humanizeKey(key: string): string {
@@ -108,8 +120,48 @@ export function getEdgeWeight(type: EdgeType | undefined): number {
 /** The graph layer a node is classified into for layer-based views/legends. */
 export type NodeLayer = 'file' | 'content' | 'work';
 
-export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string }> = {
-  file:    { label: 'Files',   color: '#9A8A78' },
-  content: { label: 'Content', color: '#58a6ff' },
-  work:    { label: 'Work',    color: '#d29922' },
+export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string; token: string }> = {
+  file:    { label: 'Files',   color: '#9A8A78', token: 'colorPaletteBrownForeground2' },
+  content: { label: 'Content', color: '#58a6ff', token: 'colorPaletteBlueForeground2' },
+  work:    { label: 'Work',    color: '#d29922', token: 'colorPaletteMarigoldForeground2' },
 };
+
+/**
+ * A theme-aware color carrier: a literal `color` hex (fallback) plus an optional
+ * Fluent CSS-var `token`. Both {@link EdgeTypeStyle} and {@link NODE_LAYER_META}
+ * entries satisfy this, so the resolvers below work for edges, relations, and
+ * node layers alike.
+ */
+export interface TokenizedColor {
+  color: string;
+  token?: string;
+}
+
+/**
+ * CSS color expression for SVG/HTML contexts (legend swatches, inline styles).
+ * Prefers the theme token and degrades to the literal hex when the variable is
+ * unset, so a non-default or host theme recolors the legend with no code change.
+ */
+export function styleColorVar(style: TokenizedColor): string {
+  return style.token ? `var(--${style.token}, ${style.color})` : style.color;
+}
+
+/**
+ * Resolve a concrete color string for canvas rendering, which cannot use
+ * `var()`. Reads the style's Fluent CSS variable from `root` (defaulting to
+ * `document.documentElement`) and returns the literal hex fallback when the
+ * variable is unset, when there is no `token`, or when the DOM is unavailable
+ * (SSR/tests). `root` should be an element inside the active `FluentProvider`
+ * subtree so it inherits that theme's token variables.
+ */
+export function resolveStyleColor(style: TokenizedColor, root?: Element | null): string {
+  if (!style.token) return style.color;
+  const el = root ?? (typeof document !== 'undefined' ? document.documentElement : null);
+  if (!el || typeof getComputedStyle === 'undefined') return style.color;
+  try {
+    const v = getComputedStyle(el).getPropertyValue(`--${style.token}`).trim();
+    return v || style.color;
+  } catch {
+    return style.color;
+  }
+}

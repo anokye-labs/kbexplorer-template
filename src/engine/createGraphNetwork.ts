@@ -4,12 +4,12 @@
  */
 import { Network } from 'vis-network/standalone';
 import { DataSet } from 'vis-data';
-import { createNodeRenderer } from './nodeRenderer';
+import { createNodeRenderer, resolveNodeTheme, type NodeThemeSource } from './nodeRenderer';
 import { getNodeDegrees } from './graph';
 import { computeReportsToLevels } from './reports-to-layout';
 import type { KBGraph } from '../types';
 import type { GraphLayoutMode } from '../representation/views';
-import { getEdgeStyle } from '../representation/styles';
+import { getEdgeStyle, resolveStyleColor } from '../representation/styles';
 
 /**
  * Fixed seed for vis-network's force-directed initial placement.
@@ -69,6 +69,8 @@ export interface BuildVisNodeOptions {
   degrees: Map<string, number>;
   clusterColorMap: Map<string, string>;
   isDark: boolean;
+  /** Resolved theme-source for node painting (replaces the isDark branch). */
+  nodeTheme: NodeThemeSource;
   nodeSizeRange?: [number, number];
   nodeSizeStep?: number;
   labelMaxLength?: number;
@@ -124,7 +126,7 @@ export function buildVisNode(
     label: '',
     title: `${node.title}\n${deg} connection${deg === 1 ? '' : 's'}${disconnected ? '\n⚠ Disconnected node' : ''}`,
     shape: 'custom',
-    ctxRenderer: createNodeRenderer(node.emoji, color, size, options.isDark, label, disconnected),
+    ctxRenderer: createNodeRenderer(node.emoji, color, size, options.nodeTheme, label, disconnected),
     size: size / 2,
     // Audit sidecar: the rendered label is captured inside the ctxRenderer
     // closure and isn't visible through vis-network's public DataSet API.
@@ -183,6 +185,11 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const clusterColorMap = new Map(graph.clusters.map(c => [c.id, c.color]));
   const keyNodeIds = computeKeyNodes(degrees);
 
+  // Resolve node label/surface/icon colors from the active theme's CSS vars
+  // (read off the container, which inherits the FluentProvider/host tokens).
+  // The `isDark` option is only a fallback hint when a var is unset.
+  const nodeTheme = resolveNodeTheme(container, isDark);
+
   // Build set of emphasized node IDs (current + direct neighbors)
   // Skip emphasis if the target node isn't in this graph (e.g. layer filtered out)
   const nodeIdSet = new Set(graph.nodes.map(n => n.id));
@@ -208,7 +215,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       ? [nodeSizeRange[0] * fadedSizeScale, nodeSizeRange[1] * fadedSizeScale]
       : nodeSizeRange;
     const visNode = buildVisNode(n, {
-      degrees, clusterColorMap, isDark, keyNodeIds,
+      degrees, clusterColorMap, isDark, nodeTheme, keyNodeIds,
       nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
       flagDisconnected: true,
       opacity: faded ? fadedOpacity : undefined,
@@ -238,6 +245,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   const inferredSpringLength = 120;
   const edgeData = graph.edges.map((e, i) => {
     const style = edgeStyle(e);
+    const styleColor = resolveStyleColor(style, container);
     const faded = effectiveEmphasis && !emphasizedIds.has(e.from) && !emphasizedIds.has(e.to);
     const nearFaded = effectiveEmphasis && !(emphasizedIds.has(e.from) && emphasizedIds.has(e.to));
     const springBase = e.source === 'inferred' ? inferredSpringLength : baseSpringLength;
@@ -251,9 +259,9 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       to: reverseForTree ? e.from : e.to,
       title: `${style.label}: ${e.description}`,
       color: {
-        color: faded ? EDGE_FADED_COLOR : nearFaded ? 'rgba(80,80,80,0.25)' : style.color,
-        hover: style.color,
-        highlight: style.color,
+        color: faded ? EDGE_FADED_COLOR : nearFaded ? 'rgba(80,80,80,0.25)' : styleColor,
+        hover: styleColor,
+        highlight: styleColor,
       },
       width: faded ? 0.5 : style.width,
       dashes: faded ? false : style.dashes,
@@ -313,7 +321,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         ? [nodeSizeRange[0] * fadedSizeScale, nodeSizeRange[1] * fadedSizeScale]
         : nodeSizeRange;
       nodeUpdates.push(buildVisNode(n, {
-        degrees, clusterColorMap, isDark, keyNodeIds,
+        degrees, clusterColorMap, isDark, nodeTheme, keyNodeIds,
         nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
         flagDisconnected: true,
         opacity: faded ? fadedOpacity : undefined,
@@ -333,11 +341,12 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     const edgeUpdates: Record<string, unknown>[] = [];
     for (const ei of edgesByIndex) {
       const style = edgeStyle(ei);
+      const styleColor = resolveStyleColor(style, container);
       if (!active) {
         // No focus — all edges at full style
         edgeUpdates.push({
           id: ei.id,
-          color: { color: style.color, hover: style.color, highlight: style.color },
+          color: { color: styleColor, hover: styleColor, highlight: styleColor },
           width: style.width,
           dashes: style.dashes,
         });
@@ -355,17 +364,17 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
 
       if (maxHop <= 1) {
         // Tier 0: direct neighborhood — full prominence
-        color = style.color;
+        color = styleColor;
         width = style.width * 1.2;
         dashes = style.dashes;
       } else if (minHop <= 1) {
         // Tier 1: one endpoint is direct neighbor — visible but softer
-        color = style.color + '80'; // 50% alpha
+        color = styleColor + '80'; // 50% alpha
         width = style.width * 0.8;
         dashes = style.dashes;
       } else if (maxHop <= 2) {
         // Tier 2: 2-hop bridge — faint but colored
-        color = style.color + '40'; // 25% alpha
+        color = styleColor + '40'; // 25% alpha
         width = Math.max(style.width * 0.5, 0.8);
         dashes = style.dashes;
       } else {
@@ -377,7 +386,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
 
       edgeUpdates.push({
         id: ei.id,
-        color: { color, hover: style.color, highlight: style.color },
+        color: { color, hover: styleColor, highlight: styleColor },
         width,
         dashes,
       });
