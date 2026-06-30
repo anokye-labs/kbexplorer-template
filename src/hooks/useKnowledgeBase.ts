@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { KBGraph, KBConfig, SourceConfig } from '../types';
 import { detectLocalMode, loadLocalKnowledgeBase } from '../engine/local-loader';
 import { loadRemoteKnowledgeBase } from '../engine/remote-loader';
-import { isDemoEntitiesEnabled, injectDemoEntities, isBigOrgDemoEnabled, injectBigOrg } from '../engine/demo-entities';
+import { isDemoEntitiesEnabled, injectDemoEntities, isBigOrgDemoEnabled, injectBigOrg, isRichMarkdownDemoEnabled, injectRichMarkdownDemo } from '../engine/demo-entities';
 
 export type LoadingState =
   | { status: 'loading' }
@@ -75,13 +75,15 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
 
 /**
  * Apply optional demo seams (off by default) to the loaded graph: small
- * entity demo (`?demo=entities`) and the large synthetic org tree
- * (`?demo=bigorg`, for exercising the reports-to layout at scale — #279).
+ * entity demo (`?demo=entities`), the large synthetic org tree
+ * (`?demo=bigorg`, for exercising the reports-to layout at scale — #279), and
+ * the rich-Markdown sample document (`?demo=richmd` — #427).
  */
 function applyDemoSeams(graph: KBGraph): KBGraph {
   let g = graph;
   if (isDemoEntitiesEnabled()) g = injectDemoEntities(g);
   if (isBigOrgDemoEnabled()) g = injectBigOrg(g);
+  if (isRichMarkdownDemoEnabled()) g = injectRichMarkdownDemo(g);
   return g;
 }
 

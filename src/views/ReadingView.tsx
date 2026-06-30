@@ -31,6 +31,13 @@ import {
   getDiagramRenderPlan,
   isDiagramCodeLanguage,
 } from './diagram';
+import {
+  getRichMarkdownDocument,
+  planProseFence,
+  findBlockForFence,
+  RichMarkdownDocumentView,
+  type RichMarkdownBlock,
+} from './rich-markdown';
 
 interface ReadingViewProps {
   graph: KBGraph;
@@ -336,14 +343,77 @@ function wrapRenderedProseDiagram(pre: HTMLPreElement, svgElement: SVGSVGElement
   details.append(pre);
 }
 
+/**
+ * Parse a pre-built SVG string (the block fallback contract) into an importable
+ * SVG element. Mirrors {@link parseMermaidSvg} but additionally **strips any
+ * `<script>` elements** — provider SVG shares the content trust boundary, so we
+ * defensively remove active content before inserting it into the live document.
+ */
+function parsePrebuiltSvg(svg: string): SVGSVGElement {
+  const element = parseMermaidSvg(normalizeMermaidSvgForXml(svg));
+  for (const script of Array.from(element.querySelectorAll('script'))) {
+    script.remove();
+  }
+  return element;
+}
+
+/**
+ * Insert a pre-built-SVG block in place of its raw `<pre>` fence — the fallback
+ * that replaces the raw-code display for blocks with no live renderer. The raw
+ * source stays available, collapsed, in a `<details>` (matching the Mermaid UX),
+ * so "no block falls back to raw code when an SVG exists" while the source is
+ * never lost.
+ */
+function wrapPrebuiltSvgBlock(
+  pre: HTMLPreElement,
+  svgElement: SVGSVGElement,
+  opts: { kind: string; title?: string },
+) {
+  const figure = document.createElement('figure');
+  figure.className = 'kb-diagram kb-diagram--prose kb-richmd-block';
+  figure.dataset.diagramLanguage = opts.kind;
+  figure.dataset.blockRenderer = 'svg-fallback';
+
+  const canvas = document.createElement('div');
+  canvas.className = 'kb-diagram-canvas';
+  canvas.replaceChildren(svgElement);
+  figure.append(canvas);
+
+  if (opts.title) {
+    const caption = document.createElement('figcaption');
+    caption.className = 'kb-diagram-caption';
+    caption.textContent = opts.title;
+    figure.append(caption);
+  }
+
+  const details = document.createElement('details');
+  details.className = 'kb-diagram-source';
+  const summary = document.createElement('summary');
+  summary.textContent = 'Block source';
+  details.append(summary);
+
+  pre.before(figure);
+  figure.after(details);
+  details.append(pre);
+}
+
+/**
+ * Renders prose HTML and upgrades embedded fenced blocks in place. Mermaid keeps
+ * its existing live render; when the node carries rich-Markdown `blocks`, a
+ * non-Mermaid fence that matches a provider block renders via the block registry
+ * — a pre-built SVG when one exists (replacing the raw-code display), else a
+ * graceful warning over the retained source. Ordinary code fences are untouched.
+ */
 function ProseContent({
   html,
   isDark,
   style,
+  blocks,
 }: {
   html: string;
   isDark: boolean;
   style?: CSSProperties;
+  blocks?: readonly RichMarkdownBlock[];
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -359,20 +429,43 @@ function ProseContent({
     void (async () => {
       for (const code of codeBlocks) {
         if (cancelled) return;
-        const language = diagramLanguageFromClassName(code.className);
-        if (!isDiagramCodeLanguage(language)) continue;
 
         const pre = code.parentElement;
         if (!(pre instanceof HTMLPreElement)) continue;
 
-        const plan = getDiagramRenderPlan(code.textContent ?? '', language);
-        if (plan.kind !== 'mermaid') {
-          pre.before(createDiagramMessage(plan.reason, 'warning'));
+        const language = diagramLanguageFromClassName(code.className);
+        const source = code.textContent ?? '';
+
+        // A fence is "in scope" when it matches a rich-Markdown block (any kind)
+        // or is a diagram-language fence. Ordinary code fences are left as-is.
+        const matchedBlock = blocks ? findBlockForFence(source, blocks, { language }) : undefined;
+        if (!matchedBlock && !isDiagramCodeLanguage(language)) continue;
+
+        const output = planProseFence(language, source, blocks, { isDark });
+
+        if (output.type === 'svg') {
+          try {
+            const svgElement = parsePrebuiltSvg(output.svg);
+            if (cancelled) return;
+            wrapPrebuiltSvgBlock(pre, svgElement, {
+              kind: matchedBlock?.kind ?? language ?? 'block',
+              title: output.title,
+            });
+          } catch (err) {
+            if (cancelled) return;
+            pre.before(createDiagramMessage(`Block render failed: ${diagramErrorMessage(err)}`, 'error'));
+          }
           continue;
         }
 
+        if (output.type === 'unsupported') {
+          pre.before(createDiagramMessage(output.reason, 'warning'));
+          continue;
+        }
+
+        // output.type === 'mermaid' — live render (the existing inline path).
         try {
-          const { svg, bindFunctions } = await renderMermaid(plan.source, isDark);
+          const { svg, bindFunctions } = await renderMermaid(output.source, isDark);
           const svgElement = parseMermaidSvg(svg);
           if (cancelled) return;
           wrapRenderedProseDiagram(pre, svgElement, bindFunctions);
@@ -386,7 +479,7 @@ function ProseContent({
     return () => {
       cancelled = true;
     };
-  }, [html, isDark]);
+  }, [html, isDark, blocks]);
 
   return (
     <div
@@ -531,6 +624,14 @@ function renderContent(node: KBNode, linkedHtml: string, isDark: boolean, graph?
       return <TableView content={node.rawContent} />;
     case 'diagram':
       return <DiagramView content={node.rawContent} isDark={isDark} />;
+    case 'rich-markdown': {
+      const doc = getRichMarkdownDocument(node);
+      return (
+        <RichMarkdownDocumentView frontmatter={doc?.frontmatter}>
+          <ProseContent html={linkedHtml} isDark={isDark} blocks={doc?.blocks} />
+        </RichMarkdownDocumentView>
+      );
+    }
     case 'homepage':
       return (
         <div>
