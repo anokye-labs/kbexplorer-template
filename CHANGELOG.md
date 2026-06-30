@@ -12,6 +12,8 @@ template ↔ kbexplorer CLI compatibility matrix and the pinning contract.
 
 ## [Unreleased]
 
+## 0.3.0
+
 ### Added
 - **Rich-Markdown rendering** (#427): a rich-Markdown document view that composes
   frontmatter facts (in the structured view), prose, and inline embedded blocks.
