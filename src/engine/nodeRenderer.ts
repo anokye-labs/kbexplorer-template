@@ -2679,6 +2679,39 @@ interface CtxRendererArgs {
   style: { size: number };
 }
 
+/** Per-node, mutable label placement shared with the collision-layout pass (#435). */
+export interface RendererLabelState {
+  /** Full label text (untruncated). */
+  text: string;
+  /** Which side of the node the label is drawn on. */
+  anchor: 'below' | 'above' | 'left' | 'right';
+  /** When true the label is suppressed (hide-on-collide) rather than truncated. */
+  hidden: boolean;
+}
+
+export interface NodeRendererOptions {
+  /** Node id — used to look up live placement in `labelState`. */
+  id?: string;
+  /**
+   * Shared, mutable placement map updated by the label-collision pass. When an
+   * entry exists for `id` the renderer draws the label at that anchor (or not at
+   * all when hidden); otherwise it falls back to the static `label` argument drawn
+   * below the node (back-compat for callers without a layout pass).
+   */
+  labelState?: Map<string, RendererLabelState>;
+}
+
+const LABEL_FONT = '11px "Segoe UI", system-ui, sans-serif';
+/** Vertical gap between node border and an above/below label, in canvas units. */
+const LABEL_GAP = 6;
+/** Single label line height in canvas units (matches LABEL_FONT). */
+export const LABEL_LINE_HEIGHT = 13;
+
+/** Font used by the renderer for labels — exported so the layout pass measures identically. */
+export function getLabelFont(): string {
+  return LABEL_FONT;
+}
+
 /**
  * Creates a ctxRenderer function for a vis-network custom node.
  */
@@ -2689,6 +2722,7 @@ export function createNodeRenderer(
   isDark: boolean,
   label?: string,
   disconnected?: boolean,
+  opts?: NodeRendererOptions,
 ){
   const shapeType: NodeShapeType = (iconName && ICON_NODE_SHAPE[iconName]) || 'circle';
   const iconColor = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)';
@@ -2759,30 +2793,57 @@ export function createNodeRenderer(
       ctx.fillText('!', wx, wy + 0.5);
     }
 
-    // Draw label below shape
-    if (label) {
-      const labelY = y + s / 2 + 14;
-      ctx.font = '11px "Segoe UI", system-ui, sans-serif';
+    // Draw label — placement comes from the shared collision-layout pass when
+    // available (anchor + hide-on-collide, no truncation), else falls back to a
+    // static label drawn below the node. The label box is intentionally NOT part
+    // of `nodeDimensions` so edges clip to the node body, not the label (#435).
+    const id = opts?.id;
+    const live = id != null ? opts?.labelState?.get(id) : undefined;
+    const labelText = live ? live.text : label;
+    const labelHidden = live ? live.hidden : false;
+    const labelAnchor = live ? live.anchor : 'below';
+    if (labelText && !labelHidden) {
+      ctx.font = LABEL_FONT;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
+      let lx = x;
+      let ly: number;
+      if (labelAnchor === 'above') {
+        ctx.textBaseline = 'bottom';
+        ly = y - s / 2 - LABEL_GAP;
+      } else if (labelAnchor === 'left') {
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        lx = x - (shapeType === 'roundedRect' ? s * 0.6 : s / 2) - LABEL_GAP;
+        ly = y;
+      } else if (labelAnchor === 'right') {
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        lx = x + (shapeType === 'roundedRect' ? s * 0.6 : s / 2) + LABEL_GAP;
+        ly = y;
+      } else {
+        ly = y + s / 2 + LABEL_GAP;
+      }
       // Stroke for legibility
       ctx.strokeStyle = labelStroke;
       ctx.lineWidth = 3;
       ctx.lineJoin = 'round';
-      ctx.strokeText(label, x, labelY);
+      ctx.strokeText(labelText, lx, ly);
       // Fill
       ctx.fillStyle = labelColor;
-      ctx.fillText(label, x, labelY);
+      ctx.fillText(labelText, lx, ly);
     }
 
     ctx.restore();
 
     const w = shapeType === 'roundedRect' ? s * 1.2 : s;
-    const totalH = label ? s + 28 : s;
+    // nodeDimensions is the edge-clip / overlap box: keep it to the drawn shape so
+    // vis-network terminates edges at the visible border (was `s + 28`, inflated by
+    // the label, which clipped edges to a too-tall box → draw-through, #435).
     return {
       drawNode: undefined,
       drawExternalLabel: undefined,
-      nodeDimensions: { width: w, height: totalH },
+      nodeDimensions: { width: w, height: s },
     };
   };
 }
