@@ -29,9 +29,29 @@ template ↔ kbexplorer CLI compatibility matrix and the pinning contract.
   - Consumes the provider shape `node.data.richMarkdown.blocks` (kbexplorer-cli#133).
   - A `?demo=richmd` seam injects a sample document so the view is viewable without
     a provider.
+- **Authored rich-Markdown integration** (#431): authored docs now flow through
+  ingestion into rich-Markdown nodes, so the #427 renderer fires on real content
+  (not just the `?demo=richmd` sample).
+  - New **`AuthoredRichMarkdownProvider`** runs the published package's **pure,
+    browser-safe `./lib`** (`@anokye-labs/kbexplorer-provider-rich-markdown`
+    `ingestRichMarkdown`) over the inline `authoredContent` the manifest carries —
+    no filesystem. It adapts the package's block/node shape to the template's
+    rendering contract (`{lang,content,contentHash,span}` → `{kind,source,hash,range}`,
+    `data.richMarkdown` → `{frontmatter,blocks}`, body → parsed `content` HTML) and
+    keeps the core `buildAddress` identity.
+  - **Opt-in** via `display: rich-markdown` frontmatter (`isRichAuthoredMarkdown`).
+    A shared predicate lets `AuthoredProvider` **skip** these docs, so each doc is
+    owned by exactly one provider (no double-emit) and plain authored docs — incl.
+    those that merely embed a Mermaid fence — are completely unchanged.
+  - Browser shims for the package's `node:crypto` (sync SHA-256, byte-identical to
+    Node) and `node:path` imports, aliased in `vite.config.ts` only (vitest keeps
+    the real builtins). The package's filesystem `.` export is never bundled, so no
+    `node:fs` enters the SPA.
 
 ### Changed
 - Bumped `@anokye-labs/kbexplorer-core` to **`#v0.1.0`**.
+- Added `@anokye-labs/kbexplorer-provider-rich-markdown` (`#v0.1.0`) as a dependency
+  and registered `AuthoredRichMarkdownProvider` in the engine loader.
 - `ProseContent` now upgrades non-Mermaid fenced blocks to their pre-built SVG when
   the node carries rich-Markdown blocks; ordinary code fences and the live-Mermaid
   path are unchanged.
