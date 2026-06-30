@@ -137,6 +137,12 @@ export function buildVisNode(
   const isRect = (node.emoji && ICON_NODE_SHAPE[node.emoji] === 'roundedRect') || false;
   const radius = (size / 2) * (isRect ? 1.2 : 1);
 
+  // Record the drawn radius for EVERY node (labelled or not) so the collision
+  // pass has an accurate per-shape obstacle radius — unlabeled rounded-rect nodes
+  // would otherwise fall back to `vis.size` and be under-sized, letting a label
+  // sit partly over their body.
+  options.labelMeta?.set(node.id, { radius });
+
   // Seed / clear shared label placement so the renderer + layout pass agree.
   if (options.labelState) {
     if (label) {
@@ -146,10 +152,8 @@ export function buildVisNode(
         anchor: existing?.anchor ?? 'below',
         hidden: existing?.hidden ?? false,
       });
-      options.labelMeta?.set(node.id, { radius });
     } else {
       options.labelState.delete(node.id);
-      options.labelMeta?.delete(node.id);
     }
   }
 
@@ -749,7 +753,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   };
 
   if (auditSlot) {
-    registerNetworkForAudit(network, container, auditSlot, labelState);
+    registerNetworkForAudit(network, container, auditSlot, labelState, labelMeta);
   }
 
   return { network, nodes, edges, setEmphasis };
@@ -764,14 +768,15 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
  *
  * Used by `scripts/audit-visual.mjs` to assert on label coverage, node-to-
  * label ratio, and edge visibility on the actually-rendered constellation.
- * `labelState` is the live collision-layout map so audits can assert on label
- * placement/visibility (#435).
+ * `labelState` / `labelMeta` are the live collision-layout maps so audits can
+ * assert on label placement/visibility and per-node geometry (#435).
  */
 function registerNetworkForAudit(
   network: Network,
   container: HTMLElement,
   slot: string,
   labelState?: Map<string, RendererLabelState>,
+  labelMeta?: Map<string, { radius: number }>,
 ) {
   if (typeof window === 'undefined') return;
   type AuditWindow = Window & {
@@ -779,11 +784,12 @@ function registerNetworkForAudit(
       network: Network;
       container: HTMLElement;
       labelState?: Map<string, RendererLabelState>;
+      labelMeta?: Map<string, { radius: number }>;
     }>;
   };
   const w = window as AuditWindow;
   if (!w.__kbeNetworks) w.__kbeNetworks = {};
-  w.__kbeNetworks[slot] = { network, container, labelState };
+  w.__kbeNetworks[slot] = { network, container, labelState, labelMeta };
 }
 
 /**
