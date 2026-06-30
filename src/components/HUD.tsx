@@ -1029,6 +1029,41 @@ export function HUD({ graph, config, currentNodeId, theme, isDark, availableThem
                   ))}
                 </>
               )}
+              {/* Node-identity key — explains what node shape / selection state
+                  encode, which the cluster-colour + edge-type rows above don't
+                  cover (#435). Shapes mirror nodeRenderer's inference: circle =
+                  topic / issue, rounded square = container / structure, rounded
+                  rect = document, plus the selected glow. */}
+              <div style={{ borderTop: `1px solid ${tokens.colorNeutralStroke2}`, margin: '4px 0' }} />
+              {([
+                { key: 'circle', label: 'Topic / issue', shape: 'circle' as const },
+                { key: 'square', label: 'Container / structure', shape: 'square' as const },
+                { key: 'rect', label: 'Document', shape: 'rect' as const },
+                { key: 'selected', label: 'Selected', shape: 'selected' as const },
+              ]).map(({ key, label, shape }) => {
+                const stroke = tokens.colorNeutralForeground2;
+                const fill = tokens.colorNeutralBackground3;
+                return (
+                  <div key={key} data-kbe-legend={`node-${key}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0' }}>
+                    <svg width={18} height={14} style={{ flexShrink: 0 }} aria-hidden>
+                      {shape === 'circle' && (
+                        <circle cx={9} cy={7} r={5} fill={fill} stroke={stroke} strokeWidth={1.5} />
+                      )}
+                      {shape === 'selected' && (
+                        <circle cx={9} cy={7} r={5} fill={fill} stroke={tokens.colorBrandForeground1} strokeWidth={2}
+                          style={{ filter: `drop-shadow(0 0 2px ${tokens.colorBrandForeground1})` }} />
+                      )}
+                      {shape === 'square' && (
+                        <rect x={3.5} y={1.5} width={11} height={11} rx={2.5} fill={fill} stroke={stroke} strokeWidth={1.5} />
+                      )}
+                      {shape === 'rect' && (
+                        <rect x={1.5} y={3} width={15} height={8} rx={2} fill={fill} stroke={stroke} strokeWidth={1.5} />
+                      )}
+                    </svg>
+                    <Caption1 style={{ color: tokens.colorNeutralForeground2 }}>{label}</Caption1>
+                  </div>
+                );
+              })}
             </div>
             {/* Zoom & Detail sliders */}
             <div style={{

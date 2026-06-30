@@ -4,7 +4,10 @@
  */
 import { Network } from 'vis-network/standalone';
 import { DataSet } from 'vis-data';
-import { createNodeRenderer, resolveNodeTheme, type NodeThemeSource } from './nodeRenderer';
+import { createNodeRenderer, resolveNodeTheme, LABEL_LINE_HEIGHT, getLabelFont, ICON_NODE_SHAPE } from './nodeRenderer';
+import type { RendererLabelState, NodeThemeSource } from './nodeRenderer';
+import { assignLabelPlacements } from './labelLayout';
+import type { LabelItem } from './labelLayout';
 import { getNodeDegrees } from './graph';
 import { computeReportsToLevels } from './reports-to-layout';
 import type { KBGraph } from '../types';
@@ -85,6 +88,17 @@ export interface BuildVisNodeOptions {
    * at all (the LOD that declutters the constellation), not zoom behaviour.
    */
   labelDegreeThreshold?: number;
+  /**
+   * Shared, mutable label-placement map handed to the renderer (#435). When
+   * provided, an eligible node seeds an entry here ({text, anchor:'below',
+   * hidden:false}); the collision-layout pass later rewrites anchor/hidden.
+   */
+  labelState?: Map<string, RendererLabelState>;
+  /**
+   * Sidecar geometry for the collision-layout pass — drawn node radius + shape per
+   * id, captured at build time so the pass needn't recompute sizing.
+   */
+  labelMeta?: Map<string, { radius: number }>;
 }
 
 /**
@@ -103,7 +117,6 @@ export function buildVisNode(
 ): Record<string, unknown> {
   const [minSize, maxSize] = options.nodeSizeRange ?? [44, 64];
   const step = options.nodeSizeStep ?? 4;
-  const maxLen = options.labelMaxLength ?? 25;
 
   const deg = options.degrees.get(node.id) ?? 0;
   const isKey = options.keyNodeIds?.has(node.id) ?? false;
@@ -116,17 +129,46 @@ export function buildVisNode(
   const labelDegThreshold = options.labelDegreeThreshold ?? 2;
   const labelEligible = isKey || deg >= labelDegThreshold;
   const showLabel = (options.showLabel ?? true) && labelEligible;
-  const label = showLabel
-    ? (node.title.length > maxLen ? node.title.substring(0, maxLen - 3) + '...' : node.title)
-    : undefined;
+  // Full, untruncated title — the collision-layout pass hides labels that don't
+  // fit (hide-on-collide) rather than cutting characters, so labels are never
+  // truncated when space allows (#435). `labelMaxLength` is retained on the
+  // options for back-compat but no longer truncates.
+  const label = showLabel ? node.title : undefined;
   const disconnected = options.flagDisconnected && deg === 0;
+
+  const isRect = (node.emoji && ICON_NODE_SHAPE[node.emoji] === 'roundedRect') || false;
+  const radius = (size / 2) * (isRect ? 1.2 : 1);
+
+  // Record the drawn radius for EVERY node (labelled or not) so the collision
+  // pass has an accurate per-shape obstacle radius — unlabeled rounded-rect nodes
+  // would otherwise fall back to `vis.size` and be under-sized, letting a label
+  // sit partly over their body.
+  options.labelMeta?.set(node.id, { radius });
+
+  // Seed / clear shared label placement so the renderer + layout pass agree.
+  if (options.labelState) {
+    if (label) {
+      const existing = options.labelState.get(node.id);
+      options.labelState.set(node.id, {
+        text: label,
+        anchor: existing?.anchor ?? 'below',
+        hidden: existing?.hidden ?? false,
+      });
+    } else {
+      options.labelState.delete(node.id);
+    }
+  }
 
   const result: Record<string, unknown> = {
     id: node.id,
     label: '',
     title: `${node.title}\n${deg} connection${deg === 1 ? '' : 's'}${disconnected ? '\n⚠ Disconnected node' : ''}`,
     shape: 'custom',
-    ctxRenderer: createNodeRenderer(node.emoji, color, size, options.nodeTheme, label, disconnected),
+    ctxRenderer: createNodeRenderer(node.emoji, color, size, options.nodeTheme, label, disconnected, {
+      id: node.id,
+      labelState: options.labelState,
+      focusLabel: node.title,
+    }),
     size: size / 2,
     // Audit sidecar: the rendered label is captured inside the ctxRenderer
     // closure and isn't visible through vis-network's public DataSet API.
@@ -190,6 +232,13 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   // The `isDark` option is only a fallback hint when a var is unset.
   const nodeTheme = resolveNodeTheme(container, isDark);
 
+  // Shared label-placement state for the collision-layout pass (#435). The
+  // renderer reads anchor/hidden from here; `recomputeLabels()` rewrites it after
+  // the layout settles and on drag. `labelMeta` carries the drawn node radius so
+  // the pass needn't recompute sizing.
+  const labelState = new Map<string, RendererLabelState>();
+  const labelMeta = new Map<string, { radius: number }>();
+
   // Build set of emphasized node IDs (current + direct neighbors)
   // Skip emphasis if the target node isn't in this graph (e.g. layer filtered out)
   const nodeIdSet = new Set(graph.nodes.map(n => n.id));
@@ -218,6 +267,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       degrees, clusterColorMap, isDark, nodeTheme, keyNodeIds,
       nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
       flagDisconnected: true,
+      labelState, labelMeta,
       opacity: faded ? fadedOpacity : undefined,
       showLabel: faded ? showFadedLabels : true,
       // Always label direct neighbours of the focused node — without this
@@ -324,6 +374,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         degrees, clusterColorMap, isDark, nodeTheme, keyNodeIds,
         nodeSizeRange: sizeRange, nodeSizeStep, labelMaxLength,
         flagDisconnected: true,
+        labelState, labelMeta,
         opacity: faded ? fadedOpacity : undefined,
         showLabel: faded ? showFadedLabels : true,
         // Force-label every 1-hop neighbour of the focus regardless of degree
@@ -332,6 +383,8 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
       }));
     }
     nodes.update(nodeUpdates);
+    // Re-run label placement against the new label set/visibility.
+    recomputeLabels();
 
     // Update edges — multi-tier importance based on hop distance from focus
     // Tier 0: direct (both endpoints in 1-hop) → full color, full width
@@ -391,6 +444,11 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
           springLength: 180,
           springConstant: 0.05,
           damping: 0.6,
+          // Enforce a minimum inter-node gap so node bodies never physically
+          // stack, even with only a handful of nodes (#435). The factor scales
+          // each node's effective repulsion radius by its drawn size, so spacing
+          // tracks the (now label-free) nodeDimensions box.
+          avoidOverlap: 1,
         },
         stabilization: { enabled: true, iterations: 500, updateInterval: 100 },
       };
@@ -459,6 +517,88 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     });
   }
 
+  // --- Label collision-avoidance pass (#435) ---------------------------------
+  // Offscreen 2D context used only to measure label widths with the renderer's
+  // exact font. Guarded for non-DOM (SSR/tests) where it's simply skipped.
+  const measureCtx: CanvasRenderingContext2D | null =
+    typeof document !== 'undefined'
+      ? document.createElement('canvas').getContext('2d')
+      : null;
+
+  /**
+   * Recompute label placement against the settled node positions and write the
+   * result back into the shared `labelState` so the renderer paints each label at
+   * a collision-free anchor (or hides it). Runs in graph-coordinate space (the
+   * space the custom renderer draws in), which is zoom-invariant — the label font
+   * scales with the view, so a single placement is correct at every zoom. No-op
+   * when there's no DOM to measure text or no labels to place.
+   */
+  function recomputeLabels(): void {
+    if (!measureCtx || labelState.size === 0) return;
+    measureCtx.font = getLabelFont();
+    const positions = network.getPositions();
+    // Every node body is an obstacle (incl. unlabeled nodes), so a label is never
+    // drawn over a node that carries no label of its own (#435).
+    const obstacles: { x: number; y: number; radius: number }[] = [];
+    for (const n of graph.nodes) {
+      const pos = positions[n.id] as { x: number; y: number } | undefined;
+      if (!pos) continue;
+      const vis = nodes.get(n.id) as { size?: number } | null;
+      const radius = labelMeta.get(n.id)?.radius ?? (vis?.size ?? 22);
+      obstacles.push({ x: pos.x, y: pos.y, radius });
+    }
+    const items: LabelItem[] = [];
+    for (const [id, st] of labelState) {
+      if (!st.text) continue;
+      const pos = positions[id] as { x: number; y: number } | undefined;
+      if (!pos) continue;
+      const radius = labelMeta.get(id)?.radius ?? 22;
+      const width = measureCtx.measureText(st.text).width;
+      // Key/high-degree nodes keep their labels first when space is tight; the
+      // hovered/selected node is placed first of all so it's never hidden (#435).
+      const deg = degrees.get(id) ?? 0;
+      const priority = id === activeLabelId
+        ? Number.MAX_SAFE_INTEGER
+        : (keyNodeIds.has(id) ? 1000 : 0) + deg;
+      items.push({ id, x: pos.x, y: pos.y, radius, width, height: LABEL_LINE_HEIGHT, priority });
+    }
+    const placements = assignLabelPlacements(items, { obstacles });
+    let changed = false;
+    for (const [id, p] of placements) {
+      const st = labelState.get(id);
+      if (!st) continue;
+      // The active node never hides — the renderer also force-draws it, but keep
+      // labelState consistent so a later redraw doesn't flicker it off.
+      const hidden = id === activeLabelId ? false : p.hidden;
+      if (st.anchor !== p.anchor || st.hidden !== hidden) {
+        st.anchor = p.anchor;
+        st.hidden = hidden;
+        changed = true;
+      }
+    }
+    if (changed) network.redraw();
+  }
+
+  // Track the hovered/selected node so its label is placed first and never
+  // hidden. The renderer also force-draws a focused node from `state`, but
+  // tracking the id lets the layout pass give it a collision-free anchor and
+  // reflow neighbours around it.
+  let activeLabelId: string | null = null;
+  const setActiveLabel = (id: string | null) => {
+    if (activeLabelId === id) return;
+    activeLabelId = id;
+    recomputeLabels();
+    network.redraw();
+  };
+  network.on('hoverNode', (p: { node: string }) => setActiveLabel(p.node));
+  network.on('blurNode', () => setActiveLabel(null));
+  network.on('selectNode', (p: { nodes: string[] }) => setActiveLabel(p.nodes?.[0] ?? null));
+  network.on('deselectNode', () => setActiveLabel(null));
+
+  // Re-place labels whenever positions settle or a node is dragged.
+  network.on('stabilized', recomputeLabels);
+  network.on('dragEnd', recomputeLabels);
+
   // Belt-and-suspenders: also kill physics on iteration done
   network.on('stabilizationIterationsDone', () => {
     network.setOptions({ physics: { enabled: false } });
@@ -482,6 +622,10 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
     finalized = true;
     // Kill physics immediately — no more drifting
     network.setOptions({ physics: { enabled: false } });
+
+    // Place labels against the final positions (covers the hierarchical path,
+    // where `stabilized` never fires, and guarantees a pass before first paint).
+    recomputeLabels();
 
     // Compute bounding box of all nodes for pan clamping
     const allPositions = network.getPositions();
@@ -619,7 +763,7 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
   };
 
   if (auditSlot) {
-    registerNetworkForAudit(network, container, auditSlot);
+    registerNetworkForAudit(network, container, auditSlot, labelState, labelMeta);
   }
 
   return { network, nodes, edges, setEmphasis };
@@ -634,15 +778,28 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
  *
  * Used by `scripts/audit-visual.mjs` to assert on label coverage, node-to-
  * label ratio, and edge visibility on the actually-rendered constellation.
+ * `labelState` / `labelMeta` are the live collision-layout maps so audits can
+ * assert on label placement/visibility and per-node geometry (#435).
  */
-function registerNetworkForAudit(network: Network, container: HTMLElement, slot: string) {
+function registerNetworkForAudit(
+  network: Network,
+  container: HTMLElement,
+  slot: string,
+  labelState?: Map<string, RendererLabelState>,
+  labelMeta?: Map<string, { radius: number }>,
+) {
   if (typeof window === 'undefined') return;
   type AuditWindow = Window & {
-    __kbeNetworks?: Record<string, { network: Network; container: HTMLElement }>;
+    __kbeNetworks?: Record<string, {
+      network: Network;
+      container: HTMLElement;
+      labelState?: Map<string, RendererLabelState>;
+      labelMeta?: Map<string, { radius: number }>;
+    }>;
   };
   const w = window as AuditWindow;
   if (!w.__kbeNetworks) w.__kbeNetworks = {};
-  w.__kbeNetworks[slot] = { network, container };
+  w.__kbeNetworks[slot] = { network, container, labelState, labelMeta };
 }
 
 /**
@@ -685,6 +842,9 @@ export function computeGraphPositions(
         springLength: 180,
         springConstant: 0.05,
         damping: 0.6,
+        // Match the live constellation so minimap positions enforce the same
+        // minimum inter-node gap (#435).
+        avoidOverlap: 1,
       },
       stabilization: { iterations: 150 },
     },

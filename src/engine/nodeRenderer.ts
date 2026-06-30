@@ -2679,6 +2679,46 @@ interface CtxRendererArgs {
   style: { size: number };
 }
 
+/** Per-node, mutable label placement shared with the collision-layout pass (#435). */
+export interface RendererLabelState {
+  /** Full label text (untruncated). */
+  text: string;
+  /** Which side of the node the label is drawn on. */
+  anchor: 'below' | 'above' | 'left' | 'right';
+  /** When true the label is suppressed (hide-on-collide) rather than truncated. */
+  hidden: boolean;
+}
+
+export interface NodeRendererOptions {
+  /** Node id — used to look up live placement in `labelState`. */
+  id?: string;
+  /**
+   * Shared, mutable placement map updated by the label-collision pass. When an
+   * entry exists for `id` the renderer draws the label at that anchor (or not at
+   * all when hidden); otherwise it falls back to the static `label` argument drawn
+   * below the node (back-compat for callers without a layout pass).
+   */
+  labelState?: Map<string, RendererLabelState>;
+  /**
+   * Full node title used only when the node is selected/hovered, so a focused
+   * node always shows its label even if it's normally unlabelled or was hidden by
+   * the collision pass (#435). Distinct from the normal-path `label`, which stays
+   * subject to LOD + hide-on-collide.
+   */
+  focusLabel?: string;
+}
+
+const LABEL_FONT = '11px "Segoe UI", system-ui, sans-serif';
+/** Vertical gap between node border and an above/below label, in canvas units. */
+const LABEL_GAP = 6;
+/** Single label line height in canvas units (matches LABEL_FONT). */
+export const LABEL_LINE_HEIGHT = 13;
+
+/** Font used by the renderer for labels — exported so the layout pass measures identically. */
+export function getLabelFont(): string {
+  return LABEL_FONT;
+}
+
 /**
  * Resolved host/theme color source for node rendering.
  *
@@ -2757,6 +2797,7 @@ export function createNodeRenderer(
   theme: NodeThemeSource,
   label?: string,
   disconnected?: boolean,
+  opts?: NodeRendererOptions,
 ){
   const shapeType: NodeShapeType = (iconName && ICON_NODE_SHAPE[iconName]) || 'circle';
   const iconColor = theme.iconColor;
@@ -2827,30 +2868,66 @@ export function createNodeRenderer(
       ctx.fillText('!', wx, wy + 0.5);
     }
 
-    // Draw label below shape
-    if (label) {
-      const labelY = y + s / 2 + 14;
-      ctx.font = '11px "Segoe UI", system-ui, sans-serif';
+    // Draw label — placement comes from the shared collision-layout pass when
+    // available (anchor + hide-on-collide, no truncation), else falls back to a
+    // static label drawn below the node. The label box is intentionally NOT part
+    // of `nodeDimensions` so edges clip to the node body, not the label (#435).
+    const id = opts?.id;
+    const live = id != null ? opts?.labelState?.get(id) : undefined;
+    const baseText = live ? live.text : label;
+    const labelHidden = live ? live.hidden : false;
+    const labelAnchor = live ? live.anchor : 'below';
+    // A selected or hovered node ALWAYS shows its full label, overriding both LOD
+    // (it may be normally unlabelled) and hide-on-collide, so the focused node is
+    // never left anonymous (#435). When forced, fall back to the 'below' anchor.
+    const focused = state.selected || state.hover;
+    const focusText = baseText || (focused ? opts?.focusLabel : undefined);
+    const forced = focused && (!baseText || labelHidden);
+    const drawLabel = forced ? !!focusText : !!baseText && !labelHidden;
+    const labelText = forced ? focusText : baseText;
+    const effectiveAnchor = forced ? 'below' : labelAnchor;
+    if (drawLabel && labelText) {
+      ctx.font = LABEL_FONT;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
+      let lx = x;
+      let ly: number;
+      if (effectiveAnchor === 'above') {
+        ctx.textBaseline = 'bottom';
+        ly = y - s / 2 - LABEL_GAP;
+      } else if (effectiveAnchor === 'left') {
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        lx = x - (shapeType === 'roundedRect' ? s * 0.6 : s / 2) - LABEL_GAP;
+        ly = y;
+      } else if (effectiveAnchor === 'right') {
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        lx = x + (shapeType === 'roundedRect' ? s * 0.6 : s / 2) + LABEL_GAP;
+        ly = y;
+      } else {
+        ly = y + s / 2 + LABEL_GAP;
+      }
       // Stroke for legibility
       ctx.strokeStyle = labelStroke;
       ctx.lineWidth = 3;
       ctx.lineJoin = 'round';
-      ctx.strokeText(label, x, labelY);
+      ctx.strokeText(labelText, lx, ly);
       // Fill
       ctx.fillStyle = labelColor;
-      ctx.fillText(label, x, labelY);
+      ctx.fillText(labelText, lx, ly);
     }
 
     ctx.restore();
 
     const w = shapeType === 'roundedRect' ? s * 1.2 : s;
-    const totalH = label ? s + 28 : s;
+    // nodeDimensions is the edge-clip / overlap box: keep it to the drawn shape so
+    // vis-network terminates edges at the visible border (was `s + 28`, inflated by
+    // the label, which clipped edges to a too-tall box → draw-through, #435).
     return {
       drawNode: undefined,
       drawExternalLabel: undefined,
-      nodeDimensions: { width: w, height: totalH },
+      nodeDimensions: { width: w, height: s },
     };
   };
 }
