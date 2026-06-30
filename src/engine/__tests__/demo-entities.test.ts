@@ -1,7 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { isDemoEntitiesEnabled, injectDemoEntities } from '../demo-entities';
+import { isDemoEntitiesEnabled, injectDemoEntities, isRichMarkdownDemoEnabled, injectRichMarkdownDemo } from '../demo-entities';
 import { resetNodeTypeRegistry } from '../node-types';
 import { getEdgeStyle } from '../../types';
+import { getRichMarkdownDocument } from '../../views/rich-markdown/types';
 import type { KBGraph, KBNode } from '../../types';
 
 function makeNode(id: string, overrides: Partial<KBNode> = {}): KBNode {
@@ -109,6 +110,48 @@ describe('demo-entities seam', () => {
     const once = injectDemoEntities(baseGraph());
     const twice = injectDemoEntities(once);
     expect(twice.nodes.filter(n => n.id === 'demo-person-ben')).toHaveLength(1);
+    expect(twice.nodes).toHaveLength(once.nodes.length);
+  });
+});
+
+describe('rich-Markdown demo seam (#427)', () => {
+  it('is disabled by default (no window in node env)', () => {
+    expect(isRichMarkdownDemoEnabled()).toBe(false);
+  });
+
+  it('appends the sample rich-Markdown doc, anchored to the hub, without mutating the original', () => {
+    const graph = baseGraph();
+    const before = graph.nodes.length;
+    const result = injectRichMarkdownDemo(graph);
+
+    expect(graph.nodes).toHaveLength(before); // original untouched
+    expect(result.nodes).toHaveLength(before + 1);
+
+    const doc = result.nodes.find(n => n.id === 'demo-richmd-doc')!;
+    expect(doc.display).toBe('rich-markdown');
+    expect(result.edges.some(e => e.from === 'readme' && e.to === 'demo-richmd-doc')).toBe(true);
+    expect(result.clusters.filter(c => c.id === 'docs')).toHaveLength(1);
+  });
+
+  it('carries a valid rich-Markdown payload (mermaid + dot/ics/canvas blocks)', () => {
+    const result = injectRichMarkdownDemo(baseGraph());
+    const node = result.nodes.find(n => n.id === 'demo-richmd-doc')!;
+    const richMarkdown = getRichMarkdownDocument(node);
+    expect(richMarkdown).not.toBeNull();
+    expect(richMarkdown!.blocks.map(b => b.kind)).toEqual(['mermaid', 'dot', 'ics', 'canvas']);
+    // every non-mermaid block ships a pre-built SVG (so none degrades to raw code)
+    for (const b of richMarkdown!.blocks.filter(b => b.kind !== 'mermaid')) {
+      expect(typeof b.svg).toBe('string');
+    }
+    // content is rendered HTML carrying the fenced blocks the prose walk upgrades
+    expect(node.content).toContain('language-dot');
+    expect(node.content).toContain('language-canvas');
+  });
+
+  it('is idempotent (no duplicate demo doc)', () => {
+    const once = injectRichMarkdownDemo(baseGraph());
+    const twice = injectRichMarkdownDemo(once);
+    expect(twice.nodes.filter(n => n.id === 'demo-richmd-doc')).toHaveLength(1);
     expect(twice.nodes).toHaveLength(once.nodes.length);
   });
 });

@@ -15,6 +15,7 @@ import { registerType } from './node-types';
 import { registerViewer } from '../views/viewers';
 import { PersonView } from '../views/viewers/PersonView';
 import { SquadView } from '../views/viewers/SquadView';
+import { buildSampleRichMarkdownNode } from '../views/rich-markdown/sample-document';
 
 const DEMO_CLUSTER: Cluster = { id: 'org', name: 'Organization', color: '#c0a3ff' };
 
@@ -215,6 +216,68 @@ function entityNode(
 
 function relationEdge(from: string, to: string, relation: string, description: string): KBEdge {
   return { from, to, type: 'related', relation, description, source: 'inferred', weight: 1 };
+}
+
+/** Cluster the rich-Markdown demo doc lands in. */
+const DOCS_DEMO_CLUSTER: Cluster = { id: 'docs', name: 'Documentation', color: '#D4A050' };
+
+/**
+ * Whether the rich-Markdown demo seam is enabled for this session.
+ *
+ * Query-param only (`?demo=richmd`, including the hash query) — deliberately NOT
+ * backed by localStorage, so it leaves no trace in the persisted `kbe-*`
+ * settings contract (and needs no CACHE_VERSION bump).
+ */
+export function isRichMarkdownDemoEnabled(): boolean {
+  try {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === 'richmd') return true;
+      const hash = window.location.hash;
+      const qIndex = hash.indexOf('?');
+      if (qIndex >= 0) {
+        const hp = new URLSearchParams(hash.slice(qIndex + 1));
+        if (hp.get('demo') === 'richmd') return true;
+      }
+    }
+  } catch {
+    /* access to window may be denied; treat as disabled */
+  }
+  return false;
+}
+
+/**
+ * Return a new graph with the sample rich-Markdown document appended (off by
+ * default). Idempotent: skips injection if the demo doc is already present. The
+ * doc is anchored to an existing hub so it is reachable in the graph.
+ */
+export function injectRichMarkdownDemo(graph: KBGraph): KBGraph {
+  const DEMO_ID = 'demo-richmd-doc';
+  if (graph.nodes.some(n => n.id === DEMO_ID)) return graph;
+
+  const node = buildSampleRichMarkdownNode(DEMO_ID);
+
+  const hub =
+    graph.nodes.find(n => n.id === 'readme') ??
+    graph.nodes.find(n => n.id === 'home') ??
+    graph.nodes.find(n => n.id === 'overview') ??
+    graph.nodes[0];
+
+  const newEdges: KBEdge[] = [];
+  if (hub) {
+    newEdges.push(relationEdge(hub.id, DEMO_ID, 'structural', `${hub.title} → ${node.title}`));
+  }
+
+  const clusters = graph.clusters.some(c => c.id === DOCS_DEMO_CLUSTER.id)
+    ? graph.clusters
+    : [...graph.clusters, DOCS_DEMO_CLUSTER];
+
+  return {
+    nodes: [...graph.nodes, node],
+    edges: [...graph.edges, ...newEdges],
+    clusters,
+    related: graph.related,
+  };
 }
 
 /**

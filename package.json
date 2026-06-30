@@ -41,7 +41,7 @@
     "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
-    "@anokye-labs/kbexplorer-core": "git+https://github.com/anokye-labs/kbexplorer-core.git#8b78351d57ed9a927d4505ffda542eb97841d580",
+    "@anokye-labs/kbexplorer-core": "github:anokye-labs/kbexplorer-core#v0.1.0",
     "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",

@@ -12,7 +12,31 @@ template ↔ kbexplorer CLI compatibility matrix and the pinning contract.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+- **Rich-Markdown rendering** (#427): a rich-Markdown document view that composes
+  frontmatter facts (in the structured view), prose, and inline embedded blocks.
+  - An open **block-renderer registry** (`src/views/rich-markdown/`), modeled on the
+    viewer registry, that maps a block `kind` to a renderer. The inline-Mermaid path
+    is reused as the one live renderer; `dot` / `ics` / `canvas` render from a
+    **pre-built SVG**.
+  - A **pre-built-SVG fallback contract**: any block that ships an `svg` renders it
+    instead of a raw code dump, so a block never degrades to raw code when an SVG
+    exists. This replaces the prior raw-code display in the prose diagram walk.
+    The provider-supplied SVG is **untrusted**, so it is rendered as an inert
+    `<img>` from a `data:image/svg+xml` URL (loaded in the browser's secure static
+    mode — no scripts, event handlers, external fetches, or `<foreignObject>` HTML
+    can execute), never parsed into the live DOM.
+  - Consumes the provider shape `node.data.richMarkdown.blocks` (kbexplorer-cli#133).
+  - A `?demo=richmd` seam injects a sample document so the view is viewable without
+    a provider.
+
+### Changed
+- Bumped `@anokye-labs/kbexplorer-core` to **`#v0.1.0`**.
+- `ProseContent` now upgrades non-Mermaid fenced blocks to their pre-built SVG when
+  the node carries rich-Markdown blocks; ordinary code fences and the live-Mermaid
+  path are unchanged.
+- `validateSourceContent` accepts the full `NodeSourceFile['format']` union
+  (incl. `'markdown'`) introduced by core v0.1.0.
 
 ## [0.2.0] - 2026-06-16
 
