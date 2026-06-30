@@ -16,6 +16,16 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* The provider package's pure `./lib` ships as plain JS (no bundled types);
+       point TS at our ambient declaration for it. (TS 6.0 resolves `paths`
+       relative to the tsconfig — `baseUrl` is deprecated and intentionally
+       omitted.) */
+    "paths": {
+      "@anokye-labs/kbexplorer-provider-rich-markdown/lib": [
+        "./src/engine/providers/rich-markdown/rich-markdown-lib.d.ts"
+      ]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

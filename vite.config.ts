@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
 import { execSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 
 function manifestPlugin(): Plugin {
@@ -26,4 +27,21 @@ export default defineConfig({
   base: process.env.VITE_BASE_PATH ?? '/',
   plugins: [manifestPlugin(), react()],
   envDir: process.env.VITE_ENV_DIR ?? process.cwd(),
+  resolve: {
+    alias: {
+      // The pure `./lib` of @anokye-labs/kbexplorer-provider-rich-markdown
+      // top-level-imports `node:crypto` (sync createHash) and `node:path`
+      // (basename/extname). Those don't exist in the browser, so the SPA bundle
+      // resolves them to small browser-safe shims. (No `node:fs` is ever pulled
+      // in — we only use the package's pure `./lib`, never its fs `.` export.)
+      // vitest runs under a node environment and is NOT aliased, so tests use
+      // the real builtins.
+      'node:crypto': fileURLToPath(
+        new URL('./src/engine/providers/rich-markdown/shims/crypto.ts', import.meta.url),
+      ),
+      'node:path': fileURLToPath(
+        new URL('./src/engine/providers/rich-markdown/shims/path.ts', import.meta.url),
+      ),
+    },
+  },
 })
