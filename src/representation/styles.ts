@@ -165,3 +165,26 @@ export function resolveStyleColor(style: TokenizedColor, root?: Element | null):
     return style.color;
   }
 }
+
+/**
+ * Apply an alpha to a resolved color robustly, regardless of its format.
+ *
+ * Edge colors now resolve from theme CSS variables, so a value may be a hex
+ * (`#rrggbb`) OR an `rgb()/rgba()` string (e.g. when a host theme overrides a
+ * token with an `rgb()` value). The old `color + '80'` hex-suffix trick produced
+ * invalid strings like `rgb(…)80` for the non-hex case; this parses both forms
+ * and emits a valid `rgba(...)`, falling back to the original color when it can't
+ * be parsed.
+ */
+export function withAlpha(color: string, alpha: number): string {
+  const hex = /^#([0-9a-fA-F]{6})$/.exec(color.trim());
+  if (hex) {
+    const n = parseInt(hex[1], 16);
+    return `rgba(${(n >> 16) & 0xff}, ${(n >> 8) & 0xff}, ${n & 0xff}, ${alpha})`;
+  }
+  const rgb = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(color);
+  if (rgb) {
+    return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`;
+  }
+  return color;
+}

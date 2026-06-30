@@ -11,17 +11,21 @@ The node renderer (`src/engine/nodeRenderer.ts`) is the custom canvas drawing en
 
 ## How It Works
 
-`createNodeRenderer()` returns a draw function that vis-network calls for each node on every frame:
+`createNodeRenderer()` returns a vis-network `ctxRenderer` — a draw function vis-network calls for each node on every frame with a single args object (`{ ctx, x, y, state, style }`):
 
 ```typescript
 function createNodeRenderer(
-  iconName: string,         // Fluent icon name (e.g., "Flash", "Code")
-  color: string,            // Cluster color hex
-  size: number,             // Node radius in pixels
-  theme: NodeThemeSource,   // Resolved theme-source (foreground/background/icon)
-  label?: string,           // Optional text label
-  disconnected?: boolean
-): (ctx: CanvasRenderingContext2D, x: number, y: number) => void
+  iconName: string | undefined, // Fluent icon name (e.g., "Flash", "Code"), or none
+  clusterColor: string,         // Cluster color hex
+  nodeSize: number,             // Node diameter in pixels
+  theme: NodeThemeSource,       // Resolved theme-source (foreground/background/icon)
+  label?: string,               // Optional text label
+  disconnected?: boolean,
+): (args: { ctx: CanvasRenderingContext2D; x: number; y: number; state: { selected: boolean; hover: boolean }; style: { size: number } }) => {
+  drawNode?: unknown;
+  drawExternalLabel?: unknown;
+  nodeDimensions: { width: number; height: number };
+}
 ```
 
 The renderer paints a rounded shape (circle, rounded square, or rounded rectangle depending on icon type), fills it with the cluster color at reduced opacity, then draws the Fluent icon as an SVG data URI overlay. Labels render below the shape in the current theme's foreground color.

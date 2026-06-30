@@ -9,7 +9,7 @@ import { getNodeDegrees } from './graph';
 import { computeReportsToLevels } from './reports-to-layout';
 import type { KBGraph } from '../types';
 import type { GraphLayoutMode } from '../representation/views';
-import { getEdgeStyle, resolveStyleColor } from '../representation/styles';
+import { getEdgeStyle, resolveStyleColor, withAlpha } from '../representation/styles';
 
 /**
  * Fixed seed for vis-network's force-directed initial placement.
@@ -369,12 +369,12 @@ export function createGraphNetwork(options: GraphNetworkOptions): GraphNetworkRe
         dashes = style.dashes;
       } else if (minHop <= 1) {
         // Tier 1: one endpoint is direct neighbor — visible but softer
-        color = styleColor + '80'; // 50% alpha
+        color = withAlpha(styleColor, 0.5);
         width = style.width * 0.8;
         dashes = style.dashes;
       } else if (maxHop <= 2) {
         // Tier 2: 2-hop bridge — faint but colored
-        color = styleColor + '40'; // 25% alpha
+        color = withAlpha(styleColor, 0.25);
         width = Math.max(style.width * 0.5, 0.8);
         dashes = style.dashes;
       } else {

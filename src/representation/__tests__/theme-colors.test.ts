@@ -2,10 +2,27 @@ import { describe, it, expect, afterEach } from 'vitest';
 import {
   styleColorVar,
   resolveStyleColor,
+  withAlpha,
   EDGE_TYPE_STYLES,
   RELATION_STYLES,
   NODE_LAYER_META,
 } from '../styles';
+
+describe('withAlpha', () => {
+  it('converts a hex color to rgba with the given alpha', () => {
+    expect(withAlpha('#a78bfa', 0.5)).toBe('rgba(167, 139, 250, 0.5)');
+    expect(withAlpha('#000000', 0.25)).toBe('rgba(0, 0, 0, 0.25)');
+  });
+
+  it('re-alphas an rgb()/rgba() color instead of producing an invalid suffix', () => {
+    expect(withAlpha('rgb(160, 173, 184)', 0.5)).toBe('rgba(160, 173, 184, 0.5)');
+    expect(withAlpha('rgba(20, 20, 24, 1)', 0.25)).toBe('rgba(20, 20, 24, 0.25)');
+  });
+
+  it('returns the original string for an unparseable color', () => {
+    expect(withAlpha('var(--x)', 0.5)).toBe('var(--x)');
+  });
+});
 
 describe('styleColorVar', () => {
   it('wraps a tokenized color as a var() with the hex as fallback', () => {
