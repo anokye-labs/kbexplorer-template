@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Empty data icon: suppress the browser's default /favicon.ico request so
+         the embedded canvas iframe makes no spurious network call (headless —
+         the full-page index.html owns the real favicon). -->
+    <link rel="icon" href="data:," />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kbexplorer canvas</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/canvas.tsx"></script>
+  </body>
+</html>

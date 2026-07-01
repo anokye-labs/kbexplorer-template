@@ -26,6 +26,16 @@ function manifestPlugin(): Plugin {
 export default defineConfig({
   base: process.env.VITE_BASE_PATH ?? '/',
   plugins: [manifestPlugin(), react()],
+  build: {
+    rollupOptions: {
+      // Two HTML entries: the full-page SPA (`index.html` → `main.tsx`) and the
+      // additive embeddable canvas surface (`canvas.html` → `canvas.tsx`, #406).
+      input: {
+        index: fileURLToPath(new URL('./index.html', import.meta.url)),
+        canvas: fileURLToPath(new URL('./canvas.html', import.meta.url)),
+      },
+    },
+  },
   envDir: process.env.VITE_ENV_DIR ?? process.cwd(),
   resolve: {
     alias: {
