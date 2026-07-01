@@ -42,24 +42,58 @@ function nodeBody(node: KBNode): string {
   return stripped || '_(no content)_';
 }
 
-/** The highest-weight edge connecting `neighborId` to any anchor (deterministic). */
-function bestAnchorEdge(
+/**
+ * Precompute the best (highest-weight) edge connecting each neighbor to any
+ * anchor, in ONE pass over `graph.edges` — O(|edges|) instead of the previous
+ * O(|candidates|·|edges|) per-candidate rescan. This runs on every render of the
+ * default anchor-first landing (#408), so the linear pass matters.
+ *
+ * The selection is byte-identical to the old per-candidate {@link bestAnchorEdge}
+ * scan: among the edges tying a neighbor to an anchor, the maximum weight wins,
+ * ties broken by the lexicographic `(anchor index, edge index)` order the nested
+ * `for anchor { for edge }` loops produced (lower anchor index first, then lower
+ * edge index). Because edges are visited in index order, an equal-weight edge
+ * only replaces the incumbent when it belongs to a strictly-lower anchor index.
+ */
+function computeBestAnchorEdges(
   graph: KBGraph,
-  anchorIds: string[],
-  neighborId: string,
-): KBEdge | undefined {
-  let best: KBEdge | undefined;
-  for (const anchorId of anchorIds) {
-    for (const edge of graph.edges) {
-      const connects =
-        (edge.from === anchorId && edge.to === neighborId) ||
-        (edge.from === neighborId && edge.to === anchorId);
-      if (connects && (best === undefined || edge.weight > best.weight)) {
-        best = edge;
-      }
+  anchorIdList: string[],
+): Map<string, KBEdge> {
+  const anchorIndex = new Map<string, number>();
+  anchorIdList.forEach((id, i) => anchorIndex.set(id, i));
+
+  const best = new Map<string, { edge: KBEdge; weight: number; anchorIndex: number }>();
+  for (const edge of graph.edges) {
+    const fromAnchor = anchorIndex.get(edge.from);
+    const toAnchor = anchorIndex.get(edge.to);
+    // Exactly one endpoint must be an anchor: that fixes the neighbor and the
+    // anchor index. Edges with neither or both endpoints as anchors never
+    // contributed a candidate neighbor's best edge in the original scan.
+    let neighborId: string;
+    let idx: number;
+    if (fromAnchor !== undefined && toAnchor === undefined) {
+      neighborId = edge.to;
+      idx = fromAnchor;
+    } else if (toAnchor !== undefined && fromAnchor === undefined) {
+      neighborId = edge.from;
+      idx = toAnchor;
+    } else {
+      continue;
+    }
+
+    const cur = best.get(neighborId);
+    if (
+      cur === undefined ||
+      edge.weight > cur.weight ||
+      (edge.weight === cur.weight && idx < cur.anchorIndex)
+    ) {
+      best.set(neighborId, { edge, weight: edge.weight, anchorIndex: idx });
     }
   }
-  return best;
+
+  const out = new Map<string, KBEdge>();
+  for (const [neighborId, record] of best) out.set(neighborId, record.edge);
+  return out;
 }
 
 /** Relation label for a neighbor edge: explicit relation, else structural type. */
@@ -148,6 +182,9 @@ export function expandAnchoredNeighborhood(
     }
   }
 
+  // Precompute each candidate's best anchor edge in one O(|edges|) pass.
+  const bestEdges = computeBestAnchorEdges(graph, anchorIdList);
+
   // Greedily expand neighbors in rank order until the budget is exhausted;
   // every remaining (relevant) neighbor stays linked for navigation.
   const expanded: AnchoredNeighbor[] = [];
@@ -156,7 +193,7 @@ export function expandAnchoredNeighborhood(
   let full = false;
   for (const id of candidates) {
     const node = byId.get(id)!;
-    const edge = bestAnchorEdge(graph, anchorIdList, id);
+    const edge = bestEdges.get(id);
     if (!full) {
       const c = cost(node, edge);
       if (used + c <= budget) {

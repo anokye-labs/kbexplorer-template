@@ -22,7 +22,7 @@
  * (`useCanvasTheme`); this view consumes Fluent tokens only and never re-mirrors
  * host vars.
  */
-import { createElement } from 'react';
+import { createElement, useMemo } from 'react';
 import {
   Badge,
   Body1,
@@ -195,7 +195,18 @@ export function AnchorFirstView({
 }: AnchorFirstViewProps) {
   const styles = useStyles();
 
-  const anchor = graph.nodes.find(n => n.id === anchorId);
+  // Memoize the anchor lookup + shared greedy partition (llm-context) so theme
+  // changes / parent re-renders don't re-run the O(n) walk. Unit cost + a count
+  // budget expand the top `maxExpanded` ranked neighbors; the rest link out.
+  // Computed before any early return so hook order stays stable.
+  const { anchor, expanded, unexpanded } = useMemo(() => {
+    const anchorNode = graph.nodes.find(n => n.id === anchorId);
+    if (!anchorNode) {
+      return { anchor: undefined, expanded: [], unexpanded: [] };
+    }
+    const partition = expandAnchoredNeighborhood(graph, [anchorId], () => 1, maxExpanded);
+    return { anchor: anchorNode, expanded: partition.expanded, unexpanded: partition.unexpanded };
+  }, [graph, anchorId, maxExpanded]);
 
   // NO-ANCHOR / bad-anchor fallback: the constellation is the sensible default.
   if (!anchor) {
@@ -208,15 +219,6 @@ export function AnchorFirstView({
       </div>
     );
   }
-
-  // Reuse the shared greedy partition (llm-context): unit cost + count budget,
-  // so the top `maxExpanded` ranked neighbors expand and the rest link out.
-  const { expanded, unexpanded } = expandAnchoredNeighborhood(
-    graph,
-    [anchorId],
-    () => 1,
-    maxExpanded,
-  );
 
   const cluster = config.clusters?.[anchor.cluster];
 
