@@ -11,9 +11,10 @@ describe('parseCanvasBootConfig', () => {
     }
   });
 
-  it('defaults visualMode to inherit-host and local to false when absent', () => {
+  it('defaults visualMode to inherit-host, target to copilot and local to false when absent', () => {
     const cfg = parseCanvasBootConfig({});
     expect(cfg.visualMode).toBe('inherit-host');
+    expect(cfg.target).toBe('copilot');
     expect(cfg.local).toBe(false);
     expect(cfg.searchServiceUrl).toBeUndefined();
     expect(cfg.anchorNodeId).toBeUndefined();
@@ -23,12 +24,14 @@ describe('parseCanvasBootConfig', () => {
     const cfg = parseCanvasBootConfig({
       local: true,
       visualMode: 'inherit-host',
+      target: 'spa',
       searchServiceUrl: 'http://127.0.0.1:9099/search',
       anchorNodeId: 'kg://issue/406',
     });
     expect(cfg).toEqual({
       local: true,
       visualMode: 'inherit-host',
+      target: 'spa',
       searchServiceUrl: 'http://127.0.0.1:9099/search',
       anchorNodeId: 'kg://issue/406',
     });
@@ -36,6 +39,25 @@ describe('parseCanvasBootConfig', () => {
 
   it('accepts the config visual mode', () => {
     expect(parseCanvasBootConfig({ visualMode: 'config' }).visualMode).toBe('config');
+  });
+
+  it('accepts the spa and copilot targets', () => {
+    expect(parseCanvasBootConfig({ target: 'spa' }).target).toBe('spa');
+    expect(parseCanvasBootConfig({ target: 'copilot' }).target).toBe('copilot');
+  });
+
+  it('falls back to copilot for an unknown target', () => {
+    expect(parseCanvasBootConfig({ target: 'json-ld' }).target).toBe('copilot');
+    expect(parseCanvasBootConfig({ target: 42 }).target).toBe('copilot');
+  });
+
+  it('trims surrounding whitespace on visualMode and target before validating', () => {
+    expect(parseCanvasBootConfig({ target: 'copilot ' }).target).toBe('copilot');
+    expect(parseCanvasBootConfig({ target: '  spa\n' }).target).toBe('spa');
+    expect(parseCanvasBootConfig({ visualMode: 'inherit-host\n' }).visualMode).toBe(
+      'inherit-host',
+    );
+    expect(parseCanvasBootConfig({ visualMode: ' config ' }).visualMode).toBe('config');
   });
 
   it('falls back to inherit-host for an unknown visualMode', () => {
