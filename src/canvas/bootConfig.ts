@@ -83,6 +83,15 @@ function optionalString(value: unknown): string | undefined {
 }
 
 /**
+ * A trimmed string candidate for enum-style fields: strings are trimmed (so a
+ * host value like `'copilot '` or `'inherit-host\n'` still matches the allowed
+ * set), non-strings become `undefined` (⇒ the caller falls back to its default).
+ */
+function enumCandidate(value: unknown): string | undefined {
+  return typeof value === 'string' ? value.trim() : undefined;
+}
+
+/**
  * Normalize an arbitrary raw value (typically `window.__KBX_CANVAS__`) into a
  * complete {@link CanvasBootConfig}. Unknown/invalid fields fall back to the
  * documented defaults; a non-object input yields the full default config.
@@ -91,14 +100,16 @@ export function parseCanvasBootConfig(raw: unknown): CanvasBootConfig {
   if (!raw || typeof raw !== 'object') return { ...DEFAULT_CANVAS_BOOT_CONFIG };
   const obj = raw as Record<string, unknown>;
 
-  const visualMode = VISUAL_MODES.includes(obj.visualMode as CanvasVisualMode)
-    ? (obj.visualMode as CanvasVisualMode)
+  const visualModeCandidate = enumCandidate(obj.visualMode);
+  const visualMode = VISUAL_MODES.includes(visualModeCandidate as CanvasVisualMode)
+    ? (visualModeCandidate as CanvasVisualMode)
     : DEFAULT_CANVAS_BOOT_CONFIG.visualMode;
 
+  const targetCandidate = enumCandidate(obj.target);
   const target = REPRESENTATION_TARGETS.includes(
-    obj.target as CanvasRepresentationTarget,
+    targetCandidate as CanvasRepresentationTarget,
   )
-    ? (obj.target as CanvasRepresentationTarget)
+    ? (targetCandidate as CanvasRepresentationTarget)
     : DEFAULT_CANVAS_BOOT_CONFIG.target;
 
   return {

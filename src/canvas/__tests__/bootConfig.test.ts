@@ -51,6 +51,15 @@ describe('parseCanvasBootConfig', () => {
     expect(parseCanvasBootConfig({ target: 42 }).target).toBe('copilot');
   });
 
+  it('trims surrounding whitespace on visualMode and target before validating', () => {
+    expect(parseCanvasBootConfig({ target: 'copilot ' }).target).toBe('copilot');
+    expect(parseCanvasBootConfig({ target: '  spa\n' }).target).toBe('spa');
+    expect(parseCanvasBootConfig({ visualMode: 'inherit-host\n' }).visualMode).toBe(
+      'inherit-host',
+    );
+    expect(parseCanvasBootConfig({ visualMode: ' config ' }).visualMode).toBe('config');
+  });
+
   it('falls back to inherit-host for an unknown visualMode', () => {
     expect(parseCanvasBootConfig({ visualMode: 'neon' }).visualMode).toBe('inherit-host');
   });
