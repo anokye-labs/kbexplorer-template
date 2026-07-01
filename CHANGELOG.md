@@ -12,6 +12,27 @@ template ↔ kbexplorer CLI compatibility matrix and the pinning contract.
 
 ## [Unreleased]
 
+## 0.4.0
+
+### Added
+- **Bespoke Copilot canvas Representation** — the first release carrying the
+  Copilot canvas surface, served over loopback by the kbexplorer CLI's
+  canvas-server from the built template `dist/`.
+  - **Embeddable headless canvas mount + inherit-host visual mode** (#441): a
+    dedicated `canvas.html` entry that mounts the constellation as an embeddable
+    surface (distinct from the full-page `index.html`), plus an `inherit-host`
+    visual mode so the embed adopts the hosting surface's look.
+  - **Copilot Representation target** (#442): registers the `copilot`
+    Representation target so the CLI knows how to render the canvas.
+  - **Anchor-first bespoke Copilot home view** (#443): an anchor-first home view
+    tailored to the Copilot canvas.
+  - **Host CSS-var → Fluent theme adapter + inherit-host mode** (#439): adapts
+    host CSS variables into Fluent theme tokens so the embedded canvas inherits
+    the host theme.
+  - **Theme-driven constellation colors + nodeRenderer host bridge** (#437) and
+    **constellation rendering polish** (#438): overlap, labels, edges, and
+    legend refinements driven by the active theme.
+
 ## 0.3.0
 
 ### Added
