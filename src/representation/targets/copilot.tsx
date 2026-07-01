@@ -32,6 +32,8 @@ export function renderCopilotSurface(
   graph: Parameters<typeof renderSpaRoutes>[0],
   options: CopilotRenderOptions,
 ): ReactNode {
+  // SEAM (#408): currently delegates to the `spa` route tree (reuses the node
+  // viewers) — replace this body with the anchor-first bespoke layout.
   return renderSpaRoutes(graph, options);
 }
 
