@@ -2,11 +2,12 @@
  * Canvas boot config (#406, epic #407 / #401).
  *
  * When the SPA is hosted inside a Copilot canvas iframe, the kbexplorer-cli
- * loopback server (#190) injects a small boot object on `window.__KBX_CANVAS__`
- * BEFORE the embeddable entry (`src/canvas.tsx`) runs. This module is the typed,
- * defensive reader for that object — it never throws on a missing/partial/host-
- * tampered value and always resolves to a complete {@link CanvasBootConfig} with
- * safe defaults, so the headless mount can boot deterministically.
+ * loopback server (kbexplorer-cli#190) injects a small boot object on
+ * `window.__KBX_CANVAS__` BEFORE the embeddable entry (`src/canvas.tsx`) runs.
+ * This module is the typed, defensive reader for that object — it never throws
+ * on a missing/partial/host-tampered value and always resolves to a complete
+ * {@link CanvasBootConfig} with safe defaults, so the headless mount can boot
+ * deterministically.
  *
  * Pure and DOM-light: {@link parseCanvasBootConfig} takes the raw value so it is
  * unit-testable without a global; {@link readCanvasBootConfig} reads the global.
@@ -31,8 +32,13 @@ export interface CanvasBootConfig {
   /** Visual mode — defaults to `inherit-host` for the canvas surface. */
   visualMode: CanvasVisualMode;
   /**
-   * Loopback search-service URL the host exposes for semantic search, when
-   * present. Absent ⇒ the surface degrades to the in-memory search index.
+   * Loopback search-service URL the host exposes for semantic search.
+   *
+   * Reserved / forward-compat: parsed and carried on the boot contract now, but
+   * not yet consumed. The embeddable search wiring (this URL → the SPA search
+   * hook, mirroring `VITE_SEARCH_SERVICE_URL`) lands with the CLI `/search`
+   * endpoint (kbexplorer-cli A3 / #192). Until then the surface degrades to the
+   * in-memory search index; absent ⇒ same behavior.
    */
   searchServiceUrl?: string;
   /**
