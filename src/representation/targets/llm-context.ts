@@ -87,6 +87,91 @@ function dedupe(ids: string[]): string[] {
   return [...new Set(ids)];
 }
 
+/** A neighbor paired with the highest-weight edge tying it to the anchors. */
+export interface AnchoredNeighbor {
+  node: KBNode;
+  edge: KBEdge | undefined;
+}
+
+/**
+ * The anchor-first neighborhood: the resolved anchor nodes, the greedily
+ * expanded neighbors (rank order, within budget) and the relevant-but-
+ * unexpanded neighbors (over budget) — the ones a consumer surfaces as
+ * navigable `kg://` links/chips.
+ */
+export interface AnchoredNeighborhood {
+  anchors: KBNode[];
+  expanded: AnchoredNeighbor[];
+  unexpanded: AnchoredNeighbor[];
+}
+
+/**
+ * Rank + greedily partition an anchored neighborhood — the single source of
+ * truth reused by both {@link renderLlmContext} (token cost + token budget,
+ * byte-identical Markdown) and the canvas anchor-first home view (#408, unit
+ * cost + a max-expanded count).
+ *
+ * Candidates are the anchors' `graph.related` neighbors walked in the engine's
+ * existing edge-weight rank order (unseen, in-graph, non-anchor). They are then
+ * greedily expanded in that order until `budget` is exhausted; every remaining
+ * candidate is returned as unexpanded. Invalid/absent anchor ids are ignored so
+ * callers that must NOT throw (the view) can rely on graceful degradation;
+ * callers that require strict anchors validate before calling.
+ */
+export function expandAnchoredNeighborhood(
+  graph: KBGraph,
+  anchorIds: string[],
+  cost: (node: KBNode, edge: KBEdge | undefined) => number,
+  budget: number,
+): AnchoredNeighborhood {
+  const byId = new Map(graph.nodes.map(node => [node.id, node]));
+
+  const anchors: KBNode[] = [];
+  const seen = new Set<string>();
+  for (const id of anchorIds) {
+    if (seen.has(id)) continue;
+    const node = byId.get(id);
+    if (!node) continue;
+    seen.add(id);
+    anchors.push(node);
+  }
+  const anchorIdList = anchors.map(anchor => anchor.id);
+
+  // Ranked candidate neighbors: walk each anchor's weight-ranked `related`
+  // list in order, collecting unseen, in-graph, non-anchor nodes.
+  const candidates: string[] = [];
+  for (const anchorId of anchorIdList) {
+    for (const neighborId of graph.related[anchorId] ?? []) {
+      if (seen.has(neighborId) || !byId.has(neighborId)) continue;
+      seen.add(neighborId);
+      candidates.push(neighborId);
+    }
+  }
+
+  // Greedily expand neighbors in rank order until the budget is exhausted;
+  // every remaining (relevant) neighbor stays linked for navigation.
+  const expanded: AnchoredNeighbor[] = [];
+  const unexpanded: AnchoredNeighbor[] = [];
+  let used = 0;
+  let full = false;
+  for (const id of candidates) {
+    const node = byId.get(id)!;
+    const edge = bestAnchorEdge(graph, anchorIdList, id);
+    if (!full) {
+      const c = cost(node, edge);
+      if (used + c <= budget) {
+        expanded.push({ node, edge });
+        used += c;
+        continue;
+      }
+      full = true;
+    }
+    unexpanded.push({ node, edge });
+  }
+
+  return { anchors, expanded, unexpanded };
+}
+
 /**
  * Render a neighbor-anchored, token-budgeted Markdown context pack.
  *
@@ -114,38 +199,15 @@ export function renderLlmContext(
     return node;
   });
 
-  // Ranked candidate neighbors: walk each anchor's weight-ranked `related`
-  // list in order, collecting unseen, in-graph, non-anchor nodes.
-  const seen = new Set(anchorIds);
-  const candidates: string[] = [];
-  for (const anchorId of anchorIds) {
-    for (const neighborId of graph.related[anchorId] ?? []) {
-      if (seen.has(neighborId) || !byId.has(neighborId)) continue;
-      seen.add(neighborId);
-      candidates.push(neighborId);
-    }
-  }
-
-  // Greedily expand neighbors in rank order until the budget is exhausted;
-  // every remaining (relevant) neighbor becomes a navigable kg:// link.
-  const expanded: { node: KBNode; edge: KBEdge | undefined }[] = [];
-  const unexpanded: { node: KBNode; edge: KBEdge | undefined }[] = [];
-  let used = 0;
-  let full = false;
-  for (const id of candidates) {
-    const node = byId.get(id)!;
-    const edge = bestAnchorEdge(graph, anchorIds, id);
-    if (!full) {
-      const cost = estimateTokens(neighborBlock(node, edge));
-      if (used + cost <= budget) {
-        expanded.push({ node, edge });
-        used += cost;
-        continue;
-      }
-      full = true;
-    }
-    unexpanded.push({ node, edge });
-  }
+  // Rank + greedily partition the neighborhood using the shared expansion (the
+  // same logic the canvas anchor-first view reuses); cost is the neighbor's
+  // Markdown token estimate and the budget bounds ONLY this expansion.
+  const { expanded, unexpanded } = expandAnchoredNeighborhood(
+    graph,
+    anchorIds,
+    (node, edge) => estimateTokens(neighborBlock(node, edge)),
+    budget,
+  );
 
   const out: string[] = [];
   out.push('# Knowledge graph context');

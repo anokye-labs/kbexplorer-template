@@ -1,40 +1,81 @@
 /**
- * `copilot` representation (B1 #440, epic #407 / #401).
+ * `copilot` representation (B1 #440 + B2 #408, epic #407 / #401).
  *
  * The destination surface for Copilot: a distinct {@link RepresentationTarget}
  * the embeddable canvas resolves so the panel can render a Copilot-bespoke view
  * of the SAME pure `KBGraph` the `spa` target renders. Registering it as its own
  * named target — rather than reusing `spa` from the canvas mount — gives the
- * bespoke children a stable seam to build on: the anchor-first home view (#408),
- * the agent-action surface (#409), the affordance-aware launchpad (#411), etc.
+ * bespoke children a stable seam to build on.
  *
- * INITIALLY it delegates to the `spa` route tree ({@link renderSpaRoutes}) so it
- * reuses the existing node viewers (`src/views/viewers/*`), `kg://` identity +
- * relations, and `graph.related` / `llm-context` expansion unchanged. This keeps
- * #440 purely additive — the target NAME the canvas resolves is the only change
- * vs. #406. #408 replaces the render body below with the narrow-column,
- * agent-driven, anchor-first layout without touching the registration/wiring.
+ * #440 registered the target (initially delegating to the `spa` route tree).
+ * #408 replaces that delegation with the **anchor-first** layout: the landing
+ * view is NOT the constellation but the conversation's anchor node
+ * ({@link AnchorFirstView}) — its existing node-type viewer plus its
+ * weight-ranked neighbors (top-ranked expanded inline, the rest as navigable
+ * `kg://` chips), with the constellation demoted to an optional zoom-out. The
+ * registration/wiring #440 put in place is unchanged; only the render body is.
+ *
+ * ADDITIVE: the `spa` target and the full-page `App`/`main.tsx` path are
+ * untouched — this owns its OWN narrow `<Routes>` inside the mount's HashRouter.
+ */
+/* eslint-disable react-refresh/only-export-components --
+ * This is a representation-target module, not a hot-reloadable component file:
+ * it intentionally exports the render function and `copilot` target descriptor
+ * alongside the route tree's internal components. Fast Refresh does not apply.
  */
 import type { ReactNode } from 'react';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import type { Representation } from '@anokye-labs/kbexplorer-core';
-import { renderSpaRoutes, type SpaRenderOptions } from './spa';
+import type { KBConfig, KBGraph } from '../../types';
+import { HomePage } from '../../views/HomePage';
+import { OverviewView } from '../../views/OverviewView';
+import type { SpaRenderOptions } from './spa';
+import { AnchorFirstView } from './copilot-home/AnchorFirstView';
 
 /**
- * Runtime context the copilot view needs beyond the pure graph. Identical to
- * {@link SpaRenderOptions} today because the render delegates to the spa route
- * tree; kept as its own alias so #408 can widen it (agent actions, anchors)
- * without disturbing the spa target's option shape.
+ * Runtime context the copilot view needs beyond the pure graph. Widens
+ * {@link SpaRenderOptions} (#408) with the conversation `anchorNodeId` the
+ * anchor-first home lands on; `landingPath` remains the no-anchor fallback.
  */
-export type CopilotRenderOptions = SpaRenderOptions;
+export interface CopilotRenderOptions extends SpaRenderOptions {
+  /** The conversation anchor node id from `bootConfig.anchorNodeId`, if any. */
+  anchorNodeId?: string;
+}
 
-/** Render the copilot surface for an already-built graph (reuses spa viewers). */
+/** Route element: anchor-first home for the `:id` in the hash path. */
+function AnchorRoute({ graph, config }: { graph: KBGraph; config: KBConfig }) {
+  const { id } = useParams<{ id: string }>();
+  return <AnchorFirstView graph={graph} config={config} anchorId={id ?? ''} />;
+}
+
+/**
+ * Render the copilot surface for an already-built graph.
+ *
+ * The initial path is the conversation anchor (`/node/<anchorNodeId>`) when the
+ * boot config supplies one, else the repo's configured `landingPath` (NO-ANCHOR
+ * fallback — {@link AnchorFirstView} degrades an unknown landing node, e.g.
+ * `/node/home`, to the constellation). Every `/node/:id` re-anchors the view, so
+ * clicking a `kg://` neighbor chip re-centers the panel. `/constellation` is the
+ * optional zoom-out (the force-directed {@link HomePage}).
+ */
 export function renderCopilotSurface(
-  graph: Parameters<typeof renderSpaRoutes>[0],
+  graph: KBGraph,
   options: CopilotRenderOptions,
 ): ReactNode {
-  // SEAM (#408): currently delegates to the `spa` route tree (reuses the node
-  // viewers) — replace this body with the anchor-first bespoke layout.
-  return renderSpaRoutes(graph, options);
+  const { config, landingPath, anchorNodeId } = options;
+  const initialPath = anchorNodeId
+    ? `/node/${encodeURIComponent(anchorNodeId)}`
+    : landingPath;
+
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to={initialPath} replace />} />
+      <Route path="/node/:id" element={<AnchorRoute graph={graph} config={config} />} />
+      <Route path="/constellation" element={<HomePage graph={graph} config={config} />} />
+      <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
+      <Route path="*" element={<Navigate to={initialPath} replace />} />
+    </Routes>
+  );
 }
 
 /** The registered `copilot` representation target. */
