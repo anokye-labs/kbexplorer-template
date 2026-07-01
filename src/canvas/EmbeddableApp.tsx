@@ -57,6 +57,7 @@ function CanvasExplorer({ boot }: { boot: CanvasBootConfig }): ReactNode {
               config: state.config,
               fluentTheme,
               landingPath: resolveCanvasLandingPath(state.config, boot.anchorNodeId),
+              anchorNodeId: boot.anchorNodeId,
             }) as ReactNode}
           </HashRouter>
         )}
