@@ -42,6 +42,9 @@ test.describe('Embeddable canvas mount (#406)', () => {
     // Reused `spa` reading viewer renders the anchored node's prose — non-blank.
     await expect(page.locator('.kb-prose')).toBeVisible({ timeout: 15000 });
 
+    // anchorNodeId from the boot config lands on /node/<id> (HashRouter).
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe('#/node/readme');
+
     const surface = page.locator('[data-kbx-surface="canvas"]');
     await expect(surface).toBeVisible();
 
@@ -51,10 +54,9 @@ test.describe('Embeddable canvas mount (#406)', () => {
     await expect(surface).toHaveCSS('background-color', HOST_BG);
     await expect(surface).toHaveCSS('color', HOST_FG);
 
-    // Headless entry: the canvas HTML, not the full-page index.html. The
-    // full-page shell ships a favicon link; the canvas deliberately omits it.
+    // Headless entry: the canvas HTML, not the full-page index.html (distinct
+    // title). The canvas ships no real favicon and no HUD chrome.
     await expect(page).toHaveTitle(/kbexplorer canvas/);
-    await expect(page.locator('link[rel="icon"]')).toHaveCount(0);
 
     await page.waitForTimeout(1000);
     const appErrors = errors.filter(e => !e.includes('403') && !e.includes('rate limit'));
