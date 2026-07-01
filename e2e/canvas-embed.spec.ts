@@ -62,4 +62,39 @@ test.describe('Embeddable canvas mount (#406)', () => {
     const appErrors = errors.filter(e => !e.includes('403') && !e.includes('rate limit'));
     expect(appErrors).toHaveLength(0);
   });
+
+  test('defaults to the copilot target and renders it host-themed (#440)', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error' && !msg.text().includes('@griffel')) errors.push(msg.text());
+    });
+
+    // Boot with NO explicit target — the canvas surface defaults to `copilot`.
+    await page.addInitScript(() => {
+      (window as unknown as { __KBX_CANVAS__: unknown }).__KBX_CANVAS__ = {
+        local: false,
+        visualMode: 'inherit-host',
+        anchorNodeId: 'readme',
+      };
+    });
+    await page.goto('/canvas.html', { timeout: 60000 });
+
+    const surface = page.locator('[data-kbx-surface="canvas"]');
+    await expect(surface).toBeVisible({ timeout: 15000 });
+    // The registry-selected target the canvas resolved is `copilot`, not `spa`.
+    await expect(surface).toHaveAttribute('data-kbx-target', 'copilot');
+
+    // The copilot target reuses the `spa` reading viewer → anchored prose renders.
+    await expect(page.locator('.kb-prose')).toBeVisible({ timeout: 15000 });
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe('#/node/readme');
+
+    // Host-themed via inherit-host (semantic vars mirrored onto the iframe root).
+    await mirrorHostVars(page);
+    await expect(surface).toHaveCSS('background-color', HOST_BG);
+    await expect(surface).toHaveCSS('color', HOST_FG);
+
+    await page.waitForTimeout(1000);
+    const appErrors = errors.filter(e => !e.includes('403') && !e.includes('rate limit'));
+    expect(appErrors).toHaveLength(0);
+  });
 });

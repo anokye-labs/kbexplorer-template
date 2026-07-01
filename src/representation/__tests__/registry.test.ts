@@ -7,6 +7,7 @@ import {
   jsonLdRepresentation,
   llmContextRepresentation,
   spaRepresentation,
+  copilotRepresentation,
 } from '../targets';
 
 const EMPTY_GRAPH: KBGraph = { nodes: [], edges: [], clusters: [], related: {} };
@@ -41,17 +42,23 @@ describe('RepresentationRegistry (F6 #334)', () => {
   });
 });
 
-describe('default registry resolves all three built-in targets (F6 #333)', () => {
-  it('resolves spa, json-ld and llm-context', () => {
+describe('default registry resolves all built-in targets (F6 #333, B1 #440)', () => {
+  it('resolves spa, json-ld, llm-context and copilot', () => {
     const registry = createDefaultRegistry();
-    expect(registry.list()).toEqual(['json-ld', 'llm-context', 'spa']);
+    expect(registry.list()).toEqual(['copilot', 'json-ld', 'llm-context', 'spa']);
     expect(registry.resolve('spa')).toBe(spaRepresentation);
     expect(registry.resolve('json-ld')).toBe(jsonLdRepresentation);
     expect(registry.resolve('llm-context')).toBe(llmContextRepresentation);
+    expect(registry.resolve('copilot')).toBe(copilotRepresentation);
   });
 
   it('exposes a shared default registry instance', () => {
-    expect(representationRegistry.list()).toEqual(['json-ld', 'llm-context', 'spa']);
+    expect(representationRegistry.list()).toEqual([
+      'copilot',
+      'json-ld',
+      'llm-context',
+      'spa',
+    ]);
   });
 
   it('json-ld renders an empty graph deterministically', () => {

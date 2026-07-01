@@ -20,6 +20,15 @@
  */
 export type CanvasVisualMode = 'inherit-host' | 'config';
 
+/**
+ * Which registered {@link RepresentationTarget} the embeddable canvas resolves.
+ * Defaults to `copilot` — the bespoke, agent-driven surface (#440, epic #407).
+ * `spa` is retained as an escape hatch so a host can fall back to the full
+ * explorer route tree unchanged. The full-page `App`/`main.tsx` path always
+ * renders `spa` and is unaffected by this field.
+ */
+export type CanvasRepresentationTarget = 'copilot' | 'spa';
+
 /** The boot object the canvas host mirrors onto `window.__KBX_CANVAS__`. */
 export interface CanvasBootConfig {
   /**
@@ -31,6 +40,13 @@ export interface CanvasBootConfig {
   local: boolean;
   /** Visual mode — defaults to `inherit-host` for the canvas surface. */
   visualMode: CanvasVisualMode;
+  /**
+   * Representation target the canvas resolves — defaults to `copilot` (#440),
+   * the bespoke agent-driven surface. Set to `spa` to render the full explorer
+   * route tree instead. Initially both render the same viewers; the `copilot`
+   * target is the seam the anchor-first bespoke view (#408) replaces.
+   */
+  target: CanvasRepresentationTarget;
   /**
    * Loopback search-service URL the host exposes for semantic search.
    *
@@ -53,9 +69,14 @@ export interface CanvasBootConfig {
 export const DEFAULT_CANVAS_BOOT_CONFIG: CanvasBootConfig = {
   local: false,
   visualMode: 'inherit-host',
+  target: 'copilot',
 };
 
 const VISUAL_MODES: readonly CanvasVisualMode[] = ['inherit-host', 'config'];
+const REPRESENTATION_TARGETS: readonly CanvasRepresentationTarget[] = [
+  'copilot',
+  'spa',
+];
 
 function optionalString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() !== '' ? value : undefined;
@@ -74,9 +95,16 @@ export function parseCanvasBootConfig(raw: unknown): CanvasBootConfig {
     ? (obj.visualMode as CanvasVisualMode)
     : DEFAULT_CANVAS_BOOT_CONFIG.visualMode;
 
+  const target = REPRESENTATION_TARGETS.includes(
+    obj.target as CanvasRepresentationTarget,
+  )
+    ? (obj.target as CanvasRepresentationTarget)
+    : DEFAULT_CANVAS_BOOT_CONFIG.target;
+
   return {
     local: typeof obj.local === 'boolean' ? obj.local : DEFAULT_CANVAS_BOOT_CONFIG.local,
     visualMode,
+    target,
     searchServiceUrl: optionalString(obj.searchServiceUrl),
     anchorNodeId: optionalString(obj.anchorNodeId),
   };
