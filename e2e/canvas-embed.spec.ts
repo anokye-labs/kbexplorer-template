@@ -216,10 +216,11 @@ test.describe('Embeddable canvas mount (#406 / #440 / #408)', () => {
     // a single <canvas> (no per-node DOM elements), so locate a rendered
     // node's on-screen position via the live network's own coordinate mapping
     // — the same canvasToDOM technique `scripts/audit-visual.mjs` uses to
-    // probe rendered nodes.
+    // probe rendered nodes. Node IDs come from the public `getPositions()`
+    // map (its keys) rather than the private `network.body.data.nodes`
+    // internals, so this doesn't rely on vis-network's non-public structure.
     const clickTarget = await page.evaluate(() => {
       type NetworkLike = {
-        body?: { data?: { nodes?: { getIds?: () => string[] } } };
         getPositions: () => Record<string, { x: number; y: number }>;
         canvasToDOM: (pos: { x: number; y: number }) => { x: number; y: number };
       };
@@ -228,10 +229,9 @@ test.describe('Embeddable canvas mount (#406 / #440 / #408)', () => {
       };
       const reg = w.__kbeNetworks?.['copilotConstellation'];
       if (!reg) return null;
-      const ids = reg.network.body?.data?.nodes?.getIds?.() ?? [];
       const positions = reg.network.getPositions();
       const rect = reg.container.getBoundingClientRect();
-      for (const id of ids) {
+      for (const id of Object.keys(positions)) {
         const p = positions[id];
         if (!p) continue;
         const dom = reg.network.canvasToDOM({ x: p.x, y: p.y });
