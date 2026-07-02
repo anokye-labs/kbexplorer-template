@@ -166,4 +166,47 @@ test.describe('Bidirectional click → chat — /chat-intent consumer (#410)', (
 
     expect(affordanceHits).toBe(0);
   });
+
+  test('per-node intent state resets when the panel re-anchors (no stale badge carries across navigation)', async ({
+    page,
+  }) => {
+    await page.route('**/chat-intent', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
+    );
+
+    await bootCopilotCanvas(page, 'readme');
+    const anchorView = page.locator('[data-testid="anchor-first-view"]');
+    await expect(anchorView).toBeVisible({ timeout: 15000 });
+    await expect(anchorView).toHaveAttribute('data-anchor-id', 'readme');
+
+    // A real neighbor to re-anchor onto — discovered from the rendered graph,
+    // not hardcoded (same technique as the round-trip test above).
+    const neighborCard = page.locator('[data-testid="anchor-expanded-neighbor"]').first();
+    await expect(neighborCard).toBeVisible();
+    const neighborId = await neighborCard.getAttribute('data-node-id');
+    expect(neighborId).toBeTruthy();
+    expect(neighborId).not.toBe('readme');
+
+    // Drive the ANCHOR node's "derives" intent to a terminal (`ok`) state.
+    const anchorDerives = anchorView.locator('[data-testid="node-intent-derives"]').first();
+    await expect(anchorDerives).toHaveAttribute('data-intent-state', 'idle');
+    await anchorDerives.click();
+    await expect(anchorDerives).toHaveAttribute('data-intent-state', 'ok', { timeout: 10000 });
+
+    // Re-anchor onto the neighbor through the hash router. This re-renders the
+    // SAME AnchorFirstView — and its single anchor-level NodeIntentBar instance
+    // — with a new `nodeId`; it is NOT remounted. That reuse is exactly the path
+    // that used to leak the previous node's `ok` badge onto the new node's bar.
+    await page.evaluate(id => {
+      location.hash = `#/node/${encodeURIComponent(id)}`;
+    }, neighborId as string);
+    await expect(anchorView).toHaveAttribute('data-anchor-id', neighborId as string, {
+      timeout: 10000,
+    });
+
+    // The freshly-anchored node's bar must be back to `idle`, never the previous
+    // node's `ok`.
+    const newAnchorDerives = anchorView.locator('[data-testid="node-intent-derives"]').first();
+    await expect(newAnchorDerives).toHaveAttribute('data-intent-state', 'idle');
+  });
 });

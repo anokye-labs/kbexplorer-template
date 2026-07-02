@@ -15,7 +15,7 @@
  * or a non-2xx, e.g. a 404 from a CLI that predates `kbexplorer-cli#195`)
  * surfaces a small persistent hint instead of throwing or silently no-oping.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Caption1, makeStyles, tokens } from '@fluentui/react-components';
 import {
   DEFAULT_NODE_INTENT_ACTIONS,
@@ -64,14 +64,32 @@ export function NodeIntentBar({
   const styles = useStyles();
   const [states, setStates] = useState<Record<string, IntentState>>({});
 
+  // This bar is reused in place for the anchor node across `/node/:id`
+  // navigations (React Router re-renders the same instance with a new
+  // `nodeId`, it does not remount it). Reset the per-action outcomes whenever
+  // the target node changes so a previous node's `ok`/`unavailable` badge can
+  // never persist onto a different node's bar. `nodeIdRef` additionally lets a
+  // resolving `postChatIntent` promise detect that the node changed while it
+  // was in flight and drop its now-stale outcome instead of painting it onto
+  // the new node.
+  const nodeIdRef = useRef(nodeId);
+  useEffect(() => {
+    nodeIdRef.current = nodeId;
+    setStates({});
+  }, [nodeId]);
+
   if (actions.length === 0) {
     return null;
   }
 
   const handleClick = (action: NodeIntentAction) => {
+    const issuedFor = nodeId;
     setStates(prev => ({ ...prev, [action.id]: 'pending' }));
     const request: ChatIntentRequest = { intent: action.id, nodeId, prompt: action.prompt };
     void postChatIntent(chatIntentUrl, request, fetchImpl).then(outcome => {
+      if (nodeIdRef.current !== issuedFor) {
+        return;
+      }
       setStates(prev => ({ ...prev, [action.id]: outcome.status }));
     });
   };
