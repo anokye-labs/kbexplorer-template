@@ -162,14 +162,30 @@ export class AuthoredRichMarkdownProvider implements GraphProvider {
           cluster: 'docs',
           providerId: PROVIDER_ID,
         });
-        // Fragment edges are rooted at the package's node identifier; remap
-        // them to the normalized local node ids adaptIngestedNode assigns so
-        // the returned ProviderResult stays internally consistent.
+        // Fragment nodes/edges/connections are all rooted at the package's node
+        // identifiers; adaptIngestedNode normalizes each node's `id` to a local
+        // slug, so every reference to a node must be remapped to that slug or it
+        // dangles. Build the full old→new map first (connections/edges may
+        // reference nodes that appear later in the fragment), then remap.
         const idRemap = new Map<string, string>();
+        const adapted: KBNode[] = [];
         for (const ingested of fragment.nodes) {
-          const adapted = adaptIngestedNode(ingested);
-          idRemap.set(ingested.id, adapted.id);
-          nodes.push(adapted);
+          const node = adaptIngestedNode(ingested);
+          idRemap.set(ingested.id, node.id);
+          adapted.push(node);
+        }
+        for (const node of adapted) {
+          // Remap intra-fragment connection targets, mirroring the edge remap
+          // below: a connection whose `to` still names another node by its OLD
+          // package id won't match that node's new local id in buildGraph
+          // (`nodeMap.has(conn.to)`), so the edge would be silently dropped.
+          if (node.connections.length > 0) {
+            node.connections = node.connections.map(conn => ({
+              ...conn,
+              to: idRemap.get(conn.to) ?? conn.to,
+            }));
+          }
+          nodes.push(node);
         }
         for (const edge of fragment.edges) {
           const e = edge as KBEdge;
