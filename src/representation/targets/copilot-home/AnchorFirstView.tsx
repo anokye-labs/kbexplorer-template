@@ -21,6 +21,15 @@
  * constrains which neighbors render. All are additive/no-op when absent, so
  * every existing caller (including tests) is unaffected.
  *
+ * ID RESOLUTION: `expand`'s `nodes` and `trace`'s `path` are bare node-id
+ * strings from the server (`cli#214`/`cli#216`) — this view is the client-side
+ * seam that resolves each one against the SAME node map `buildGraph` produced
+ * from the loaded manifest (`graph.nodes`). An id absent from that map (a
+ * real, tracked, non-blocking server<->client id-space gap, `kbexplorer-cli#216`)
+ * is never fabricated: `expand` skips it entirely (logging one dev-console
+ * warning), `trace` still renders its badge but with the raw id as the label
+ * instead of a resolved title.
+ *
  * NO-ANCHOR FALLBACK: when the anchor id is absent from the graph (including the
  * no-anchor `/node/home` config landing), the constellation ({@link HomePage})
  * renders as the sensible default.
@@ -82,7 +91,10 @@ export interface AnchorViewAction {
  * `unexpanded` when already ranked there, else synthesizing a card for a node
  * outside the anchor's ranked neighborhood entirely (best-effort direct edge,
  * possibly none — {@link ExpandedNeighbor} already tolerates an undefined edge).
- * Unknown ids (not in `graph` at all) degrade silently, never throw.
+ * Unknown ids (not in `graph` at all — the server<->client id-space seam
+ * tracked as `kbexplorer-cli#216`, non-blocking) are skipped and never
+ * rendered/fabricated; each one logs a single dev-console warning so the gap
+ * is visible without throwing or breaking the rest of the expand batch.
  */
 function mergeForcedExpansion(
   graph: KBGraph,
@@ -109,7 +121,15 @@ function mergeForcedExpansion(
   for (const id of forcedIds) {
     if (id === anchor.id || expandedIds.has(id)) continue;
     const node = graph.nodes.find(n => n.id === id);
-    if (!node) continue; // agent named a node id absent from this manifest — no-op.
+    if (!node) {
+      // agent (or the server-resolved expand payload) named a node id absent
+      // from this manifest — skip it, never fabricate a card, but surface the
+      // gap so it's debuggable (see kbexplorer-cli#216).
+      console.warn(
+        `[AnchorFirstView] expand named node id "${id}" not found in the loaded manifest — skipping.`,
+      );
+      continue;
+    }
     extra.push({ node, edge: bestEdgeBetween(graph, anchor.id, id) });
     expandedIds.add(id);
   }
@@ -384,9 +404,23 @@ export function AnchorFirstView({
   }, [graph, anchor, expanded, unexpanded, viewAction?.expandedNodeIds, viewAction?.filterNodeIds]);
 
   // Precompute the trace path id set (used to highlight matching neighbor
-  // cards/chips) before the early return so hook order stays stable.
+  // cards/chips) before the early return so hook order stays stable. Trace
+  // path ids are looked up against the SAME client node map as expand (see
+  // `mergeForcedExpansion`) — an id absent from this manifest still renders
+  // (as a badge showing the raw id, see the trace banner below) rather than
+  // breaking the path; each missing id in the path logs its own warning (not
+  // deduped to one-per-path) so every gap stays individually visible.
   const tracePath = viewAction?.trace?.path;
-  const traceIds = useMemo(() => new Set(tracePath ?? []), [tracePath]);
+  const traceIds = useMemo(() => {
+    for (const id of tracePath ?? []) {
+      if (!graph.nodes.some(n => n.id === id)) {
+        console.warn(
+          `[AnchorFirstView] trace path node id "${id}" not found in the loaded manifest — showing the raw id.`,
+        );
+      }
+    }
+    return new Set(tracePath ?? []);
+  }, [graph, tracePath]);
 
   // NO-ANCHOR / bad-anchor fallback: the constellation is the sensible default.
   if (!anchor) {
