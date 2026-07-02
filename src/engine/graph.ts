@@ -18,7 +18,21 @@ import { filterAccessWithheld } from './access';
  */
 export function buildGraph(nodes: KBNode[], clusters: Cluster[]): KBGraph {
   nodes = filterAccessWithheld(nodes);
-  const nodeMap = new Map(nodes.map(n => [n.id, n]));
+  // AF-019 cheap slice (#445): a cross-provider id collision is silent data
+  // loss — the node map last-wins, so edges/related resolve to whichever node
+  // happened to come later while both stay in `nodes`. Make it observable.
+  const nodeMap = new Map<string, KBNode>();
+  for (const n of nodes) {
+    const prev = nodeMap.get(n.id);
+    if (prev && (prev.provider ?? '(none)') !== (n.provider ?? '(none)')) {
+      console.warn(
+        `[kbexplorer] cross-provider id collision: "${n.id}" is produced by ` +
+        `provider "${prev.provider ?? '(none)'}" and provider "${n.provider ?? '(none)'}" — ` +
+        `edge/related resolution will last-win on the latter. Give one a distinct id.`,
+      );
+    }
+    nodeMap.set(n.id, n);
+  }
   const edges = buildEdges(nodes, nodeMap);
 
   // Connect orphan nodes to a cluster sibling or the hub
