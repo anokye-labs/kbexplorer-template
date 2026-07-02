@@ -24,7 +24,7 @@
  *   - `content` (empty from the pure lib) → `marked.parse(body)`, so the inline
  *     prose-fence walk finds the same `<pre><code class="language-…">` fences.
  */
-import { marked } from 'marked';
+import { renderSafeMarkdown } from '../safe-markdown';
 import { stripScheme } from '@anokye-labs/kbexplorer-core';
 import {
   ingestRichMarkdown,
@@ -109,7 +109,7 @@ export function adaptIngestedNode(ingested: IngestedNode): KBNode {
     cluster,
     // The pure lib leaves `content` empty; render the body exactly as the engine
     // renders any node so ProseContent finds the same fences at runtime.
-    content: marked.parse(body, { async: false }) as string,
+    content: renderSafeMarkdown(body),
     rawContent: body,
     display: 'rich-markdown',
     connections: (ingested.connections ?? []) as KBNode['connections'],

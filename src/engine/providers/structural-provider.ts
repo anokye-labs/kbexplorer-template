@@ -14,7 +14,7 @@
  * byte-identical for repos without a `.github` directory.
  */
 import yaml from 'yaml';
-import { Marked, type Token, type Tokens } from 'marked';
+import { renderSafeMarkdown } from '../safe-markdown';
 import type { GraphProvider, ProviderResult } from '../providers';
 import type { KBConfig, KBNode, NodeSource, Connection } from '../../types';
 import { buildJsonLd } from '../../types';
@@ -35,44 +35,11 @@ import {
 const REPO_NODE_ID = 'repo-meta';
 const STRUCTURAL_CLUSTER = 'infra';
 
-/**
- * Markdown → HTML for `.github` docs/templates. Unlike the app-wide renderer,
- * this **escapes raw embedded HTML** (#168 review): markup committed under
- * `.github/` (issue/PR templates, SECURITY.md, …) is treated as untrusted, so
- * it can't inject script/markup into the DOM when the node is rendered via
- * `dangerouslySetInnerHTML`.
- */
-const escapeHtml = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-/**
- * URL schemes that can execute script when used as a link/image target. Markdown
- * such as `[x](javascript:alert(1))` would otherwise render a clickable
- * `javascript:` href once the body is injected via `dangerouslySetInnerHTML`.
- */
-const DANGEROUS_URL_SCHEME = /^\s*(?:javascript|data|vbscript):/i;
-
-const safeMarkdown = new Marked({
-  renderer: {
-    html(token: Tokens.HTML | Tokens.Tag): string {
-      return escapeHtml(token.text ?? '');
-    },
-  },
-  // Neutralize dangerous link/image URLs before they reach the renderer, so the
-  // generated HTML can never carry a script-executing href/src.
-  walkTokens(token: Token): void {
-    if (token.type === 'link' || token.type === 'image') {
-      const t = token as Tokens.Link | Tokens.Image;
-      if (typeof t.href === 'string' && DANGEROUS_URL_SCHEME.test(t.href)) {
-        t.href = '';
-      }
-    }
-  },
-});
-
-function renderSafeMarkdown(body: string): string {
-  return safeMarkdown.parse(body, { async: false }) as string;
-}
+// Markdown → HTML: the shared defensive renderer (../safe-markdown). This
+// provider's original `.github`-content hardening (#168 review) was
+// generalized into that module for #446 / AF-010 — every engine markdown →
+// HTML path now escapes raw embedded HTML and neutralizes dangerous URL
+// schemes before the output can reach `dangerouslySetInnerHTML`.
 
 // ── Type + viewer registration ─────────────────────────────
 

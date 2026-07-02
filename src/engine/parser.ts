@@ -5,7 +5,7 @@
  *   - authored: parses markdown files with YAML frontmatter
  *   - repo-aware: maps GitHub issues, PRs, README, and file tree to nodes
  */
-import { marked } from 'marked';
+import { renderSafeMarkdown } from './safe-markdown';
 import yaml from 'yaml';
 import type {
   KBNode,
@@ -127,7 +127,7 @@ export function parseMarkdownFile(path: string, raw: string): KBNode {
   const fm = data as Partial<AuthoredFrontmatter>;
 
   const id = fm.id ?? path.replace(/\.md$/, '').replace(/.*\//, '');
-  const html = marked.parse(content, { async: false }) as string;
+  const html = renderSafeMarkdown(content);
 
   // Start with sanitized frontmatter connections.
   const connections: Connection[] = parseAuthoredConnections(fm.connections);
@@ -280,7 +280,7 @@ export function issueToNode(issue: GHIssue, options: IssueToNodeOptions = {}): K
   ].filter(Boolean).join('\n\n');
 
   const fullContent = `${metaLines}\n\n---\n\n${remappedBody}`;
-  const html = marked.parse(fullContent, { async: false }) as string;
+  const html = renderSafeMarkdown(fullContent);
 
   // Build connections — only emit edges that resolve to a real node.
   // `#NNN` is ambiguous (issue or PR), so try both when both sets are known.
@@ -374,7 +374,7 @@ export function splitIntoSections(
 
   const result: KBNode[] = [];
   const introContent = introLines.join('\n').trim();
-  const introHtml = introContent ? marked.parse(introContent, { async: false }) as string : '';
+  const introHtml = introContent ? renderSafeMarkdown(introContent) : '';
 
   // Parent node — contains intro text, connects to all sections
   const sectionIds = sections.map((s, i) => `${parentId}/${slugify(s.title, i)}`);
@@ -408,7 +408,7 @@ export function splitIntoSections(
   for (let i = 0; i < sections.length; i++) {
     const s = sections[i];
     const sectionBody = s.lines.join('\n').trim();
-    const sectionHtml = sectionBody ? marked.parse(sectionBody, { async: false }) as string : '';
+    const sectionHtml = sectionBody ? renderSafeMarkdown(sectionBody) : '';
     const sectionNode: KBNode = {
       id: sectionIds[i],
       title: s.title,
@@ -479,7 +479,7 @@ export function treeToNodes(tree: GHTreeItem[], repoName: string, excludePaths?:
   const topDirs = [...dirs.keys()].filter(d => !d.includes('/'));
   const rootFiles = tree.filter(i => i.type === 'blob' && !i.path.includes('/') && !i.path.startsWith('.'));
   const rootContent = `## ${repoName}\n\n${topDirs.length} directories, ${rootFiles.length} root files`;
-  const rootHtml = marked.parse(rootContent, { async: false }) as string;
+  const rootHtml = renderSafeMarkdown(rootContent);
   const rootNode: KBNode = {
     id: 'repo-root',
     title: repoName,
@@ -500,7 +500,7 @@ export function treeToNodes(tree: GHTreeItem[], repoName: string, excludePaths?:
     const parentId = depth === 1 ? 'repo-root' : `dir-${dirPath.split('/')[0]}`;
     const fileList = files.slice(0, 15).map(f => `- \`${f.path}\``).join('\n');
     const content = `## ${dirPath}/\n\n${files.length} files\n\n${fileList}`;
-    const html = marked.parse(content, { async: false }) as string;
+    const html = renderSafeMarkdown(content);
 
     nodes.push({
       id: `dir-${dirPath}`,
@@ -617,7 +617,7 @@ export async function loadRepoContent(source: SourceConfig): Promise<KBNode[]> {
       readmeConnectedTo.add(target);
     }
 
-    const html = marked.parse(readme, { async: false }) as string;
+    const html = renderSafeMarkdown(readme);
     nodes.push({
       id: 'readme', title: 'README', cluster: 'docs',
       content: html, rawContent: readme, emoji: 'Document',

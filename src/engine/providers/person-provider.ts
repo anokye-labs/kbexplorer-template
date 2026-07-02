@@ -15,7 +15,7 @@
  *      person → team      (when a content-model team descriptor lists the login
  *                          in its `members` array — future: via existing data)
  */
-import { marked } from 'marked';
+import { renderSafeMarkdown } from '../safe-markdown';
 import { buildPersonAddress, type SourceRef } from '@anokye-labs/kbexplorer-core';
 import type { GraphProvider, ProviderResult } from '../providers';
 import type { KBConfig, KBNode, KBEdge, Connection } from '../../types';
@@ -243,7 +243,7 @@ export class PersonProvider implements GraphProvider {
         '',
         ...allLines,
       ].join('\n');
-      const content = marked.parse(rawContent, { async: false }) as string;
+      const content = renderSafeMarkdown(rawContent);
 
       const nodeId = `person-${d.login}`;
       const personNode: KBNode = {

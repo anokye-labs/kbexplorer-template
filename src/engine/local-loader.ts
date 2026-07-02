@@ -5,7 +5,7 @@
  * KBNode[] and KBConfig as the API-based parser — but with zero runtime API calls.
  */
 import yaml from 'yaml';
-import { marked } from 'marked';
+import { renderSafeMarkdown } from './safe-markdown';
 import type { KBNode, KBConfig, KBGraph } from '../types';
 import { DEFAULT_CONFIG } from '../types';
 import { assignIdentity } from './identity';
@@ -221,7 +221,7 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
       readmeConnectedTo.add(target);
     }
 
-    const html = marked.parse(readme, { async: false }) as string;
+    const html = renderSafeMarkdown(readme);
     nodes.push({
       id: 'readme', title: 'README', cluster: 'docs',
       content: html, rawContent: readme, emoji: 'Document',
@@ -264,7 +264,7 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
   // Pull requests as nodes
   for (const pr of manifest.pullRequests) {
     const body = pr.body ?? '';
-    const html = marked.parse(body, { async: false }) as string;
+    const html = renderSafeMarkdown(body);
     const refs = extractIssueRefs(body);
     const prNode: KBNode = {
       id: `pr-${pr.number}`,
@@ -290,7 +290,7 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
       .map(c => `- \`${c.sha.substring(0, 7)}\` ${c.commit.message}`)
       .join('\n');
     const commitContent = `## Recent Commits\n\n${manifest.commits.length} commits\n\n${commitList}`;
-    const commitHtml = marked.parse(commitContent, { async: false }) as string;
+    const commitHtml = renderSafeMarkdown(commitContent);
     nodes.push({
       id: 'commits',
       title: 'Recent Commits',

@@ -23,7 +23,7 @@
  * returns empty results so existing graphs are unchanged.
  */
 import yaml from 'yaml';
-import { marked } from 'marked';
+import { renderSafeMarkdown } from '../safe-markdown';
 import type { Connection, JsonLd, KBEdge, KBNode } from '../../types';
 import { buildJsonLd } from '../../types';
 import type {
@@ -255,7 +255,7 @@ function emitNode(
   const ldData: EntityRecord = { ...data };
   if (band) ldData.lifecycle = band;
   if (nativeType) ldData.nativeType = nativeType;
-  const content = body ? (marked.parse(body, { async: false }) as string) : '';
+  const content = body ? (renderSafeMarkdown(body)) : '';
   // Two distinct identifiers (#445 / AF-003): `id` is the provider-local
   // display key; `identity` is the canonical URN (the cross-provider merge
   // key). They were collapsed (`id === identity === urn`) from PR #175 until
