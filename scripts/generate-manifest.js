@@ -721,7 +721,10 @@ export function readContentModel(root, dirName = DEFAULT_STRUCTURED_CONTENT_PATH
 
 // ── Main ───────────────────────────────────────────────────
 
-export function generateManifest(root = hostRoot) {
+export function generateManifest(
+  root = hostRoot,
+  outPath = resolve(kbRoot, 'src', 'generated', 'repo-manifest.json'),
+) {
   console.log(`[generate-manifest] Root: ${root}`);
   console.log(`[generate-manifest] Submodule mode: ${isSubmodule}`);
 
@@ -757,7 +760,6 @@ export function generateManifest(root = hostRoot) {
     generatedAt: new Date().toISOString(),
   };
 
-  const outPath = resolve(kbRoot, 'src', 'generated', 'repo-manifest.json');
   writeFileSync(outPath, JSON.stringify(manifest, null, 2), 'utf-8');
   console.log(`[generate-manifest] Written to ${outPath}`);
   console.log(`[generate-manifest] Tree: ${manifest.tree.length} entries`);
