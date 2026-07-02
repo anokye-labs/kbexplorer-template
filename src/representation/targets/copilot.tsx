@@ -53,6 +53,12 @@ export interface CopilotRenderOptions extends SpaRenderOptions {
    * keeps working unchanged with no view-action applied.
    */
   viewAction?: AnchorViewAction;
+  /**
+   * Resolved `/chat-intent` URL (#410, `resolveChatIntentUrl` in
+   * `canvas/chatIntent.ts`) — threaded down to {@link AnchorFirstView}'s
+   * per-node intent action bar.
+   */
+  chatIntentUrl?: string;
 }
 
 /** Route element: anchor-first home for the `:id` in the hash path. */
@@ -60,14 +66,22 @@ function AnchorRoute({
   graph,
   config,
   viewAction,
+  chatIntentUrl,
 }: {
   graph: KBGraph;
   config: KBConfig;
   viewAction?: AnchorViewAction;
+  chatIntentUrl?: string;
 }) {
   const { id } = useParams<{ id: string }>();
   return (
-    <AnchorFirstView graph={graph} config={config} anchorId={id ?? ''} viewAction={viewAction} />
+    <AnchorFirstView
+      graph={graph}
+      config={config}
+      anchorId={id ?? ''}
+      viewAction={viewAction}
+      chatIntentUrl={chatIntentUrl}
+    />
   );
 }
 
@@ -90,7 +104,7 @@ export function renderCopilotSurface(
   graph: KBGraph,
   options: CopilotRenderOptions,
 ): ReactNode {
-  const { config, landingPath, anchorNodeId, viewAction } = options;
+  const { config, landingPath, anchorNodeId, viewAction, chatIntentUrl } = options;
   const initialPath = anchorNodeId
     ? `/node/${encodeURIComponent(anchorNodeId)}`
     : landingPath;
@@ -101,7 +115,14 @@ export function renderCopilotSurface(
         <Route path="/" element={<Navigate to={initialPath} replace />} />
         <Route
           path="/node/:id"
-          element={<AnchorRoute graph={graph} config={config} viewAction={viewAction} />}
+          element={
+            <AnchorRoute
+              graph={graph}
+              config={config}
+              viewAction={viewAction}
+              chatIntentUrl={chatIntentUrl}
+            />
+          }
         />
         <Route path="/constellation" element={<ConstellationView graph={graph} config={config} />} />
         <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
