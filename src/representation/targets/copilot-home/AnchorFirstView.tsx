@@ -156,7 +156,15 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
     gap: tokens.spacingHorizontalS,
+  },
+  headerTitle: {
+    // Narrow-column invariant (#412): a long anchor title wraps instead of
+    // pushing the constellation button out / forcing horizontal scroll.
+    minWidth: 0,
+    flex: '1 1 auto',
+    overflowWrap: 'anywhere',
   },
   anchorBadges: {
     display: 'flex',
@@ -184,7 +192,14 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'baseline',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
     gap: tokens.spacingHorizontalS,
+  },
+  neighborTitle: {
+    // Same narrow-column wrapping invariant as the anchor header (#412).
+    minWidth: 0,
+    flex: '1 1 auto',
+    overflowWrap: 'anywhere',
   },
   neighborMeta: {
     color: tokens.colorNeutralForeground3,
@@ -257,7 +272,7 @@ function ExpandedNeighbor({
         style={{ textDecoration: 'none', color: 'inherit' }}
       >
         <div className={styles.neighborHead}>
-          <Subtitle2>{node.title}</Subtitle2>
+          <Subtitle2 className={styles.neighborTitle}>{node.title}</Subtitle2>
           <Caption1 className={styles.neighborMeta}>
             {relationLabel(edge)} · {weightLabel(edge)}
           </Caption1>
@@ -386,7 +401,7 @@ export function AnchorFirstView({
     >
       <div className={styles.header}>
         <div className={styles.headerRow}>
-          <Title3>{anchor.title}</Title3>
+          <Title3 className={styles.headerTitle}>{anchor.title}</Title3>
           <Button
             as="a"
             href="#/constellation"

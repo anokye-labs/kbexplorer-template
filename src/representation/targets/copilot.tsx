@@ -36,6 +36,7 @@ import { OverviewView } from '../../views/OverviewView';
 import type { SpaRenderOptions } from './spa';
 import { AnchorFirstView, type AnchorViewAction } from './copilot-home/AnchorFirstView';
 import { ConstellationView } from './copilot-home/ConstellationView';
+import { CanvasShell } from '../../canvas/CanvasShell';
 
 /**
  * Runtime context the copilot view needs beyond the pure graph. Widens
@@ -79,6 +80,11 @@ function AnchorRoute({
  * `/node/home`, to the constellation). Every `/node/:id` re-anchors the view, so
  * clicking a `kg://` neighbor chip re-centers the panel. `/constellation` is the
  * optional zoom-out (the full-viewport, interactive {@link ConstellationView}).
+ *
+ * Every route renders inside the {@link CanvasShell} (#412) — the narrow
+ * ~400px-friendly column with consistent vertical rhythm and host-token-only
+ * styling that #409–#411 build on top of. The shell wraps `<Routes>` itself
+ * (not each `<Route>` individually) so route transitions never remount it.
  */
 export function renderCopilotSurface(
   graph: KBGraph,
@@ -90,16 +96,18 @@ export function renderCopilotSurface(
     : landingPath;
 
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to={initialPath} replace />} />
-      <Route
-        path="/node/:id"
-        element={<AnchorRoute graph={graph} config={config} viewAction={viewAction} />}
-      />
-      <Route path="/constellation" element={<ConstellationView graph={graph} config={config} />} />
-      <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
-      <Route path="*" element={<Navigate to={initialPath} replace />} />
-    </Routes>
+    <CanvasShell>
+      <Routes>
+        <Route path="/" element={<Navigate to={initialPath} replace />} />
+        <Route
+          path="/node/:id"
+          element={<AnchorRoute graph={graph} config={config} viewAction={viewAction} />}
+        />
+        <Route path="/constellation" element={<ConstellationView graph={graph} config={config} />} />
+        <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
+        <Route path="*" element={<Navigate to={initialPath} replace />} />
+      </Routes>
+    </CanvasShell>
   );
 }
 
