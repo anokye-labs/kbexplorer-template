@@ -26,8 +26,8 @@ function baseOptions(overrides: Partial<CopilotRenderOptions> = {}): CopilotRend
 function routePaths(element: ReactElement): { paths: string[]; navigateTargets: string[] } {
   const paths: string[] = [];
   const navigateTargets: string[] = [];
-  const children = (element.props as { children?: unknown }).children;
-  Children.forEach(children as ReactNode, child => {
+  const children = (element.props as { children?: ReactNode }).children;
+  Children.forEach(children, child => {
     if (!isValidElement(child)) return;
     const props = child.props as { path?: string; element?: ReactElement };
     if (props.path) paths.push(props.path);
