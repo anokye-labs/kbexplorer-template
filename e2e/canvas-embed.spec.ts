@@ -12,6 +12,12 @@ import { test, expect } from '@playwright/test';
  * conversation anchor node + its weight-ranked neighbors, with `kg://` chips for
  * the unexpanded remainder and the constellation demoted to an optional
  * zoom-out. The `spa` target remains as an escape hatch (route tree + viewers).
+ *
+ * #453: the zoom-out (`/constellation`) now renders {@link ConstellationView}
+ * — a full-viewport, interactive force-directed graph (drag-pan, scroll-zoom,
+ * click-to-re-anchor) — instead of the SPA's decorative, non-interactive
+ * `HomePage` hero. Covered below: the canvas fills the panel (not a fixed
+ * ~280px/35vh band) and clicking a node navigates to `/node/<id>`.
  */
 
 const HOST_BG = 'rgb(13, 17, 23)'; // #0d1117 — GitHub dark canvas
@@ -156,10 +162,91 @@ test.describe('Embeddable canvas mount (#406 / #440 / #408)', () => {
       chipNodeId as string,
     );
 
-    // The constellation zoom-out is reachable from the anchor-first home.
+    // The constellation zoom-out is reachable from the anchor-first home —
+    // and (#453) renders the real interactive graph, not the decorative hero.
     await page.locator('[data-testid="constellation-zoom-out"]').click();
     await expect.poll(() => page.evaluate(() => location.hash)).toBe('#/constellation');
-    await expect(page.getByText('Knowledge Clusters')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="constellation-view"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="constellation-view"] canvas')).toBeVisible({ timeout: 15000 });
+
+    await page.waitForTimeout(500);
+    expect(appErrors(errors)).toHaveLength(0);
+  });
+
+  test('copilot: /constellation renders a full-viewport interactive graph; clicking a node re-anchors (#453)', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page);
+
+    await page.addInitScript(() => {
+      (window as unknown as { __KBX_CANVAS__: unknown }).__KBX_CANVAS__ = {
+        local: false,
+        visualMode: 'inherit-host',
+        anchorNodeId: 'readme',
+      };
+    });
+    // Deep-link straight to the zoom-out — bypasses the anchor-first landing
+    // (deep links always win, same as the full-page app's landing config).
+    await page.goto('/canvas.html#/constellation', { timeout: 60000 });
+
+    const view = page.locator('[data-testid="constellation-view"]');
+    await expect(view).toBeVisible({ timeout: 15000 });
+
+    // The live network registers under its audit slot once mounted (#435's
+    // `window.__kbeNetworks` hook — the same one `scripts/audit-visual.mjs` uses).
+    await page.waitForFunction(() => {
+      const w = window as unknown as { __kbeNetworks?: Record<string, unknown> };
+      return !!w.__kbeNetworks?.['copilotConstellation'];
+    }, { timeout: 15000 });
+    await page.waitForTimeout(2000); // let forceAtlas2 stabilization settle (fitOnStabilize)
+
+    // Full-viewport canvas — NOT the old hero's fixed 35vh/~280px band.
+    const canvas = view.locator('canvas');
+    await expect(canvas).toBeVisible();
+    const canvasBox = await canvas.boundingBox();
+    expect(canvasBox).toBeTruthy();
+    expect(canvasBox!.height).toBeGreaterThan(400);
+
+    // Live node/edge counts render in the header, not a hardcoded placeholder.
+    await expect(page.locator('[data-testid="constellation-stats"]')).toContainText(
+      /\d+ nodes · \d+ links/,
+    );
+
+    // Clicking a node re-anchors the panel to /node/<id>. vis-network draws to
+    // a single <canvas> (no per-node DOM elements), so locate a rendered
+    // node's on-screen position via the live network's own coordinate mapping
+    // — the same canvasToDOM technique `scripts/audit-visual.mjs` uses to
+    // probe rendered nodes.
+    const clickTarget = await page.evaluate(() => {
+      type NetworkLike = {
+        body?: { data?: { nodes?: { getIds?: () => string[] } } };
+        getPositions: () => Record<string, { x: number; y: number }>;
+        canvasToDOM: (pos: { x: number; y: number }) => { x: number; y: number };
+      };
+      const w = window as unknown as {
+        __kbeNetworks?: Record<string, { network: NetworkLike; container: HTMLElement }>;
+      };
+      const reg = w.__kbeNetworks?.['copilotConstellation'];
+      if (!reg) return null;
+      const ids = reg.network.body?.data?.nodes?.getIds?.() ?? [];
+      const positions = reg.network.getPositions();
+      const rect = reg.container.getBoundingClientRect();
+      for (const id of ids) {
+        const p = positions[id];
+        if (!p) continue;
+        const dom = reg.network.canvasToDOM({ x: p.x, y: p.y });
+        if (dom.x >= 0 && dom.x <= rect.width && dom.y >= 0 && dom.y <= rect.height) {
+          return { id, x: rect.left + dom.x, y: rect.top + dom.y };
+        }
+      }
+      return null;
+    });
+    expect(clickTarget).toBeTruthy();
+
+    await page.mouse.click(clickTarget!.x, clickTarget!.y);
+    await expect
+      .poll(() => page.evaluate(() => location.hash))
+      .toBe(`#/node/${encodeURIComponent(clickTarget!.id)}`);
 
     await page.waitForTimeout(500);
     expect(appErrors(errors)).toHaveLength(0);
