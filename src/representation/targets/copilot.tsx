@@ -15,6 +15,11 @@
  * `kg://` chips), with the constellation demoted to an optional zoom-out. The
  * registration/wiring #440 put in place is unchanged; only the render body is.
  *
+ * #453 replaces the zoom-out's render target: `/constellation` now renders
+ * {@link ConstellationView} — a full-viewport, interactive force-directed
+ * graph (drag-pan, scroll-zoom, click-to-re-anchor) — instead of `HomePage`,
+ * the SPA's decorative, non-interactive landing hero.
+ *
  * ADDITIVE: the `spa` target and the full-page `App`/`main.tsx` path are
  * untouched — this owns its OWN narrow `<Routes>` inside the mount's HashRouter.
  */
@@ -27,10 +32,10 @@ import type { ReactNode } from 'react';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import type { Representation } from '@anokye-labs/kbexplorer-core';
 import type { KBConfig, KBGraph } from '../../types';
-import { HomePage } from '../../views/HomePage';
 import { OverviewView } from '../../views/OverviewView';
 import type { SpaRenderOptions } from './spa';
 import { AnchorFirstView } from './copilot-home/AnchorFirstView';
+import { ConstellationView } from './copilot-home/ConstellationView';
 
 /**
  * Runtime context the copilot view needs beyond the pure graph. Widens
@@ -56,7 +61,7 @@ function AnchorRoute({ graph, config }: { graph: KBGraph; config: KBConfig }) {
  * fallback — {@link AnchorFirstView} degrades an unknown landing node, e.g.
  * `/node/home`, to the constellation). Every `/node/:id` re-anchors the view, so
  * clicking a `kg://` neighbor chip re-centers the panel. `/constellation` is the
- * optional zoom-out (the force-directed {@link HomePage}).
+ * optional zoom-out (the full-viewport, interactive {@link ConstellationView}).
  */
 export function renderCopilotSurface(
   graph: KBGraph,
@@ -71,7 +76,7 @@ export function renderCopilotSurface(
     <Routes>
       <Route path="/" element={<Navigate to={initialPath} replace />} />
       <Route path="/node/:id" element={<AnchorRoute graph={graph} config={config} />} />
-      <Route path="/constellation" element={<HomePage graph={graph} config={config} />} />
+      <Route path="/constellation" element={<ConstellationView graph={graph} config={config} />} />
       <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
       <Route path="*" element={<Navigate to={initialPath} replace />} />
     </Routes>
