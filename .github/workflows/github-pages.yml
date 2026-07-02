@@ -37,6 +37,21 @@ jobs:
 
       - run: npm ci
 
+      # Generate manifest BEFORE typecheck: src/engine/local-loader.ts statically
+      # imports the generated src/generated/repo-manifest.json, which is gitignored
+      # and absent on a clean checkout. `npm run build`'s `tsc -b` only "worked"
+      # locally because npm's implicit `prebuild` hook (also generate-manifest.js)
+      # ran first; this workflow invokes `tsc -b` directly, which has no such hook,
+      # so a fresh checkout failed `tsc -b` with TS2307 even though #448/#449
+      # both looked green with a stale local artifact on disk. Generation is
+      # hermetic (local FS/git scan; `gh` calls are best-effort and degrade
+      # gracefully without network/token), so it's safe to run this early.
+      - name: Generate manifest
+        run: node scripts/generate-manifest.js
+        env:
+          VITE_KB_LOCAL: 'true'
+          GH_TOKEN: ${{ github.token }}
+
       # Typecheck: catches breakage `vitest`/`vite build` can miss (#448 shipped
       # in v0.4.0 because tsc -b was never run in this workflow — see #449).
       - name: Typecheck
@@ -47,12 +62,6 @@ jobs:
         run: npm test
 
       # Tier 2: Graph validation
-      - name: Generate manifest
-        run: node scripts/generate-manifest.js
-        env:
-          VITE_KB_LOCAL: 'true'
-          GH_TOKEN: ${{ github.token }}
-
       - name: Validate graph
         run: npm run validate
 
