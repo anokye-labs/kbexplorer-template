@@ -9,6 +9,7 @@ import {
   type CopilotRenderOptions,
 } from '../copilot';
 import { spaRepresentation } from '../spa';
+import { CanvasShell } from '../../../canvas/CanvasShell';
 
 const EMPTY_GRAPH: KBGraph = { nodes: [], edges: [], clusters: [], related: {} };
 const CONFIG = { landing: {}, clusters: {} } as unknown as KBConfig;
@@ -22,12 +23,18 @@ function baseOptions(overrides: Partial<CopilotRenderOptions> = {}): CopilotRend
   };
 }
 
-/** Collect the `path`/`to` props of the route tree the copilot surface renders. */
-function routePaths(element: ReactElement): { paths: string[]; navigateTargets: string[] } {
+/**
+ * Collect the `path`/`to` props of the route tree the copilot surface renders.
+ * The surface wraps its `<Routes>` in {@link CanvasShell} (#412), so this first
+ * unwraps the shell's single child (the `<Routes>` element) before walking its
+ * `<Route>` children.
+ */
+function routePaths(shellEl: ReactElement): { paths: string[]; navigateTargets: string[] } {
   const paths: string[] = [];
   const navigateTargets: string[] = [];
-  const children = (element.props as { children?: unknown }).children;
-  Children.forEach(children as ReactNode, child => {
+  const routesEl = (shellEl.props as { children?: ReactNode }).children as ReactElement;
+  const children = (routesEl.props as { children?: ReactNode }).children;
+  Children.forEach(children, child => {
     if (!isValidElement(child)) return;
     const props = child.props as { path?: string; element?: ReactElement };
     if (props.path) paths.push(props.path);
@@ -44,6 +51,11 @@ describe('copilot representation target (B1 #440 / B2 #408)', () => {
   it('registers under the distinct "copilot" target name', () => {
     expect(copilotRepresentation.target).toBe('copilot');
     expect(copilotRepresentation.target).not.toBe(spaRepresentation.target);
+  });
+
+  it('wraps its route tree in the CanvasShell (#412)', () => {
+    const el = renderCopilotSurface(EMPTY_GRAPH, baseOptions()) as ReactElement;
+    expect(el.type).toBe(CanvasShell);
   });
 
   it('renders an anchor-first route tree (not the constellation as landing)', () => {

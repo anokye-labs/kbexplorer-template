@@ -346,6 +346,10 @@
   border: 1px solid var(--colorNeutralStroke2);
   text-align: left;
   vertical-align: top;
+  /* Narrow-column invariant (#412): a long unbroken token (id, url, hash)
+     wraps within its cell instead of forcing the table — and the whole
+     canvas column — to scroll horizontally. */
+  overflow-wrap: anywhere;
 }
 
 .kb-structured-key {
