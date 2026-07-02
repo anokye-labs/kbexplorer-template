@@ -50,6 +50,8 @@ import { resolveViewer } from '../../../views/viewers';
 import { HomePage } from '../../../views/HomePage';
 import { nodeUrn } from '../urn';
 import { expandAnchoredNeighborhood, type AnchoredNeighbor } from '../llm-context';
+import { resolveChatIntentUrl } from '../../../canvas/chatIntent';
+import { NodeIntentBar } from './NodeIntentBar';
 
 /** Default number of top-ranked neighbors rendered inline (rest → chips). */
 export const DEFAULT_MAX_EXPANDED = 6;
@@ -244,12 +246,14 @@ function ExpandedNeighbor({
   neighbor,
   focused = false,
   onTrace = false,
+  chatIntentUrl,
 }: {
   neighbor: AnchoredNeighbor;
   /** This neighbor is the current `expand`'s `focus` node (#409). */
   focused?: boolean;
   /** This neighbor sits on the current `trace` path (#409). */
   onTrace?: boolean;
+  chatIntentUrl: string;
 }) {
   const styles = useStyles();
   const { node, edge } = neighbor;
@@ -279,6 +283,7 @@ function ExpandedNeighbor({
         </div>
       </a>
       {createElement(resolveViewer(node), { node })}
+      <NodeIntentBar nodeId={node.id} chatIntentUrl={chatIntentUrl} />
     </Card>
   );
 }
@@ -321,6 +326,13 @@ export interface AnchorFirstViewProps {
   maxExpanded?: number;
   /** Accumulated agent `expand`/`trace`/`filter` view-actions (#409, cli#214). Optional/additive. */
   viewAction?: AnchorViewAction;
+  /**
+   * Resolved `/chat-intent` URL for #410's per-node action bar. Defaults to
+   * the same-origin-relative `/chat-intent` (via `resolveChatIntentUrl({})`)
+   * when the caller doesn't supply one — e.g. ad-hoc test rendering that
+   * doesn't thread a boot config through.
+   */
+  chatIntentUrl?: string;
 }
 
 /**
@@ -333,8 +345,10 @@ export function AnchorFirstView({
   anchorId,
   maxExpanded = DEFAULT_MAX_EXPANDED,
   viewAction,
+  chatIntentUrl,
 }: AnchorFirstViewProps) {
   const styles = useStyles();
+  const resolvedChatIntentUrl = chatIntentUrl ?? resolveChatIntentUrl({});
 
   // Memoize the anchor lookup + shared greedy partition (llm-context) so theme
   // changes / parent re-renders don't re-run the O(n) walk. Unit cost + a count
@@ -469,6 +483,8 @@ export function AnchorFirstView({
         </Caption1>
       )}
 
+      <NodeIntentBar nodeId={anchor.id} chatIntentUrl={resolvedChatIntentUrl} />
+
       {visibleExpanded.length > 0 && (
         <>
           <Divider />
@@ -480,6 +496,7 @@ export function AnchorFirstView({
                 neighbor={neighbor}
                 focused={viewAction?.focusNodeId === neighbor.node.id}
                 onTrace={traceIds.has(neighbor.node.id)}
+                chatIntentUrl={resolvedChatIntentUrl}
               />
             ))}
           </div>

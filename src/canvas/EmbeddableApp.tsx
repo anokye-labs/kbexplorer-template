@@ -45,6 +45,7 @@ import {
   INITIAL_VIEW_ACTION_STATE,
   type ViewActionState,
 } from './viewActionState';
+import { resolveChatIntentUrl } from './chatIntent';
 import type { CanvasBootConfig } from './bootConfig';
 import '../styles/visuals.css';
 import '../styles/reading.css';
@@ -77,6 +78,7 @@ function CanvasExplorer({ boot }: { boot: CanvasBootConfig }): ReactNode {
   }
 
   const eventsUrl = resolveEventsUrl(boot);
+  const chatIntentUrl = resolveChatIntentUrl(boot);
   useCanvasEvents(eventsUrl, {
     onAnchor: nodeId => {
       window.location.hash = `#/node/${encodeURIComponent(nodeId)}`;
@@ -135,6 +137,7 @@ function CanvasExplorer({ boot }: { boot: CanvasBootConfig }): ReactNode {
                 trace: viewAction.trace,
                 filterNodeIds,
               },
+              chatIntentUrl,
             }) as ReactNode}
           </HashRouter>
         )}
