@@ -39,6 +39,27 @@ export function urnIdentity(namespace: string, body: string | number): string {
 }
 
 /**
+ * Join multiple parts into an unambiguous (injective) URN body.
+ *
+ * Each part is percent-encoded before being joined with `:`, so the separator
+ * we insert is the ONLY literal colon in the result and `%` can only originate
+ * from the encoding. Distinct part tuples therefore always produce distinct
+ * bodies. This guards composite identities such as
+ * `urn:external:<provider>:<id>` against collision when a `provider` or `id`
+ * itself contains a `:` (or `%`): without encoding, `('a', 'b:c')` and
+ * `('a:b', 'c')` both collapse to `a:b:c`, silently conflating two distinct
+ * real-world entities once the cross-provider merge machinery runs.
+ *
+ * `encodeURIComponent` leaves the unreserved set (`A–Z a–z 0–9 - _ . ! ~ * ' ( )`)
+ * untouched, so non-pathological slugs (`wikipedia-reference`, `org-ceo`,
+ * `wiki-knowledge-graph`) are unchanged and existing valid identities do not
+ * churn.
+ */
+export function urnBody(...parts: Array<string | number>): string {
+  return parts.map(part => encodeURIComponent(String(part))).join(':');
+}
+
+/**
  * Generate a canonical identity URN for a node based on its source.
  *
  * Coverage notes:
@@ -54,8 +75,11 @@ export function urnIdentity(namespace: string, body: string | number): string {
  *    `urn:structural:` vs `urn:structured:` — so producers mint it via
  *    {@link urnIdentity} before or instead of calling this).
  *  - `external` — provider-scoped: `urn:external:<provider>:<node id>`.
- *    Deterministic (provider ids derive from config), and namespaced by
- *    provider so two external sources can never collide.
+ *    Deterministic (provider ids derive from config). The `provider` and node
+ *    `id` parts are percent-encoded via {@link urnBody} before joining, so the
+ *    composition is injective: two distinct external (provider, id) pairs can
+ *    never collide even when a part contains the `:` separator (which would
+ *    otherwise let `('a','b:c')` and `('a:b','c')` conflate two real entities).
  *  - `person` — the stable, source-agnostic alias when present, else the
  *    GitHub login (back-compat: existing values used `login`).
  *  - `section` / `branch` / `repository` / `derived` — no identity: these are
@@ -73,7 +97,7 @@ export function assignIdentity(node: KBNode): string | undefined {
     case 'release':      return urnIdentity('release', node.source.tag);
     case 'person':       return urnIdentity('person', node.source.alias ?? node.source.login);
     case 'workflow':     return urnIdentity('structural', node.source.path);
-    case 'external':     return urnIdentity('external', `${node.source.provider}:${node.id}`);
+    case 'external':     return urnIdentity('external', urnBody(node.source.provider, node.id));
     case 'structured': {
       // Schema-minted canonical address, reused from the LD envelope.
       const ldId = node.jsonld?.['@id'];
