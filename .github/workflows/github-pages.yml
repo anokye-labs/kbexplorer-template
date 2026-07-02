@@ -37,6 +37,11 @@ jobs:
 
       - run: npm ci
 
+      # Typecheck: catches breakage `vitest`/`vite build` can miss (#448 shipped
+      # in v0.4.0 because tsc -b was never run in this workflow — see #449).
+      - name: Typecheck
+        run: npx tsc -b
+
       # Tier 1: Unit tests
       - name: Run unit tests
         run: npm test
