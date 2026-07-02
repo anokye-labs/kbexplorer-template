@@ -9,10 +9,12 @@
  * node carrying `data.richMarkdown.blocks` (+ typed edges) so the merged renderer
  * ({@link isRichMarkdownNode} / `RichMarkdownDocumentView`) fires on real content.
  *
- * Identity is the package's core-v0.1.0 `buildAddress` value (e.g. `kg://…`),
- * carried through verbatim. We never touch the package's fs `.` export, so no
- * `node:fs` enters the SPA bundle (the `node:crypto` / `node:path` that `./lib`
- * imports are aliased to browser shims in `vite.config.ts`).
+ * Identity is normalized to the template's single mechanism (#445): the node
+ * `id` is the package's stable local slug and `identity` is assigned via
+ * `assignIdentity` (`urn:content:<id>`, exactly like a plain authored doc) —
+ * see {@link adaptIngestedNode}. We never touch the package's fs `.` export, so
+ * no `node:fs` enters the SPA bundle (the `node:crypto` / `node:path` that
+ * `./lib` imports are aliased to browser shims in `vite.config.ts`).
  *
  * The package's block/node shape differs from the template's rendering contract,
  * so {@link adaptIngestedNode} maps it:
@@ -23,6 +25,7 @@
  *     prose-fence walk finds the same `<pre><code class="language-…">` fences.
  */
 import { marked } from 'marked';
+import { stripScheme } from '@anokye-labs/kbexplorer-core';
 import {
   ingestRichMarkdown,
   type IngestedNode,
@@ -31,6 +34,7 @@ import {
 import type { GraphProvider, ProviderResult } from '../providers';
 import type { KBConfig, KBNode, KBEdge } from '../../types';
 import type { RichMarkdownBlock } from '../../views/rich-markdown';
+import { assignIdentity } from '../identity';
 import { isRichAuthoredMarkdown } from './rich-markdown/detect';
 
 const PROVIDER_ID = 'authored-rich-markdown';
@@ -62,9 +66,32 @@ function toTemplateBlock(block: IngestedBlock): RichMarkdownBlock {
 }
 
 /**
+ * Recover the stable local node id from an ingested node.
+ *
+ * Fixed versions of the package (provider repo #4) emit a distinct local slug
+ * `id` alongside the canonical `identity` address, so `id` is used verbatim.
+ * The v0.1.0 pin collapsed both fields to the same `kg://…` address
+ * (#445 / AF-003), so the slug is recovered by stripping the address scheme —
+ * `buildAddress` treats the body as opaque, making this an exact inverse for
+ * the authority-less addresses the template mints.
+ */
+function localIdOf(ingested: IngestedNode): string {
+  return ingested.id === ingested.identity ? stripScheme(ingested.id) : ingested.id;
+}
+
+/**
  * Adapt the package's ingested node into a template {@link KBNode} the renderer
- * understands. Preserves identity/connections/jsonld/sourceFile from the package
- * and re-shapes only what the template's rich-Markdown contract requires.
+ * understands. Preserves connections/jsonld/sourceFile from the package and
+ * re-shapes only what the template's rich-Markdown contract requires.
+ *
+ * Identity is NOT passed through verbatim (the unreconciled pass-through was
+ * #445's AF-003 / audit finding on PR #432): the node's `id` is the stable
+ * local slug, and `identity` is assigned by the template's single mechanism
+ * (`assignIdentity` — an `authored` source resolves to `urn:content:<id>`), so
+ * a doc that opts into rich-Markdown carries exactly the identity it would
+ * have had as plain authored content and merges with other representations of
+ * the same content. The package's own `kg://` address remains available in the
+ * package output; the template does not carry two competing schemes.
  */
 export function adaptIngestedNode(ingested: IngestedNode): KBNode {
   const { richMarkdown: pkgRichMarkdown, ...frontmatter } = ingested.data;
@@ -77,7 +104,7 @@ export function adaptIngestedNode(ingested: IngestedNode): KBNode {
   const body = stripLeadingFrontmatter(ingested.rawContent);
 
   const node: KBNode = {
-    id: ingested.id,
+    id: localIdOf(ingested),
     title: ingested.title,
     cluster,
     // The pure lib leaves `content` empty; render the body exactly as the engine
@@ -86,7 +113,6 @@ export function adaptIngestedNode(ingested: IngestedNode): KBNode {
     rawContent: body,
     display: 'rich-markdown',
     connections: (ingested.connections ?? []) as KBNode['connections'],
-    identity: ingested.identity,
     source: ingested.source,
     provider: PROVIDER_ID,
     data: {
@@ -94,11 +120,19 @@ export function adaptIngestedNode(ingested: IngestedNode): KBNode {
       richMarkdown: { frontmatter, blocks },
     },
   };
+  node.identity = assignIdentity(node);
 
   if (ingested.emoji != null) node.emoji = ingested.emoji;
   if (ingested.parent != null) node.parent = ingested.parent;
   if (ingested.entityType != null) node.entityType = ingested.entityType;
-  if (ingested.jsonld != null) node.jsonld = ingested.jsonld as KBNode['jsonld'];
+  if (ingested.jsonld != null) {
+    // Keep the LD envelope aligned with the node's canonical identity (core
+    // contract: an identity address is always reused as the `@id`).
+    node.jsonld = {
+      ...(ingested.jsonld as NonNullable<KBNode['jsonld']>),
+      '@id': node.identity ?? node.id,
+    };
+  }
   if (ingested.sourceFile != null) node.sourceFile = ingested.sourceFile;
 
   return node;
@@ -128,11 +162,22 @@ export class AuthoredRichMarkdownProvider implements GraphProvider {
           cluster: 'docs',
           providerId: PROVIDER_ID,
         });
+        // Fragment edges are rooted at the package's node identifier; remap
+        // them to the normalized local node ids adaptIngestedNode assigns so
+        // the returned ProviderResult stays internally consistent.
+        const idRemap = new Map<string, string>();
         for (const ingested of fragment.nodes) {
-          nodes.push(adaptIngestedNode(ingested));
+          const adapted = adaptIngestedNode(ingested);
+          idRemap.set(ingested.id, adapted.id);
+          nodes.push(adapted);
         }
         for (const edge of fragment.edges) {
-          edges.push(edge as KBEdge);
+          const e = edge as KBEdge;
+          edges.push({
+            ...e,
+            from: idRemap.get(e.from) ?? e.from,
+            to: idRemap.get(e.to) ?? e.to,
+          });
         }
       } catch {
         console.warn(`[AuthoredRichMarkdownProvider] Failed to ingest ${path}, skipping`);

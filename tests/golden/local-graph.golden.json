@@ -807,6 +807,15 @@
       "weight": 5
     },
     {
+      "description": "Tracked in this repository",
+      "from": "example.com/people/ada",
+      "relation": "tracked-in",
+      "source": "inferred",
+      "to": "repo-meta",
+      "type": "references",
+      "weight": 2
+    },
+    {
       "description": "Contains",
       "from": "issue-1",
       "source": "inferred",
@@ -11955,15 +11964,6 @@
       "weight": 2
     },
     {
-      "description": "Tracked in this repository",
-      "from": "kg://example.com/people/ada",
-      "relation": "tracked-in",
-      "source": "inferred",
-      "to": "repo-meta",
-      "type": "references",
-      "weight": 2
-    },
-    {
       "description": "Derived from",
       "from": "overview",
       "source": "inferred",
@@ -17705,6 +17705,52 @@
         "type": "file"
       },
       "title": "structured-content/schema/"
+    },
+    {
+      "cluster": "teamops",
+      "connections": [
+        {
+          "description": "Tracked in this repository",
+          "relation": "tracked-in",
+          "source": "inferred",
+          "to": "repo-meta",
+          "type": "references"
+        }
+      ],
+      "content": "",
+      "data": {
+        "@type": "person",
+        "id": "ada",
+        "name": "Ada Lovelace"
+      },
+      "derived": true,
+      "display": "entity",
+      "entityType": "person",
+      "id": "example.com/people/ada",
+      "identity": "kg://example.com/people/ada",
+      "jsonld": {
+        "@context": {
+          "person": "kg://example.com/people/"
+        },
+        "@id": "kg://example.com/people/ada",
+        "@type": "person",
+        "id": "ada",
+        "lifecycle": "durable",
+        "name": "Ada Lovelace"
+      },
+      "provider": "content-model",
+      "rawContent": "",
+      "source": {
+        "entityType": "person",
+        "ref": "ada",
+        "type": "structured"
+      },
+      "sourceFile": {
+        "format": "yaml",
+        "path": "structured-content/people/ada.yaml",
+        "raw": "\"@type\": person\nid: ada\nname: Ada Lovelace\n"
+      },
+      "title": "Ada Lovelace"
     },
     {
       "cluster": "infra",
@@ -38109,52 +38155,6 @@
       "title": "Task: finish ESLint 10 follow-up for PR #65"
     },
     {
-      "cluster": "teamops",
-      "connections": [
-        {
-          "description": "Tracked in this repository",
-          "relation": "tracked-in",
-          "source": "inferred",
-          "to": "repo-meta",
-          "type": "references"
-        }
-      ],
-      "content": "",
-      "data": {
-        "@type": "person",
-        "id": "ada",
-        "name": "Ada Lovelace"
-      },
-      "derived": true,
-      "display": "entity",
-      "entityType": "person",
-      "id": "kg://example.com/people/ada",
-      "identity": "kg://example.com/people/ada",
-      "jsonld": {
-        "@context": {
-          "person": "kg://example.com/people/"
-        },
-        "@id": "kg://example.com/people/ada",
-        "@type": "person",
-        "id": "ada",
-        "lifecycle": "durable",
-        "name": "Ada Lovelace"
-      },
-      "provider": "content-model",
-      "rawContent": "",
-      "source": {
-        "entityType": "person",
-        "ref": "ada",
-        "type": "structured"
-      },
-      "sourceFile": {
-        "format": "yaml",
-        "path": "structured-content/people/ada.yaml",
-        "raw": "\"@type\": person\nid: ada\nname: Ada Lovelace\n"
-      },
-      "title": "Ada Lovelace"
-    },
-    {
       "cluster": "docs",
       "connections": [
         {
@@ -44003,6 +44003,9 @@
       "dir-structured-content",
       "file-structured-content/schema/lifecycle.yaml"
     ],
+    "example.com/people/ada": [
+      "repo-meta"
+    ],
     "file-content/config.yaml": [
       "dir-content",
       "issue-218",
@@ -47588,9 +47591,6 @@
       "repo-meta",
       "repo-root",
       "pr-65"
-    ],
-    "kg://example.com/people/ada": [
-      "repo-meta"
     ],
     "overview": [
       "file-content/overview.md"

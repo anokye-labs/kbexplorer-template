@@ -5,6 +5,10 @@
  * component-only (react-refresh) while sharing these pure accessors.
  */
 import type { KBNode } from '../../types';
+// Imported from the schema-reader module directly (not the content-model
+// barrel) so this stays free of the register/viewer modules — the barrel would
+// create a views ↔ engine import cycle through registerContentModelTypes.
+import { urnLocalId } from '../../engine/content-model/schema-reader';
 
 /** Coerce node.data to a record. */
 export function dataOf(data: unknown): Record<string, unknown> {
@@ -74,19 +78,21 @@ export function ldContextOf(node: Pick<KBNode, 'jsonld'>): Record<string, string
 
 /**
  * Resolve a foreign-key reference (e.g. a person `manager` id, or a `team` id)
- * to the canonical graph node id (URN) it points at — the same way the
- * content-model builder mints node ids — so a viewer can render it as a
- * navigable `#/node/<id>` link.
+ * to the graph node id it points at — the same way the content-model builder
+ * mints node ids — so a viewer can render it as a navigable `#/node/<id>` link.
  *
- * The URN base is read from the source node's own JSON-LD `@context` (never
- * hardcoded), keeping this pure and SSR-safe. Returns `null` when the reference
- * cannot be resolved (no context base for `kind`, e.g. a work-derived person
- * node) so callers can fall back to plain text rather than emit a broken link.
+ * The reference first expands to the canonical URN (base read from the source
+ * node's own JSON-LD `@context`, never hardcoded), then maps to the node's
+ * LOCAL graph id via {@link urnLocalId} — since #445 content-model nodes carry
+ * a local `id` distinct from their canonical `identity` URN. Pure and SSR-safe.
+ * Returns `null` when the reference cannot be resolved (no context base for
+ * `kind`, e.g. a work-derived person node) so callers can fall back to plain
+ * text rather than emit a broken link.
  *
  * Accepted reference shapes:
- *  - already-expanded URN (`kg://…`)            → returned verbatim
- *  - CURIE (`person:ada`) whose prefix is known → `<base><local>`
- *  - bare id (`ada`)                            → `<base[kind]><id>`
+ *  - already-expanded URN (`kg://…`)            → its local node id
+ *  - CURIE (`person:ada`) whose prefix is known → local id of `<base><local>`
+ *  - bare id (`ada`)                            → local id of `<base[kind]><id>`
  */
 export function resolveRef(
   node: Pick<KBNode, 'jsonld'>,
@@ -95,16 +101,16 @@ export function resolveRef(
 ): string | null {
   const value = ref.trim();
   if (!value) return null;
-  if (value.includes('://')) return value; // already a full URN
+  if (value.includes('://')) return urnLocalId(value); // already a full URN
   const ctx = ldContextOf(node);
   const colon = value.indexOf(':');
   if (colon > 0) {
     const prefix = value.slice(0, colon);
     const base = ctx[prefix];
-    if (typeof base === 'string') return `${base}${value.slice(colon + 1)}`;
+    if (typeof base === 'string') return urnLocalId(`${base}${value.slice(colon + 1)}`);
   }
   const base = ctx[kind];
-  return typeof base === 'string' ? `${base}${value}` : null;
+  return typeof base === 'string' ? urnLocalId(`${base}${value}`) : null;
 }
 
 /**

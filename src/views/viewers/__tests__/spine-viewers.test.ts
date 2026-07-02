@@ -246,19 +246,21 @@ describe('PersonView — navigable reporting-line links (C1 / #278)', () => {
   it('renders the manager (Reports to) value as a link to the person node', () => {
     const html = render(PersonView, personNode({ name: 'Ben Carter', manager: 'ada' }));
     expect(html).toContain('Reports to');
-    expect(html).toContain('data-node-id="kg://xbox.com/people/ada"');
-    expect(html).toContain('href="#/node/kg%3A%2F%2Fxbox.com%2Fpeople%2Fada"');
+    // Links resolve to the node's LOCAL id (#445): the canonical URN maps to
+    // its local key via urnLocalId, matching content-model node ids.
+    expect(html).toContain('data-node-id="xbox.com/people/ada"');
+    expect(html).toContain('href="#/node/xbox.com%2Fpeople%2Fada"');
   });
 
   it('renders the team value as a link to the team node', () => {
     const html = render(PersonView, personNode({ name: 'Ben Carter', team: 'graph-platform' }));
-    expect(html).toContain('data-node-id="kg://xbox.com/teams/graph-platform"');
-    expect(html).toContain('href="#/node/kg%3A%2F%2Fxbox.com%2Fteams%2Fgraph-platform"');
+    expect(html).toContain('data-node-id="xbox.com/teams/graph-platform"');
+    expect(html).toContain('href="#/node/xbox.com%2Fteams%2Fgraph-platform"');
   });
 
   it('expands a CURIE manager reference via the context prefix', () => {
     const html = render(PersonView, personNode({ name: 'Ben Carter', manager: 'person:ada' }));
-    expect(html).toContain('data-node-id="kg://xbox.com/people/ada"');
+    expect(html).toContain('data-node-id="xbox.com/people/ada"');
   });
 
   it('falls back to plain text when the node carries no @context (work-derived person)', () => {

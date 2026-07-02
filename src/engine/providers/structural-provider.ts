@@ -19,6 +19,7 @@ import type { GraphProvider, ProviderResult } from '../providers';
 import type { KBConfig, KBNode, NodeSource, Connection } from '../../types';
 import { buildJsonLd } from '../../types';
 import { registerType } from '../node-types';
+import { urnIdentity } from '../identity';
 import { registerViewer } from '../../views/viewers';
 import { WorkflowView } from '../../views/viewers/WorkflowView';
 import { ActionView } from '../../views/viewers/ActionView';
@@ -222,7 +223,7 @@ function buildWorkflowNode(path: string, content: string, repoNodeId: string): K
     entityType: 'workflow',
     ldType: 'Workflow',
     source: { type: 'workflow', path },
-    identity: `urn:structural:${path}`,
+    identity: urnIdentity('structural', path),
     emoji: 'Flow',
     data,
     ldProps: { name },
@@ -240,7 +241,7 @@ function buildActionNode(path: string, content: string, repoNodeId: string): KBN
     entityType: 'github-action',
     ldType: 'SoftwareApplication',
     source: { type: 'structured', entityType: 'github-action', ref: path },
-    identity: `urn:structural:${path}`,
+    identity: urnIdentity('structural', path),
     emoji: 'PuzzlePiece',
     data,
     ldProps: { name },
@@ -267,7 +268,7 @@ function buildSkillNode(path: string, content: string, repoNodeId: string): KBNo
     entityType: 'skill',
     ldType: 'HowTo',
     source: { type: 'structured', entityType: 'skill', ref: path },
-    identity: `urn:structural:${path}`,
+    identity: urnIdentity('structural', path),
     emoji: 'BookOpenLightbulb',
     data,
     ldProps,
@@ -299,7 +300,7 @@ function buildMarkdownTemplateNode(
     entityType,
     ldType,
     source: { type: 'structured', entityType, ref: path },
-    identity: `urn:structural:${path}`,
+    identity: urnIdentity('structural', path),
     emoji,
     data: hasData ? data : undefined,
     ldProps: typeof data.name === 'string' ? { name: data.name } : {},
@@ -319,7 +320,7 @@ function buildYamlFormNode(path: string, content: string, repoNodeId: string): K
     entityType: 'issue-template',
     ldType: 'CreativeWork',
     source: { type: 'structured', entityType: 'issue-template', ref: path },
-    identity: `urn:structural:${path}`,
+    identity: urnIdentity('structural', path),
     emoji: 'TextBulletListSquare',
     data,
     ldProps: { name },
@@ -336,7 +337,7 @@ function buildCodeownersNode(path: string, content: string, repoNodeId: string):
     entityType: 'codeowners',
     ldType: 'StructuredConfig',
     source: { type: 'structured', entityType: 'codeowners', ref: path },
-    identity: `urn:structural:${path}`,
+    identity: urnIdentity('structural', path),
     emoji: 'People',
     data: { rules },
     ldProps: { ruleCount: rules.length },
@@ -353,7 +354,7 @@ function buildDependabotNode(path: string, content: string, repoNodeId: string):
     entityType: 'dependabot-config',
     ldType: 'DependabotConfig',
     source: { type: 'structured', entityType: 'dependabot-config', ref: path },
-    identity: `urn:structural:${path}`,
+    identity: urnIdentity('structural', path),
     emoji: 'ArrowSync',
     data,
     ldProps: typeof data.version !== 'undefined' ? { schemaVersion: data.version } : {},
@@ -370,7 +371,7 @@ function buildFundingNode(path: string, content: string, repoNodeId: string): KB
     entityType: 'funding-config',
     ldType: 'StructuredConfig',
     source: { type: 'structured', entityType: 'funding-config', ref: path },
-    identity: `urn:structural:${path}`,
+    identity: urnIdentity('structural', path),
     emoji: 'Heart',
     data,
     display: 'entity',
@@ -413,7 +414,7 @@ function buildGenericConfigNode(
       entityType: 'github-config',
       ldType: 'CreativeWork',
       source: { type: 'structured', entityType: 'github-config', ref: path },
-      identity: `urn:structural:${path}`,
+      identity: urnIdentity('structural', path),
       emoji: 'Document',
       data: hasData ? data : undefined,
       content: html,
