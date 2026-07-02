@@ -2,6 +2,8 @@
 
 import {
   buildJsonLd,
+  type AccessClassification,
+  type AccessVisibility,
   type BrandingConfig,
   type Cluster,
   type Connection,
@@ -12,6 +14,7 @@ import {
   type FluentBrandRamp,
   type FluentBrandRampKey,
   type JsonLd,
+  type KBAccessLabel,
   type KBConfig,
   type KBEdge,
   type KBGraph,
@@ -52,6 +55,8 @@ import {
  */
 export {
   buildJsonLd,
+  type AccessClassification,
+  type AccessVisibility,
   type BrandingConfig,
   type Cluster,
   type Connection,
@@ -62,6 +67,7 @@ export {
   type FluentBrandRamp,
   type FluentBrandRampKey,
   type JsonLd,
+  type KBAccessLabel,
   type KBConfig,
   type KBEdge,
   type KBGraph,

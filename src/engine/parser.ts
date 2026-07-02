@@ -17,6 +17,7 @@ import type {
 } from '../types';
 import { DEFAULT_CONFIG } from '../types';
 import { assignIdentity } from './identity';
+import { parseAccessLabel } from './access';
 import {
   fetchFile,
   fetchTree,
@@ -44,6 +45,8 @@ interface AuthoredFrontmatter {
   accent?: string;
   tokens?: Partial<Record<string, string>>;
   theme?: string;
+  /** Optional label-only access descriptor (#445) — see parseAccessLabel. */
+  access?: unknown;
 }
 
 /**
@@ -175,6 +178,11 @@ export function parseMarkdownFile(path: string, raw: string): KBNode {
   };
   const pageTheme = buildPageTheme(fm);
   if (pageTheme) node.pageTheme = pageTheme;
+  // Label-only access descriptor (#445): carried on the node so the assembly
+  // gate (buildGraph → filterAccessWithheld) can withhold labeled-sensitive
+  // docs from render + search. Absent/unusable frontmatter → unlabeled.
+  const access = parseAccessLabel(fm.access);
+  if (access) node.access = access;
   node.identity = assignIdentity(node);
   return node;
 }

@@ -4,9 +4,20 @@
  */
 import type { KBNode, KBGraph, KBEdge, Cluster, EdgeType } from '../types';
 import { EDGE_TYPE_WEIGHTS, getEdgeWeight } from '../types';
+import { filterAccessWithheld } from './access';
 
-/** Build the full knowledge graph from a list of nodes and cluster definitions. */
+/**
+ * Build the full knowledge graph from a list of nodes and cluster definitions.
+ *
+ * Access render-gate (#445): nodes whose access label marks them
+ * restricted/confidential (or explicitly unknown, or `visibility: private`)
+ * are withheld here — the single assembly choke point — so they never reach
+ * the network render, reading views, search index, or exports. Edges to a
+ * withheld node drop with it (`buildEdges` only emits edges whose target is
+ * in the node map). Unlabeled nodes are untouched.
+ */
 export function buildGraph(nodes: KBNode[], clusters: Cluster[]): KBGraph {
+  nodes = filterAccessWithheld(nodes);
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
   const edges = buildEdges(nodes, nodeMap);
 

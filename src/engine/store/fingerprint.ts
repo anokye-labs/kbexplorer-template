@@ -5,7 +5,12 @@ import {
 } from '../../types';
 import type { RepoData, RepoSource } from '../sources/repo-data';
 
-export const GRAPH_STORE_DERIVATION_VERSION = 'template-graph-derivation-v1';
+// v2: #445/#446 wave — identity unification changed content-model/rich-md/
+// external node id+identity shapes, the shared defensive markdown renderer
+// changed derived content HTML for the same inputs, and authored docs now
+// derive an `access` label from frontmatter. Persisted v1 provider results
+// would replay pre-sanitizer HTML and unlabeled nodes, so they must miss.
+export const GRAPH_STORE_DERIVATION_VERSION = 'template-graph-derivation-v2';
 export const GRAPH_STORE_PROVIDER_ID = 'provider-pipeline';
 
 export function buildProviderResultCacheKey(
