@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { KBConfig, KBGraph, KBNode } from '../../../../types';
@@ -135,6 +135,31 @@ describe('AnchorFirstView — agent view-actions (#409, cli#214)', () => {
     ).not.toThrow();
   });
 
+  it('expand skips an unknown id (with a dev warning) while still rendering the known ids in the same batch', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const html = renderToStaticMarkup(
+        createElement(AnchorFirstView, {
+          graph,
+          config,
+          anchorId: 'anchor',
+          maxExpanded: 6,
+          // 'far' is a real node id; 'does-not-exist' is not in `graph` at all
+          // (the kbexplorer-cli#216 server<->client id-space seam) — the known
+          // id must still render even though the batch also names an unknown one.
+          viewAction: { expandedNodeIds: new Set(['far', 'does-not-exist']) },
+        }),
+      );
+      expect(html).toMatch(/data-testid="anchor-expanded-neighbor"[^>]*data-node-id="far"/);
+      expect(html).not.toContain('does-not-exist');
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
+        expect.stringContaining('"does-not-exist" not found in the loaded manifest'),
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it('focus marks the matching neighbor card with data-kbx-focused', () => {
     const html = renderToStaticMarkup(
       createElement(AnchorFirstView, {
@@ -187,6 +212,30 @@ describe('AnchorFirstView — agent view-actions (#409, cli#214)', () => {
     );
     expect(html).toContain('data-connected="false"');
     expect(html).toContain('no path found');
+  });
+
+  it('trace falls back to the raw id (with a dev warning) for a path hop absent from the manifest', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const html = renderToStaticMarkup(
+        createElement(AnchorFirstView, {
+          graph,
+          config,
+          anchorId: 'anchor',
+          // 'does-not-exist' is not in `graph` at all (kbexplorer-cli#216) —
+          // the path still renders in full, with the raw id as that hop's label.
+          viewAction: { trace: { path: ['anchor', 'does-not-exist'], connected: true } },
+        }),
+      );
+      expect(html).toContain('data-testid="anchor-trace-banner"');
+      expect(html).toMatch(/data-testid="anchor-trace-node"[^>]*data-node-id="does-not-exist"/);
+      expect(html).toContain('does-not-exist');
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
+        expect.stringContaining('"does-not-exist" not found in the loaded manifest'),
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('trace highlights a visible neighbor that sits on the path', () => {
