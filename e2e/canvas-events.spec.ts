@@ -111,3 +111,129 @@ test.describe('Agent action surface — /events consumer (#409)', () => {
     expect(appErrors).toHaveLength(0);
   });
 });
+
+/**
+ * Reason-aware `graph-updated` (#409, cli#214): `expand` / `trace` / `filter`
+ * arrive over the SAME `graph-updated` event as the content-patch tests above,
+ * distinguished by a `reason` field. Each test discovers a REAL neighbor node
+ * id from the rendered graph first (no invented ids), then mocks `/events` to
+ * emit that exact frozen-contract payload shape and asserts the resulting DOM
+ * change — proof the reason-aware branch actually re-renders, not just parses.
+ */
+test.describe('Agent action surface — reason-aware graph-updated (#409, cli#214)', () => {
+  test('expand force-promotes a real chip neighbor into an expanded card, focused', async ({
+    page,
+  }) => {
+    await bootCopilotCanvas(page, 'readme');
+    await expect(page.locator('[data-testid="anchor-first-view"]')).toBeVisible({
+      timeout: 15000,
+    });
+
+    const chip = page.locator('[data-testid="anchor-neighbor-chip"]').first();
+    await expect(chip).toBeVisible();
+    const targetNodeId = await chip.getAttribute('data-node-id');
+    expect(targetNodeId).toBeTruthy();
+
+    await page.route('**/events', route =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        body: sseFrame('graph-updated', {
+          reason: 'expand',
+          nodes: [targetNodeId],
+          focus: targetNodeId,
+        }),
+      }),
+    );
+    await page.reload();
+    await expect(page.locator('[data-testid="anchor-first-view"]')).toBeVisible({
+      timeout: 15000,
+    });
+
+    const expandedCard = page.locator(
+      `[data-testid="anchor-expanded-neighbor"][data-node-id="${targetNodeId}"]`,
+    );
+    await expect(expandedCard).toBeVisible({ timeout: 10000 });
+    await expect(expandedCard).toHaveAttribute('data-kbx-focused', 'true');
+    // ...and it's no longer ALSO rendered as a chip.
+    await expect(
+      page.locator(`[data-testid="anchor-neighbor-chip"][data-node-id="${targetNodeId}"]`),
+    ).toHaveCount(0);
+  });
+
+  test('trace renders a path banner and highlights the matching visible neighbor', async ({
+    page,
+  }) => {
+    await bootCopilotCanvas(page, 'readme');
+    await expect(page.locator('[data-testid="anchor-first-view"]')).toBeVisible({
+      timeout: 15000,
+    });
+
+    const neighbor = page.locator('[data-testid="anchor-expanded-neighbor"]').first();
+    await expect(neighbor).toBeVisible();
+    const targetNodeId = await neighbor.getAttribute('data-node-id');
+    expect(targetNodeId).toBeTruthy();
+
+    await page.route('**/events', route =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        body: sseFrame('graph-updated', {
+          reason: 'trace',
+          nodes: ['readme', targetNodeId],
+          path: ['readme', targetNodeId],
+          connected: true,
+        }),
+      }),
+    );
+    await page.reload();
+
+    const banner = page.locator('[data-testid="anchor-trace-banner"]');
+    await expect(banner).toBeVisible({ timeout: 15000 });
+    await expect(banner).toHaveAttribute('data-connected', 'true');
+    await expect(
+      page.locator(
+        `[data-testid="anchor-expanded-neighbor"][data-node-id="${targetNodeId}"]`,
+      ),
+    ).toHaveAttribute('data-kbx-on-trace', 'true');
+  });
+
+  test('filter constrains the rendered neighbors to the matched set', async ({ page }) => {
+    await bootCopilotCanvas(page, 'readme');
+    await expect(page.locator('[data-testid="anchor-first-view"]')).toBeVisible({
+      timeout: 15000,
+    });
+
+    const neighbor = page.locator('[data-testid="anchor-expanded-neighbor"]').first();
+    await expect(neighbor).toBeVisible();
+    const keepNodeId = await neighbor.getAttribute('data-node-id');
+    expect(keepNodeId).toBeTruthy();
+
+    await page.route('**/events', route =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        body: sseFrame('graph-updated', {
+          reason: 'filter',
+          filter: { query: 'kept' },
+          nodes: [keepNodeId],
+        }),
+      }),
+    );
+    await page.reload();
+
+    await expect(page.locator('[data-testid="anchor-filter-hint"]')).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(
+      page.locator(`[data-testid="anchor-expanded-neighbor"][data-node-id="${keepNodeId}"]`),
+    ).toBeVisible();
+    // Every OTHER previously-rendered neighbor card/chip is now filtered out.
+    await expect(
+      page.locator(
+        `[data-testid="anchor-expanded-neighbor"]:not([data-node-id="${keepNodeId}"])`,
+      ),
+    ).toHaveCount(0);
+    await expect(page.locator('[data-testid="anchor-neighbor-chip"]')).toHaveCount(0);
+  });
+});

@@ -23,11 +23,14 @@
  * nodes via `/manifest/slice` is real follow-up work once that shape is nailed
  * down with the CLI side.
  *
- * `expand` / `trace` / `filter` are NOT wired here: the frozen contract only
- * defines `graph-updated` / `anchor` today. Those three are proposed-but-
- * undecided per #409's own issue body ("choose one and record it in the
- * contract doc") — a decision that lives in the `kbexplorer-cli` repo and
- * needs to be relayed back, not invented unilaterally here.
+ * `expand` / `trace` / `filter` are also delivered over `graph-updated` — the
+ * frozen contract (`kbexplorer-cli` cli#214) distinguishes them from the
+ * reason-less content-patch shape above via a `reason` field. Dispatching on
+ * `reason` and applying those three is `viewActionState.ts`'s job
+ * ({@link applyGraphUpdatedEvent} above intentionally never looks at
+ * `reason` — it only patches nodes and is a no-op on the plain-id-array
+ * `nodes` shape `expand`/`trace`/`filter` payloads use); the two reducers are
+ * dispatched side-by-side by the `graph-updated` handler in `EmbeddableApp.tsx`.
  */
 import { useEffect, useRef } from 'react';
 import type { KBGraph, KBNode } from '../types';

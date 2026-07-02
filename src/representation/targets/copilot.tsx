@@ -34,7 +34,7 @@ import type { Representation } from '@anokye-labs/kbexplorer-core';
 import type { KBConfig, KBGraph } from '../../types';
 import { OverviewView } from '../../views/OverviewView';
 import type { SpaRenderOptions } from './spa';
-import { AnchorFirstView } from './copilot-home/AnchorFirstView';
+import { AnchorFirstView, type AnchorViewAction } from './copilot-home/AnchorFirstView';
 import { ConstellationView } from './copilot-home/ConstellationView';
 
 /**
@@ -45,12 +45,29 @@ import { ConstellationView } from './copilot-home/ConstellationView';
 export interface CopilotRenderOptions extends SpaRenderOptions {
   /** The conversation anchor node id from `bootConfig.anchorNodeId`, if any. */
   anchorNodeId?: string;
+  /**
+   * Accumulated `expand`/`trace`/`filter` agent view-actions (#409, cli#214),
+   * threaded down from `EmbeddableApp.tsx`'s `/events` consumer. Optional so
+   * every other caller of `renderCopilotSurface` (including existing tests)
+   * keeps working unchanged with no view-action applied.
+   */
+  viewAction?: AnchorViewAction;
 }
 
 /** Route element: anchor-first home for the `:id` in the hash path. */
-function AnchorRoute({ graph, config }: { graph: KBGraph; config: KBConfig }) {
+function AnchorRoute({
+  graph,
+  config,
+  viewAction,
+}: {
+  graph: KBGraph;
+  config: KBConfig;
+  viewAction?: AnchorViewAction;
+}) {
   const { id } = useParams<{ id: string }>();
-  return <AnchorFirstView graph={graph} config={config} anchorId={id ?? ''} />;
+  return (
+    <AnchorFirstView graph={graph} config={config} anchorId={id ?? ''} viewAction={viewAction} />
+  );
 }
 
 /**
@@ -67,7 +84,7 @@ export function renderCopilotSurface(
   graph: KBGraph,
   options: CopilotRenderOptions,
 ): ReactNode {
-  const { config, landingPath, anchorNodeId } = options;
+  const { config, landingPath, anchorNodeId, viewAction } = options;
   const initialPath = anchorNodeId
     ? `/node/${encodeURIComponent(anchorNodeId)}`
     : landingPath;
@@ -75,7 +92,10 @@ export function renderCopilotSurface(
   return (
     <Routes>
       <Route path="/" element={<Navigate to={initialPath} replace />} />
-      <Route path="/node/:id" element={<AnchorRoute graph={graph} config={config} />} />
+      <Route
+        path="/node/:id"
+        element={<AnchorRoute graph={graph} config={config} viewAction={viewAction} />}
+      />
       <Route path="/constellation" element={<ConstellationView graph={graph} config={config} />} />
       <Route path="/overview" element={<OverviewView graph={graph} config={config} />} />
       <Route path="*" element={<Navigate to={initialPath} replace />} />
