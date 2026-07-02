@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
 import {
   walkFileSystem,
@@ -353,7 +354,14 @@ describe('fetchLocalCommits', () => {
 describe('generateManifest (integration)', () => {
   it('generates a valid manifest file', async () => {
     const { generateManifest } = await import('../generate-manifest.js');
-    const manifest = generateManifest(FIXTURES);
+    // Direct the write at a throwaway path: without an explicit outPath,
+    // generateManifest writes the REAL, gitignored src/generated/repo-manifest.json
+    // (its path is anchored to the template root, NOT to `root`), which would
+    // clobber the build artifact with fixture content and make `validate:drift`
+    // fail for any later CI step that reads it (regression: PR #452 / #448).
+    const outPath = join(tmpdir(), `kbx-generate-manifest-test-${process.pid}.json`);
+    const manifest = generateManifest(FIXTURES, outPath);
+    rmSync(outPath, { force: true });
 
     expect(manifest.tree.length).toBeGreaterThan(0);
     expect(manifest.readme).toBe('# Test Repo\n\nHello world.');

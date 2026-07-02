@@ -1,4 +1,4 @@
-# Agents — kbexplorer
+# Agents — kbexplorer-template
 
 ## Stack
 
@@ -69,6 +69,22 @@ Before building or evolving any feature that touches an external service, read `
 ## Content Derivation
 The content in `content/` is machine-derived from the repo's systems of record.
 For the full evaluation pipeline (worktree experiment, quality assessment, comparison), read [`DERIVATION.md`](DERIVATION.md).
+
+## GitHub & Work-Item Conventions
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full contributor workflow (issue types, branch protection). The conventions below are the subset that matters most for an agent working across this repo and its sibling repos:
+
+**GitHub interaction (tool-agnostic).** Interact with GitHub through whatever capability your runtime provides — `gh` CLI, REST/GraphQL, or an MCP server. No specific coding agent or tool is assumed; GraphQL-level capability is needed for issue types, sub-issues, and blocked-by relationships.
+
+**Issue references: `refs #X`, not `closes #X`.** Closing an issue is a deliberate, separate step after verification confirms the work is done — never let a merge close an issue by keyword.
+
+**Verification before close.** Before closing an issue: confirm the artifact is merged and gates are green; re-verify acceptance criteria against the CURRENT state of the system; then close, citing the evidence. Before starting an issue, verify its blocked-by dependencies are resolved — if blocked, comment and stop.
+
+**Workback scheduling.** Model programs as Epic → Feature → Task using native sub-issues. Sequence in waves: independent items dispatch together; dependent items queue behind blocked-by edges; a parent completes only when all children complete. See `.agents/skills/wbs-builder/` for the operational mechanics.
+
+**Commits.** Conventional Commits (`type(scope): description`), atomic. Never commit directly to the default branch; never force-push.
+
+**Branch protection: check, don't assume.** Claims in this file about approval counts or required checks may be stale — verify the repo's live settings before relying on them.
 
 ## Skills
 

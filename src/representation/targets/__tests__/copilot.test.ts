@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { Children, isValidElement } from 'react';
 import type { KBConfig, KBGraph } from '../../../types';
 import { webDarkTheme } from '@fluentui/react-components';
@@ -27,7 +27,7 @@ function routePaths(element: ReactElement): { paths: string[]; navigateTargets: 
   const paths: string[] = [];
   const navigateTargets: string[] = [];
   const children = (element.props as { children?: unknown }).children;
-  Children.forEach(children as never, child => {
+  Children.forEach(children as ReactNode, child => {
     if (!isValidElement(child)) return;
     const props = child.props as { path?: string; element?: ReactElement };
     if (props.path) paths.push(props.path);

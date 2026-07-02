@@ -41,8 +41,8 @@
     "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
-    "@anokye-labs/kbexplorer-core": "github:anokye-labs/kbexplorer-core#v0.2.0",
-    "@anokye-labs/kbexplorer-provider-rich-markdown": "github:anokye-labs/kbexplorer-provider-rich-markdown#v0.1.0",
+    "@anokye-labs/kbexplorer-core": "github:anokye-labs/kbexplorer-core#v0.3.0",
+    "@anokye-labs/kbexplorer-provider-rich-markdown": "github:anokye-labs/kbexplorer-provider-rich-markdown#80c084a600b0df39f863fe7928f2b96d241011db",
     "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",
@@ -51,6 +51,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.18.0",
+    "sanitize-html": "^2.17.5",
     "sql.js": "^1.14.1",
     "vis-data": "^8.0.4",
     "vis-network": "^10.1.0",
@@ -63,6 +64,7 @@
     "@types/node": "^26.0.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@types/sanitize-html": "^2.16.1",
     "@types/sql.js": "^1.4.11",
     "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^10.2.0",

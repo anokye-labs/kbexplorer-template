@@ -18,6 +18,7 @@
  */
 
 import type { KBNode } from '../types';
+import { isAccessWithheld } from '../engine/access';
 
 // ── Token helpers ──────────────────────────────────────────
 
@@ -104,6 +105,11 @@ function addTokens(map: Map<string, Set<string>>, tokens: string[], nodeId: stri
 /**
  * Build a search index from the loaded node set.
  * Call once when graph is ready; memoize the result.
+ *
+ * Access render-gate (#445): withheld nodes never enter the index. The graph
+ * assembly (`buildGraph`) already drops them, so this is defense in depth for
+ * any caller that indexes a node list that did not pass through it — even a
+ * withheld node's title must not surface via search.
  */
 export function buildSearchIndex(nodes: KBNode[]): SearchIndex {
   const entries: IndexEntry[] = [];
@@ -112,6 +118,7 @@ export function buildSearchIndex(nodes: KBNode[]): SearchIndex {
   const bodyMap = new Map<string, Set<string>>();
 
   for (const node of nodes) {
+    if (isAccessWithheld(node)) continue;
     const rawMd = node.rawContent ?? '';
     const headingText = extractHeadings(rawMd);
     const bodyText = stripMarkdown(rawMd);

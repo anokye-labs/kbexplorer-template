@@ -20,6 +20,8 @@ Thank you for your interest in contributing to this project.
 
 Issue types are set via the GitHub Issue Type field, not labels or title prefixes.
 
+For scaffolding a multi-issue program (Epic → Feature → Task, native sub-issues, blocked-by waves), use `.agents/skills/wbs-builder/` — the org's canonical workback-scheduling reference — rather than hand-rolling the hierarchy.
+
 ## Development Workflow
 
 1. Clone the repository and create a feature branch
@@ -38,3 +40,5 @@ The default branch has protection rules enforced:
 - Direct pushes are blocked
 - All PR conversations must be resolved before merging
 - Force pushes and branch deletion are blocked
+
+**Caveat — bot PRs auto-merge at 0 human approvals.** The workflow steps above ("Open a pull request" / "Address any review feedback") describe the flow for human-authored PRs. In practice, `.github/workflows/auto-merge.yml` squash-merges PRs from an allowlist of agent authors (currently `devin-ai-integration[bot]`, `copilot-swe-agent[bot]`, `Copilot`) as soon as the ruleset's required checks are green and conversations are resolved — no human approval is requested or required for those PRs. Human-authored PRs are never auto-merged. Verify the live ruleset before assuming a specific approval count applies.

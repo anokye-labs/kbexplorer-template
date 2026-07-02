@@ -22,6 +22,7 @@
 import yaml from 'yaml';
 import type { KBNode, NodeSource } from '../types';
 import { buildJsonLd } from '../types';
+import { urnIdentity } from './identity';
 
 // ── Public types ───────────────────────────────────────────
 
@@ -234,7 +235,7 @@ function makeNode(args: {
   ldProps?: Record<string, unknown>;
   edges?: NodeMapEdgeRule[];
 }): KBNode {
-  const identity = `urn:structured:${args.ref}`;
+  const identity = urnIdentity('structured', args.ref);
   const dataBag = isPlainObject(args.data)
     ? args.data
     : { items: args.data };

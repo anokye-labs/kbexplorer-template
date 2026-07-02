@@ -502,6 +502,17 @@
     },
     {
       "@context": "https://schema.org",
+      "@id": "kg://example.com/people/ada",
+      "@type": "person",
+      "isRelatedTo": [
+        {
+          "@id": "kg://node/repo-meta"
+        }
+      ],
+      "name": "Ada Lovelace"
+    },
+    {
+      "@context": "https://schema.org",
       "@id": "urn:file:content/config.yaml",
       "@type": "Thing",
       "name": "config.yaml"
@@ -9361,17 +9372,6 @@
         }
       ],
       "name": "Task: finish ESLint 10 follow-up for PR #65"
-    },
-    {
-      "@context": "https://schema.org",
-      "@id": "kg://example.com/people/ada",
-      "@type": "person",
-      "isRelatedTo": [
-        {
-          "@id": "kg://node/repo-meta"
-        }
-      ],
-      "name": "Ada Lovelace"
     },
     {
       "@context": "https://schema.org",

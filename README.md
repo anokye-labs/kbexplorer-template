@@ -207,6 +207,33 @@ A graph is a set of **nodes** connected by **edges**...
 | `sprite` | No | Sprite illustration path for sprites mode |
 | `parent` | No | Parent node ID for hierarchical grouping |
 | `connections` | No | Supplementary `{ to, description }` edges (prefer [inline links](spec-inline-link-extraction)) |
+| `access` | No | Label-only access descriptor (`classification`, `visibility`, `labels`) — see [Access labels](#access-labels-minimal-render-gate) |
+
+### Access labels (minimal render-gate)
+
+Authored docs may declare a core-v0.3.0 `KBAccessLabel` in frontmatter:
+
+```yaml
+access:
+  classification: restricted   # public | internal | confidential | restricted | unknown
+  visibility: private          # public | internal | private
+```
+
+A node whose label marks it `restricted`, `confidential`, explicitly
+`unknown`, or `visibility: private` is **withheld**: it is excluded from the
+assembled graph (never rendered) and from client-side search. An absent label
+means public — unlabeled nodes behave exactly as before.
+
+**Honesty note — what is NOT enforced yet:** this is the minimal render-gate
+only. Core's full access contract is not implemented: `AccessConfig.redactionBoundary`
+is not read (the gate always withholds; `label-only` and `redact` modes are
+unsupported), no redaction stubs are emitted (`commitRedactionStubs` is
+ignored), edge-level `access` labels are not evaluated, and core's stricter
+default-safe stance (withhold *unlabeled/unknown-classified* resources by
+default) is deliberately relaxed to "absent label = public" for this template.
+Labels also do not protect the underlying sources — anyone with repo read
+access can read the files; the gate only keeps labeled nodes out of the
+rendered graph and search index.
 
 ### Clusters
 
