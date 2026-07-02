@@ -89,3 +89,163 @@ describe('AnchorFirstView (B2 #408 landing)', () => {
     expect(html).not.toContain('data-testid="anchor-neighbor-chip"');
   });
 });
+
+describe('AnchorFirstView — agent view-actions (#409, cli#214)', () => {
+  it('expand force-promotes an over-budget neighbor from chips into expanded cards', () => {
+    // maxExpanded: 1 -> n1 expanded, n2 relegated to a chip by rank alone.
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        maxExpanded: 1,
+        viewAction: { expandedNodeIds: new Set(['n2']) },
+      }),
+    );
+    // n2 is now an expanded card, not a chip.
+    expect(html).toMatch(/data-testid="anchor-expanded-neighbor"[^>]*data-node-id="n2"/);
+    expect(html).not.toMatch(/data-testid="anchor-neighbor-chip"[^>]*data-node-id="n2"/);
+  });
+
+  it('expand synthesizes a card for a node outside the ranked neighborhood entirely', () => {
+    // 'far' is two hops away — not in graph.related['anchor'] at all.
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        maxExpanded: 6,
+        viewAction: { expandedNodeIds: new Set(['far']) },
+      }),
+    );
+    expect(html).toMatch(/data-testid="anchor-expanded-neighbor"[^>]*data-node-id="far"/);
+  });
+
+  it('expand degrades silently for an unknown node id (no fabrication)', () => {
+    expect(() =>
+      renderToStaticMarkup(
+        createElement(AnchorFirstView, {
+          graph,
+          config,
+          anchorId: 'anchor',
+          maxExpanded: 6,
+          viewAction: { expandedNodeIds: new Set(['does-not-exist']) },
+        }),
+      ),
+    ).not.toThrow();
+  });
+
+  it('focus marks the matching neighbor card with data-kbx-focused', () => {
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        maxExpanded: 6,
+        viewAction: { focusNodeId: 'n1' },
+      }),
+    );
+    expect(html).toMatch(/data-node-id="n1"[^>]*data-kbx-focused="true"/);
+    expect(html).not.toMatch(/data-node-id="n2"[^>]*data-kbx-focused="true"/);
+  });
+
+  it('focus marks the anchor itself when focusNodeId is the anchor', () => {
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        viewAction: { focusNodeId: 'anchor' },
+      }),
+    );
+    expect(html).toMatch(/data-testid="anchor-first-view"[^>]*data-kbx-focused="true"/);
+  });
+
+  it('trace renders a path banner with a connected indicator and node titles', () => {
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        maxExpanded: 6,
+        viewAction: { trace: { path: ['anchor', 'n1'], connected: true } },
+      }),
+    );
+    expect(html).toContain('data-testid="anchor-trace-banner"');
+    expect(html).toContain('data-connected="true"');
+    expect(html).toContain('Title n1');
+  });
+
+  it('trace renders a disconnected indicator when connected:false', () => {
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        viewAction: { trace: { path: ['anchor', 'far'], connected: false } },
+      }),
+    );
+    expect(html).toContain('data-connected="false"');
+    expect(html).toContain('no path found');
+  });
+
+  it('trace highlights a visible neighbor that sits on the path', () => {
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        maxExpanded: 6,
+        viewAction: { trace: { path: ['anchor', 'n1'], connected: true } },
+      }),
+    );
+    expect(html).toMatch(/data-node-id="n1"[^>]*data-kbx-on-trace="true"/);
+  });
+
+  it('filter constrains rendered neighbors to the resolved id set', () => {
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        maxExpanded: 6,
+        viewAction: { filterNodeIds: new Set(['n1']) },
+      }),
+    );
+    expect(html).toMatch(/data-testid="anchor-expanded-neighbor"[^>]*data-node-id="n1"/);
+    expect(html).not.toContain('data-node-id="n2"');
+    expect(html).toContain('data-testid="anchor-filter-hint"');
+  });
+
+  it('filter with no matches shows an explicit empty-result hint (not a blank/broken view)', () => {
+    const html = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        maxExpanded: 6,
+        viewAction: { filterNodeIds: new Set<string>() },
+      }),
+    );
+    expect(html).toContain('data-testid="anchor-filter-hint"');
+    expect(html).toContain('no neighbors match');
+    expect(html).not.toContain('data-testid="anchor-expanded-neighbor"');
+    expect(html).not.toContain('data-testid="anchor-neighbor-chip"');
+  });
+
+  it('renders identically to the no-viewAction case when viewAction is omitted', () => {
+    const withoutViewAction = renderToStaticMarkup(
+      createElement(AnchorFirstView, { graph, config, anchorId: 'anchor', maxExpanded: 1 }),
+    );
+    const withEmptyViewAction = renderToStaticMarkup(
+      createElement(AnchorFirstView, {
+        graph,
+        config,
+        anchorId: 'anchor',
+        maxExpanded: 1,
+        viewAction: {},
+      }),
+    );
+    expect(withEmptyViewAction).toBe(withoutViewAction);
+  });
+});
