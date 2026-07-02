@@ -152,7 +152,8 @@ describe('AnchorFirstView — agent view-actions (#409, cli#214)', () => {
       );
       expect(html).toMatch(/data-testid="anchor-expanded-neighbor"[^>]*data-node-id="far"/);
       expect(html).not.toContain('does-not-exist');
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(
         expect.stringContaining('"does-not-exist" not found in the loaded manifest'),
       );
     } finally {
@@ -230,7 +231,8 @@ describe('AnchorFirstView — agent view-actions (#409, cli#214)', () => {
       expect(html).toContain('data-testid="anchor-trace-banner"');
       expect(html).toMatch(/data-testid="anchor-trace-node"[^>]*data-node-id="does-not-exist"/);
       expect(html).toContain('does-not-exist');
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(
         expect.stringContaining('"does-not-exist" not found in the loaded manifest'),
       );
     } finally {

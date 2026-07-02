@@ -408,7 +408,8 @@ export function AnchorFirstView({
   // path ids are looked up against the SAME client node map as expand (see
   // `mergeForcedExpansion`) — an id absent from this manifest still renders
   // (as a badge showing the raw id, see the trace banner below) rather than
-  // breaking the path, but is warned once per path so the gap stays visible.
+  // breaking the path; each missing id in the path logs its own warning (not
+  // deduped to one-per-path) so every gap stays individually visible.
   const tracePath = viewAction?.trace?.path;
   const traceIds = useMemo(() => {
     for (const id of tracePath ?? []) {
