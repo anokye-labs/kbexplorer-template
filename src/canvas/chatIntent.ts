@@ -15,10 +15,12 @@
  * mutating `/affordance` POST.
  *
  * `#195` has not landed yet (verified via `gh issue view` before writing this),
- * so `postChatIntent` is deliberately defensive: any non-2xx response, a
- * network failure, or a malformed response body all resolve to `{ status:
- * 'unavailable' }` rather than throwing — the acceptance criterion "graceful
- * no-op + a visible hint when the endpoint is absent (older CLI)" from #410.
+ * so `postChatIntent` is deliberately defensive: any non-2xx response or a
+ * network failure resolves to `{ status: 'unavailable' }` rather than throwing
+ * — the acceptance criterion "graceful no-op + a visible hint when the endpoint
+ * is absent (older CLI)" from #410. A 2xx is treated as success on its status
+ * code alone; the response body is intentionally never parsed (the CLI's status
+ * is the whole contract), so there is no body-shape this client can choke on.
  */
 import type { CanvasBootConfig } from './bootConfig';
 
@@ -87,7 +89,14 @@ export type FetchLike = (
 export async function postChatIntent(
   url: string,
   request: ChatIntentRequest,
-  fetchImpl: FetchLike = fetch,
+  // Wrap rather than pass `fetch` directly so the global is resolved when the
+  // call is made (inside the try below), not when this default binds. In a
+  // runtime with no `fetch` binding at all a bare `fetch` default would throw a
+  // ReferenceError before the try — the one way this function could break its
+  // "never throws" contract. Through the wrapper that reference happens inside
+  // the try instead, so a missing `fetch` degrades to `unavailable` like any
+  // other failure.
+  fetchImpl: FetchLike = (fetchUrl, init) => fetch(fetchUrl, init),
 ): Promise<ChatIntentOutcome> {
   try {
     const res = await fetchImpl(url, {
