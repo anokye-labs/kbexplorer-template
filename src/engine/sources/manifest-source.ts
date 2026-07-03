@@ -53,6 +53,7 @@ export class ManifestSource implements RepoSource {
       structuredNodeMapRaw: manifest.structuredNodeMapRaw ?? null,
       contentModel: manifest.contentModel ?? null,
       readme: manifest.readme,
+      themeFileRaw: manifest.themeFileRaw ?? null,
     };
   }
 
