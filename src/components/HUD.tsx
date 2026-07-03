@@ -47,9 +47,9 @@ import type { GraphLayoutMode } from '../representation/views';
 import type { ThemeMode } from '../hooks/useTheme';
 import { NodeVisual, FLUENT_ICONS, isFluentIconName } from './NodeVisual';
 import { resolveImageUrl } from '../api';
-import { createGraphNetwork, computeGraphPositions } from '../engine/createGraphNetwork';
-import { countReportsToParticipants } from '../engine/reports-to-layout';
-import { ICON_NODE_SHAPE } from '../engine/nodeRenderer';
+import { createGraphNetwork, computeGraphPositions } from '../representation/graph-canvas/createGraphNetwork';
+import { countReportsToParticipants } from '../representation/graph-canvas/reports-to-layout';
+import { ICON_NODE_SHAPE } from '../representation/graph-canvas/nodeRenderer';
 
 export type DockPosition = 'bottom' | 'left' | 'right' | 'top';
 

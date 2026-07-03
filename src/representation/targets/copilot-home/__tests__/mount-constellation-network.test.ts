@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { KBEdge, KBGraph, KBNode } from '../../../../types';
-import type { GraphNetworkResult } from '../../../../engine/createGraphNetwork';
+import type { GraphNetworkResult } from '../../../graph-canvas/createGraphNetwork';
 import { mountConstellationNetwork } from '../mountConstellationNetwork';
 
 /** A small graph with `nodeCount` nodes wired into a cycle of `edgeCount` edges. */

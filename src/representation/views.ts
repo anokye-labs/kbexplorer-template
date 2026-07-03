@@ -6,7 +6,7 @@
  */
 import type { KBGraph } from '../types';
 import { filterByPredicate, filterGraphToLayer } from './graph-layers';
-import { projectReportsToTree } from '../engine/reports-to-layout';
+import { projectReportsToTree } from './graph-canvas/reports-to-layout';
 
 /** Layout strategy a view requests for the live graph canvas. */
 export type GraphLayoutMode = 'force' | 'reports-to'

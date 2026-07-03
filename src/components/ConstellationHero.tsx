@@ -6,7 +6,7 @@
 import { useEffect, useRef } from 'react'
 import { makeStyles, tokens } from '@fluentui/react-components'
 import type { KBGraph } from '../types'
-import { createGraphNetwork } from '../engine/createGraphNetwork'
+import { createGraphNetwork } from '../representation/graph-canvas/createGraphNetwork'
 
 const useStyles = makeStyles({
   wrapper: {

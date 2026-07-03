@@ -15,7 +15,7 @@
  * a single breadth-first sweep from the roots assigns shortest-path depth,
  * which is also the natural level for a (mostly) tree-shaped reporting graph.
  */
-import type { KBGraph, KBNode, KBEdge } from '../types';
+import type { KBGraph, KBNode, KBEdge } from '../../types';
 
 /** The relation taxonomy key for a reporting edge. */
 export const REPORTS_TO_RELATION = 'reports-to';
