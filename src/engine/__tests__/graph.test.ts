@@ -60,6 +60,17 @@ describe('buildGraph', () => {
     expect(graph.nodes[2]?.layer).toBe('work');
   });
 
+  it('overwrites any pre-existing layer value with the resolved layer', () => {
+    const node = makeNode('legacy-layer', {
+      layer: 'work',
+      source: { type: 'file', path: 'src/legacy.ts' },
+    });
+
+    const graph = buildGraph([node], clusters);
+
+    expect(graph.nodes[0]?.layer).toBe('file');
+  });
+
   it('connects orphan nodes via inferred edges', () => {
     const nodes = [
       makeNode('hub', { connections: [conn('linked')] }),

@@ -44,7 +44,7 @@ import {
   type PresentationTokens,
   CANVAS_TARGET,
 } from '@anokye-labs/kbexplorer-core';
-import type { NodeLayer } from '../representation/styles';
+export type NodeLayer = 'file' | 'content' | 'work';
 
 export interface KBNode extends CoreKBNode {
  layer?: NodeLayer;
@@ -120,7 +120,6 @@ export {
   getEdgeLegendKey,
   getEdgeWeight,
   type EdgeTypeStyle,
-  type NodeLayer,
 } from '../representation/styles';
 
 
