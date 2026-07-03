@@ -8,7 +8,6 @@ import { createNodeRenderer, resolveNodeTheme, LABEL_LINE_HEIGHT, getLabelFont, 
 import type { RendererLabelState, NodeThemeSource } from './nodeRenderer';
 import { assignLabelPlacements } from './labelLayout';
 import type { LabelItem } from './labelLayout';
-import { getNodeDegrees } from '../../engine/graph';
 import { computeReportsToLevels } from './reports-to-layout';
 import type { KBGraph } from '../../types';
 import type { GraphLayoutMode } from '../views';
@@ -108,6 +107,18 @@ export interface BuildVisNodeOptions {
 function computeKeyNodes(degrees: Map<string, number>, count: number = 8): Set<string> {
   const sorted = [...degrees.entries()].sort((a, b) => b[1] - a[1]);
   return new Set(sorted.slice(0, count).filter(([, d]) => d >= 2).map(([id]) => id));
+}
+
+function getNodeDegrees(graph: { nodes: Array<{ id: string }>; edges: Array<{ from: string; to: string }> }): Map<string, number> {
+  const degrees = new Map<string, number>();
+  for (const node of graph.nodes) {
+    degrees.set(node.id, 0);
+  }
+  for (const edge of graph.edges) {
+    degrees.set(edge.from, (degrees.get(edge.from) ?? 0) + 1);
+    degrees.set(edge.to, (degrees.get(edge.to) ?? 0) + 1);
+  }
+  return degrees;
 }
 
 /** Build a single vis-network node config using the custom renderer. */

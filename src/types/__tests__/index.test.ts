@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { buildGraph } from '../../engine/graph';
 import { collapseGraphClusters } from '../index';
 import {
   getNodeLayer,
@@ -8,6 +9,8 @@ import {
 import type { KBNode, KBGraph, KBEdge, Cluster } from '../index';
 
 // ── Fixtures ───────────────────────────────────────────────
+
+const clusters: Cluster[] = [{ id: 'default', name: 'Default', color: '#fff' }];
 
 function makeNode(overrides: Partial<KBNode> & Pick<KBNode, 'id' | 'source'>): KBNode {
   return {
@@ -24,27 +27,36 @@ function makeEdge(from: string, to: string, type: KBEdge['type'] = 'references')
   return { from, to, type, description: '', source: 'inferred', weight: 1 };
 }
 
-const fileNode = makeNode({ id: 'f1', source: { type: 'file', path: 'src/utils.ts' } });
-const authoredNode = makeNode({
+function stampNodeLayer(node: KBNode): KBNode {
+  return buildGraph([node], clusters).nodes[0]!;
+}
+
+const fileNode = stampNodeLayer(makeNode({ id: 'f1', source: { type: 'file', path: 'src/utils.ts' } }));
+const authoredNode = stampNodeLayer(makeNode({
   id: 'a1',
   source: { type: 'authored', file: 'content/guide.md' },
   identity: 'urn:file:content/guide.md',
-});
-const issueNode = makeNode({ id: 'i1', source: { type: 'issue', number: 42, state: 'open', labels: ['bug'] } });
-const prNode = makeNode({ id: 'pr1', source: { type: 'pull_request', number: 10, state: 'open' } });
-const commitNode = makeNode({ id: 'c1', source: { type: 'commit', sha: 'abc123' } });
-const readmeNode = makeNode({ id: 'r1', source: { type: 'readme' } });
-const sectionNode = makeNode({
+}));
+const issueNode = stampNodeLayer(makeNode({ id: 'i1', source: { type: 'issue', number: 42, state: 'open', labels: ['bug'] } }));
+const prNode = stampNodeLayer(makeNode({ id: 'pr1', source: { type: 'pull_request', number: 10, state: 'open' } }));
+const commitNode = stampNodeLayer(makeNode({ id: 'c1', source: { type: 'commit', sha: 'abc123' } }));
+const readmeNode = stampNodeLayer(makeNode({ id: 'r1', source: { type: 'readme' } }));
+const sectionNode = stampNodeLayer(makeNode({
   id: 's1',
   source: { type: 'section', parentSource: { type: 'authored', file: 'content/guide.md' } },
-});
-const contentTreeNode = makeNode({ id: 'ct1', source: { type: 'file', path: 'content/guide.md' }, identity: 'urn:file:content/guide.md' });
+}));
+const contentTreeNode = stampNodeLayer(makeNode({ id: 'ct1', source: { type: 'file', path: 'content/guide.md' }, identity: 'urn:file:content/guide.md' }));
 
 // ── getNodeLayer ───────────────────────────────────────────
 
 describe('getNodeLayer', () => {
   it('classifies file source as "file"', () => {
     expect(getNodeLayer(fileNode)).toBe('file');
+  });
+
+  it('falls back to "file" when a node has no stamped layer', () => {
+    const node = makeNode({ id: 'legacy', source: { type: 'issue', number: 7, state: 'open', labels: [] } });
+    expect(getNodeLayer(node)).toBe('file');
   });
 
   it('classifies authored source as "content"', () => {

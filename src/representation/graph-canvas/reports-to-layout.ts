@@ -1,10 +1,10 @@
 /**
  * Reports-to tree layout (#279).
  *
- * Pure, SSR-safe helpers that project the knowledge graph down to the
- * `reports-to` reporting hierarchy and compute a per-node tree *level* for a
- * vis-network hierarchical layout. No DOM / vis-network imports here so the
- * logic stays unit-testable and safe to run during SSR.
+ * Representation-local, SSR-safe helpers that project the knowledge graph down to
+ * the `reports-to` reporting hierarchy and compute a per-node tree *level* for a
+ * vis-network hierarchical layout. No DOM / vis-network imports here so the logic
+ * stays unit-testable and safe to run during SSR.
  *
  * Edge convention (content-model/schema/edges.yaml `person-manager`):
  *   reports-to edge.from = the report (subordinate, has a `manager`)

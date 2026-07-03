@@ -1,5 +1,11 @@
-/** Core data types for the kbexplorer knowledge graph. */
+/**
+ * Core data types for the kbexplorer knowledge graph.
+ *
+ * The graph contract stays engine-free in this template so representation and
+ * serialization layers can consume it without pulling in engine runtime logic.
+ */
 
+import type { NodeLayer } from './node-layer';
 import {
   buildJsonLd,
   DEFAULT_ACCESS_EXCLUSION,
@@ -22,8 +28,8 @@ import {
   type KBAccessLabel,
   type KBConfig,
   type KBEdge,
-  type KBGraph,
-  type KBNode,
+  type KBGraph as CoreKBGraph,
+  type KBNode as CoreKBNode,
   type KnownDisplayMode,
   type KnownEdgeType,
   type NodeSource,
@@ -50,14 +56,24 @@ import {
   CANVAS_TARGET,
 } from '@anokye-labs/kbexplorer-core';
 
+export type { NodeLayer } from './node-layer';
+export type { KnownRelation } from './known-relation';
+
+export interface KBNode extends CoreKBNode {
+ layer?: NodeLayer;
+}
+
+export interface KBGraph extends CoreKBGraph {
+ nodes: KBNode[];
+}
+
 /**
- * Re-export the pure graph + config contract from `@anokye-labs/kbexplorer-core`
+* Re-export the pure graph + config contract from `@anokye-labs/kbexplorer-core`
  * so existing `../types` imports keep working unchanged. The default-config
  * logic and the pure graph projections below (collapse/trim) stay template-local
- * but engine-free; styling, layer and view representation now live under
- * `../representation` (Phase 2 / F2 #309) so this module imports nothing from the
- * engine at load.
- */
+* but engine-free; styling, layer, and view representation now live under
+* `../representation` so this module stays free of engine runtime imports.
+*/
 export {
   buildJsonLd,
   DEFAULT_ACCESS_EXCLUSION,
@@ -80,8 +96,6 @@ export {
   type KBAccessLabel,
   type KBConfig,
   type KBEdge,
-  type KBGraph,
-  type KBNode,
   type KnownDisplayMode,
   type KnownEdgeType,
   type NodeSource,
@@ -123,7 +137,6 @@ export {
   getEdgeLegendKey,
   getEdgeWeight,
   type EdgeTypeStyle,
-  type NodeLayer,
 } from '../representation/styles';
 
 
@@ -155,29 +168,6 @@ export interface NodeMapEntry {
 export interface NodeMap {
   nodes: NodeMapEntry[];
 }
-
-/**
- * The open relationship taxonomy carried by {@link KBEdge.relation}.
- *
- * These six relations come from the content model and are rendered in the
- * legend data-drivenly. `relation` is an open string — unknown relations still
- * render with a sensible default style.
- */
-export type KnownRelation =
-  | 'leads'
-  | 'staffs'
-  | 'reports-to'
-  | 'structural'
-  | 'derived'
-  | 'deprecated'
-  // Work-graph organizational-layer relations (#233)
-  | 'owns'
-  | 'has-priority'
-  | 'tracked-in'
-  // Person-node active-work relations (#235)
-  | 'assigned-to'
-  | 'authored'
-  | 'member-of';
 
 /**
  * Collapse specified clusters into single summary nodes.
