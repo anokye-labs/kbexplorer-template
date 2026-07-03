@@ -78,7 +78,11 @@ const getImportSpecifiers = (source: string): string[] => {
 };
 
 const isForbiddenEngineImport = (fromFile: string, specifier: string): boolean => {
-  if (FORBIDDEN_ENGINE_BARE_SPECIFIERS.includes(specifier)) {
+  if (
+    FORBIDDEN_ENGINE_BARE_SPECIFIERS.some(
+      bareSpecifier => specifier === bareSpecifier || specifier.startsWith(`${bareSpecifier}/`),
+    )
+  ) {
     return true;
   }
 
@@ -94,6 +98,11 @@ const isForbiddenEngineImport = (fromFile: string, specifier: string): boolean =
 };
 
 describe('engine boundary enforcement', () => {
+  it('catches forbidden subpath bare specifiers such as vis-network/standalone', () => {
+    expect(isForbiddenEngineImport(join(REPO_ROOT, 'src', 'engine', 'foo.ts'), 'vis-network/standalone')).toBe(true);
+    expect(isForbiddenEngineImport(join(REPO_ROOT, 'src', 'engine', 'foo.ts'), 'react-dom/client')).toBe(true);
+  });
+
   for (const filePath of walkSourceFiles(ENGINE_ROOT)) {
     it(`${toRepoRelative(filePath)} stays within engine boundaries`, () => {
       const source = readFileSync(filePath, 'utf8');
