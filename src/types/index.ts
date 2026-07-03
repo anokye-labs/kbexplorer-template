@@ -2,6 +2,11 @@
 
 import {
   buildJsonLd,
+  DEFAULT_ACCESS_EXCLUSION,
+  resolveAccessExclusion,
+  coerceAccessLabel,
+  normalizeAccessLabel,
+  isExcludedByDefault,
   type AccessClassification,
   type AccessVisibility,
   type BrandingConfig,
@@ -55,6 +60,11 @@ import {
  */
 export {
   buildJsonLd,
+  DEFAULT_ACCESS_EXCLUSION,
+  resolveAccessExclusion,
+  coerceAccessLabel,
+  normalizeAccessLabel,
+  isExcludedByDefault,
   type AccessClassification,
   type AccessVisibility,
   type BrandingConfig,
