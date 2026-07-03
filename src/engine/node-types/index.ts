@@ -1,11 +1,9 @@
 /**
- * Public API for the node-type engine.
- *
- * Importing this module guarantees the built-in node types are registered.
- * Custom types can be added at runtime via {@link registerType} without
- * touching the core discriminated unions.
+ * Shim — re-exports from `@anokye-labs/kbexplorer-engine` (moved in
+ * anokye-labs/kbexplorer-template#472, slice 1/5). `registry.ts` moved
+ * wholesale (nothing in template imports it directly, only this barrel).
  */
-export type { NodeTypeDefinition } from './registry';
+export type { NodeTypeDefinition, NodeLayer } from '@anokye-labs/kbexplorer-engine';
 export {
   registerType,
   resolveType,
@@ -15,4 +13,4 @@ export {
   resetNodeTypeRegistry,
   resolveNodeLayer,
   resolveTypeCluster,
-} from './registry';
+} from '@anokye-labs/kbexplorer-engine';

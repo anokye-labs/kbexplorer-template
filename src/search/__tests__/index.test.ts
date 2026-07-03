@@ -192,3 +192,45 @@ describe('searchIndex — ranking', () => {
     expect(results).toHaveLength(0);
   });
 });
+
+// ── search index — access render-gate ───────────────────────
+// Relocated from engine/__tests__/access.test.ts (kbexplorer-template#472,
+// slice 1/5): access.ts itself moved to @anokye-labs/kbexplorer-engine and
+// is covered by the engine repo's own suite, but this describe block
+// specifically exercises the integration between access-label withholding
+// and *this* module's search index — search/ stays in template.
+
+describe('search index — access render-gate', () => {
+  function makeAccessNode(id: string, overrides: Partial<KBNode> = {}): KBNode {
+    return {
+      id,
+      title: `Node ${id}`,
+      cluster: 'docs',
+      content: `<p>${id} body</p>`,
+      rawContent: `# ${id} heading\n\n${id} body searchword${id}`,
+      connections: [],
+      source: { type: 'authored', file: `${id}.md` },
+      ...overrides,
+    };
+  }
+
+  it('a withheld node is not searchable, even by title', () => {
+    const secret = makeAccessNode('secret', {
+      title: 'Zephyr Codename',
+      access: { classification: 'confidential' },
+    });
+    const open = makeAccessNode('open');
+    const index = buildSearchIndex([open, secret]);
+
+    expect(index.entryMap.has('secret')).toBe(false);
+    expect(searchIndex(index, 'zephyr')).toEqual([]);
+    expect(searchIndex(index, 'searchwordsecret')).toEqual([]);
+  });
+
+  it('unlabeled nodes remain searchable', () => {
+    const open = makeAccessNode('open');
+    const index = buildSearchIndex([open, makeAccessNode('secret', { access: { visibility: 'private' } })]);
+    const hits = searchIndex(index, 'searchwordopen');
+    expect(hits.map(h => h.nodeId)).toContain('open');
+  });
+});
