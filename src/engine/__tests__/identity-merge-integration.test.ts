@@ -66,7 +66,9 @@ async function loadGuideFromNodeMap(): Promise<KBNode> {
     path === GUIDE_PATH ? '# Guide\n\nHow things work.' : null;
   const nodes = await loadNodeMap(nodemapYaml, readFile);
   expect(nodes).toHaveLength(1);
-  return nodes[0];
+  const contentNode = nodes[0];
+  contentNode.layer = 'content';
+  return contentNode;
 }
 
 describe('identity merge machinery — nodemap file: link merges file + content node', () => {

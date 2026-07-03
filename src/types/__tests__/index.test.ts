@@ -9,6 +9,28 @@ import type { KBNode, KBGraph, KBEdge, Cluster } from '../index';
 
 // ── Fixtures ───────────────────────────────────────────────
 
+function inferLayer(sourceType: KBNode['source']['type'] | undefined): KBNode['layer'] {
+  switch (sourceType) {
+    case 'authored':
+    case 'readme':
+    case 'section':
+    case 'structured':
+    case 'derived':
+      return 'content';
+    case 'issue':
+    case 'pull_request':
+    case 'commit':
+    case 'branch':
+    case 'workflow':
+    case 'repository':
+    case 'release':
+    case 'person':
+      return 'work';
+    default:
+      return 'file';
+  }
+}
+
 function makeNode(overrides: Partial<KBNode> & Pick<KBNode, 'id' | 'source'>): KBNode {
   return {
     title: overrides.id,
@@ -16,6 +38,7 @@ function makeNode(overrides: Partial<KBNode> & Pick<KBNode, 'id' | 'source'>): K
     content: '',
     rawContent: '',
     connections: [],
+    layer: inferLayer(overrides.source.type),
     ...overrides,
   };
 }

@@ -17,8 +17,8 @@ import {
   type KBAccessLabel,
   type KBConfig,
   type KBEdge,
-  type KBGraph,
-  type KBNode,
+  type KBGraph as CoreKBGraph,
+  type KBNode as CoreKBNode,
   type KnownDisplayMode,
   type KnownEdgeType,
   type NodeSource,
@@ -44,9 +44,18 @@ import {
   type PresentationTokens,
   CANVAS_TARGET,
 } from '@anokye-labs/kbexplorer-core';
+import type { NodeLayer } from '../representation/styles';
+
+export interface KBNode extends CoreKBNode {
+ layer?: NodeLayer;
+}
+
+export interface KBGraph extends CoreKBGraph {
+ nodes: KBNode[];
+}
 
 /**
- * Re-export the pure graph + config contract from `@anokye-labs/kbexplorer-core`
+* Re-export the pure graph + config contract from `@anokye-labs/kbexplorer-core`
  * so existing `../types` imports keep working unchanged. The default-config
  * logic and the pure graph projections below (collapse/trim) stay template-local
  * but engine-free; styling, layer and view representation now live under
@@ -70,8 +79,6 @@ export {
   type KBAccessLabel,
   type KBConfig,
   type KBEdge,
-  type KBGraph,
-  type KBNode,
   type KnownDisplayMode,
   type KnownEdgeType,
   type NodeSource,

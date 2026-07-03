@@ -1,23 +1,20 @@
 /**
  * Graph-layer projection — classifies nodes into file/content/work layers and
- * filters the graph to a single layer. This is representation/projection logic
- * (it consults the engine node-type registry), kept out of the pure `../types`
- * data contract.
+ * filters the graph to a single layer. The resolved layer is stamped onto the
+ * graph data at build time, so representation can consume pure node data without
+ * consulting the engine registry.
  */
 import type { KBGraph, KBNode, KBEdge } from '../types';
 import type { NodeLayer } from './styles';
-import { resolveNodeLayer } from '../engine/node-types/registry';
 
 /**
  * Classify a node into a graph layer.
  *
- * Registry-driven: resolution delegates to the node-type registry
- * ({@link resolveNodeLayer}), which honors `entityType` first, then the
- * `source.type`, falling back to `'file'`. Built-in source types are registered
- * with their historical layer mapping so existing graphs classify identically.
+ * The layer is carried on the graph data contract and defaults to `'file'` when
+ * absent for backward compatibility with older graphs.
  */
 export function getNodeLayer(node: KBNode): NodeLayer {
-  return resolveNodeLayer(node);
+  return node.layer ?? 'file';
 }
 
 /** Check if a file node is a redundant content/ tree entry (has an authored counterpart). */
