@@ -1,8 +1,8 @@
 /**
  * Named graph-view projections for the SPA canvas. Views resolve a graph into a
  * focused sub-graph (and optionally request a layout). This is representation
- * logic — it consults graph-layer projection + the engine reports-to layout —
- * and is kept out of the pure `../types` data contract.
+ * logic — it consults graph-layer projection + the graph-canvas reports-to
+ * layout — and is kept out of the pure `../types` data contract.
  */
 import type { KBGraph } from '../types';
 import { filterByPredicate, filterGraphToLayer } from './graph-layers';
