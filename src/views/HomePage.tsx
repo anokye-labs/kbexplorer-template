@@ -29,7 +29,7 @@ import {
 import type { KBGraph, KBConfig, KBNode } from '../types'
 import { NodeVisual } from '../components/NodeVisual'
 import { resolveImageUrl } from '../api'
-import { createGraphNetwork } from '../engine/createGraphNetwork'
+import { createGraphNetwork } from '../representation/graph-canvas/createGraphNetwork'
 
 const useStyles = makeStyles({
   root: {

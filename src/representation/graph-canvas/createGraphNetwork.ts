@@ -8,11 +8,11 @@ import { createNodeRenderer, resolveNodeTheme, LABEL_LINE_HEIGHT, getLabelFont, 
 import type { RendererLabelState, NodeThemeSource } from './nodeRenderer';
 import { assignLabelPlacements } from './labelLayout';
 import type { LabelItem } from './labelLayout';
-import { getNodeDegrees } from './graph';
+import { getNodeDegrees } from '../../engine/graph';
 import { computeReportsToLevels } from './reports-to-layout';
-import type { KBGraph } from '../types';
-import type { GraphLayoutMode } from '../representation/views';
-import { getEdgeStyle, resolveStyleColor, emphasisEdgeStyle } from '../representation/styles';
+import type { KBGraph } from '../../types';
+import type { GraphLayoutMode } from '../views';
+import { getEdgeStyle, resolveStyleColor, emphasisEdgeStyle } from '../styles';
 
 /**
  * Fixed seed for vis-network's force-directed initial placement.
