@@ -3,16 +3,12 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/**
- * Phase 6 / F6 #334 purity guard.
- *
- * Representation modules must remain engine-free. This guard walks the
- * representation source tree and fails if any module resolves an import into the
- * engine boundary.
- */
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
-const REPRESENTATION_ROOT = join(REPO_ROOT, 'src', 'representation');
-const FORBIDDEN_REPRESENTATION_IMPORT_PREFIXES = ['src/engine'];
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const ENGINE_ROOT = join(REPO_ROOT, 'src', 'engine');
+const FORBIDDEN_ENGINE_IMPORT_PREFIXES = ['src/representation', 'src/views', 'src/components', 'src/theme'];
+const FORBIDDEN_ENGINE_BARE_SPECIFIERS = ['react', 'react-dom', 'vis-network', 'vis-data'];
+// Allowed until #463 removes the Node-store sqlite wasm shim.
+const ALLOWED_ENGINE_PLATFORM_EXEMPTIONS = ['src/engine/store/sqlite-runtime.ts'];
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']);
 
 const toRepoRelative = (filePath: string): string =>
@@ -81,27 +77,49 @@ const getImportSpecifiers = (source: string): string[] => {
   return specifiers.filter(Boolean);
 };
 
-const isForbiddenRepresentationImport = (fromFile: string, specifier: string): boolean => {
+const isForbiddenEngineImport = (fromFile: string, specifier: string): boolean => {
+  if (FORBIDDEN_ENGINE_BARE_SPECIFIERS.includes(specifier)) {
+    return true;
+  }
+
   const resolved = resolveSpecifier(fromFile, specifier);
   if (!resolved) {
     return false;
   }
 
   const resolvedRelative = toRepoRelative(resolved);
-  return FORBIDDEN_REPRESENTATION_IMPORT_PREFIXES.some(
+  return FORBIDDEN_ENGINE_IMPORT_PREFIXES.some(
     prefix => resolvedRelative === prefix || resolvedRelative.startsWith(`${prefix}/`),
   );
 };
 
-describe('representation modules are engine-free (F6 #334)', () => {
-  for (const filePath of walkSourceFiles(REPRESENTATION_ROOT)) {
-    it(`${toRepoRelative(filePath)} has zero import specifiers that resolve into the engine`, () => {
+describe('engine boundary enforcement', () => {
+  for (const filePath of walkSourceFiles(ENGINE_ROOT)) {
+    it(`${toRepoRelative(filePath)} stays within engine boundaries`, () => {
       const source = readFileSync(filePath, 'utf8');
       const violations = getImportSpecifiers(source).filter(specifier =>
-        isForbiddenRepresentationImport(filePath, specifier),
+        isForbiddenEngineImport(filePath, specifier),
       );
 
-      expect(violations, `${toRepoRelative(filePath)} uses forbidden engine imports: ${violations.join(', ')}`).toEqual([]);
+      expect(violations, `${toRepoRelative(filePath)} uses forbidden app-layer imports: ${violations.join(', ')}`).toEqual([]);
     });
   }
+
+  it('does not use import.meta.env or Vite import suffixes outside the sqlite wasm shim exemption', () => {
+    for (const filePath of walkSourceFiles(ENGINE_ROOT)) {
+      const source = readFileSync(filePath, 'utf8');
+      const relPath = toRepoRelative(filePath);
+      const violations: string[] = [];
+
+      if (/import\.meta\.env/.test(source)) {
+        violations.push('import.meta.env');
+      }
+
+      if (/\?url\b|\?raw\b/.test(source) && !ALLOWED_ENGINE_PLATFORM_EXEMPTIONS.includes(relPath)) {
+        violations.push('Vite import suffix');
+      }
+
+      expect(violations, `${relPath} uses forbidden platform tokens: ${violations.join(', ')}`).toEqual([]);
+    }
+  });
 });
