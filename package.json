@@ -7,7 +7,7 @@
     "dev": "vite",
     "prebuild": "node scripts/generate-manifest.js",
     "build": "tsc -b && vite build",
-    "build:local": "npm run prebuild && tsc -b && VITE_KB_LOCAL=true vite build",
+    "build:local": "npm run prebuild && tsc -b && node ./scripts/run-vite-build.mjs",
     "lint": "eslint .",
     "test": "vitest run --config vitest.config.ts",
     "golden:fixtures": "node tests/golden/fixtures/build-remote-fixture.mjs",
