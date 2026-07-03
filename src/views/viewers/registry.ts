@@ -43,10 +43,11 @@ export function resetViewerRegistry(): void {
 
 /**
  * Resolve a viewer for a node. Resolution precedence:
- * 1. `node.entityType`
- * 2. JSON-LD `@type` — when it is an array each entry is tried in order and the
+ * 1. `resolveType(entityType)?.viewer` when the node has an `entityType`.
+ * 2. `node.entityType` (or the direct string argument when a string is passed).
+ * 3. JSON-LD `@type` — when it is an array each entry is tried in order and the
  *    first entry with a registered viewer wins.
- * 3. {@link GenericStructuredView} fallback.
+ * 4. {@link GenericStructuredView} fallback.
  */
 export function resolveViewer(node: Pick<KBNode, 'entityType' | 'jsonld'> | string | undefined | null): ViewerComponent {
   const candidates: string[] = [];
