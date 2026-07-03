@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { KBGraph, KBConfig, SourceConfig } from '../types';
-import { detectLocalMode, loadLocalKnowledgeBase } from '../engine/local-loader';
-import { loadRemoteKnowledgeBase } from '../engine/remote-loader';
+import { detectLocalMode } from '../engine/local-loader';
+import { loadLocalKnowledgeBase, loadRemoteKnowledgeBase } from '../knowledge-base';
 import { isDemoEntitiesEnabled, injectDemoEntities, isBigOrgDemoEnabled, injectBigOrg, isRichMarkdownDemoEnabled, injectRichMarkdownDemo } from '../engine/demo-entities';
 
 export type LoadingState =
@@ -23,10 +23,10 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
     async function load() {
       setState({ status: 'loading' });
       try {
-        const local = await detectLocalMode();
+        const local = await detectLocalMode(import.meta.env);
 
         if (local) {
-          const { graph, config } = await loadLocalKnowledgeBase();
+          const { graph, config } = await loadLocalKnowledgeBase(import.meta.env);
           if (!cancelled) {
             if (graph.nodes.length === 0) {
               setState({
@@ -43,7 +43,7 @@ export function useKnowledgeBase(sourceOverride?: SourceConfig): LoadingState {
         }
 
         // Remote mode — fetch from GitHub API via the provider pipeline
-        const { graph, config } = await loadRemoteKnowledgeBase(sourceOverride, 'standard');
+        const { graph, config } = await loadRemoteKnowledgeBase(sourceOverride, 'standard', import.meta.env);
         if (!cancelled) {
           if (graph.nodes.length === 0) {
             setState({

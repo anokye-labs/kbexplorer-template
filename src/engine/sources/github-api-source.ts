@@ -37,9 +37,9 @@ import {
 } from '../../api';
 import type { GHIssue, GHTreeItem, GHCommit, GHRelease } from '../../api';
 import { loadConfig } from '../../engine';
-import { applyExternalThemeFile } from '../../theme/externalTheme';
 import type { ContentModelSource } from '../content-model';
 import { hasExplicitStructuredContentPath, resolveStructuredContentPath } from '../structured-content';
+import type { EngineEnv } from '../env';
 import type { RepoData, RepoSource } from './repo-data';
 
 export type ResolutionPreset = 'summary' | 'standard' | 'full';
@@ -56,6 +56,7 @@ interface FetchedData {
   structuredNodeMapRaw: string | null;
   contentModel: ContentModelSource | null;
   config: KBConfig;
+  themeFileRaw: string | null;
 }
 
 /** Whether a repo path is a `.github` structural artifact or a CODEOWNERS file. */
@@ -93,10 +94,12 @@ export class GitHubApiSource implements RepoSource {
 
   private readonly source: SourceConfig;
   private readonly preset: ResolutionPreset;
+  private readonly env?: EngineEnv;
 
-  constructor(source: SourceConfig, preset: ResolutionPreset = 'standard') {
+  constructor(source: SourceConfig, preset: ResolutionPreset = 'standard', env?: EngineEnv) {
     this.source = source;
     this.preset = preset;
+    this.env = env;
   }
 
   /** The locator of this repo's staging area (git index). */
@@ -113,6 +116,10 @@ export class GitHubApiSource implements RepoSource {
   /** Resolve the config (incl. external theme merge) without re-fetching. */
   async resolveConfig(): Promise<KBConfig> {
     return (await this.fetch()).config;
+  }
+
+  async resolveThemeFileRaw(): Promise<string | null> {
+    return (await this.fetch()).themeFileRaw;
   }
 
   async getRepoData(): Promise<RepoData> {
@@ -150,6 +157,7 @@ export class GitHubApiSource implements RepoSource {
       structuredNodeMapRaw: data.structuredNodeMapRaw,
       contentModel: data.contentModel ?? null,
       readme: data.readme,
+      themeFileRaw: data.themeFileRaw,
     };
   }
 
@@ -280,19 +288,15 @@ export class GitHubApiSource implements RepoSource {
     const config = await loadConfig(source);
 
     const themeFilePromise = config.theme?.themesFile
-      ? applyExternalThemeFile(config.theme, p => fetchFile(source, p))
-      : null;
+      ? fetchFile(source, config.theme.themesFile).catch(() => null)
+      : Promise.resolve<string | null>(null);
 
-    const [issues, readme, releases, mergedTheme] = await Promise.all([
+    const [issues, readme, releases, themeFileRaw] = await Promise.all([
       fetchIssues(source).catch(() => [] as GHIssue[]),
       fetchFile(source, 'README.md').catch(() => null),
       fetchReleases(source).catch(() => [] as GHRelease[]),
       themeFilePromise,
     ]);
-
-    if (mergedTheme) {
-      config.theme = mergedTheme;
-    }
 
     let tree: GHTreeItem[] = [];
     let pullRequests: GHIssue[] = [];
@@ -352,12 +356,12 @@ export class GitHubApiSource implements RepoSource {
       commits = await fetchCommits(source).catch(() => [] as GHCommit[]);
     }
 
-    return { issues, pullRequests, tree, readme, commits, releases, authoredContent, structuralFiles, structuredNodeMapRaw, contentModel, config };
+    return { issues, pullRequests, tree, readme, commits, releases, authoredContent, structuralFiles, structuredNodeMapRaw, contentModel, config, themeFileRaw: themeFileRaw ?? null };
   }
 
   private async fetchContentModel(config: KBConfig): Promise<ContentModelSource | null> {
-    const root = resolveStructuredContentPath(config);
-    const explicitPath = hasExplicitStructuredContentPath(config);
+    const root = resolveStructuredContentPath(config, this.env);
+    const explicitPath = hasExplicitStructuredContentPath(config, this.env);
     try {
       const contentModelTree = await fetchTree(this.source, root);
       const paths = contentModelTree

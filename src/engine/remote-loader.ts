@@ -14,6 +14,7 @@ import type { KBGraph, KBConfig, SourceConfig } from '../types'
 import { DEFAULT_CONFIG } from '../types'
 import { GitHubApiSource, type ResolutionPreset } from './sources/github-api-source'
 import { loadKnowledgeBase } from './loader'
+import type { EngineEnv } from './env'
 
 export type { ResolutionPreset }
 
@@ -23,9 +24,14 @@ export type { ResolutionPreset }
 export async function loadRemoteKnowledgeBase(
   sourceOverride?: SourceConfig,
   preset: ResolutionPreset = 'standard',
-): Promise<{ graph: KBGraph; config: KBConfig }> {
+  env?: EngineEnv,
+): Promise<{ graph: KBGraph; config: KBConfig; themeFileRaw: string | null }> {
   const source = sourceOverride ?? DEFAULT_CONFIG.source
-  const ghSource = new GitHubApiSource(source, preset)
-  const config = await ghSource.resolveConfig()
-  return loadKnowledgeBase(ghSource, config)
+  const ghSource = new GitHubApiSource(source, preset, env)
+  const [config, themeFileRaw] = await Promise.all([
+    ghSource.resolveConfig(),
+    ghSource.resolveThemeFileRaw(),
+  ])
+  const result = await loadKnowledgeBase(ghSource, config, env)
+  return { ...result, themeFileRaw: themeFileRaw ?? null }
 }
