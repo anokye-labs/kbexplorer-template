@@ -16,7 +16,7 @@ import {
   createGraphNetwork as createGraphNetworkImpl,
   type GraphNetworkOptions,
   type GraphNetworkResult,
-} from '../../../engine/createGraphNetwork';
+} from '../../graph-canvas/createGraphNetwork';
 
 /**
  * Mount a live {@link createGraphNetworkImpl} instance into `container` and
