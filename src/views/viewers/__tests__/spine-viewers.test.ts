@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { KBNode } from '../../../types';
-import { resolveViewer, resetViewerRegistry, type ViewerComponent } from '../index';
+import { registerBuiltinViewers, resolveViewer, resetViewerRegistry, type ViewerComponent } from '../index';
 import { resetNodeTypeRegistry } from '../../../engine/node-types';
 import { registerContentModelTypes, CONTENT_MODEL_KINDS } from '../../../engine/content-model';
 import { SquadView } from '../SquadView';
@@ -208,6 +208,7 @@ describe('spine viewers — rendering (T2.5 + T2.6 / #164, #165)', () => {
 
 describe('spine viewers — registration + resolution (#164, #165)', () => {
   it('registers a viewer for every spine kind and resolves each to its bespoke view', () => {
+    registerBuiltinViewers();
     registerContentModelTypes();
     const expected: Record<string, ViewerComponent> = {
       squad: SquadView, workstream: WorkstreamView, mission: MissionView,

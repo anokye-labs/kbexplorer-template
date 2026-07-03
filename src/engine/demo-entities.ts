@@ -12,10 +12,7 @@
 import type { KBGraph, KBNode, KBEdge, Cluster } from '../types';
 import { buildJsonLd } from '../types';
 import { registerType } from './node-types';
-import { registerViewer } from '../views/viewers';
-import { PersonView } from '../views/viewers/PersonView';
-import { SquadView } from '../views/viewers/SquadView';
-import { buildSampleRichMarkdownNode } from '../views/rich-markdown/sample-document';
+import { buildSampleRichMarkdownNode } from './demo-rich-markdown';
 
 const DEMO_CLUSTER: Cluster = { id: 'org', name: 'Organization', color: '#c0a3ff' };
 
@@ -78,8 +75,6 @@ export function registerDemoEntityTypes(): void {
     relations: [],
     description: 'A team charter document (demo kind with no bespoke viewer).',
   });
-  registerViewer('person', PersonView);
-  registerViewer('squad', SquadView);
 }
 
 /**

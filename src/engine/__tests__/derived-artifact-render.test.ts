@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 import type { KBNode, Cluster } from '../../types';
 import { buildGraph } from '../graph';
 import { resolveType, resetNodeTypeRegistry } from '../node-types';
-import { resolveViewer, resetViewerRegistry } from '../../views/viewers';
+import { registerBuiltinViewers, resolveViewer, resetViewerRegistry } from '../../views/viewers';
 import { registerContentModelTypes } from '../content-model';
 import { PersonView } from '../../views/viewers/PersonView';
 import { SquadView } from '../../views/viewers/SquadView';
@@ -42,6 +42,7 @@ const CLUSTERS: Cluster[] = [{ id: 'org', name: 'Organization', color: '#c0a3ff'
 describe('derived-artifact render proof (cross-repo, F8 gap)', () => {
   beforeAll(() => {
     // Registering the content-model spine binds person→PersonView, squad→SquadView.
+    registerBuiltinViewers();
     registerContentModelTypes();
   });
   afterAll(() => {
