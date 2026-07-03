@@ -113,7 +113,7 @@ export class GitHubApiSource implements RepoSource {
     return this.fetchPromise;
   }
 
-  /** Resolve the config (incl. external theme merge) without re-fetching. */
+  /** Resolve the config without re-fetching. */
   async resolveConfig(): Promise<KBConfig> {
     return (await this.fetch()).config;
   }

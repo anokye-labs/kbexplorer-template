@@ -310,7 +310,7 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
  * 3. Applies README creation + cross-linking transforms not yet in providers
  * 4. Builds the final graph
  */
-async function loadLocalKnowledgeBaseV2(_env?: EngineEnv): Promise<{
+async function loadLocalKnowledgeBaseV2(env?: EngineEnv): Promise<{
   graph: KBGraph;
   config: KBConfig;
   themeFileRaw: string | null;
@@ -323,7 +323,7 @@ async function loadLocalKnowledgeBaseV2(_env?: EngineEnv): Promise<{
   }
 
   const config = buildConfigFromManifest(manifest);
-  return buildKnowledgeBaseFromManifest(manifest, config);
+  return buildKnowledgeBaseFromManifest(manifest, config, env);
 }
 
 /**
@@ -334,8 +334,9 @@ async function loadLocalKnowledgeBaseV2(_env?: EngineEnv): Promise<{
 export async function buildKnowledgeBaseFromManifest(
   manifest: RepoManifest,
   config: KBConfig,
+  env?: EngineEnv,
 ): Promise<{ graph: KBGraph; config: KBConfig; themeFileRaw: string | null }> {
-  const result = await loadKnowledgeBase(new ManifestSource(manifest, config), config);
+  const result = await loadKnowledgeBase(new ManifestSource(manifest, config), config, env);
   return { ...result, themeFileRaw: manifest.themeFileRaw ?? null };
 }
 
