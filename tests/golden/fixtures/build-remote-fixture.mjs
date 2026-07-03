@@ -33,7 +33,7 @@ const source = {
 const files = {};
 if (typeof m.readme === 'string') files['README.md'] = m.readme;
 if (typeof m.configRaw === 'string') files[`${source.path}/config.yaml`] = m.configRaw;
-if (typeof m.structuredNodeMapRaw === 'string') files['node-map.yaml'] = m.structuredNodeMapRaw;
+if (typeof m.structuredNodeMapRaw === 'string') files['structured-node-map.yaml'] = m.structuredNodeMapRaw;
 for (const [path, content] of Object.entries(m.authoredContent ?? {})) files[path] = content;
 for (const [path, content] of Object.entries(m.structuralFiles ?? {})) files[path] = content;
 if (m.contentModel?.root && m.contentModel?.files) {

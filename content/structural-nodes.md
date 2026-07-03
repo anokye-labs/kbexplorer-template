@@ -16,7 +16,7 @@ connections:
     description: Implemented as a GraphProvider
   - to: node-mapping
     type: references
-    description: Declarative node-map.yaml + heuristic fallback
+    description: Declarative structured-node-map.yaml + heuristic fallback
   - to: identity
     type: references
     description: urn:structural identity scheme
@@ -49,7 +49,7 @@ Path classifiers in `structural-provider.ts` route each `.github` file to a per-
 | `.github/FUNDING.yml` | `funding-config` | `StructuredConfig` | generic |
 | other `.github` config / docs | `github-config` / `structured-config` | varies | generic |
 
-Anything that doesn't match a dedicated classifier falls through to `buildGenericConfigNode()`, which first tries the declarative [node map](node-mapping) (`node-map.yaml`) plus a heuristic structured mapper, then treats prose markdown (`SECURITY.md`, `SUPPORT.md`, …) as a documentation node.
+Anything that doesn't match a dedicated classifier falls through to `buildGenericConfigNode()`, which first tries the declarative structured node map (`structured-node-map.yaml`, in `src/engine/structured-node-map.ts` — distinct from the similarly-named [`nodemap.yaml`](node-mapping), which maps repo files rather than structured config) plus a heuristic structured mapper, then treats prose markdown (`SECURITY.md`, `SUPPORT.md`, …) as a documentation node.
 
 ```mermaid
 %%{init: {'theme':'dark', 'themeVariables': {'primaryColor':'#1f2a37','primaryTextColor':'#e6edf3','primaryBorderColor':'#5A98A8','lineColor':'#79c0ff','fontSize':'14px'}}}%%
@@ -84,4 +84,4 @@ Each node uses a `urn:structural:<path>` identity (see [identity](identity)) and
 
 ## Build wiring
 
-`scripts/generate-manifest.js` collects the `.github` files (and any `node-map.yaml`) into `manifest.structuralFiles`; the [local loader](local-loader) registers `new StructuralProvider(manifest.structuralFiles, manifest.structuredNodeMapRaw ?? null)` whenever structural files are present. Because this template ships a real `.github/` directory, these nodes render today — orbiting the repository node alongside the engine cluster.
+`scripts/generate-manifest.js` collects the `.github` files (and any `structured-node-map.yaml`) into `manifest.structuralFiles`; the [local loader](local-loader) registers `new StructuralProvider(manifest.structuralFiles, manifest.structuredNodeMapRaw ?? null)` whenever structural files are present. Because this template ships a real `.github/` directory, these nodes render today — orbiting the repository node alongside the engine cluster.

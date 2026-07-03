@@ -95,7 +95,7 @@ what the `RepoData` bundle actually carries (absent inputs → safe no-op):
 | Provider | Emits |
 |----------|-------|
 | `FilesProvider` | directory / `tree` nodes (`urn:file:<path>`) |
-| `AuthoredProvider` | authored-markdown nodes (+ node-map) |
+| `AuthoredProvider` | authored-markdown nodes (+ nodemap) |
 | `WorkProvider` | issues, PRs, commits, releases, repo-root |
 | `PersonProvider` | people derived from GitHub activity |
 | `StructuralProvider` | repository node from `.github/**` |

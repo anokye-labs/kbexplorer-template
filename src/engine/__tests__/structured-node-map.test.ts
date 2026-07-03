@@ -3,12 +3,12 @@ import {
   parseStructuredNodeMap,
   parseStructuredContent,
   matchRule,
-  applyNodeMap,
+  applyStructuredNodeMap,
   inferStructuredNode,
   reconstructSource,
   slugify,
   type StructuredNodeMap,
-} from '../node-map';
+} from '../structured-node-map';
 
 // ── parseStructuredNodeMap ─────────────────────────────────
 
@@ -98,9 +98,9 @@ describe('matchRule', () => {
   });
 });
 
-// ── applyNodeMap — mapped fixture resolves to declared @type ─
+// ── applyStructuredNodeMap — mapped fixture resolves to declared @type ─
 
-describe('applyNodeMap — declarative', () => {
+describe('applyStructuredNodeMap — declarative', () => {
   const map: StructuredNodeMap = {
     rules: [
       {
@@ -123,7 +123,7 @@ describe('applyNodeMap — declarative', () => {
   };
 
   it('resolves a mapped fixture to its declared @type and entityType', () => {
-    const node = applyNodeMap(file, map)!;
+    const node = applyStructuredNodeMap(file, map)!;
     expect(node).not.toBeNull();
     expect(node.entityType).toBe('dependabot-config');
     expect(node.jsonld?.['@type']).toBe('DependabotConfig');
@@ -132,23 +132,23 @@ describe('applyNodeMap — declarative', () => {
   });
 
   it('promotes declared fields (incl. array dot-path) into the JSON-LD envelope', () => {
-    const node = applyNodeMap(file, map)!;
+    const node = applyStructuredNodeMap(file, map)!;
     expect(node.jsonld?.schemaVersion).toBe(2);
     expect(node.jsonld?.ecosystem).toBe('npm');
   });
 
   it('emits declared edges as structural connections', () => {
-    const node = applyNodeMap(file, map)!;
+    const node = applyStructuredNodeMap(file, map)!;
     expect(node.connections.some(c => c.to === 'repo-meta' && c.relation === 'structural')).toBe(true);
   });
 
   it('@id reuses the identity URN', () => {
-    const node = applyNodeMap(file, map)!;
+    const node = applyStructuredNodeMap(file, map)!;
     expect(node.jsonld?.['@id']).toBe(node.identity);
   });
 });
 
-// ── applyNodeMap — heuristic fallback ──────────────────────
+// ── applyStructuredNodeMap — heuristic fallback ──────────────────────
 
 describe('inferStructuredNode — heuristic', () => {
   it('maps an unmapped workflow shape to a workflow node', () => {
@@ -181,8 +181,8 @@ describe('inferStructuredNode — heuristic', () => {
     expect(node.data).toEqual({ foo: 'bar', baz: 2 });
   });
 
-  it('applyNodeMap with no map runs the heuristic', () => {
-    const node = applyNodeMap(
+  it('applyStructuredNodeMap with no map runs the heuristic', () => {
+    const node = applyStructuredNodeMap(
       { path: '.github/dependabot.yml', content: 'version: 2\nupdates: []\n' },
       null,
     )!;
@@ -190,7 +190,7 @@ describe('inferStructuredNode — heuristic', () => {
   });
 
   it('returns null for non-structured content', () => {
-    expect(applyNodeMap({ path: 'README.md', content: '# Hello\n\nprose' }, null)).toBeNull();
+    expect(applyStructuredNodeMap({ path: 'README.md', content: '# Hello\n\nprose' }, null)).toBeNull();
   });
 });
 
@@ -200,7 +200,7 @@ describe('reconstructSource — reversible mapping', () => {
   it('round-trips a YAML file through data', () => {
     const file = { path: '.github/dependabot.yml', content: 'version: 2\nupdates:\n  - package-ecosystem: npm\n' };
     const parsed = parseStructuredContent(file)!;
-    const node = applyNodeMap(file, null)!;
+    const node = applyStructuredNodeMap(file, null)!;
     const rebuilt = reconstructSource(node);
     // semantic equality: re-parsing the reconstruction yields the original data
     const reparsed = parseStructuredContent({ path: file.path, content: rebuilt })!;
@@ -210,7 +210,7 @@ describe('reconstructSource — reversible mapping', () => {
   it('round-trips a JSON file through data', () => {
     const file = { path: 'config/settings.json', content: '{"name":"svc","port":8080,"tags":["a","b"]}' };
     const parsed = parseStructuredContent(file)!;
-    const node = applyNodeMap(file, null)!;
+    const node = applyStructuredNodeMap(file, null)!;
     const rebuilt = reconstructSource(node);
     expect(JSON.parse(rebuilt)).toEqual(parsed.data);
   });

@@ -1,4 +1,4 @@
-# node-map.yaml — declarative mapping of STRUCTURED files → typed JSON-LD nodes
+# structured-node-map.yaml — declarative mapping of STRUCTURED files → typed JSON-LD nodes
 #
 # Feature F3 (#166). This is the "agile discovery" seam: as new structured
 # config kinds appear during a migration, add a rule here (by configuration)
@@ -6,10 +6,11 @@
 # `shape` (top-level keys the parsed object must contain), assigns a JSON-LD
 # `@type`, and optionally promotes selected fields + emits edges.
 #
-# Distinct from `nodemap.yaml` (which maps repo files into file/content nodes).
-# Built-in `.github` kinds (workflows, actions, dependabot, CODEOWNERS, issue/PR
-# templates, FUNDING) are classified directly by the StructuralProvider; rules
-# here govern any *other* structured config. When no rule matches, a heuristic
+# Distinct from `nodemap.yaml` (which maps repo files into file/content nodes —
+# a different, older subsystem; see src/engine/nodemap.ts). Built-in `.github`
+# kinds (workflows, actions, dependabot, CODEOWNERS, issue/PR templates,
+# FUNDING) are classified directly by the StructuralProvider; rules here
+# govern any *other* structured config. When no rule matches, a heuristic
 # shape-inference fallback still produces a sensible typed node — so coverage is
 # never zero and this file is entirely optional.
 

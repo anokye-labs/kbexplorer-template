@@ -104,7 +104,7 @@ export class GitHubApiSource implements RepoSource {
       repo: this.source.repo,
       tree: data.tree,
       authoredContent: data.authoredContent,
-      // No node-map fetched at runtime yet — AuthoredProvider degrades to a
+      // No nodemap fetched at runtime yet — AuthoredProvider degrades to a
       // safe no-op over authoredContent alone.
       nodemapRaw: null,
       nodemapFiles: undefined,
@@ -325,7 +325,7 @@ export class GitHubApiSource implements RepoSource {
             structuralFiles[path] = content;
           }
         }
-        structuredNodeMapRaw = await fetchFile(source, 'node-map.yaml').catch(() => null);
+        structuredNodeMapRaw = await fetchFile(source, 'structured-node-map.yaml').catch(() => null);
       } catch {
         // `.github` may not exist — safe no-op.
       }

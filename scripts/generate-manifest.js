@@ -530,14 +530,14 @@ export function readNodemap(root) {
 // ── Structural discovery (F3 / #166–#167) ─────────────────
 
 /**
- * Read the declarative structured-file node map (`node-map.yaml`) from the
- * project root. Distinct from `nodemap.yaml` (which maps repo files → file
- * nodes); this one maps structured files → typed JSON-LD nodes.
+ * Read the declarative structured-file node map (`structured-node-map.yaml`)
+ * from the project root. Distinct from `nodemap.yaml` (which maps repo files
+ * → file nodes); this one maps structured files → typed JSON-LD nodes.
  * @param {string} root
  * @returns {string|null}
  */
 export function readStructuredNodeMap(root) {
-  for (const name of ['node-map.yaml', 'node-map.yml']) {
+  for (const name of ['structured-node-map.yaml', 'structured-node-map.yml']) {
     const p = resolve(root, name);
     if (existsSync(p)) {
       try {
@@ -770,7 +770,7 @@ export function generateManifest(
   console.log(`[generate-manifest] Branches: ${manifest.branches.length}`);
   console.log(`[generate-manifest] Repo: ${manifest.repoMetadata?.name ?? 'not available'}`);
   console.log(`[generate-manifest] Nodemap: ${nodemapRaw ? `${Object.keys(nodemapFiles).length} files, ${Object.keys(nodemapDirs).length} dirs` : 'not found'}`);
-  console.log(`[generate-manifest] Structural: ${Object.keys(structuralFiles).length} .github files${structuredNodeMapRaw ? ' + node-map.yaml' : ''}`);
+  console.log(`[generate-manifest] Structural: ${Object.keys(structuralFiles).length} .github files${structuredNodeMapRaw ? ' + structured-node-map.yaml' : ''}`);
   console.log(`[generate-manifest] Content model: ${manifest.contentModel ? `${Object.keys(manifest.contentModel.files).length} files from ${manifest.contentModel.root}` : `not found at ${structuredContentPath}`}`);
   console.log(`[generate-manifest] Theme file: ${manifest.themeFileRaw ? 'loaded' : 'not configured'}`);
 
