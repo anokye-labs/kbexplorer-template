@@ -42,9 +42,11 @@ export function resetViewerRegistry(): void {
 }
 
 /**
- * Resolve a viewer for a node. Resolution precedence:
- * 1. `resolveType(entityType)?.viewer` when the node has an `entityType`.
- * 2. `node.entityType` (or the direct string argument when a string is passed).
+ * Resolve a viewer for a node or a direct viewer-name string. Resolution precedence:
+ * 1. `resolveType(entityType)?.viewer` when the input is node-like and has an
+ *    `entityType`.
+ * 2. `node.entityType` for node-like input, or the direct string argument when a
+ *    string is passed.
  * 3. JSON-LD `@type` — when it is an array each entry is tried in order and the
  *    first entry with a registered viewer wins.
  * 4. {@link GenericStructuredView} fallback.
