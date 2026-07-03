@@ -25,6 +25,8 @@ export {
   type ViewerProps,
 } from './GenericStructuredView';
 
+export { registerBuiltinViewers } from './builtin-map';
+
 // Services-monorepo bespoke viewers (#275).
 export { ServiceView } from './ServiceView';
 export { DecisionView } from './DecisionView';

@@ -1,4 +1,5 @@
 import type { KBNode } from '../../types';
+import { resolveType } from '../../engine/node-types';
 import { GenericStructuredView, type ViewerComponent } from './GenericStructuredView';
 
 /**
@@ -41,18 +42,30 @@ export function resetViewerRegistry(): void {
 }
 
 /**
- * Resolve a viewer for a node. Resolution precedence:
- * 1. `node.entityType`
- * 2. JSON-LD `@type` — when it is an array each entry is tried in order and the
+ * Resolve a viewer for a node or a direct viewer-name string. Resolution precedence:
+ * 1. `resolveType(entityType)?.viewer` when the input is node-like and has an
+ *    `entityType`.
+ * 2. `node.entityType` for node-like input, or the direct string argument when a
+ *    string is passed.
+ * 3. JSON-LD `@type` — when it is an array each entry is tried in order and the
  *    first entry with a registered viewer wins.
- * 3. {@link GenericStructuredView} fallback.
+ * 4. {@link GenericStructuredView} fallback.
  */
-export function resolveViewer(node: Pick<KBNode, 'entityType' | 'jsonld'>): ViewerComponent {
+export function resolveViewer(node: Pick<KBNode, 'entityType' | 'jsonld'> | string | undefined | null): ViewerComponent {
   const candidates: string[] = [];
-  if (node.entityType) candidates.push(node.entityType);
-  const ldType = node.jsonld?.['@type'];
-  if (Array.isArray(ldType)) candidates.push(...ldType);
-  else if (ldType) candidates.push(ldType);
+  if (typeof node === 'string') {
+    candidates.push(node);
+  } else if (node) {
+    const entityType = node.entityType;
+    if (entityType) {
+      const typeDef = resolveType(entityType);
+      if (typeDef?.viewer) candidates.push(typeDef.viewer);
+      candidates.push(entityType);
+    }
+    const ldType = node.jsonld?.['@type'];
+    if (Array.isArray(ldType)) candidates.push(...ldType);
+    else if (ldType) candidates.push(ldType);
+  }
 
   for (const candidate of candidates) {
     const viewer = registry.get(normalizeKey(candidate));
