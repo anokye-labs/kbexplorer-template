@@ -1,12 +1,12 @@
 /**
- * node-map.ts — declarative + heuristic mapping of STRUCTURED files into typed
- * JSON-LD knowledge-graph nodes (Feature F3 / #166).
+ * structured-node-map.ts — declarative + heuristic mapping of STRUCTURED files
+ * into typed JSON-LD knowledge-graph nodes (Feature F3 / #166).
  *
  * This is the "agile discovery" seam: as new structured kinds keep appearing
- * during a migration, a `node-map.yaml` absorbs them by *configuration* (glob /
- * shape → `@type` → field & edge mapping) instead of code edits. When no rule
- * matches, a heuristic shape-inference fallback still produces a sensible typed
- * node so coverage is never zero.
+ * during a migration, a `structured-node-map.yaml` absorbs them by
+ * *configuration* (glob / shape → `@type` → field & edge mapping) instead of
+ * code edits. When no rule matches, a heuristic shape-inference fallback
+ * still produces a sensible typed node so coverage is never zero.
  *
  * The module is **pure** (no I/O, no React): callers pass a `{ path, content }`
  * pair and receive a {@link KBNode} (or `null` for non-structured input). Every
@@ -15,9 +15,11 @@
  * is preserved on `node.data`, so {@link reconstructSource} can re-serialise the
  * original file from the node alone.
  *
- * It is deliberately distinct from the older `nodemap.ts` (no hyphen), which
- * maps repo files/dirs/globs into the file & content layers. This module owns
- * the open node-type / JSON-LD path.
+ * It is deliberately distinct from `nodemap.ts` (no "structured" prefix, note
+ * the naming), which maps repo files/dirs/globs into the file & content
+ * layers. This module owns the open node-type / JSON-LD path for structured
+ * config files. The names look similar on purpose — they solve neighbouring
+ * problems — so if you're hunting for one, check both.
  */
 import yaml from 'yaml';
 import type { KBNode, NodeSource } from '../types';
@@ -71,7 +73,7 @@ export interface NodeMapRule {
   edges?: NodeMapEdgeRule[];
 }
 
-/** Parsed `node-map.yaml`. */
+/** Parsed `structured-node-map.yaml`. */
 export interface StructuredNodeMap {
   rules: NodeMapRule[];
 }
@@ -162,7 +164,7 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 /**
  * Parse a structured file's content into `{ format, data }`. Returns `null`
  * when the content is not structured object/array data (e.g. plain prose,
- * binary, or an empty document) — such files are not node-map's concern.
+ * binary, or an empty document) — such files are not this module's concern.
  */
 export function parseStructuredContent(
   file: StructuredFile,
@@ -351,7 +353,7 @@ export function inferStructuredNode(
  * otherwise the heuristic fallback runs. Returns `null` only when the file is
  * not structured object/array data.
  */
-export function applyNodeMap(
+export function applyStructuredNodeMap(
   file: StructuredFile,
   map: StructuredNodeMap | null | undefined,
   options?: ApplyOptions,
@@ -364,9 +366,9 @@ export function applyNodeMap(
   return inferStructuredNode(file, parsed, options);
 }
 
-// ── node-map.yaml parsing ──────────────────────────────────
+// ── structured-node-map.yaml parsing ───────────────────────
 
-/** Parse a `node-map.yaml` document into a normalised {@link StructuredNodeMap}. */
+/** Parse a `structured-node-map.yaml` document into a normalised {@link StructuredNodeMap}. */
 export function parseStructuredNodeMap(raw: string | null | undefined): StructuredNodeMap {
   if (!raw || !raw.trim()) return { rules: [] };
   try {

@@ -30,17 +30,17 @@ export { AuthoredProvider } from './providers/authored-provider';
 export { FilesProvider } from './providers/files-provider';
 export { StructuralProvider, registerStructuralTypes } from './providers/structural-provider';
 export {
-  applyNodeMap,
+  applyStructuredNodeMap,
   inferStructuredNode,
   parseStructuredNodeMap,
   parseStructuredContent,
   reconstructSource,
-} from './node-map';
+} from './structured-node-map';
 export type {
   StructuredFile,
   StructuredNodeMap,
   NodeMapRule,
-} from './node-map';
+} from './structured-node-map';
 export { WikipediaProvider } from './providers/wikipedia-provider';
 export { OrgChartProvider } from './providers/orgchart-provider';
 export { loadExternalProviders } from './plugin-loader';
