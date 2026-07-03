@@ -21,7 +21,7 @@ import { ManifestSource } from './sources/manifest-source';
 import { loadKnowledgeBase } from './loader';
 import type { GHIssue, GHTreeItem, GHRelease } from '../api';
 import type { ContentModelSource } from './content-model';
-import { mergeExternalTheme, parseExternalTheme } from '../theme/externalTheme';
+import type { EngineEnv } from './env';
 
 // ── Manifest Types ─────────────────────────────────────────
 
@@ -109,13 +109,13 @@ async function loadManifest(): Promise<RepoManifest | null> {
 // ── Mode Detection ─────────────────────────────────────────
 
 /** Check if local mode is active (requires explicit VITE_KB_LOCAL=true). */
-export function isLocalMode(): boolean {
-  return import.meta.env.VITE_KB_LOCAL === 'true';
+export function isLocalMode(env?: EngineEnv): boolean {
+  return env?.VITE_KB_LOCAL === 'true';
 }
 
 /** Async check — same as isLocalMode but async for hook compatibility. */
-export async function detectLocalMode(): Promise<boolean> {
-  return isLocalMode();
+export async function detectLocalMode(env?: EngineEnv): Promise<boolean> {
+  return isLocalMode(env);
 }
 
 // ── Local Config ───────────────────────────────────────────
@@ -127,12 +127,6 @@ export function buildConfigFromManifest(manifest: RepoManifest | null): KBConfig
   try {
     const parsed = yaml.parse(manifest.configRaw) as Partial<KBConfig>;
     const config = { ...DEFAULT_CONFIG, ...parsed, source: DEFAULT_CONFIG.source };
-    // F5/T5.1: merge a dedicated host-repo theme file captured in the manifest
-    // (themeFileRaw) into the theme block — the local-mode mirror of the remote
-    // loader's runtime fetch. No-op when no themesFile is configured / present.
-    if (config.theme?.themesFile && manifest.themeFileRaw) {
-      config.theme = mergeExternalTheme(config.theme, parseExternalTheme(manifest.themeFileRaw));
-    }
     return config;
   } catch {
     return { ...DEFAULT_CONFIG };
@@ -316,19 +310,20 @@ export async function loadLocalRepoContent(): Promise<KBNode[]> {
  * 3. Applies README creation + cross-linking transforms not yet in providers
  * 4. Builds the final graph
  */
-async function loadLocalKnowledgeBaseV2(): Promise<{
+async function loadLocalKnowledgeBaseV2(env?: EngineEnv): Promise<{
   graph: KBGraph;
   config: KBConfig;
+  themeFileRaw: string | null;
 }> {
   const manifest = await loadManifest();
   if (!manifest) {
     const config = await loadLocalConfig();
     const graph = buildGraph([], []);
-    return { graph, config };
+    return { graph, config, themeFileRaw: null };
   }
 
   const config = buildConfigFromManifest(manifest);
-  return buildKnowledgeBaseFromManifest(manifest, config);
+  return buildKnowledgeBaseFromManifest(manifest, config, env);
 }
 
 /**
@@ -339,15 +334,18 @@ async function loadLocalKnowledgeBaseV2(): Promise<{
 export async function buildKnowledgeBaseFromManifest(
   manifest: RepoManifest,
   config: KBConfig,
-): Promise<{ graph: KBGraph; config: KBConfig }> {
-  return loadKnowledgeBase(new ManifestSource(manifest, config), config);
+  env?: EngineEnv,
+): Promise<{ graph: KBGraph; config: KBConfig; themeFileRaw: string | null }> {
+  const result = await loadKnowledgeBase(new ManifestSource(manifest, config), config, env);
+  return { ...result, themeFileRaw: manifest.themeFileRaw ?? null };
 }
 
-export async function loadLocalKnowledgeBase(): Promise<{
+export async function loadLocalKnowledgeBase(env?: EngineEnv): Promise<{
   graph: KBGraph;
   config: KBConfig;
+  themeFileRaw: string | null;
 }> {
-  return loadLocalKnowledgeBaseV2();
+  return loadLocalKnowledgeBaseV2(env);
 }
 
 // ── Legacy monolithic loader (kept as fallback reference) ──
@@ -355,6 +353,7 @@ export async function loadLocalKnowledgeBase(): Promise<{
 // export async function loadLocalKnowledgeBase_legacy(): Promise<{
 //   graph: KBGraph;
 //   config: KBConfig;
+//   themeFileRaw: string | null;
 // }> {
 //   const config = await loadLocalConfig();
 //   const manifest = await loadManifest();

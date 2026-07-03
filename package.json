@@ -7,7 +7,7 @@
     "dev": "vite",
     "prebuild": "node scripts/generate-manifest.js",
     "build": "tsc -b && vite build",
-    "build:local": "npm run prebuild && tsc -b && VITE_KB_LOCAL=true vite build",
+    "build:local": "npm run prebuild && tsc -b && node ./scripts/run-vite-build.mjs",
     "lint": "eslint .",
     "test": "vitest run --config vitest.config.ts",
     "golden:fixtures": "node tests/golden/fixtures/build-remote-fixture.mjs",
@@ -41,8 +41,8 @@
     "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
-    "@anokye-labs/kbexplorer-core": "github:anokye-labs/kbexplorer-core#v0.3.0",
-    "@anokye-labs/kbexplorer-provider-rich-markdown": "github:anokye-labs/kbexplorer-provider-rich-markdown#80c084a600b0df39f863fe7928f2b96d241011db",
+    "@anokye-labs/kbexplorer-core": "^0.5.1",
+    "@anokye-labs/kbexplorer-provider-rich-markdown": "^0.1.2",
     "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",

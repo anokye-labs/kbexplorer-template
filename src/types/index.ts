@@ -8,6 +8,11 @@
 import type { NodeLayer } from './node-layer';
 import {
   buildJsonLd,
+  DEFAULT_ACCESS_EXCLUSION,
+  resolveAccessExclusion,
+  coerceAccessLabel,
+  normalizeAccessLabel,
+  isExcludedByDefault,
   type AccessClassification,
   type AccessVisibility,
   type BrandingConfig,
@@ -71,6 +76,11 @@ export interface KBGraph extends CoreKBGraph {
 */
 export {
   buildJsonLd,
+  DEFAULT_ACCESS_EXCLUSION,
+  resolveAccessExclusion,
+  coerceAccessLabel,
+  normalizeAccessLabel,
+  isExcludedByDefault,
   type AccessClassification,
   type AccessVisibility,
   type BrandingConfig,
