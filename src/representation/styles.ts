@@ -6,7 +6,8 @@
  * so the pure data contract in `../types` can stay engine-free at load.
  */
 import type { EdgeType, KnownEdgeType } from '@anokye-labs/kbexplorer-core';
-import type { KnownRelation, NodeLayer } from '../types';
+import type { NodeLayer } from '../types/node-layer';
+import type { KnownRelation } from '../types/known-relation';
 
 /** Default weights per edge type — higher = tighter layout clustering */
 export const EDGE_TYPE_WEIGHTS: Record<KnownEdgeType, number> = {
@@ -117,7 +118,7 @@ export function getEdgeWeight(type: EdgeType | undefined): number {
   return EDGE_TYPE_WEIGHTS[(type ?? 'related') as KnownEdgeType] ?? 1;
 }
 
-export type { NodeLayer } from '../types';
+export type { NodeLayer } from '../types/node-layer';
 
 export const NODE_LAYER_META: Record<NodeLayer, { label: string; color: string; token: string }> = {
   file:    { label: 'Files',   color: '#9A8A78', token: 'colorPaletteBrownForeground2' },

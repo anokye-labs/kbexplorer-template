@@ -5,7 +5,7 @@
  * consulting the engine registry.
  */
 import type { KBGraph, KBNode, KBEdge } from '../types';
-import type { NodeLayer } from './styles';
+import type { NodeLayer } from '../types/node-layer';
 
 /**
  * Classify a node into a graph layer.

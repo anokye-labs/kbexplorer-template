@@ -66,15 +66,14 @@ async function loadGuideFromNodeMap(): Promise<KBNode> {
     path === GUIDE_PATH ? '# Guide\n\nHow things work.' : null;
   const nodes = await loadNodeMap(nodemapYaml, readFile);
   expect(nodes).toHaveLength(1);
-  const contentNode = nodes[0];
-  contentNode.layer = 'content';
-  return contentNode;
+  return nodes[0];
 }
 
 describe('identity merge machinery — nodemap file: link merges file + content node', () => {
   it('nodemap file: entry mints the file-tree identity, so the two representations share it', async () => {
     const contentNode = await loadGuideFromNodeMap();
     const fileNode = makeFileNode();
+    buildGraph([contentNode], CLUSTERS);
 
     // The deliberate handshake: both representations carry urn:file:<path>.
     expect(contentNode.identity).toBe(`urn:file:${GUIDE_PATH}`);
