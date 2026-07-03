@@ -66,6 +66,23 @@ function isStructuralPath(path: string): boolean {
 /** Skip oversized `.github` blobs (mirrors the local manifest cap). */
 const MAX_STRUCTURAL_FILE_SIZE = 256 * 1024;
 
+/**
+ * Fetch `structured-node-map.yaml`, falling back to `structured-node-map.yml`.
+ * Mirrors `readStructuredNodeMap()` in `scripts/generate-manifest.js`, which
+ * accepts both extensions for local manifest generation — remote mode must
+ * not silently drop a repo's structured node map just because it uses `.yml`.
+ */
+async function fetchStructuredNodeMap(source: SourceConfig): Promise<string | null> {
+  for (const name of ['structured-node-map.yaml', 'structured-node-map.yml']) {
+    try {
+      return await fetchFile(source, name);
+    } catch {
+      // Try the next extension.
+    }
+  }
+  return null;
+}
+
 export class GitHubApiSource implements RepoSource {
   readonly id = 'github-api';
   readonly name = 'GitHub API';
@@ -325,7 +342,7 @@ export class GitHubApiSource implements RepoSource {
             structuralFiles[path] = content;
           }
         }
-        structuredNodeMapRaw = await fetchFile(source, 'structured-node-map.yaml').catch(() => null);
+        structuredNodeMapRaw = await fetchStructuredNodeMap(source);
       } catch {
         // `.github` may not exist — safe no-op.
       }
