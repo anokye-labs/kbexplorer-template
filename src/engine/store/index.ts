@@ -3,11 +3,8 @@ export {
   GRAPH_STORE_DERIVATION_VERSION,
   GRAPH_STORE_PROVIDER_ID,
   buildProviderResultCacheKey,
-  sourceIdFor,
-  stableStringify,
 } from './fingerprint';
-export { SQLiteGraphStore } from './sqlite-graph-store';
-export { orchestrateWithProviderResultStore } from './store-orchestrator';
+export { orchestrateWithProviderResultStore, type ProviderCacheKeyBuilder } from './store-orchestrator';
 export {
   IndexedDbSqliteByteStore,
   MemorySqliteByteStore,
