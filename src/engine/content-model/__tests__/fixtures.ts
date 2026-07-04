@@ -2,11 +2,19 @@
  * Test helper: load the content-model fixture tree from disk into a
  * {@link ContentModelSource}. Lives outside the `*.test.ts` glob so vitest does
  * not treat it as a test file.
+ *
+ * Kept in template (anokye-labs/kbexplorer-template#472, slice 2/5) even though
+ * `content-model/{builder,schema-reader,register}.ts` moved to
+ * `@anokye-labs/kbexplorer-engine` — this fixture tree + loader is still needed
+ * by template-local pipeline tests (`pipeline-idempotency.test.ts`,
+ * `source-edit.test.ts`) that build a real `ContentModelSource` and feed it
+ * through the package's `buildContentModel`. Engine has its own independent copy
+ * for its own content-model unit tests.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ContentModelSource } from '../types';
+import type { ContentModelSource } from '@anokye-labs/kbexplorer-engine';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
