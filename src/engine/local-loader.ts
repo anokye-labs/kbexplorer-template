@@ -336,7 +336,12 @@ export async function buildKnowledgeBaseFromManifest(
   config: KBConfig,
   env?: EngineEnv,
 ): Promise<{ graph: KBGraph; config: KBConfig; themeFileRaw: string | null }> {
-  const result = await loadKnowledgeBase(new ManifestSource(manifest, config), config, env);
+  const result = await loadKnowledgeBase(
+    new ManifestSource(manifest, config),
+    config,
+    env,
+    typeof env?.BASE_URL === 'string' ? { importBaseUrl: env.BASE_URL } : undefined,
+  );
   return { ...result, themeFileRaw: manifest.themeFileRaw ?? null };
 }
 

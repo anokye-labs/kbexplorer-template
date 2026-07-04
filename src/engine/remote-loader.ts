@@ -32,6 +32,11 @@ export async function loadRemoteKnowledgeBase(
     ghSource.resolveConfig(),
     ghSource.resolveThemeFileRaw(),
   ])
-  const result = await loadKnowledgeBase(ghSource, config, env)
+  const result = await loadKnowledgeBase(
+    ghSource,
+    config,
+    env,
+    typeof env?.BASE_URL === 'string' ? { importBaseUrl: env.BASE_URL } : undefined,
+  )
   return { ...result, themeFileRaw: themeFileRaw ?? null }
 }
