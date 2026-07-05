@@ -1,30 +1,33 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { GITHUB_ENDPOINT_PATTERNS } from '@anokye-labs/kbexplorer-engine/sources';
 
+/**
+ * Cross-repo DTU drift-detection test (anokye-labs/kbexplorer-template#472,
+ * slice 4/5 STEP B).
+ *
+ * Before slice 4, this test regexed `github.ts`'s own `ghFetch` call sites
+ * for endpoint patterns. `github.ts` no longer contains any `ghFetch` calls
+ * — the GitHub REST client moved to `@anokye-labs/kbexplorer-engine`'s
+ * `./sources` subpath, which now exports `GITHUB_ENDPOINT_PATTERNS`: a
+ * single source of truth, colocated with the code that actually makes the
+ * calls, derived directly from its `ghFetch` call sites. Importing it here
+ * (rather than hard-coding a duplicate list) keeps drift detection alive
+ * across the repo boundary — if the engine adds an endpoint and updates the
+ * const, this test fails (after the template re-pins) until a matching
+ * twin route exists.
+ */
 describe('twin API surface coverage', () => {
-  it('twin server has routes for all ghFetch endpoints', () => {
-    const githubTs = readFileSync(resolve(__dirname, '../github.ts'), 'utf8');
+  it('twin server has routes for every GITHUB_ENDPOINT_PATTERNS entry', () => {
     const serverJs = readFileSync(resolve(__dirname, '../../../twins/github/server.js'), 'utf8');
 
-    // Extract all ghFetch URL patterns from github.ts
-    const fetchPatterns: string[] = [];
-    const re = /ghFetch[^(]*\(\s*`([^`]+)`/g;
-    let match;
-    while ((match = re.exec(githubTs)) !== null) {
-      // Normalize: replace template literals with placeholders, strip query params
-      const pattern = match[1]
-        .replace(/\$\{[^}]+\}/g, '__PARAM__')
-        .replace(/\?.*$/, '');
-      fetchPatterns.push(pattern);
-    }
-
-    const uniquePatterns = [...new Set(fetchPatterns)];
-    expect(uniquePatterns.length).toBeGreaterThan(0);
+    expect(GITHUB_ENDPOINT_PATTERNS.length).toBeGreaterThan(0);
 
     // Extract route regexes from server.js (greedy to grab full pattern body)
     const routeRegexes: RegExp[] = [];
     const routeRe = /pattern:\s*\/(.+)\//g;
+    let match;
     while ((match = routeRe.exec(serverJs)) !== null) {
       try {
         routeRegexes.push(new RegExp(match[1]));
@@ -33,10 +36,14 @@ describe('twin API surface coverage', () => {
 
     expect(routeRegexes.length).toBeGreaterThan(0);
 
-    for (const pattern of uniquePatterns) {
-      const testPath = pattern.replace(/__PARAM__/g, 'test-value');
+    for (const pattern of GITHUB_ENDPOINT_PATTERNS) {
+      // Build a representative repo-scoped path. Patterns ending in `/`
+      // (contents/, git/trees/) need a trailing segment to satisfy routes
+      // requiring `(.+)` after the prefix; bare patterns (issues, pulls,
+      // commits, releases) match their route's `(?:\?|$)` end anchor as-is.
+      const testPath = `/repos/test-owner/test-repo/${pattern}${pattern.endsWith('/') ? 'test-value' : ''}`;
       const hasRoute = routeRegexes.some(rx => rx.test(testPath));
-      expect(hasRoute, `No twin route matches: ${pattern}`).toBe(true);
+      expect(hasRoute, `No twin route matches GITHUB_ENDPOINT_PATTERNS entry: ${pattern}`).toBe(true);
     }
   });
 });

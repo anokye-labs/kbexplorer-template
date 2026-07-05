@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@anokye-labs/kbexplorer-core": "^0.5.1",
-    "@anokye-labs/kbexplorer-engine": "git+https://github.com/anokye-labs/kbexplorer-engine.git#669c2c17596e6f1f39e042d2a5afc6719c425bad",
+    "@anokye-labs/kbexplorer-engine": "git+https://github.com/anokye-labs/kbexplorer-engine.git#749da622b46abce47b1a856c8b3b74391907cc98",
     "@anokye-labs/kbexplorer-provider-rich-markdown": "^0.1.2",
     "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",

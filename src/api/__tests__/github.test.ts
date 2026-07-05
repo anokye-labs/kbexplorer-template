@@ -2,13 +2,23 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+/**
+ * `src/api/github.ts` test suite (anokye-labs/kbexplorer-template#472,
+ * slice 4/5 STEP B).
+ *
+ * The 7 fetch functions' fetch/parse/error-path behavior now lives in
+ * `@anokye-labs/kbexplorer-engine` and is covered by its own ported test
+ * suite — this file keeps only a couple of re-export smoke tests for that,
+ * plus the template-side concerns that live in THIS file: the
+ * `localStorageCacheStore` adapter's TTL/version behavior, and (new
+ * coverage) that injecting the adapter at a call site actually causes a
+ * cache hit to skip the underlying fetch.
+ */
+
 // ── Load DTU fixtures ─────────────────────────────────────
 const FIXTURES = resolve(__dirname, '../../../twins/github/fixtures');
 const treeFixture = JSON.parse(readFileSync(resolve(FIXTURES, 'tree.json'), 'utf8'));
 const issuesFixture = JSON.parse(readFileSync(resolve(FIXTURES, 'issues.json'), 'utf8'));
-const pullsFixture = JSON.parse(readFileSync(resolve(FIXTURES, 'pulls.json'), 'utf8'));
-const commitsFixture = JSON.parse(readFileSync(resolve(FIXTURES, 'commits.json'), 'utf8'));
-const readmeFixture = JSON.parse(readFileSync(resolve(FIXTURES, 'files/README.md.json'), 'utf8'));
 
 // ── Mock localStorage ─────────────────────────────────────
 const mockStorage = new Map<string, string>();
@@ -43,9 +53,6 @@ function setupFetchRouter() {
   fetchMock.mockImplementation((url: string) => {
     if (url.includes('/git/trees/')) return mockFetchSuccess(treeFixture);
     if (url.includes('/issues?')) return mockFetchSuccess(issuesFixture);
-    if (url.includes('/pulls?')) return mockFetchSuccess(pullsFixture);
-    if (url.includes('/commits?')) return mockFetchSuccess(commitsFixture);
-    if (url.includes('/contents/')) return mockFetchSuccess(readmeFixture);
     return mockFetchSuccess([]);
   });
 }
@@ -69,113 +76,19 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// ── Tests ─────────────────────────────────────────────────
-
-describe('fetchTree', () => {
-  it('returns all tree items from fixture', async () => {
+// ── Re-export smoke tests ─────────────────────────────────
+// The 7 fetch functions + error classes are re-exported from
+// `@anokye-labs/kbexplorer-engine/sources` — their own fetch/parse/
+// error-path behavior is exercised by the engine's own test suite. These
+// smoke tests just confirm the re-export resolves and is callable.
+describe('github.ts re-exports the engine GitHub client', () => {
+  it('fetchTree resolves through the re-export', async () => {
     const items = await github.fetchTree(source);
     expect(items).toHaveLength(treeFixture.tree.length);
     expect(items[0]).toHaveProperty('path');
-    expect(items[0]).toHaveProperty('type');
   });
 
-  it('filters by path prefix when path is provided', async () => {
-    const items = await github.fetchTree(source, 'src');
-    const expected = treeFixture.tree.filter(
-      (i: { path: string }) => i.path.startsWith('src/')
-    );
-    expect(items).toHaveLength(expected.length);
-    expect(items.every((i: { path: string }) => i.path.startsWith('src/'))).toBe(true);
-  });
-});
-
-describe('fetchIssues', () => {
-  it('returns issues excluding PRs (items with pull_request field)', async () => {
-    const issues = await github.fetchIssues(source);
-    const expectedCount = issuesFixture.filter(
-      (i: { pull_request?: unknown }) => !i.pull_request
-    ).length;
-    expect(issues).toHaveLength(expectedCount);
-    // None should have pull_request field
-    for (const issue of issues) {
-      expect(issue).not.toHaveProperty('pull_request');
-    }
-  });
-
-  it('paginates — page 2 returns empty so pagination stops', async () => {
-    let callCount = 0;
-    fetchMock.mockImplementation((url: string) => {
-      if (url.includes('/issues?')) {
-        callCount++;
-        // First page: full fixture (< 100 items → pagination stops)
-        return mockFetchSuccess(issuesFixture);
-      }
-      return mockFetchSuccess([]);
-    });
-
-    await github.fetchIssues(source);
-    // Since fixture has 65 items (< 100 per_page), only 1 fetch
-    expect(callCount).toBe(1);
-  });
-});
-
-describe('fetchPullRequests', () => {
-  it('returns PRs from fixture', async () => {
-    const prs = await github.fetchPullRequests(source);
-    expect(prs).toHaveLength(pullsFixture.length);
-    expect(prs[0]).toHaveProperty('number');
-    expect(prs[0]).toHaveProperty('title');
-  });
-});
-
-describe('fetchCommits', () => {
-  it('returns commits from fixture', async () => {
-    const commits = await github.fetchCommits(source);
-    expect(commits).toHaveLength(commitsFixture.length);
-    expect(commits[0]).toHaveProperty('sha');
-    expect(commits[0]).toHaveProperty('commit');
-    expect(commits[0].commit).toHaveProperty('message');
-  });
-});
-
-describe('fetchFile', () => {
-  it('decodes base64 content from fixture', async () => {
-    const content = await github.fetchFile(source, 'README.md');
-    // The decoded content should start with the README header
-    expect(content).toContain('# kbexplorer');
-    expect(content).toContain('Interactive Knowledge Base Explorer');
-  });
-});
-
-describe('fetchFiles', () => {
-  it('fetches multiple files in parallel', async () => {
-    const results = await github.fetchFiles(source, ['README.md', 'docs/guide.md']);
-    // README.md should succeed
-    expect(results.has('README.md')).toBe(true);
-    expect(results.get('README.md')).toContain('# kbexplorer');
-    // Both paths hit the same fixture (mock routes /contents/ → readme fixture)
-    expect(results.size).toBe(2);
-  });
-});
-
-describe('error handling', () => {
-  it('throws RateLimitError on 403 with X-RateLimit-Remaining: 0', async () => {
-    const resetTime = Math.floor(Date.now() / 1000) + 3600;
-    fetchMock.mockResolvedValueOnce({
-      ok: false,
-      status: 403,
-      json: () => Promise.resolve({ message: 'rate limit exceeded' }),
-      text: () => Promise.resolve('rate limit exceeded'),
-      headers: new Map([
-        ['X-RateLimit-Remaining', '0'],
-        ['X-RateLimit-Reset', String(resetTime)],
-      ]),
-    });
-
-    await expect(github.fetchTree(source)).rejects.toThrow(github.RateLimitError);
-  });
-
-  it('throws NotModifiedError on 304 response', async () => {
+  it('re-exported error classes are thrown correctly', async () => {
     fetchMock.mockResolvedValueOnce({
       ok: false,
       status: 304,
@@ -183,7 +96,51 @@ describe('error handling', () => {
       text: () => Promise.resolve(''),
       headers: new Map(),
     });
-
     await expect(github.fetchTree(source)).rejects.toThrow(github.NotModifiedError);
+  });
+});
+
+// ── localStorageCacheStore adapter behavior (template-side, STEP B) ───
+describe('localStorageCacheStore', () => {
+  it('returns a previously set value', () => {
+    github.localStorageCacheStore.set('test-key', { hello: 'world' });
+    expect(github.localStorageCacheStore.get('test-key')).toEqual({ hello: 'world' });
+  });
+
+  it('returns undefined for a key that was never set', () => {
+    expect(github.localStorageCacheStore.get('missing-key')).toBeUndefined();
+  });
+
+  it('expires entries older than the 5-minute TTL', () => {
+    vi.useFakeTimers();
+    try {
+      github.localStorageCacheStore.set('ttl-key', 'value');
+      vi.advanceTimersByTime(6 * 60 * 1000); // > CACHE_TTL_MS
+      expect(github.localStorageCacheStore.get('ttl-key')).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+// ── New coverage (STEP B): injected cache skips a redundant fetch ─────
+describe('localStorageCacheStore injection prevents a redundant fetch', () => {
+  it('a TTL-fresh cache hit does NOT call the engine fetch a second time', async () => {
+    // First call: cache miss — hits the (mocked) network once and populates
+    // the adapter via the engine fetch fn's own cache?.set() call.
+    const first = await github.fetchIssues(source, undefined, github.localStorageCacheStore);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Second call with the same adapter: cache hit — the engine fetch fn's
+    // own cache?.get() short-circuits before any network call.
+    const second = await github.fetchIssues(source, undefined, github.localStorageCacheStore);
+    expect(second).toEqual(first);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('without an injected cache, every call hits the network', async () => {
+    await github.fetchIssues(source);
+    await github.fetchIssues(source);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
