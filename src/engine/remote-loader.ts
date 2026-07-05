@@ -15,6 +15,7 @@ import { DEFAULT_CONFIG } from '../types'
 import { GitHubApiSource, type ResolutionPreset } from './sources/github-api-source'
 import { loadKnowledgeBase } from './loader'
 import type { EngineEnv } from './env'
+import { localStorageCacheStore } from '../api/github'
 
 export type { ResolutionPreset }
 
@@ -27,7 +28,10 @@ export async function loadRemoteKnowledgeBase(
   env?: EngineEnv,
 ): Promise<{ graph: KBGraph; config: KBConfig; themeFileRaw: string | null }> {
   const source = sourceOverride ?? DEFAULT_CONFIG.source
-  const ghSource = new GitHubApiSource(source, preset, env)
+  // The engine's GitHubApiSource is cache-free by default (slice 4/5 STEP B);
+  // inject the template's localStorage-backed CacheStore adapter so the live
+  // path preserves its pre-slice-4 caching behavior byte-for-byte.
+  const ghSource = new GitHubApiSource(source, preset, env, localStorageCacheStore)
   const [config, themeFileRaw] = await Promise.all([
     ghSource.resolveConfig(),
     ghSource.resolveThemeFileRaw(),
@@ -40,3 +44,4 @@ export async function loadRemoteKnowledgeBase(
   )
   return { ...result, themeFileRaw: themeFileRaw ?? null }
 }
+

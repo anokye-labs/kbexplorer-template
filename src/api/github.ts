@@ -1,10 +1,59 @@
 /**
- * GitHub API client for fetching repository content at runtime.
- * Supports two modes:
- *   - authored: fetches markdown files from a content directory
- *   - repo-aware: fetches issues, PRs, README, and file tree
+ * GitHub API client wrapper for kbexplorer-template.
+ *
+ * The GitHub REST client itself (the 7 fetch functions, response types, and
+ * error classes) moved to `@anokye-labs/kbexplorer-engine`'s `./sources`
+ * subpath in anokye-labs/kbexplorer-template#472, slice 4/5 STEP B. It is a
+ * runtime-agnostic, boundary-pure port: no `localStorage`, no module-scope
+ * `import.meta.env` reads. The API base is injected per call via an
+ * optional `env?: EngineEnv` argument, and caching is injected per call via
+ * an optional `cache?: CacheStore` argument (each fetch function checks
+ * `cache.get()` before fetching and `cache.set()`s the result on a miss).
+ *
+ * This file keeps, template-side (a deliberate, disclosed deviation from
+ * the pure 1-line-shim pattern used in slices 1-3 — the cache is a
+ * browser-storage concern, not an engine concern):
+ *  - `resolveImageUrl` — a pure Vite dev-server / GitHub raw-content URL
+ *    concern, unrelated to caching, unchanged.
+ *  - The localStorage caching machinery (`CACHE_PREFIX`/`CACHE_TTL_MS`/
+ *    `CACHE_VERSION`, the version-invalidation IIFE, `cacheGet`/`cacheSet`)
+ *    — unchanged behavior, same cache keys, same TTL.
+ *  - `localStorageCacheStore`, a `CacheStore` adapter over that machinery,
+ *    injected at the one live production call site
+ *    (`../engine/remote-loader.ts`'s `GitHubApiSource` construction) so the
+ *    live GitHub-fetch path keeps its pre-slice-4 caching behavior
+ *    byte-for-byte, even though the fetch functions themselves are now
+ *    cache-agnostic by default (no-op cache when none is injected).
+ *
+ * Everything else below is a straight re-export, keeping every existing
+ * import path (`fetchFile`/`fetchTree`/.../`GHIssue`/.../`NotModifiedError`)
+ * resolving unchanged for template's type-only consumers (local-loader,
+ * files-provider, person-provider, work-provider, manifest-source,
+ * repo-data, ...).
  */
 import type { SourceConfig } from '../types';
+import type { CacheStore } from '@anokye-labs/kbexplorer-engine/sources';
+
+export {
+  fetchFile,
+  fetchTree,
+  fetchIssues,
+  fetchPullRequests,
+  fetchCommits,
+  fetchReleases,
+  fetchFiles,
+  NotModifiedError,
+  RateLimitError,
+  GitHubApiError,
+} from '@anokye-labs/kbexplorer-engine/sources';
+export type {
+  GHTreeItem,
+  GHIssue,
+  GHCommit,
+  GHRelease,
+  GHFileContent,
+  CacheStore,
+} from '@anokye-labs/kbexplorer-engine/sources';
 
 const CACHE_PREFIX = 'kbe:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -26,120 +75,48 @@ try {
 
 interface CacheEntry<T> {
   data: T;
-  etag?: string;
   ts: number;
 }
 
-function cacheGet<T>(key: string): CacheEntry<T> | null {
+function cacheGet<T>(key: string): T | undefined {
   try {
     const raw = localStorage.getItem(CACHE_PREFIX + key);
-    if (!raw) return null;
+    if (!raw) return undefined;
     const entry = JSON.parse(raw) as CacheEntry<T>;
     if (Date.now() - entry.ts > CACHE_TTL_MS) {
       localStorage.removeItem(CACHE_PREFIX + key);
-      return null;
+      return undefined;
     }
-    return entry;
+    return entry.data;
   } catch {
-    return null;
+    return undefined;
   }
 }
 
-function cacheSet<T>(key: string, data: T, etag?: string): void {
+function cacheSet<T>(key: string, data: T): void {
   try {
-    const entry: CacheEntry<T> = { data, etag, ts: Date.now() };
+    const entry: CacheEntry<T> = { data, ts: Date.now() };
     localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(entry));
   } catch {
     // localStorage full or unavailable — skip silently
   }
 }
 
+/**
+ * `CacheStore` adapter over the localStorage machinery above. Injected at
+ * `../engine/remote-loader.ts`'s `GitHubApiSource` construction (the one
+ * live production call site that needs it — `ManifestSource` and the
+ * engine's `loadConfig`/`loadRepoContent`/`loadAuthoredContent` loaders
+ * have no other live template callers post-shim-swap) so the engine's
+ * cache-agnostic-by-default fetch functions keep caching exactly as they
+ * did before this file's fetch-fn bodies moved.
+ */
+export const localStorageCacheStore: CacheStore = {
+  get: <T,>(key: string) => cacheGet<T>(key),
+  set: <T,>(key: string, value: T) => cacheSet(key, value),
+};
+
 const GH_API_BASE = import.meta.env.VITE_GH_API_BASE ?? 'https://api.github.com';
-
-async function ghFetch<T>(path: string, etag?: string): Promise<{ data: T; etag?: string }> {
-  const headers: Record<string, string> = {
-    Accept: 'application/vnd.github.v3+json',
-  };
-  if (etag) {
-    headers['If-None-Match'] = etag;
-  }
-
-  const res = await fetch(`${GH_API_BASE}${path}`, { headers });
-
-  if (res.status === 304) {
-    throw new NotModifiedError();
-  }
-  if (res.status === 403 && res.headers.get('X-RateLimit-Remaining') === '0') {
-    const reset = res.headers.get('X-RateLimit-Reset');
-    throw new RateLimitError(reset ? new Date(Number(reset) * 1000) : undefined);
-  }
-  if (!res.ok) {
-    throw new GitHubApiError(res.status, await res.text());
-  }
-
-  return {
-    data: (await res.json()) as T,
-    etag: res.headers.get('ETag') ?? undefined,
-  };
-}
-
-export class NotModifiedError extends Error {
-  constructor() { super('Not modified'); this.name = 'NotModifiedError'; }
-}
-
-export class RateLimitError extends Error {
-  resetAt?: Date;
-  constructor(resetAt?: Date) {
-    super(`GitHub API rate limit exceeded${resetAt ? `. Resets at ${resetAt.toISOString()}` : ''}`);
-    this.name = 'RateLimitError';
-    this.resetAt = resetAt;
-  }
-}
-
-export class GitHubApiError extends Error {
-  status: number;
-  constructor(status: number, body: string) {
-    super(`GitHub API error ${status}: ${body}`);
-    this.name = 'GitHubApiError';
-    this.status = status;
-  }
-}
-
-// ── GitHub API response types ──────────────────────────────
-
-export interface GHTreeItem {
-  path: string;
-  mode: string;
-  type: 'blob' | 'tree';
-  sha: string;
-  size?: number;
-  url: string;
-}
-
-export interface GHIssue {
-  number: number;
-  title: string;
-  body: string | null;
-  state: string;
-  labels: Array<{ name: string; color: string }>;
-  assignees: Array<{ login: string }>;
-  /** The GitHub user who opened the issue (author). */
-  user?: { login: string };
-  html_url: string;
-  created_at: string;
-  updated_at: string;
-  pull_request?: { url: string };
-}
-
-export interface GHFileContent {
-  name: string;
-  path: string;
-  sha: string;
-  content: string; // base64 encoded
-  encoding: string;
-}
-
-// ── Public API ─────────────────────────────────────────────
 
 /** Resolve an image path to a URL — local mode uses Vite dev server, remote uses GitHub. */
 export function resolveImageUrl(source: SourceConfig, path: string): string {
@@ -153,178 +130,3 @@ export function resolveImageUrl(source: SourceConfig, path: string): string {
   return `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${branch}/${path}`;
 }
 
-/** Fetch and decode a single file from the repo. */
-export async function fetchFile(source: SourceConfig, path: string): Promise<string> {
-  const cacheKey = `file:${source.owner}/${source.repo}:${path}`;
-  const cached = cacheGet<string>(cacheKey);
-  if (cached) return cached.data;
-
-  const branch = source.branch ?? 'main';
-  const { data } = await ghFetch<GHFileContent>(
-    `/repos/${source.owner}/${source.repo}/contents/${path}?ref=${branch}`
-  );
-
-  const binary = atob(data.content);
-  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-  const decoded = new TextDecoder().decode(bytes);
-  cacheSet(cacheKey, decoded, data.sha);
-  return decoded;
-}
-
-/** List all files in a directory (recursive via Git Trees API). */
-export async function fetchTree(source: SourceConfig, path?: string): Promise<GHTreeItem[]> {
-  const cacheKey = `tree:${source.owner}/${source.repo}:${path ?? ''}`;
-  const cached = cacheGet<GHTreeItem[]>(cacheKey);
-  if (cached) return cached.data;
-
-  const branch = source.branch ?? 'main';
-  const { data } = await ghFetch<{ tree: GHTreeItem[] }>(
-    `/repos/${source.owner}/${source.repo}/git/trees/${branch}?recursive=1`
-  );
-
-  const items = path
-    ? data.tree.filter(item => item.path.startsWith(path + '/'))
-    : data.tree;
-
-  cacheSet(cacheKey, items);
-  return items;
-}
-
-/** Fetch issues (not PRs) from the repo. */
-export async function fetchIssues(source: SourceConfig): Promise<GHIssue[]> {
-  const cacheKey = `issues:${source.owner}/${source.repo}`;
-  const cached = cacheGet<GHIssue[]>(cacheKey);
-  if (cached) return cached.data;
-
-  const allIssues: GHIssue[] = [];
-  let page = 1;
-  const perPage = 100;
-
-  while (true) {
-    const { data } = await ghFetch<GHIssue[]>(
-      `/repos/${source.owner}/${source.repo}/issues?state=all&per_page=${perPage}&page=${page}`
-    );
-    // Filter out PRs (GitHub API includes PRs in issues endpoint)
-    const issues = data.filter(i => !i.pull_request);
-    allIssues.push(...issues);
-    if (data.length < perPage) break;
-    page++;
-  }
-
-  cacheSet(cacheKey, allIssues);
-  return allIssues;
-}
-
-/** Fetch pull requests from the repo. */
-export async function fetchPullRequests(source: SourceConfig): Promise<GHIssue[]> {
-  const cacheKey = `prs:${source.owner}/${source.repo}`;
-  const cached = cacheGet<GHIssue[]>(cacheKey);
-  if (cached) return cached.data;
-
-  const allPRs: GHIssue[] = [];
-  let page = 1;
-  const perPage = 100;
-
-  while (true) {
-    const { data } = await ghFetch<GHIssue[]>(
-      `/repos/${source.owner}/${source.repo}/pulls?state=all&per_page=${perPage}&page=${page}`
-    );
-    allPRs.push(...data);
-    if (data.length < perPage) break;
-    page++;
-  }
-
-  cacheSet(cacheKey, allPRs);
-  return allPRs;
-}
-
-export interface GHCommit {
-  sha: string;
-  commit: {
-    message: string;
-    author: { name: string; date: string };
-  };
-  html_url: string;
-  files?: Array<{ filename: string; status: string }>;
-}
-
-/**
- * A GitHub release as returned by the releases API.
- * Drafts are excluded; prerelease flag is preserved.
- */
-export interface GHRelease {
-  tag_name: string;
-  name: string;
-  body: string;
-  html_url: string;
-  published_at: string;
-  prerelease: boolean;
-}
-
-/** Fetch recent commits from the repo. */
-export async function fetchCommits(source: SourceConfig, count = 30): Promise<GHCommit[]> {
-  const cacheKey = `commits:${source.owner}/${source.repo}`;
-  const cached = cacheGet<GHCommit[]>(cacheKey);
-  if (cached) return cached.data;
-
-  const branch = source.branch ?? 'main';
-  const { data } = await ghFetch<GHCommit[]>(
-    `/repos/${source.owner}/${source.repo}/commits?sha=${branch}&per_page=${count}`
-  );
-
-  cacheSet(cacheKey, data);
-  return data;
-}
-
-/** Fetch GitHub releases (non-draft, newest-first, capped at 30). */
-export async function fetchReleases(source: SourceConfig, limit = 30): Promise<GHRelease[]> {
-  const cacheKey = `releases:${source.owner}/${source.repo}`;
-  const cached = cacheGet<GHRelease[]>(cacheKey);
-  if (cached) return cached.data;
-
-  const { data } = await ghFetch<Array<{
-    tag_name: string;
-    name: string | null;
-    body: string | null;
-    html_url: string;
-    published_at: string | null;
-    prerelease: boolean;
-    draft: boolean;
-  }>>(`/repos/${source.owner}/${source.repo}/releases?per_page=${limit}`);
-
-  const releases: GHRelease[] = data
-    .filter(r => !r.draft)
-    .sort((a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime())
-    .slice(0, limit)
-    .map(r => ({
-      tag_name: r.tag_name ?? '',
-      name: r.name ?? r.tag_name ?? '',
-      body: r.body ?? '',
-      html_url: r.html_url ?? '',
-      published_at: r.published_at ?? '',
-      prerelease: r.prerelease ?? false,
-    }));
-
-  cacheSet(cacheKey, releases);
-  return releases;
-}
-
-/** Fetch multiple files in parallel. */
-export async function fetchFiles(
-  source: SourceConfig,
-  paths: string[]
-): Promise<Map<string, string>> {
-  const results = new Map<string, string>();
-  const settled = await Promise.allSettled(
-    paths.map(async path => {
-      const content = await fetchFile(source, path);
-      return { path, content };
-    })
-  );
-  for (const result of settled) {
-    if (result.status === 'fulfilled') {
-      results.set(result.value.path, result.value.content);
-    }
-  }
-  return results;
-}
