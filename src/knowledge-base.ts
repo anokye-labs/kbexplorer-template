@@ -1,7 +1,7 @@
 import type { KBConfig, KBGraph, SourceConfig } from './types';
 import { loadLocalKnowledgeBase as loadLocalKnowledgeBaseEngine } from './engine/local-loader';
 import { loadRemoteKnowledgeBase as loadRemoteKnowledgeBaseEngine, type ResolutionPreset } from './engine/remote-loader';
-import type { EngineEnv } from './engine/env';
+import type { EngineEnv } from '@anokye-labs/kbexplorer-engine';
 import { mergeExternalTheme, parseExternalTheme } from './theme/externalTheme';
 
 export type { ResolutionPreset } from './engine/remote-loader';

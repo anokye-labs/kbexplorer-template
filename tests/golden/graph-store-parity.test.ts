@@ -16,11 +16,11 @@ import {
   type RepoManifest,
 } from '../../src/engine/local-loader';
 import { registerProviders } from '../../src/engine/loader';
-import { ManifestSource } from '../../src/engine/sources/manifest-source';
+import { ManifestSource } from '@anokye-labs/kbexplorer-engine/sources';
 import { formatGraphStoreCacheKey } from '../../src/types';
 import { buildProviderResultCacheKey } from '../../src/engine/store/fingerprint';
 import { orchestrateWithProviderResultStore } from '../../src/engine/store/store-orchestrator';
-import { ProviderRegistry } from '../../src/engine/providers';
+import { ProviderRegistry } from '@anokye-labs/kbexplorer-engine';
 import { serializeGraph } from './serialize';
 import { installWikipediaFetchMock } from './wikipedia-mock';
 

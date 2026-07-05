@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildGraph } from '../../engine/graph';
+import { buildGraph } from '@anokye-labs/kbexplorer-engine';
 import { collapseGraphClusters } from '../index';
 import {
   getNodeLayer,

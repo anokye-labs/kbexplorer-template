@@ -19,10 +19,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { KBNode, Cluster } from '../../types';
-import { buildGraph } from '../graph';
-import { resolveType, resetNodeTypeRegistry } from '../node-types';
+import { buildGraph, resolveType, resetNodeTypeRegistry, registerContentModelTypes } from '@anokye-labs/kbexplorer-engine';
 import { registerBuiltinViewers, resolveViewer, resetViewerRegistry } from '../../views/viewers';
-import { registerContentModelTypes } from '../content-model';
 import { PersonView } from '../../views/viewers/PersonView';
 import { SquadView } from '../../views/viewers/SquadView';
 

@@ -1,5 +1,5 @@
 import type { KBNode } from '../../types';
-import { resolveType } from '../../engine/node-types';
+import { resolveType } from '@anokye-labs/kbexplorer-engine';
 import { GenericStructuredView, type ViewerComponent } from './GenericStructuredView';
 
 /**

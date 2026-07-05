@@ -5,26 +5,22 @@
  * kbexplorer-template#472, slice 1/5).
  *
  * The renderer's own unit tests (hostile-markup neutralized / legitimate
- * markup preserved) now live in the engine repo's suite. This file keeps
- * only the integration coverage: every template-side provider path that was
- * rewired onto `renderSafeMarkdown` (StructuralProvider, WorkProvider,
- * PersonProvider, parser/authored, AuthoredRichMarkdownProvider,
- * local-loader) still neutralizes the canonical payload set end to end.
+ * markup preserved) now live in the engine repo's suite, as does the
+ * StructuralProvider path (its own `structural-provider.test.ts` has an
+ * equivalent skill-node XSS case — dropped here as a duplicate). The
+ * WorkProvider/PersonProvider/parser/AuthoredRichMarkdownProvider paths
+ * below do NOT have an engine-side equivalent (verified against the
+ * engine's actual test suite, anokye-labs/kbexplorer-template#474) — these
+ * are genuine template-owned integration coverage and stay, plus the
+ * local-loader manifest-pipeline case which is entirely template-specific.
  */
 import { describe, it, expect } from 'vitest';
-import { StructuralProvider } from '../providers/structural-provider';
-import { WorkProvider } from '../providers/work-provider';
-import { PersonProvider } from '../providers/person-provider';
-import { AuthoredRichMarkdownProvider } from '../providers/authored-rich-markdown-provider';
-import { parseMarkdownFile, issueToNode } from '../parser';
+import { WorkProvider, PersonProvider, AuthoredRichMarkdownProvider, parseMarkdownFile, issueToNode, type GHIssue } from '@anokye-labs/kbexplorer-engine';
 import {
   buildConfigFromManifest,
   buildKnowledgeBaseFromManifest,
   type RepoManifest,
 } from '../local-loader';
-import { resetNodeTypeRegistry } from '../node-types';
-import { resetViewerRegistry } from '../../views/viewers';
-import type { GHIssue } from '../../api';
 import type { KBConfig } from '../../types';
 import { DEFAULT_CONFIG } from '../../types';
 
@@ -93,20 +89,6 @@ function makeIssue(overrides: Partial<GHIssue> & { userLogin?: string } = {}): G
 }
 
 describe('XSS payloads through every markdown → HTML provider path', () => {
-  it('structural: .github markdown (issue template) is sanitized', async () => {
-    resetNodeTypeRegistry();
-    resetViewerRegistry();
-    const template = `---\nname: Bug report\nabout: Report a bug\n---\n\n${XSS_MARKDOWN}`;
-    const { nodes } = await new StructuralProvider({
-      '.github/ISSUE_TEMPLATE/bug.md': template,
-    }).resolve(config, []);
-
-    const node = nodes.find(n => n.entityType === 'issue-template');
-    expect(node).toBeDefined();
-    expectSanitized(node!.content);
-    expect(node!.content).toContain('&lt;script&gt;');
-  });
-
   it('work: issue and PR bodies are sanitized', async () => {
     const issue = makeIssue({ number: 42, body: XSS_MARKDOWN });
     const pr = {

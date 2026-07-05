@@ -8,7 +8,7 @@ import type { KBNode } from '../../types';
 // Imported from the schema-reader module directly (not the content-model
 // barrel) so this stays free of the register/viewer modules — the barrel would
 // create a views ↔ engine import cycle through registerContentModelTypes.
-import { urnLocalId } from '../../engine/content-model/schema-reader';
+import { urnLocalId } from '@anokye-labs/kbexplorer-engine';
 
 /** Coerce node.data to a record. */
 export function dataOf(data: unknown): Record<string, unknown> {

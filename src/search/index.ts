@@ -18,7 +18,7 @@
  */
 
 import type { KBNode } from '../types';
-import { isAccessWithheld } from '../engine/access';
+import { isAccessWithheld } from '@anokye-labs/kbexplorer-engine';
 
 // ── Token helpers ──────────────────────────────────────────
 

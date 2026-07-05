@@ -32,7 +32,7 @@ import {
   repoCoordsFromConfig,
   buildSourceEditHandoff,
   normalizeNewlines,
-} from '../engine/source-edit';
+} from '@anokye-labs/kbexplorer-engine';
 
 const useStyles = makeStyles({
   surface: {

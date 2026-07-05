@@ -12,9 +12,9 @@
  */
 import type { KBGraph, KBConfig, SourceConfig } from '../types'
 import { DEFAULT_CONFIG } from '../types'
-import { GitHubApiSource, type ResolutionPreset } from './sources/github-api-source'
+import { GitHubApiSource, type ResolutionPreset } from '@anokye-labs/kbexplorer-engine/sources'
 import { loadKnowledgeBase } from './loader'
-import type { EngineEnv } from './env'
+import type { EngineEnv } from '@anokye-labs/kbexplorer-engine'
 import { localStorageCacheStore } from '../api/github'
 import { browserWasmLocateFile } from './store/browser-wasm'
 

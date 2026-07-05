@@ -1,4 +1,4 @@
-import { renderSafeMarkdown } from './safe-markdown';
+import { renderSafeMarkdown } from '@anokye-labs/kbexplorer-engine';
 import type { KBNode } from '../types';
 
 const SAMPLE_FRONTMATTER: Record<string, unknown> = {

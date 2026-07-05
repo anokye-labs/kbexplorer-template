@@ -12,7 +12,7 @@
  *  - the `?demo=richmd` seam, which injects {@link buildSampleRichMarkdownNode}
  *    into the graph so the document is viewable (and Playwright-verifiable).
  */
-import { renderSafeMarkdown } from '../../engine/safe-markdown';
+import { renderSafeMarkdown } from '@anokye-labs/kbexplorer-engine';
 import type { KBNode } from '../../types';
 import type { RichMarkdownBlock, RichMarkdownDocument } from './types';
 import { hashBlockSource } from './types';
