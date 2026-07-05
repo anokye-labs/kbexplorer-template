@@ -25,7 +25,7 @@ import { ConstellationHero } from '../components/ConstellationHero';
 import { IconGallery } from '../components/IconGallery';
 import { resolveViewer } from './viewers';
 import { SourceEditor } from './SourceEditor';
-import { canEditSource } from '../engine/source-edit';
+import { canEditSource } from '@anokye-labs/kbexplorer-engine';
 import {
   diagramLanguageFromClassName,
   getDiagramRenderPlan,

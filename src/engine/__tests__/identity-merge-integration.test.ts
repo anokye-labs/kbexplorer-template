@@ -10,9 +10,7 @@
  * the content node.
  */
 import { describe, it, expect } from 'vitest';
-import { loadNodeMap } from '../nodemap';
-import { assignIdentity, buildIdentityIndex, shareIdentity } from '../identity';
-import { buildGraph } from '../graph';
+import { loadNodeMap, assignIdentity, buildIdentityIndex, shareIdentity, buildGraph } from '@anokye-labs/kbexplorer-engine';
 import { filterGraphToLayer, getNodeLayer } from '../../representation/graph-layers';
 import type { KBNode, Cluster } from '../../types';
 

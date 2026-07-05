@@ -5,10 +5,12 @@
  * component-only (react-refresh) while sharing these pure accessors.
  */
 import type { KBNode } from '../../types';
-// Imported from the schema-reader module directly (not the content-model
-// barrel) so this stays free of the register/viewer modules — the barrel would
-// create a views ↔ engine import cycle through registerContentModelTypes.
-import { urnLocalId } from '../../engine/content-model/schema-reader';
+// Imported from the engine package's public entrypoint. The old intra-repo
+// views ↔ engine import-cycle concern (routing through the local
+// content-model barrel's registerContentModelTypes) no longer applies now
+// that content-model lives in the external @anokye-labs/kbexplorer-engine
+// package rather than a sibling template module.
+import { urnLocalId } from '@anokye-labs/kbexplorer-engine';
 
 /** Coerce node.data to a record. */
 export function dataOf(data: unknown): Record<string, unknown> {

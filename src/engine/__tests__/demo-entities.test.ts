@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { isDemoEntitiesEnabled, injectDemoEntities, isRichMarkdownDemoEnabled, injectRichMarkdownDemo } from '../demo-entities';
-import { resetNodeTypeRegistry } from '../node-types';
+import { resetNodeTypeRegistry } from '@anokye-labs/kbexplorer-engine';
 import { getEdgeStyle } from '../../types';
 import { getRichMarkdownDocument } from '../../views/rich-markdown/types';
 import type { KBGraph, KBNode } from '../../types';

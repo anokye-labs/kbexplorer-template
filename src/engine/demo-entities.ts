@@ -11,7 +11,7 @@
  */
 import type { KBGraph, KBNode, KBEdge, Cluster } from '../types';
 import { buildJsonLd } from '../types';
-import { registerType } from './node-types';
+import { registerType } from '@anokye-labs/kbexplorer-engine';
 import { buildSampleRichMarkdownNode } from './demo-rich-markdown';
 
 const DEMO_CLUSTER: Cluster = { id: 'org', name: 'Organization', color: '#c0a3ff' };
