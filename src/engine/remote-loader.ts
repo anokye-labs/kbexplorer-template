@@ -16,6 +16,7 @@ import { GitHubApiSource, type ResolutionPreset } from './sources/github-api-sou
 import { loadKnowledgeBase } from './loader'
 import type { EngineEnv } from './env'
 import { localStorageCacheStore } from '../api/github'
+import { browserWasmLocateFile } from './store/browser-wasm'
 
 export type { ResolutionPreset }
 
@@ -40,7 +41,10 @@ export async function loadRemoteKnowledgeBase(
     ghSource,
     config,
     env,
-    typeof env?.BASE_URL === 'string' ? { importBaseUrl: env.BASE_URL } : undefined,
+    {
+      ...(typeof env?.BASE_URL === 'string' ? { importBaseUrl: env.BASE_URL } : {}),
+      graphStore: { locateFile: browserWasmLocateFile },
+    },
   )
   return { ...result, themeFileRaw: themeFileRaw ?? null }
 }

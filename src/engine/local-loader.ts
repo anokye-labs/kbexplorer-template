@@ -22,6 +22,7 @@ import { loadKnowledgeBase } from './loader';
 import type { GHTreeItem } from '../api';
 import type { EngineEnv } from './env';
 import type { RepoManifest } from '@anokye-labs/kbexplorer-engine/sources';
+import { browserWasmLocateFile } from './store/browser-wasm';
 
 // ── Manifest Types ─────────────────────────────────────────
 
@@ -288,7 +289,10 @@ export async function buildKnowledgeBaseFromManifest(
     new ManifestSource(manifest, config),
     config,
     env,
-    typeof env?.BASE_URL === 'string' ? { importBaseUrl: env.BASE_URL } : undefined,
+    {
+      ...(typeof env?.BASE_URL === 'string' ? { importBaseUrl: env.BASE_URL } : {}),
+      graphStore: { locateFile: browserWasmLocateFile },
+    },
   );
   return { ...result, themeFileRaw: manifest.themeFileRaw ?? null };
 }

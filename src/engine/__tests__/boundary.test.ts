@@ -7,8 +7,12 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '
 const ENGINE_ROOT = join(REPO_ROOT, 'src', 'engine');
 const FORBIDDEN_ENGINE_IMPORT_PREFIXES = ['src/representation', 'src/views', 'src/components', 'src/theme'];
 const FORBIDDEN_ENGINE_BARE_SPECIFIERS = ['react', 'react-dom', 'vis-network', 'vis-data'];
-// Allowed until #463 removes the Node-store sqlite wasm shim.
-const ALLOWED_ENGINE_PLATFORM_EXEMPTIONS = ['src/engine/store/sqlite-runtime.ts'];
+// The graph store's sql.js wasm binary must be resolved via a Vite `?url`
+// import somewhere in the app (#472/#473, slice 5/5 STEP B) — this is the one
+// legitimate composition-root exemption, isolated to its own file so the
+// engine-facing `sqlite-runtime.ts` shim and the rest of `src/engine/` stay
+// platform-pure.
+const ALLOWED_ENGINE_PLATFORM_EXEMPTIONS = ['src/engine/store/browser-wasm.ts'];
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']);
 
 const toRepoRelative = (filePath: string): string =>
