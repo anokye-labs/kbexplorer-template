@@ -38,9 +38,11 @@ interface RemoteFixture extends RemoteApiFixture {
 const fixture = JSON.parse(readFileSync(FIXTURE, 'utf8')) as RemoteFixture;
 
 describe('golden: remote-mode KBGraph (hermetic, recorded fixtures)', () => {
+  let fetchSpy: ReturnType<typeof installRemoteApiFetchMock>;
+
   beforeEach(() => {
     installInMemoryLocalStorage();
-    installRemoteApiFetchMock(fixture);
+    fetchSpy = installRemoteApiFetchMock(fixture);
   });
   afterEach(() => {
     vi.restoreAllMocks();
@@ -71,7 +73,6 @@ describe('golden: remote-mode KBGraph (hermetic, recorded fixtures)', () => {
   });
 
   it('is hermetic: every network fetch is served from a recording', async () => {
-    const fetchSpy = installRemoteApiFetchMock(fixture);
     const { loadRemoteKnowledgeBase } = await import('../../src/engine/remote-loader');
     await loadRemoteKnowledgeBase(fixture.source, 'standard');
     // The mock throws on any unrecorded URL, so reaching here means no real
