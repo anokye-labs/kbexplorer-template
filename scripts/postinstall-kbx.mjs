@@ -25,7 +25,7 @@
 import { existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const kbxDir = resolve(repoRoot, 'node_modules', '@anokye-labs', 'kbx');
@@ -36,7 +36,13 @@ if (!existsSync(kbxDir) || existsSync(kbxDist)) {
 }
 
 console.log('[postinstall] Building @anokye-labs/kbx (no `prepare` script upstream — see scripts/postinstall-kbx.mjs)…');
+// Use execSync (always shell-mediated) with quoted paths rather than
+// execFileSync('npm.cmd', …): on Windows + Node >= 20.12, spawning a `.cmd`
+// without a shell throws EINVAL (CVE-2024-27980 mitigation), which broke
+// `npm install`/`npm ci` for every Windows contributor. Shelling out keeps the
+// `.cmd` resolvable and the quotes keep paths with spaces intact cross-platform.
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-execFileSync(npmCmd, ['install', '--no-audit', '--no-fund', '--prefix', kbxDir], { stdio: 'inherit' });
-execFileSync(npmCmd, ['run', 'build', '--prefix', kbxDir], { stdio: 'inherit' });
+const q = (s) => `"${s}"`;
+execSync(`${npmCmd} install --no-audit --no-fund --prefix ${q(kbxDir)}`, { stdio: 'inherit' });
+execSync(`${npmCmd} run build --prefix ${q(kbxDir)}`, { stdio: 'inherit' });
 console.log('[postinstall] @anokye-labs/kbx built.');

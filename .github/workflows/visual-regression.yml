@@ -45,7 +45,7 @@ jobs:
 
       # Step 1 — build the app in local mode
       - name: Generate manifest
-        run: node scripts/generate-manifest.js
+        run: npx kbx manifest
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}

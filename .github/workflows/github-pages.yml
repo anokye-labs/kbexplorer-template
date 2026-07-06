@@ -47,7 +47,7 @@ jobs:
       # hermetic (local FS/git scan; `gh` calls are best-effort and degrade
       # gracefully without network/token), so it's safe to run this early.
       - name: Generate manifest
-        run: node scripts/generate-manifest.js
+        run: npx kbx manifest
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
@@ -113,7 +113,7 @@ jobs:
       - run: npm ci
 
       - name: Generate manifest
-        run: node scripts/generate-manifest.js
+        run: npx kbx manifest
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
