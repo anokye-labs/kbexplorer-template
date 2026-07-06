@@ -3,7 +3,7 @@
  * manifest fixture (`tests/golden/fixtures/manifest.json`).
  *
  * The manifest is itself a recording of this repo's GitHub API responses
- * (it's produced by `scripts/generate-manifest.js` and snapshotted here). This
+ * (it's produced by `kbx manifest` and snapshotted here). This
  * script reshapes it into the response shapes the remote loader's API
  * functions return, so the remote-mode golden test can run hermetically (no
  * network): the test mocks `src/api` to serve from this fixture.

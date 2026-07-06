@@ -55,7 +55,7 @@ export default defineConfig({
       // gitea spec fails. Chaining the stub ahead of `vite` (rather than writing
       // it in globalSetup, which Playwright starts concurrently with the
       // webServers) is race-free: the file exists before Vite's first transform.
-      // The stub does NOT run generate-manifest.js and makes NO GitHub/`gh`
+      // The stub does NOT run `kbx manifest` and makes NO GitHub/`gh`
       // calls; the app runs in REMOTE mode (no VITE_KB_LOCAL) and never reads the
       // manifest at runtime — it exists solely to satisfy the resolver.
       command: `node twins/gitea/ensure-manifest-stub.mjs && node ./node_modules/vite/bin/vite.js --port ${APP_PORT} --strictPort`,

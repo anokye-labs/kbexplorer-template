@@ -9,7 +9,7 @@
  *
  * This loads the full runtime graph the same way the app does (via vite +
  * VITE_KB_LOCAL=true and a headless Node import of the engine) and reports the
- * sensemaking metrics. Run after `node scripts/generate-manifest.js`.
+ * sensemaking metrics. Run after `kbx manifest`.
  *
  * Usage: node scripts/audit-runtime-graph.mjs [--fail-on=ISSUE_ID,...]
  */
@@ -23,7 +23,7 @@ const kbRoot = resolve(__dirname, '..');
 
 const manifestPath = resolve(kbRoot, 'src', 'generated', 'repo-manifest.json');
 if (!existsSync(manifestPath)) {
-  console.error('[audit] repo-manifest.json missing — run `node scripts/generate-manifest.js` first');
+  console.error('[audit] repo-manifest.json missing — run `kbx manifest` first');
   process.exit(1);
 }
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));

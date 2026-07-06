@@ -109,7 +109,7 @@ Connection descriptions should be specific:
 1. kb-architect scans repo → JSON catalogue
 2. transform-catalogue.js → config.yaml + skeleton .md files
 3. kb-writer generates rich content for each skeleton
-4. generate-manifest.js rebuilds the manifest
+4. `kbx manifest` rebuilds the manifest
 5. Dev server starts + playwright-cli validates
 ```
 

@@ -54,14 +54,18 @@ function parseArgs() {
 async function buildLocalMode() {
   console.log('[capture] Building app in local mode (VITE_KB_LOCAL=true)…');
 
-  // Step 1: generate-manifest
+  // Step 1: kbx manifest
+  const kbxBin = process.platform === 'win32'
+    ? join(repoRoot, 'node_modules', '.bin', 'kbx.cmd')
+    : join(repoRoot, 'node_modules', '.bin', 'kbx');
+
   await new Promise((res, rej) => {
     const proc = spawn(
-      process.platform === 'win32' ? 'node.exe' : 'node',
-      ['scripts/generate-manifest.js'],
-      { cwd: repoRoot, stdio: 'inherit', env: { ...process.env } },
+      kbxBin,
+      ['manifest'],
+      { cwd: repoRoot, stdio: 'inherit', shell: process.platform === 'win32', env: { ...process.env } },
     );
-    proc.on('close', code => code === 0 ? res() : rej(new Error(`generate-manifest exited ${code}`)));
+    proc.on('close', code => code === 0 ? res() : rej(new Error(`kbx manifest exited ${code}`)));
     proc.on('error', rej);
   });
 

@@ -35,9 +35,8 @@
  *
  * Boot sequence
  * -------------
- * 1. (unless --skip-build) `node scripts/generate-manifest.js` then
- *    `vite build` with VITE_KB_LOCAL=true. No GitHub auth needed beyond
- *    what generate-manifest already uses (default GITHUB_TOKEN).
+ * 1. (unless --skip-build) `kbx manifest` then
+ *    `vite build` with VITE_KB_LOCAL=true.
  * 2. Start vite preview, parse the actual bound port from its stdout.
  * 3. Launch headless chromium, run the checks, print a report.
  *
@@ -96,6 +95,12 @@ function viteBin() {
     : join(repoRoot, 'node_modules', '.bin', 'vite');
 }
 
+function kbxBin() {
+  return process.platform === 'win32'
+    ? join(repoRoot, 'node_modules', '.bin', 'kbx.cmd')
+    : join(repoRoot, 'node_modules', '.bin', 'kbx');
+}
+
 function runCmd(cmd, args, env) {
   return new Promise((res, rej) => {
     const proc = spawn(cmd, args, {
@@ -111,7 +116,7 @@ function runCmd(cmd, args, env) {
 
 async function buildLocalMode() {
   console.log('[audit-visual] Building local-mode bundle…');
-  await runCmd(process.execPath, ['scripts/generate-manifest.js']);
+  await runCmd(kbxBin(), ['manifest']);
   await runCmd(viteBin(), ['build'], { VITE_KB_LOCAL: 'true' });
 }
 

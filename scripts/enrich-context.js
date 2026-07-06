@@ -26,7 +26,7 @@ if (!existsSync(cataloguePath)) {
   process.exit(1);
 }
 if (!existsSync(manifestPath)) {
-  console.error('[enrich] src/generated/repo-manifest.json not found — run generate-manifest first');
+  console.error('[enrich] src/generated/repo-manifest.json not found — run `kbx manifest` first');
   process.exit(1);
 }
 

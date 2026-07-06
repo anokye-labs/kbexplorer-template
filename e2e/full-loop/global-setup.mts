@@ -206,9 +206,10 @@ export default async function globalSetup() {
 
     // 3. CLI manifest regen from the twin via the DTU-aware path
     //    We call the CLI library's generateManifest() directly so KBEXPLORER_GH_API_BASE
-    //    is respected. (The kbexplorer manifest *command* delegates to the app's own
-    //    scripts/generate-manifest.js when it exists — that script uses gh CLI, not the
-    //    DTU seam. Calling the library directly exercises the keystone path explicitly.)
+    //    is respected. (This predates `kbx manifest`'s current thin-over-engine
+    //    design — anokye-labs/kbexplorer-template#511 — which no longer delegates to
+    //    an app-local generator script at all. Calling the library directly here
+    //    exercises the keystone DTU-aware path explicitly.)
     console.log(`[full-loop:setup] CLI regen: KBEXPLORER_GH_API_BASE=http://localhost:${SETUP_PORT}`);
     process.env.KBEXPLORER_GH_API_BASE = `http://localhost:${SETUP_PORT}`;
     process.env.KBEXPLORER_GH_TOKEN = 'full-loop-test-token';
