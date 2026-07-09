@@ -40,14 +40,15 @@ jobs:
       # Generate manifest BEFORE typecheck: src/engine/local-loader.ts statically
       # imports the generated src/generated/repo-manifest.json, which is gitignored
       # and absent on a clean checkout. `npm run build`'s `tsc -b` only "worked"
-      # locally because npm's implicit `prebuild` hook (also generate-manifest.js)
+      # locally because npm's implicit `prebuild` hook (also `kbx manifest`)
       # ran first; this workflow invokes `tsc -b` directly, which has no such hook,
       # so a fresh checkout failed `tsc -b` with TS2307 even though #448/#449
-      # both looked green with a stale local artifact on disk. Generation is
-      # hermetic (local FS/git scan; `gh` calls are best-effort and degrade
-      # gracefully without network/token), so it's safe to run this early.
+      # both looked green with a stale local artifact on disk. `--repo` builds
+      # from the live GitHub API (authenticated via GH_TOKEN) so the manifest
+      # includes repoMetadata + work data — required for the repo-meta and
+      # structural (.github discovery) nodes the E2E suite asserts.
       - name: Generate manifest
-        run: npx kbx manifest
+        run: npx kbx manifest --repo anokye-labs/kbexplorer-template
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
@@ -66,7 +67,7 @@ jobs:
         run: npm run validate
 
       - name: Check manifest drift (idempotency)
-        run: npm run validate:drift
+        run: npm run validate:drift -- --repo anokye-labs/kbexplorer-template
 
       - name: Assess graph quality
         run: node scripts/assess-graph.js --gate
@@ -113,7 +114,7 @@ jobs:
       - run: npm ci
 
       - name: Generate manifest
-        run: npx kbx manifest
+        run: npx kbx manifest --repo anokye-labs/kbexplorer-template
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}

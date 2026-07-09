@@ -45,7 +45,7 @@ jobs:
 
       # Step 1 — build the app in local mode
       - name: Generate manifest
-        run: npx kbx manifest
+        run: npx kbx manifest --repo anokye-labs/kbexplorer-template
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
