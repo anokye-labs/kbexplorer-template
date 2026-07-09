@@ -63,8 +63,8 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@anokye-labs/kbx": "git+https://github.com/anokye-labs/kbexplorer-cli.git#905edcd629f7a041a74b029f791a34fd6e0f2597",
     "@anokye-labs/kbexplorer-example-quotes": "file:examples/quotes-provider",
+    "@anokye-labs/kbx": "github:anokye-labs/kbexplorer-cli#6b0422bd9cc587d84ac6a9eeda2962d7ec5a20e9",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@types/node": "^26.0.1",
