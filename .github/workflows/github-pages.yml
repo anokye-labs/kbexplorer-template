@@ -78,6 +78,7 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
+          VITE_KB_SKIP_REGEN: '1'
           GH_TOKEN: ${{ github.token }}
 
       # Tier 3: E2E tests
@@ -124,6 +125,7 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
+          VITE_KB_SKIP_REGEN: '1'
           VITE_BASE_PATH: /kbexplorer-template/
           GH_TOKEN: ${{ github.token }}
 

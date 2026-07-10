@@ -54,6 +54,7 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
+          VITE_KB_SKIP_REGEN: '1'
 
       # Step 2 — capture fresh screenshots (reuse the dist/ just built).
       # When update_baselines is requested, promote captures in place so the
