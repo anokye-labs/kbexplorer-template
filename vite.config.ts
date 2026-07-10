@@ -2,7 +2,14 @@ import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import react from '@vitejs/plugin-react'
+
+function kbxBin(): string {
+  return process.platform === 'win32'
+    ? join(process.cwd(), 'node_modules', '.bin', 'kbx.cmd')
+    : join(process.cwd(), 'node_modules', '.bin', 'kbx');
+}
 
 function manifestPlugin(): Plugin {
   return {
@@ -11,10 +18,14 @@ function manifestPlugin(): Plugin {
       if (process.env.VITE_KB_LOCAL !== 'true') return;
       // VITE_KB_SKIP_REGEN=1 lets a pre-generated manifest (e.g. from the
       // full-loop globalSetup via the CLI's DTU-aware generator) survive Vite's
-      // buildStart without being overwritten by the local gh-CLI script.
+      // buildStart without being overwritten by `kbx manifest`.
       if (process.env.VITE_KB_SKIP_REGEN === '1') return;
       try {
-        execSync('node scripts/generate-manifest.js', { stdio: 'inherit' });
+        // Shell-mediated (quoted) rather than execFileSync on the .cmd shim:
+        // on Windows + Node >=20.12, spawning a `.cmd` without a shell throws
+        // EINVAL (CVE-2024-27980), breaking local-mode builds — same fix as
+        // scripts/postinstall-kbx.mjs.
+        execSync(`"${kbxBin()}" manifest`, { stdio: 'inherit' });
       } catch (err) {
         console.warn('[kbexplorer] Manifest generation failed:', err);
       }

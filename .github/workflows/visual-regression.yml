@@ -45,7 +45,7 @@ jobs:
 
       # Step 1 — build the app in local mode
       - name: Generate manifest
-        run: node scripts/generate-manifest.js
+        run: npx kbx manifest --augment anokye-labs/kbexplorer-template
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
@@ -54,6 +54,7 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
+          VITE_KB_SKIP_REGEN: '1'
 
       # Step 2 — capture fresh screenshots (reuse the dist/ just built).
       # When update_baselines is requested, promote captures in place so the

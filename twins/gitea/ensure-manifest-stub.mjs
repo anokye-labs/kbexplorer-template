@@ -13,7 +13,7 @@
  * L3 runs the app in REMOTE mode (the config sets VITE_GH_API_BASE and does NOT
  * set VITE_KB_LOCAL), so the app sources everything from the live Gitea twin and
  * NEVER reads this manifest at runtime — the file only needs to EXIST as valid
- * JSON. A static stub (rather than running scripts/generate-manifest.js) keeps
+ * JSON. A static stub (rather than running `kbx manifest`) keeps
  * the harness fully offline and deterministic: no `gh`/GitHub calls, so no extra
  * network/CLI failure mode on the nightly lane.
  *

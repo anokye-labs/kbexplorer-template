@@ -40,14 +40,16 @@ jobs:
       # Generate manifest BEFORE typecheck: src/engine/local-loader.ts statically
       # imports the generated src/generated/repo-manifest.json, which is gitignored
       # and absent on a clean checkout. `npm run build`'s `tsc -b` only "worked"
-      # locally because npm's implicit `prebuild` hook (also generate-manifest.js)
+      # locally because npm's implicit `prebuild` hook (also `kbx manifest`)
       # ran first; this workflow invokes `tsc -b` directly, which has no such hook,
       # so a fresh checkout failed `tsc -b` with TS2307 even though #448/#449
-      # both looked green with a stale local artifact on disk. Generation is
-      # hermetic (local FS/git scan; `gh` calls are best-effort and degrade
-      # gracefully without network/token), so it's safe to run this early.
+      # both looked green with a stale local artifact on disk. `--augment` runs
+      # the hybrid mode: a deterministic local FS build (config/theme/content)
+      # augmented with live GitHub API data (authenticated via GH_TOKEN) for
+      # repoMetadata + work data — required for the repo-meta and structural
+      # (.github discovery) nodes the E2E suite asserts.
       - name: Generate manifest
-        run: node scripts/generate-manifest.js
+        run: npx kbx manifest --augment anokye-labs/kbexplorer-template
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
@@ -76,6 +78,7 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
+          VITE_KB_SKIP_REGEN: '1'
           GH_TOKEN: ${{ github.token }}
 
       # Tier 3: E2E tests
@@ -113,7 +116,7 @@ jobs:
       - run: npm ci
 
       - name: Generate manifest
-        run: node scripts/generate-manifest.js
+        run: npx kbx manifest --augment anokye-labs/kbexplorer-template
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
@@ -122,6 +125,7 @@ jobs:
         run: npx vite build
         env:
           VITE_KB_LOCAL: 'true'
+          VITE_KB_SKIP_REGEN: '1'
           VITE_BASE_PATH: /kbexplorer-template/
           GH_TOKEN: ${{ github.token }}
 

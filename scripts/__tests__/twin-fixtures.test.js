@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -108,72 +108,3 @@ describe('gh-mock CLI', () => {
   });
 });
 
-// ── fetchLocalIssues / fetchLocalPullRequests via gh-mock ──
-
-// Hoisted mock — intercepts execSync so `gh` commands route through gh-mock
-vi.mock('node:child_process', async (importOriginal) => {
-  const mod = await importOriginal();
-  return {
-    ...mod,
-    execSync: vi.fn((cmd, opts) => {
-      if (typeof cmd === 'string' && (cmd.startsWith('gh issue') || cmd.startsWith('gh pr'))) {
-        const mockCmd = cmd.replace(/^gh /, `node "${GH_MOCK}" `);
-        return mod.execSync(mockCmd, opts);
-      }
-      if (typeof cmd === 'string' && cmd.startsWith('gh --version')) {
-        return 'gh-mock 0.0.0';
-      }
-      return mod.execSync(cmd, opts);
-    }),
-  };
-});
-
-describe('generate-manifest with gh-mock', () => {
-
-  it('fetchLocalIssues returns mapped issues from fixtures', async () => {
-    const { fetchLocalIssues } = await import('../generate-manifest.js');
-    const issues = fetchLocalIssues();
-    expect(issues.length).toBeGreaterThan(0);
-    for (const issue of issues) {
-      expect(issue).toHaveProperty('number');
-      expect(issue).toHaveProperty('title');
-      expect(typeof issue.state).toBe('string');
-      expect(issue).toHaveProperty('labels');
-      expect(issue).toHaveProperty('html_url');
-    }
-  });
-
-  it('fetchLocalPullRequests returns mapped PRs from fixtures', async () => {
-    const { fetchLocalPullRequests } = await import('../generate-manifest.js');
-    const prs = fetchLocalPullRequests();
-    expect(prs.length).toBeGreaterThan(0);
-    for (const pr of prs) {
-      expect(pr).toHaveProperty('number');
-      expect(pr).toHaveProperty('title');
-      expect(typeof pr.state).toBe('string');
-      expect(pr).toHaveProperty('labels');
-      expect(pr).toHaveProperty('html_url');
-    }
-  });
-
-  it('issue labels are normalized to {name, color} shape', async () => {
-    const { fetchLocalIssues } = await import('../generate-manifest.js');
-    const issues = fetchLocalIssues();
-    const withLabels = issues.filter((i) => i.labels.length > 0);
-    expect(withLabels.length).toBeGreaterThan(0);
-    for (const issue of withLabels) {
-      for (const label of issue.labels) {
-        expect(label).toHaveProperty('name');
-        expect(label).toHaveProperty('color');
-      }
-    }
-  });
-
-  it('issue state is lowercased', async () => {
-    const { fetchLocalIssues } = await import('../generate-manifest.js');
-    const issues = fetchLocalIssues();
-    for (const issue of issues) {
-      expect(issue.state).toBe(issue.state.toLowerCase());
-    }
-  });
-});

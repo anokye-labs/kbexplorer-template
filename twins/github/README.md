@@ -49,7 +49,7 @@ Pagination: list endpoints return the full fixture on `page=1` (default) and an 
 
 ## gh CLI mock
 
-`gh-mock.js` is a drop-in replacement for the `gh` CLI used by `scripts/generate-manifest.js`. It reads the same fixture files and outputs JSON in the `gh` CLI format (camelCase keys, `url` instead of `html_url`, etc.).
+`gh-mock.js` is a drop-in replacement for the `gh` CLI used by manifest generation (`kbx manifest`, formerly `scripts/generate-manifest.js`). It reads the same fixture files and outputs JSON in the `gh` CLI format (camelCase keys, `url` instead of `html_url`, etc.).
 
 ### Supported commands
 
@@ -58,12 +58,12 @@ node twins/github/gh-mock.js issue list --json <fields> [--state <state>] [--lim
 node twins/github/gh-mock.js pr    list --json <fields> [--state <state>] [--limit <n>]
 ```
 
-### Usage with generate-manifest
+### Usage with kbx manifest
 
 ```bash
 # Option 1: alias gh to the mock
 alias gh="node $(pwd)/twins/github/gh-mock.js"
-node scripts/generate-manifest.js
+npx kbx manifest
 
 # Option 2: in tests, override the command that execSync runs
 # by pointing execSync at the mock path instead of bare `gh`
