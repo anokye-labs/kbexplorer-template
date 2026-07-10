@@ -594,7 +594,7 @@
       "url": "https://api.github.com/repos/anokye-labs/kbexplorer-template/git/blobs/c59fee1264f244f24cc8e6d3520a422048a41236"
     },
     {
-      "path": "scripts/validate-graph.js",
+      "path": "kbx graph validate",
       "mode": "100644",
       "type": "blob",
       "sha": "14a44f665efb0c4a84037fe955eb7ff2c686b313",

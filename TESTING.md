@@ -147,7 +147,7 @@ Playwright step):
 - `node scripts/generate-manifest.js` (manifest generation)
 - `npm run validate` (graph validation)
 - `npm run validate:drift` (manifest idempotency check)
-- `node scripts/assess-graph.js --gate` (graph quality gate)
+- `npm run assess` (graph quality gate)
 
 **Holdout note:** These specs are the authored, committed acceptance gate.
 They measure the app against the canned fixture twin. Do not add

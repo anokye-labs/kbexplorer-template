@@ -18,7 +18,7 @@ catalogue.json → enrich-context.js → catalogue-enriched.json → derive-cont
 1. **Catalogue** — defines all nodes with IDs, titles, clusters, edge hints, and source file paths
 2. **Enrichment** — `enrich-context.js` adds related issues, PRs, and recent commits from GitHub
 3. **Derivation** — `derive-content.js` reads source files and enriched context to generate markdown
-4. **Assessment** — `assess-graph.js` evaluates the resulting graph for quality
+4. **Assessment** — `npm run assess` evaluates the resulting graph for quality
 
 ## Enriched Context
 
