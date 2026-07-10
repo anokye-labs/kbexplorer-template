@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
-import { execFileSync } from 'node:child_process'
+import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import react from '@vitejs/plugin-react'
@@ -21,7 +21,11 @@ function manifestPlugin(): Plugin {
       // buildStart without being overwritten by `kbx manifest`.
       if (process.env.VITE_KB_SKIP_REGEN === '1') return;
       try {
-        execFileSync(kbxBin(), ['manifest'], { stdio: 'inherit' });
+        // Shell-mediated (quoted) rather than execFileSync on the .cmd shim:
+        // on Windows + Node >=20.12, spawning a `.cmd` without a shell throws
+        // EINVAL (CVE-2024-27980), breaking local-mode builds — same fix as
+        // scripts/postinstall-kbx.mjs.
+        execSync(`"${kbxBin()}" manifest`, { stdio: 'inherit' });
       } catch (err) {
         console.warn('[kbexplorer] Manifest generation failed:', err);
       }
