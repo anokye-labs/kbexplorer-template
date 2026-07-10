@@ -43,12 +43,13 @@ jobs:
       # locally because npm's implicit `prebuild` hook (also `kbx manifest`)
       # ran first; this workflow invokes `tsc -b` directly, which has no such hook,
       # so a fresh checkout failed `tsc -b` with TS2307 even though #448/#449
-      # both looked green with a stale local artifact on disk. `--repo` builds
-      # from the live GitHub API (authenticated via GH_TOKEN) so the manifest
-      # includes repoMetadata + work data — required for the repo-meta and
-      # structural (.github discovery) nodes the E2E suite asserts.
+      # both looked green with a stale local artifact on disk. `--augment` runs
+      # the hybrid mode: a deterministic local FS build (config/theme/content)
+      # augmented with live GitHub API data (authenticated via GH_TOKEN) for
+      # repoMetadata + work data — required for the repo-meta and structural
+      # (.github discovery) nodes the E2E suite asserts.
       - name: Generate manifest
-        run: npx kbx manifest --repo anokye-labs/kbexplorer-template
+        run: npx kbx manifest --augment anokye-labs/kbexplorer-template
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
@@ -67,7 +68,7 @@ jobs:
         run: npm run validate
 
       - name: Check manifest drift (idempotency)
-        run: npm run validate:drift -- --repo anokye-labs/kbexplorer-template
+        run: npm run validate:drift
 
       - name: Assess graph quality
         run: node scripts/assess-graph.js --gate
@@ -114,7 +115,7 @@ jobs:
       - run: npm ci
 
       - name: Generate manifest
-        run: npx kbx manifest --repo anokye-labs/kbexplorer-template
+        run: npx kbx manifest --augment anokye-labs/kbexplorer-template
         env:
           VITE_KB_LOCAL: 'true'
           GH_TOKEN: ${{ github.token }}
