@@ -39,6 +39,10 @@ The `$RefreshReg$ is not defined` error always means stale cache.
 
 ## Architecture Notes
 
+### Thin Template, Fat Engine
+
+This template repo contains **no data-pipeline or graph-domain logic**. Manifest generation, catalogue building, content derivation/enrichment, and graph validation/assessment all live in **`@anokye-labs/kbexplorer-engine`** and are invoked through the **`kbx`** CLI (`@anokye-labs/kbx`) — see `npm run prebuild` / `validate` / `validate:drift` / `assess` / `derive` / `compare` in `package.json`. `scripts/` in this repo holds only presentation, build, and test tooling: icon manifest generation, the Vite build wrapper, visual-regression capture/audit/verify, the runtime-graph black-box audit, and dev/test harnesses (DTU exploration, smoke tests, probes). If a task looks like it needs new graph/catalogue/manifest logic, it belongs upstream in the engine, not here.
+
 ### Single Canvas Principle
 
 The HUD minimap uses one `<canvas ref={canvasRef}>` per dock orientation (vertical vs horizontal), rendered inside a shared wrapper. The `drawMinimap` function reads `canvasRef.current` — if the canvas unmounts and remounts (e.g. dock switch), the ref updates and the draw effect re-fires via `dock` in the dependency array.

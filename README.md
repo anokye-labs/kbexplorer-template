@@ -299,6 +299,8 @@ The GitHub Actions workflow (`.github/workflows/azure-static-web-apps.yml`) trig
 
 ## Architecture
 
+**This template contains no data-pipeline or graph-domain logic.** Manifest generation, catalogue building, content derivation/enrichment, and graph validation/assessment all live in [`@anokye-labs/kbexplorer-engine`](https://github.com/anokye-labs/kbexplorer-engine) and are invoked through the [`kbx`](https://github.com/anokye-labs/kbexplorer-cli) CLI (package `@anokye-labs/kbx`) — see the `prebuild`, `validate`, `validate:drift`, `assess`, `derive`, and `compare` scripts in `package.json`. This repo's own `scripts/` directory holds only presentation, build, and test tooling (icon manifest, Vite build wrapper, visual-regression capture/audit/verify, runtime-graph black-box audit, dev/test harnesses) — never graph/catalogue logic.
+
 The [application shell](app-shell) boots the UI and sets up routing. The [KB loader](kb-loader) hook fetches content — either from the [GitHub API client](github-api) at runtime or from a pre-built [manifest](manifest-generator) in [local mode](local-loader).
 
 ```
