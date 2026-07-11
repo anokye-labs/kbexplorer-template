@@ -12,12 +12,12 @@ The catalogue transformer is the toolchain that converts the enriched catalogue 
 ## Pipeline
 
 ```
-catalogue.json → enrich-context.js → catalogue-enriched.json → derive-content.js → content/*.md
+catalogue.json → kbx graph enrich → catalogue-enriched.json → kbx graph derive → content/*.md
 ```
 
 1. **Catalogue** — defines all nodes with IDs, titles, clusters, edge hints, and source file paths
-2. **Enrichment** — `enrich-context.js` adds related issues, PRs, and recent commits from GitHub
-3. **Derivation** — `derive-content.js` reads source files and enriched context to generate markdown
+2. **Enrichment** — `kbx graph enrich` adds related issues, PRs, and recent commits from GitHub
+3. **Derivation** — `kbx graph derive` reads source files and enriched context to generate markdown
 4. **Assessment** — `assess-graph.js` evaluates the resulting graph for quality
 
 ## Enriched Context
