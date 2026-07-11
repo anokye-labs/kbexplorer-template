@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@anokye-labs/kbexplorer-example-quotes": "file:examples/quotes-provider",
-    "@anokye-labs/kbx": "github:anokye-labs/kbexplorer-cli#c1de8f66c39918fc6efe8673de21caaf6caae8d6",
+    "@anokye-labs/kbx": "github:anokye-labs/kbexplorer-cli#d46e558c832e90882067aefaf9910ee58ab9e54a",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@types/node": "^26.0.1",
