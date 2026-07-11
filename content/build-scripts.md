@@ -20,10 +20,10 @@ The build scripts (`scripts/generate-manifest.js` and related tools) automate co
 
 ## Derivation Scripts
 
-The [catalogue transformer](catalogue-transformer) and related scripts support the Content Derivation Engine ([PR #76](https://github.com/anokye-labs/kbexplorer-template/pull/76)):
-- `derive-content.js` — generates content from catalogue entries
-- `enrich-context.js` — adds issue/PR/commit context to catalogue entries
-- `compare-content.js` — diffs derived vs. baseline content
+The [catalogue transformer](catalogue-transformer) and related commands support the Content Derivation Engine ([PR #76](https://github.com/anokye-labs/kbexplorer-template/pull/76)):
+- `npm run derive` — generates content from catalogue entries
+- `kbx graph enrich` — adds issue/PR/commit context to catalogue entries
+- `npm run compare` — diffs derived vs. baseline content
 
 ## Testing
 
