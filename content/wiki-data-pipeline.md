@@ -34,7 +34,7 @@ The [build scripts](build-scripts) capture everything the [local loader](local-l
 ## Step 4: Inspect the Graph
 
 ```bash
-node scripts/assess-graph.js
+npm run assess
 ```
 
 Evaluates connectivity (4-8 links/node target), cluster balance, orphans, and hub reachability.

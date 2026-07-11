@@ -11,7 +11,7 @@ The build scripts (`scripts/generate-manifest.js` and related tools) automate co
 
 ## Assessment Script
 
-`scripts/assess-graph.js` evaluates the content graph against readability and structural constraints — applying the metrics from the [link assessment spec](spec-link-assessment):
+`npm run assess` (via `kbx graph assess`) evaluates the content graph against readability and structural constraints — applying the metrics from the [link assessment spec](spec-link-assessment):
 
 - Node/edge counts vs. limits (50 nodes, 100 edges per view)
 - Orphan node detection (0 incoming links)

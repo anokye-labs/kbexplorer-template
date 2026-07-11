@@ -71,7 +71,7 @@ jobs:
         run: npm run validate:drift
 
       - name: Assess graph quality
-        run: node scripts/assess-graph.js --gate
+        run: npx kbx graph assess --gate
 
       # Build for E2E
       - name: Build

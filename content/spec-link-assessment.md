@@ -19,10 +19,10 @@ The link assessment specification defines how the quality and health of the know
 
 ## The Assessment Script
 
-The [build scripts](build-scripts) include `assess-graph.js`:
+The [build scripts](build-scripts) include `npm run assess` (the `kbx graph assess` CLI):
 
 ```bash
-node scripts/assess-graph.js
+npm run assess
 # Reads content/*.md, extracts inline links, builds graph, scores quality
 ```
 

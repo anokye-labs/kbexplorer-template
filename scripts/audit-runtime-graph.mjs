@@ -3,7 +3,7 @@
 /**
  * Runtime graph audit — what the actual deployed app produces.
  *
- * Existing assess-graph.js only inspects authored md in content/. The runtime
+ * Existing kbx graph assess only inspects authored md in content/. The runtime
  * graph the user sees is much larger because it includes issues, PRs, commits,
  * branches, structural .github files, content-model entities and more.
  *
