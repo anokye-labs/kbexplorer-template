@@ -144,7 +144,7 @@ npm run test:e2e:ui    # interactive Playwright UI mode
 **What also runs in the PR gate** (`github-pages.yml` `test` job, before the
 Playwright step):
 - `npm test` (vitest unit tests — layer 1)
-- `node scripts/generate-manifest.js` (manifest generation)
+- `kbx manifest` (manifest generation; `kbx manifest --augment <owner/repo>` for the hybrid local+live build used in CI)
 - `npm run validate` (graph validation)
 - `npm run validate:drift` (manifest idempotency check)
 - `npm run assess` (graph quality gate)
