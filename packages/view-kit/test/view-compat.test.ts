@@ -4,7 +4,7 @@ import {
   VIEW_API_VERSION,
   checkViewCompatibility,
   type ViewCompatibility,
-} from '../src/index.js';
+} from '../src/index';
 
 describe('VIEW_API_VERSION', () => {
   it('is a semver string', () => {
