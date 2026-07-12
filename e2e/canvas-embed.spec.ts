@@ -251,4 +251,43 @@ test.describe('Embeddable canvas mount (#406 / #440 / #408)', () => {
     await page.waitForTimeout(500);
     expect(appErrors(errors)).toHaveLength(0);
   });
+
+  test('copilot: a spine entity (person) renders its bespoke viewer, not the generic fallback (#494)', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page);
+
+    // Anchor the copilot surface directly on a `person` entity so its bespoke
+    // PersonView renders in the anchor body. The deterministic demo-entities seam
+    // (`?demo=entities`) seeds `demo-person-ada` independent of the twin/manifest.
+    // Before #494 the canvas entry never called the viewer-registration
+    // composition, so the registry was empty at boot and `resolveViewer` fell
+    // back to GenericStructuredView for every node — even here.
+    await page.addInitScript(() => {
+      (window as unknown as { __KBX_CANVAS__: unknown }).__KBX_CANVAS__ = {
+        local: false,
+        visualMode: 'inherit-host',
+        anchorNodeId: 'demo-person-ada',
+      };
+    });
+    await page.goto('/canvas.html?demo=entities', { timeout: 60000 });
+
+    const anchorView = page.locator('[data-testid="anchor-first-view"]');
+    await expect(anchorView).toBeVisible({ timeout: 15000 });
+    await expect(anchorView).toHaveAttribute('data-anchor-id', 'demo-person-ada');
+
+    // The anchor body must render PersonView's bespoke markup (kb-person-*),
+    // NOT only the GenericStructuredView key/value fallback. The generic
+    // fallback emits `.kb-structured-view` WITHOUT any `.kb-person-*` node.
+    const personView = anchorView.locator('.kb-person-view');
+    await expect(personView).toBeVisible({ timeout: 15000 });
+    await expect(personView.locator('.kb-person-name')).toContainText('Ada Okonkwo');
+    await expect(personView.locator('a[href^="mailto:"]')).toHaveAttribute(
+      'href',
+      'mailto:ada@example.com',
+    );
+
+    await page.waitForTimeout(1000);
+    expect(appErrors(errors)).toHaveLength(0);
+  });
 });
