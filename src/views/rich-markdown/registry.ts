@@ -13,30 +13,26 @@
  * an element (live Mermaid SVG, inline pre-built SVG, or a raw-code fallback).
  */
 import type { RichMarkdownBlock } from './types';
+import type {
+  BlockOutput,
+  BlockRenderContext,
+  BlockRenderer,
+} from '@anokye-labs/kbexplorer-view-kit';
 
 /**
- * What a block renderer decided to produce.
+ * The block-render contract (`BlockOutput`, `BlockRenderContext`,
+ * `BlockRenderer`) now lives in the published render contract
+ * `@anokye-labs/kbexplorer-view-kit` so a provider's render half and this host
+ * agree on exactly one definition. Re-exported here so existing `./registry`
+ * importers keep working unchanged.
  *
+ * `BlockOutput` decisions:
  * - `mermaid` — hand the source to the live Mermaid path (renders to SVG client-side).
  * - `svg` — inline a pre-built SVG (the fallback contract).
+ * - `viewer` — delegate to a viewer resolved by registry `key` with pure `data`.
  * - `unsupported` — no live renderer and no SVG; show the raw source as a last resort.
  */
-export type BlockOutput =
-  | { type: 'mermaid'; source: string; title?: string }
-  | { type: 'svg'; svg: string; title?: string }
-  | { type: 'unsupported'; kind: string; source: string; reason: string };
-
-/** Context threaded to renderers (e.g. for theme-aware live rendering). */
-export interface BlockRenderContext {
-  /** Active dark/light flag, for renderers that theme their output. */
-  isDark?: boolean;
-}
-
-/** A block renderer maps a block to a {@link BlockOutput} decision. */
-export type BlockRenderer = (
-  block: RichMarkdownBlock,
-  ctx?: BlockRenderContext,
-) => BlockOutput;
+export type { BlockOutput, BlockRenderContext, BlockRenderer };
 
 const registry = new Map<string, BlockRenderer>();
 

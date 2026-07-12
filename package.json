@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.4.1",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "engines": {
     "node": ">=22"
   },
@@ -45,9 +48,10 @@
     "explore:dtu": "node scripts/explore-dtu.mjs"
   },
   "dependencies": {
-    "@anokye-labs/kbexplorer-core": "^0.5.1",
+    "@anokye-labs/kbexplorer-core": "^0.6.0",
     "@anokye-labs/kbexplorer-engine": "git+https://github.com/anokye-labs/kbexplorer-engine.git#27bff04e483e68cdf1d2d5b56a24d7b71130f742",
     "@anokye-labs/kbexplorer-provider-rich-markdown": "^0.1.2",
+    "@anokye-labs/kbexplorer-view-kit": "*",
     "@fluentui/react-components": "^9.74.2",
     "@fluentui/react-icons": "^2.0.323",
     "@octokit/rest": "^22.0.1",

@@ -65,6 +65,51 @@ providers:
   `config.options`.
 - `cluster` / `name` — surfaced on `config` for your factory to use.
 
+## The render half (lenses)
+
+A provider has two halves. The **data half** above (its `.` entry) depends only
+on `@anokye-labs/kbexplorer-core` and stays pure ESM — no DOM, no React. The
+optional **render half** ships the provider's **lenses**: the viewers and
+block renderers that draw its typed nodes.
+
+The render half is a separate module named by `views` on the data module (the
+core `ProviderModule.views` specifier — e.g. `views: './views'`). It
+default-exports a `ProviderViews` and types against the published render
+contract, **`@anokye-labs/kbexplorer-view-kit`** — the one place `ViewerProps`,
+`ViewerComponent`, `LazyViewer`, `BlockRenderer`, `BlockOutput`, `ProviderViews`,
+and `VIEW_API_VERSION` are defined (React + Fluent are inherently UX-stack
+specific, so this contract lives outside core):
+
+```ts
+import type { ProviderViews } from '@anokye-labs/kbexplorer-view-kit'
+
+const views: ProviderViews = {
+  viewers: { myType: ({ node }) => /* ... */ },
+  blockRenderers: { myBlock: (block) => /* pure BlockOutput decision */ },
+}
+export default views
+```
+
+Two hard rules keep this clean:
+
+- **Module-graph isolation.** Importing the `.` (data) entry MUST NOT evaluate
+  the render module graph. The data entry stays pure ESM / core-only and never
+  imports view-kit or React; data-only hosts (the CLI's Node ingest, the
+  render-free engine) load it untouched. A render-capable host dynamic-imports
+  the `./views` entry to mount the lenses. `views` is an **offer**, not a
+  requirement: a dual-mode provider MUST NOT list the `'viewers'` capability.
+- **Build only the views entry.** A **no-build provider** authors viewers with
+  `React.createElement` (no JSX, no precompile). A **JSX provider** precompiles
+  *only* its `./views` entry to ESM; the `.` data entry is left as pure
+  ESM/core-only.
+
+`npm install @anokye-labs/kbexplorer-view-kit` gives a provider compile-time
+checking of its `./views` entry. Registry semantics are part of the contract:
+viewer/renderer keys are **case-insensitive** and **last registration wins** (a
+downstream provider can override a built-in). See the
+[view-kit README](https://www.npmjs.com/package/@anokye-labs/kbexplorer-view-kit)
+for the full surface and no-build / JSX authoring examples.
+
 ## Ordering
 
 Providers declare `dependencies` (other provider ids). The registry
