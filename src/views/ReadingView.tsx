@@ -455,6 +455,11 @@ function ProseContent({
           continue;
         }
 
+        // A `viewer` decision delegates to a node/model viewer resolved by key
+        // (e.g. a `'calendar-month'` lens), which is mounted by the viewer path,
+        // not this prose-fence diagram path — leave the fence untouched here.
+        if (output.type === 'viewer') continue;
+
         // output.type === 'mermaid' — live render (the existing inline path).
         try {
           const { svg, bindFunctions } = await renderMermaid(output.source, isDark);

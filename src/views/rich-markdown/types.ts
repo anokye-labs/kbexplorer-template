@@ -12,44 +12,15 @@
  * decision; the React/DOM layer turns that decision into pixels.
  */
 import type { KBNode } from '../../types';
-
-/** Character offsets of a block within the original markdown source. */
-export interface BlockRange {
-  /** Inclusive start offset into the original markdown. */
-  start: number;
-  /** Exclusive end offset into the original markdown. */
-  end: number;
-}
+import type { BlockRange, RichMarkdownBlock } from '@anokye-labs/kbexplorer-view-kit';
 
 /**
- * One embedded block inside a rich-Markdown document.
- *
- * `kind` is an **open** discriminator (`'mermaid' | 'dot' | 'ics' | 'canvas' | …`)
- * so new block kinds need no core change. `svg` is the pre-built-SVG fallback
- * contract: when a kind has no live renderer, the provider ships a rendered SVG
- * so the block never degrades to a raw code dump.
+ * The block-data contract (`BlockRange`, `RichMarkdownBlock`) now lives in the
+ * published render contract `@anokye-labs/kbexplorer-view-kit` so a provider's
+ * render half and this host agree on exactly one block shape. Re-exported here
+ * so existing `./types` importers keep working unchanged.
  */
-export interface RichMarkdownBlock {
-  /** Open block-kind discriminator, e.g. `'mermaid'`, `'dot'`, `'ics'`, `'canvas'`. */
-  kind: string;
-  /** Verbatim block source (the fenced-code body). */
-  source: string;
-  /**
-   * Content hash of `source` (e.g. `'sha256:…'`). A stable identity used for
-   * caching and as a fast-path key when matching a rendered prose fence back to
-   * its provider block. Matching also works without it (by normalized source).
-   */
-  hash?: string;
-  /** Character offsets of the block in the original markdown source. */
-  range?: BlockRange;
-  /**
-   * Pre-built SVG markup — the fallback contract for blocks with no live
-   * renderer. When present the block renders this SVG instead of raw code.
-   */
-  svg?: string;
-  /** Optional human-facing caption/label for the block. */
-  title?: string;
-}
+export type { BlockRange, RichMarkdownBlock };
 
 /** The structured payload carried on `node.data.richMarkdown`. */
 export interface RichMarkdownDocument {
