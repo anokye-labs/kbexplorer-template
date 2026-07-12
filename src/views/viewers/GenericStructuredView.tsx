@@ -1,15 +1,15 @@
-import type { KBNode } from '../../types';
+import type { ViewerComponent, ViewerProps } from '@anokye-labs/kbexplorer-view-kit';
 
 /**
- * A viewer renders a typed node. Viewers are registered against an
- * `entityType` (or JSON-LD `@type`) and resolved from the viewer registry, with
+ * The viewer contract now lives in `@anokye-labs/kbexplorer-view-kit` (the
+ * published render contract). Re-export it here so there is exactly one
+ * definition and existing `./GenericStructuredView` importers keep working.
+ *
+ * A viewer renders a typed node. Viewers are registered against an `entityType`
+ * (or JSON-LD `@type`) and resolved from the viewer registry, with
  * {@link GenericStructuredView} as the mandatory fallback for unknown types.
  */
-export type ViewerComponent = (props: ViewerProps) => React.ReactNode;
-
-export interface ViewerProps {
-  node: KBNode;
-}
+export type { ViewerComponent, ViewerProps };
 
 /** Reserved JSON-LD keys that are surfaced separately from free-form data. */
 const LD_RESERVED = new Set(['@context', '@id', '@type']);
