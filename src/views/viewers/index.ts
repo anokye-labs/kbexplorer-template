@@ -27,6 +27,10 @@ export {
 
 export { registerBuiltinViewers } from './builtin-map';
 
+// Shared composition seam invoked by BOTH app entries (main.tsx + canvas.tsx),
+// and the extension point for provider render contributions (#494 / A2 #492).
+export { registerViewers } from './registerViewers';
+
 // Services-monorepo bespoke viewers (#275).
 export { ServiceView } from './ServiceView';
 export { DecisionView } from './DecisionView';
