@@ -267,6 +267,9 @@ test.describe('Embeddable canvas mount (#406 / #440 / #408)', () => {
       (window as unknown as { __KBX_CANVAS__: unknown }).__KBX_CANVAS__ = {
         local: false,
         visualMode: 'inherit-host',
+        // Pin the copilot surface explicitly so this test only guards viewer
+        // registration, not the boot-config default target (per PR review).
+        target: 'copilot',
         anchorNodeId: 'demo-person-ada',
       };
     });
