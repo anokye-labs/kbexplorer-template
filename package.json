@@ -71,7 +71,7 @@
     "@anokye-labs/kbx": "github:anokye-labs/kbexplorer-cli#d46e558c832e90882067aefaf9910ee58ab9e54a",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/sanitize-html": "^2.16.1",
