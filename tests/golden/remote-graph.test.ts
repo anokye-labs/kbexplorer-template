@@ -78,10 +78,10 @@ describe('golden: remote-mode KBGraph (hermetic, recorded fixtures)', () => {
     // The mock throws on any unrecorded URL, so reaching here means no real
     // network was attempted. Every call must target either the fixture's
     // GitHub repo or the recorded Wikipedia endpoint.
-    const ghPrefix = `https://api.github.com/repos/${fixture.source.owner}/${fixture.source.repo}/`;
+    const ghPrefix = `https://api.github.com/repos/${fixture.source.owner}/${fixture.source.repo}`;
     for (const call of fetchSpy.mock.calls) {
       const url = typeof call[0] === 'string' ? call[0] : String(call[0]);
-      expect(url.startsWith(ghPrefix) || url.startsWith('https://en.wikipedia.org/')).toBe(true);
+      expect(url === ghPrefix || url.startsWith(`${ghPrefix}/`) || url.startsWith('https://en.wikipedia.org/')).toBe(true);
     }
   });
 });

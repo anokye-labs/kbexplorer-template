@@ -33,6 +33,8 @@ const routes = [
   { pattern: /^\/repos\/[^/]+\/[^/]+\/issues(?:\?|$)/, fixture: 'issues.json' },
   { pattern: /^\/repos\/[^/]+\/[^/]+\/pulls(?:\?|$)/, fixture: 'pulls.json' },
   { pattern: /^\/repos\/[^/]+\/[^/]+\/commits(?:\?|$)/, fixture: 'commits.json' },
+  { pattern: /^\/repos\/[^/]+\/[^/]+\/branches(?:\?|$)/, fixture: 'branches.json' },
+  { pattern: /^\/repos\/[^/]+\/[^/]+\/languages(?:\?|$)/, fixture: 'languages.json' },
   { pattern: /^\/repos\/[^/]+\/[^/]+\/releases(?:\?|$)/, fixture: 'releases.json' },
   { pattern: /^\/repos\/[^/]+\/[^/]+\/contents\/(.+)/, fixtureFromPath: true },
 ];

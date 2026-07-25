@@ -74,9 +74,19 @@ export function installRemoteApiFetchMock(fixture: RemoteApiFixture) {
       return jsonResponse(rec.json, rec.status);
     }
 
-    const ghPrefix = `https://api.github.com/repos/${fixture.source.owner}/${fixture.source.repo}/`;
-    if (url.startsWith(ghPrefix)) {
-      const rest = url.slice(ghPrefix.length);
+    const parsedUrl = new URL(url);
+    const ghBasePath = `/repos/${fixture.source.owner}/${fixture.source.repo}`;
+    if (parsedUrl.hostname === 'api.github.com' && parsedUrl.pathname.startsWith(ghBasePath)) {
+      const rest = `${parsedUrl.pathname.slice(ghBasePath.length).replace(/^\//, '')}${parsedUrl.search}`;
+
+      if (rest === '' || rest === '?') {
+        return jsonResponse({
+          name: fixture.source.repo,
+          full_name: `${fixture.source.owner}/${fixture.source.repo}`,
+          default_branch: fixture.source.branch ?? 'main',
+          html_url: `https://github.com/${fixture.source.owner}/${fixture.source.repo}`,
+        });
+      }
 
       if (rest.startsWith('contents/')) {
         const rawPath = rest.slice('contents/'.length).split('?')[0];
@@ -90,6 +100,14 @@ export function installRemoteApiFetchMock(fixture: RemoteApiFixture) {
           content: toBase64(content),
           encoding: 'base64',
         });
+      }
+
+      if (rest === 'branches' || rest.startsWith('branches?')) {
+        return jsonResponse([]);
+      }
+
+      if (rest === 'languages' || rest.startsWith('languages?')) {
+        return jsonResponse({});
       }
 
       if (rest.startsWith('git/trees/')) {
