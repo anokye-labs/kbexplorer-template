@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "name": "kbexplorer-template",
+  "full_name": "anokye-labs/kbexplorer-template",
+  "private": false,
+  "html_url": "https://github.com/anokye-labs/kbexplorer-template",
+  "description": "Knowledge base explorer template",
+  "default_branch": "main",
+  "owner": {
+    "login": "anokye-labs"
+  }
+}

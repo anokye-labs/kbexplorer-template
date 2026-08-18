@@ -29,6 +29,7 @@ if (process.env.TWIN_SCENARIO) {
 }
 
 const routes = [
+  { pattern: /^\/repos\/[^/]+\/[^/]+$/, fixture: 'repo.json' },
   { pattern: /^\/repos\/[^/]+\/[^/]+\/git\/trees\//, fixture: 'tree.json' },
   { pattern: /^\/repos\/[^/]+\/[^/]+\/issues(?:\?|$)/, fixture: 'issues.json' },
   { pattern: /^\/repos\/[^/]+\/[^/]+\/pulls(?:\?|$)/, fixture: 'pulls.json' },
