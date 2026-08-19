@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@anokye-labs/kbexplorer-core": "^0.6.0",
-    "@anokye-labs/kbexplorer-engine": "git+https://github.com/anokye-labs/kbexplorer-engine.git#27bff04e483e68cdf1d2d5b56a24d7b71130f742",
+    "@anokye-labs/kbexplorer-engine": "^0.1.0",
     "@anokye-labs/kbexplorer-provider-rich-markdown": "^0.1.2",
     "@anokye-labs/kbexplorer-view-kit": "*",
     "@fluentui/react-components": "^9.74.2",
@@ -59,16 +59,23 @@
     "mermaid": "^11.16.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.18.0",
+    "react-router-dom": "7.18.0",
     "sanitize-html": "^2.17.5",
     "sql.js": "^1.14.1",
     "vis-data": "^8.0.4",
     "vis-network": "^10.1.0",
     "yaml": "^2.9.0"
   },
+  "overrides": {
+    "@anokye-labs/kbexplorer-engine": "^0.1.0",
+    "dompurify": "^3.4.13",
+    "nanoid": "^3.3.18",
+    "react-router": "7.18.0",
+    "react-router-dom": "7.18.0"
+  },
   "devDependencies": {
     "@anokye-labs/kbexplorer-example-quotes": "file:examples/quotes-provider",
-    "@anokye-labs/kbx": "github:anokye-labs/kbexplorer-cli#d46e558c832e90882067aefaf9910ee58ab9e54a",
+    "@anokye-labs/kbx": "^0.2.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@types/node": "^26.0.1",

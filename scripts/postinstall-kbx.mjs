@@ -22,7 +22,7 @@
  * no-op when the dependency isn't installed at all (e.g. a pruned/production
  * install).
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
@@ -30,8 +30,18 @@ import { execSync } from 'node:child_process';
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const kbxDir = resolve(repoRoot, 'node_modules', '@anokye-labs', 'kbx');
 const kbxDist = resolve(kbxDir, 'dist', 'cli.js');
+const kbxPackageJson = resolve(kbxDir, 'package.json');
 
 if (!existsSync(kbxDir) || existsSync(kbxDist)) {
+  process.exit(0);
+}
+
+const packageJson = existsSync(kbxPackageJson)
+  ? JSON.parse(readFileSync(kbxPackageJson, 'utf8'))
+  : null;
+
+if (!packageJson?.scripts?.build) {
+  console.log('[postinstall] Skipping @anokye-labs/kbx build because the installed package does not expose a build script.');
   process.exit(0);
 }
 

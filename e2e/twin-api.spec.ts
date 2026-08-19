@@ -25,6 +25,18 @@ test.describe('GitHub API Twin', () => {
     }
   });
 
+  test('repository metadata endpoint returns repo details', async ({ request }) => {
+    const res = await request.get(`${TWIN}/repos/${REPO}`);
+    expect(res.ok()).toBeTruthy();
+    const data = await res.json();
+    expect(data).toEqual(
+      expect.objectContaining({
+        full_name: REPO,
+        default_branch: 'main',
+      }),
+    );
+  });
+
   test('issues endpoint returns numbered items', async ({ request }) => {
     const res = await request.get(`${TWIN}/repos/${REPO}/issues?per_page=100`);
     expect(res.ok()).toBeTruthy();
