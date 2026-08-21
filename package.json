@@ -53,7 +53,7 @@
     "@anokye-labs/kbexplorer-provider-rich-markdown": "^0.1.2",
     "@anokye-labs/kbexplorer-view-kit": "*",
     "@fluentui/react-components": "^9.74.2",
-    "@fluentui/react-icons": "^2.0.323",
+    "@fluentui/react-icons": "^2.0.337",
     "@octokit/rest": "^22.0.1",
     "marked": "^18.0.0",
     "mermaid": "^11.16.0",
