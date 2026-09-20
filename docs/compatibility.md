@@ -15,7 +15,9 @@ repo — and the contract a host repository follows when it vendors the template
 
 | Template tag | Status      | Compatible kbexplorer CLI | Notes |
 |--------------|-------------|---------------------------|-------|
-| `v0.2.0`     | **Current** | `>= 0.1.0`                | Adds release pinning, CHANGELOG, this matrix. Recommended for new installs. |
+| `v0.4.2`     | **Current** | `>= 0.2.1`                | Registry-only KBX dependency graph; recommended for new installs. |
+| `v0.4.1`     | Superseded  | —                         | Do not pin: it retained GitHub-hosted package dependencies and has no matching GitHub Release. |
+| `v0.2.0`     | Superseded  | `>= 0.1.0`                | Adds release pinning, CHANGELOG, and this matrix. |
 | `v0.1.0`     | Superseded  | `>= 0.1.0`                | Initial template release. Immutable; not re-pointed. |
 
 Compatibility is expressed against the CLI's published releases. Within a `0.x`
