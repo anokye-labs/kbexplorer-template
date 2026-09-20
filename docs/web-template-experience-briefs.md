@@ -15,16 +15,44 @@ All three templates must validate against the same neutral fixture so the produc
 
 ### Shared fixture
 
-Use a single fixture bundle built from the repo's public knowledge graph with the following shape:
+Use the deterministic twin contract defined at `twins/github/fixtures/*.json` and the scenario overrides in `twins/github/scenarios/*.js` via `TWIN_SCENARIO`. The design contract is a shared fixture artifact, not just a count of objects.
 
-- 1 repository hub
-- 1 README / landing narrative
-- 3 issue clusters (architecture, UX, release)
-- 3 related source files or folders
-- 2 pull requests or release notes
-- 1 search query with multiple matches
-- 1 empty or missing-node variant for error recovery
-- 1 loading state and 1 validation failure state
+```json
+{
+  "schemaVersion": "kbx.template-fixture.v1",
+  "repo": {
+    "owner": "anokye-labs",
+    "name": "kbexplorer-template",
+    "nodeId": "repo:anokye-labs/kbexplorer-template"
+  },
+  "nodes": [
+    { "id": "repo:anokye-labs/kbexplorer-template", "kind": "repo", "title": "kbexplorer-template" },
+    { "id": "file:README.md", "kind": "file", "path": "README.md", "title": "Repository overview" },
+    { "id": "file:content/style-system.md", "kind": "file", "path": "content/style-system.md", "title": "Style System" },
+    { "id": "issue:553", "kind": "issue", "number": 553, "title": "Define multi-template web experience" },
+    { "id": "issue:554", "kind": "issue", "number": 554, "title": "Define three web template experience briefs" },
+    { "id": "pr:65", "kind": "pr", "number": 65, "title": "chore(deps-dev): Bump eslint from 9.39.4 to 10.2.0" }
+  ],
+  "edges": [
+    { "from": "repo:anokye-labs/kbexplorer-template", "to": "file:README.md", "type": "reads" },
+    { "from": "repo:anokye-labs/kbexplorer-template", "to": "file:content/style-system.md", "type": "contains" },
+    { "from": "repo:anokye-labs/kbexplorer-template", "to": "issue:553", "type": "has_issue" },
+    { "from": "issue:553", "to": "issue:554", "type": "blocks" },
+    { "from": "file:content/style-system.md", "to": "pr:65", "type": "related" }
+  ],
+  "search": {
+    "term": "responsive layout",
+    "expectedMatch": ["file:content/style-system.md", "issue:58"]
+  },
+  "states": {
+    "loading": { "scenario": "TWIN_SCENARIO=slow", "expectedBehavior": "skeleton or spinner until data resolves" },
+    "empty": { "scenario": "TWIN_SCENARIO=empty-repo", "expectedBehavior": "empty-state copy with a clear recovery action" },
+    "validationFailure": { "scenario": "TWIN_SCENARIO=missing-repo", "expectedBehavior": "error banner and retry/back action without blank-screen fallback" }
+  }
+}
+```
+
+This fixture must be reproducible in CI by starting the local twin and setting `TWIN_SCENARIO` to a named scenario such as `slow`, `empty-repo`, or `missing-repo`. The same bundle is used for all three templates so the UX delta is in product framing, not dataset drift.
 
 Representative journeys every template must support:
 
@@ -131,18 +159,22 @@ These journeys are product-level acceptance checks; the template-specific UI can
 
 ### Responsive behavior
 
-- Desktop: 1280px and above must maintain the full default template layout.
-- Tablet: 768px-1279px must preserve primary navigation and content hierarchy without horizontal scrolling.
-- Mobile: 320px-767px must maintain critical reading and search actions; secondary panels may collapse or move below content.
+All templates must follow the repo's established responsive contract from `content/style-system.md`:
+
+- Desktop: > 1024px must maintain the full default template layout.
+- Tablet: 768px-1024px must preserve primary navigation and content hierarchy without horizontal scrolling.
+- Mobile: < 768px must maintain critical reading and search actions; secondary panels may collapse or move below content.
 - Each template must avoid horizontal overflow for text, cards, and graph surfaces within the supported layouts.
 - The shared fixture must remain navigable through the template-specific mobile adaptation without content loss.
 
 ### Performance
 
-- Shared fixture initial load must render the first meaningful UI within 2.5s on a simulated fast 4G profile in CI.
-- The main interaction target for each journey must respond within 200ms after input.
-- The UI must not show layout instability greater than 0.1 CLS during normal template transitions.
-- A template-specific interaction must remain usable under a reduced browser budget; no template may require full graph re-layout to complete a core route change.
+Performance gates are measured in CI with the repo's Playwright harness (`playwright.config.ts`) and the deterministic GitHub twin, using the same shared fixture states described above. The acceptance gates are:
+
+- Initial render of the first meaningful UI must complete within 2.5s at a reduced-browser profile (CPU 4x throttle, network Fast 3G) on a desktop viewport and within 3.5s on a mobile viewport.
+- The main interaction target for each journey must respond within 200ms after input under the same throttled CI profile.
+- The UI must not show layout instability greater than 0.1 CLS during normal template transitions and graph expand/collapse flows.
+- The shared fixture must remain usable during a slow-data render (`TWIN_SCENARIO=slow`) and during a validation failure path (`TWIN_SCENARIO=missing-repo`); no template may show a blank screen or a permanently blocked control in either state.
 - Performance budgets are product-level gates, not a substitute for Engine validation; the template is allowed to depend on the Engine's public performance contracts and should not reimplement graph logic.
 
 ## Template-specific acceptance gates
