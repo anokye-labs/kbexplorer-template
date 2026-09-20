@@ -36,6 +36,20 @@ Representative journeys every template must support:
 
 These journeys are product-level acceptance checks; the template-specific UI can satisfy them differently as long as the core intent is preserved.
 
+## Requirements-to-downstream-task map
+
+This product brief is the approved contract for the implementation work in #555-#561. It should be read as a specification for downstream delivery, not as an Engine or presentation implementation.
+
+| Requirement in this brief | Downstream task(s) |
+|---|---|
+| explicit multi-template workspace and presentation boundary | #555 |
+| preserve the current site as the baseline Template 1 | #556 |
+| implement Template 2 by clean-room KBX consumption | #557 |
+| implement Template 3 by clean-room KBX consumption | #558 |
+| neutral fixture + contract validation matrix | #559 |
+| template-specific browser, accessibility, responsive, and performance gates | #560 |
+| authoring, compatibility, release, and rollback guidance | #561 |
+
 ## Template 1 — Repository Atlas (baseline)
 
 - Endpoint slug: `/atlas`
@@ -60,6 +74,12 @@ These journeys are product-level acceptance checks; the template-specific UI can
 - `repo overview` — arrive at the hub and identify the dominant issue clusters immediately.
 - `graph traversal` — move from an issue to a related PR, doc, or implementation file.
 - `reading continuity` — open a markdown or issue and continue to its related nodes from within the reader.
+
+### Template 1 responsive, accessibility, and error recovery
+
+- Responsive: keep the graph and reading affordances available on desktop; on tablet, prioritize the cluster map and content panes; on mobile, retain search, reading, and back-navigation while collapsing the secondary panel beneath content.
+- Accessibility: preserve a keyboard-first cluster graph and content traversal path, with visible focus styling, a logical tab order, and live semantic labels for node and cluster interactions.
+- Error recovery: if loading data is delayed, show a deterministic loading state and a retry path; if a node or issue is missing, fall back to the nearest valid hub or cluster summary rather than a blank view.
 
 ## Template 2 — Execution Briefing (distinct product)
 
@@ -86,6 +106,12 @@ These journeys are product-level acceptance checks; the template-specific UI can
 - `risk scan` — review related work and infer what is blocked or at risk.
 - `handoff view` — move from a decision summary into the underlying evidence and node detail for follow-up.
 
+### Template 2 responsive, accessibility, and error recovery
+
+- Responsive: the briefing layout should stack into a digest-first mobile view with status and dependency summaries before deep detail; wide screens may keep a side panel for context and follow-up evidence.
+- Accessibility: status, dependency, and priority signals must be discernible without color alone; screen-reader users need an equivalent summary of risk, urgency, and next actions.
+- Error recovery: if a dependency or node is missing, show a fallback summary with path context and a safe return to the briefing overview instead of leaving the user in an unscoped empty state.
+
 ## Template 3 — Guided Field Guide (distinct product)
 
 - Endpoint slug: `/field-guide`
@@ -110,6 +136,12 @@ These journeys are product-level acceptance checks; the template-specific UI can
 - `onboarding path` — begin with a broad concept and follow the recommended path through the repo.
 - `concept drilldown` — land on a concept node and read its supporting materials in order.
 - `next-step discovery` — follow the suggested adjacent concept or implementation area.
+
+### Template 3 responsive, accessibility, and error recovery
+
+- Responsive: the guided narrative should maintain chapter structure on desktop and tablet while compressing it into a linear, scrollable flow on mobile without losing the recommended path.
+- Accessibility: readers must be able to navigate chapters, checkpoints, and related concepts with keyboard and screen-reader flows that preserve the learning path and next-step suggestions.
+- Error recovery: if a concept or supporting doc is unavailable, the guide should surface a clear "next relevant concept" or fallback content card, preserving the chapter sequence rather than dropping the learner into a dead end.
 
 ## Shared acceptance criteria
 
