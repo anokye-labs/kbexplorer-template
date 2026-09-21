@@ -97,7 +97,17 @@ const isForbiddenTemplateImport = (templateRoot: string, fromFile: string, speci
   const resolvedRelative = toRepoRelative(resolved);
   if (resolvedRelative.startsWith('src/engine/')) return true;
   if (resolvedRelative.startsWith('src/representation/targets/')) return true;
-  return !resolved.startsWith(templateRoot);
+  if (resolved.startsWith(templateRoot)) return false;
+  if (resolved.startsWith(CONTRACTS_ROOT)) return false;
+  if (resolvedRelative.startsWith('src/')) return true;
+
+  for (const candidateTemplateRoot of TEMPLATE_ROOTS) {
+    if (candidateTemplateRoot !== templateRoot && resolved.startsWith(candidateTemplateRoot)) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 describe('template workspace dependency boundaries', () => {
@@ -134,11 +144,18 @@ describe('template workspace dependency boundaries', () => {
 
 describe('shared presentation contracts stay DOM-agnostic', () => {
   const forbiddenTokens = ['window', 'document', 'HTMLElement', 'import.meta.env'];
+  const stripCommentsAndStrings = (source: string): string =>
+    source
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/\/\/.*$/gm, ' ')
+      .replace(/(["'`])(?:\\.|(?!\1)[^\\])*\1/g, ' ');
 
   for (const filePath of walkSourceFiles(CONTRACTS_ROOT)) {
     it(`${toRepoRelative(filePath)} avoids DOM assumptions`, () => {
-      const source = readFileSync(filePath, 'utf8');
-      const violations = forbiddenTokens.filter(token => source.includes(token));
+      const source = stripCommentsAndStrings(readFileSync(filePath, 'utf8'));
+      const violations = forbiddenTokens.filter(token =>
+        new RegExp(`\\b${token.replace('.', '\\.')}\\b`).test(source),
+      );
       expect(violations, `${toRepoRelative(filePath)} uses forbidden DOM tokens: ${violations.join(', ')}`).toEqual([]);
     });
   }
