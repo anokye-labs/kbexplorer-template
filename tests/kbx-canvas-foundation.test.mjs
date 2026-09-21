@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'vitest';
+import { describe, it } from 'node:test';
 
 import { applyAction, createFoundationState, getActionInputSchema, validateAgainstSchema } from '../.github/extensions/kbx-canvas-foundation/src/contracts.mjs';
 import { createBridge } from '../.github/extensions/kbx-canvas-foundation/src/http-server.mjs';
