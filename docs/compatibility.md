@@ -110,7 +110,7 @@ git push origin v0.4.2
 gh release create v0.4.2 \
   --repo anokye-labs/kbexplorer-template \
   --title "v0.4.2" \
-  --notes-file <(sed -n '/^## \[0.4.2\]/,/^## 0.4.0/p' CHANGELOG.md)
+  --notes-file <(awk '/^## \[0.4.2\]/{capture=1} capture && /^## / && !/^## \[0.4.2\]/{exit} capture{print}' CHANGELOG.md)
 ```
 
 Because the matrix and CHANGELOG were already updated in the merged PR, the pushed tag
