@@ -12,4 +12,5 @@ export const TEMPLATE_KEYS: readonly TemplateKey[] = ['atlas', 'brief', 'field-g
 export const PRESENTATION_BOUNDARY_POLICY = {
   forbiddenRootSourcePrefixes: ['src/engine', 'src/representation/targets'],
   forbiddenTemplateInternalSubpaths: ['/src/', '/test/'],
+  forbiddenDomTokens: ['window', 'document', 'HTMLElement', 'import.meta.env'],
 } as const;

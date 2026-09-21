@@ -10,6 +10,7 @@ describe('template contracts', () => {
     expect(PRESENTATION_BOUNDARY_POLICY).toEqual({
       forbiddenRootSourcePrefixes: ['src/engine', 'src/representation/targets'],
       forbiddenTemplateInternalSubpaths: ['/src/', '/test/'],
+      forbiddenDomTokens: ['window', 'document', 'HTMLElement', 'import.meta.env'],
     });
   });
 });

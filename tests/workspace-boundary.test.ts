@@ -3,6 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { PRESENTATION_BOUNDARY_POLICY } from '../packages/template-contracts/src';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTRACTS_ROOT = join(REPO_ROOT, 'packages', 'template-contracts', 'src');
@@ -40,10 +41,41 @@ const walkSourceFiles = (root: string): string[] => {
 
 const getImportSpecifiers = (source: string): string[] => {
   const specifiers: string[] = [];
-  const regex = /(?:import|export)\s+(?:[^'"\n]*?\s+from\s+)?['"]([^'"]+)['"]|(?:import|require)\(\s*['"]([^'"]+)['"]\s*\)/g;
-  for (const match of source.matchAll(regex)) {
-    specifiers.push(match[1] ?? match[2] ?? '');
-  }
+  const sourceFile = ts.createSourceFile('imports.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+
+  const visit = (node: ts.Node): void => {
+    if (
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteralLike(node.moduleSpecifier)
+    ) {
+      specifiers.push(node.moduleSpecifier.text);
+    }
+
+    if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference) &&
+      ts.isStringLiteralLike(node.moduleReference.expression)
+    ) {
+      specifiers.push(node.moduleReference.expression.text);
+    }
+
+    if (ts.isCallExpression(node) && node.arguments.length === 1) {
+      const [arg] = node.arguments;
+      if (ts.isStringLiteralLike(arg)) {
+        if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+          specifiers.push(arg.text);
+        }
+        if (ts.isIdentifier(node.expression) && node.expression.text === 'require') {
+          specifiers.push(arg.text);
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
   return specifiers.filter(Boolean);
 };
 
@@ -84,11 +116,23 @@ const isForbiddenTemplateImport = (templateRoot: string, fromFile: string, speci
   ) {
     const selfPackageName = templatePackageNameFromRoot(templateRoot);
     if (specifier === selfPackageName || specifier.startsWith(`${selfPackageName}/`)) {
-      if (specifier.includes('/src/') || specifier.includes('/test/')) return true;
+      if (
+        PRESENTATION_BOUNDARY_POLICY.forbiddenTemplateInternalSubpaths.some(token =>
+          specifier.includes(token),
+        )
+      ) {
+        return true;
+      }
       return false;
     }
 
-    if (specifier.includes('/src/') || specifier.includes('/test/')) return true;
+    if (
+      PRESENTATION_BOUNDARY_POLICY.forbiddenTemplateInternalSubpaths.some(token =>
+        specifier.includes(token),
+      )
+    ) {
+      return true;
+    }
     return specifier !== '@anokye-labs/kbexplorer-template-contracts';
   }
 
@@ -96,8 +140,13 @@ const isForbiddenTemplateImport = (templateRoot: string, fromFile: string, speci
   if (!resolved) return false;
 
   const resolvedRelative = toRepoRelative(resolved);
-  if (resolvedRelative.startsWith('src/engine/')) return true;
-  if (resolvedRelative.startsWith('src/representation/targets/')) return true;
+  if (
+    PRESENTATION_BOUNDARY_POLICY.forbiddenRootSourcePrefixes.some(
+      prefix => resolvedRelative === prefix || resolvedRelative.startsWith(`${prefix}/`),
+    )
+  ) {
+    return true;
+  }
   if (resolved.startsWith(templateRoot)) return false;
   if (resolved.startsWith(CONTRACTS_ROOT)) return false;
   if (resolvedRelative.startsWith('src/')) return true;
@@ -144,6 +193,10 @@ describe('template workspace dependency boundaries', () => {
 });
 
 describe('shared presentation contracts stay DOM-agnostic', () => {
+  const forbiddenDomTokens = PRESENTATION_BOUNDARY_POLICY.forbiddenDomTokens;
+  const globalDomIdentifiers = new Set(forbiddenDomTokens.filter(token => !token.includes('.')));
+  const shouldForbidImportMetaEnv = forbiddenDomTokens.includes('import.meta.env');
+
   const isDeclarationName = (node: ts.Identifier): boolean => {
     const parent = node.parent;
     if (!parent) return false;
@@ -153,7 +206,9 @@ describe('shared presentation contracts stay DOM-agnostic', () => {
         ts.isParameter(parent) ||
         ts.isPropertySignature(parent) ||
         ts.isPropertyDeclaration(parent) ||
-        ts.isMethodDeclaration(parent) ||
+      ts.isPropertyAssignment(parent) ||
+      ts.isEnumMember(parent) ||
+      ts.isMethodDeclaration(parent) ||
         ts.isFunctionDeclaration(parent) ||
         ts.isClassDeclaration(parent) ||
         ts.isInterfaceDeclaration(parent) ||
@@ -177,15 +232,13 @@ describe('shared presentation contracts stay DOM-agnostic', () => {
 
     const visit = (node: ts.Node): void => {
       if (ts.isIdentifier(node) && !isDeclarationName(node)) {
-        if (node.text === 'window' || node.text === 'document') {
+        if (globalDomIdentifiers.has(node.text)) {
           violations.add(node.text);
-        }
-        if (node.text === 'HTMLElement' && ts.isTypeReferenceNode(node.parent)) {
-          violations.add('HTMLElement');
         }
       }
 
       if (
+        shouldForbidImportMetaEnv &&
         ts.isPropertyAccessExpression(node) &&
         ts.isMetaProperty(node.expression) &&
         node.expression.keywordToken === ts.SyntaxKind.ImportKeyword &&
