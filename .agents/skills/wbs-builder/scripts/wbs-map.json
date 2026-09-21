@@ -1,0 +1,70 @@
+{
+  "E-template4": {
+    "id": "I_kwDOR5Soos8AAAABSRTU8Q",
+    "number": 562,
+    "url": "https://github.com/anokye-labs/kbexplorer-template/issues/562",
+    "repo": "primary",
+    "kind": "epic",
+    "parent": null
+  },
+  "F-template4-shell": {
+    "id": "I_kwDOR5Soos8AAAABSRTVJA",
+    "number": 563,
+    "url": "https://github.com/anokye-labs/kbexplorer-template/issues/563",
+    "repo": "primary",
+    "kind": "feature",
+    "parent": "E-template4",
+    "parentLinked": true
+  },
+  "F-template4-contracts": {
+    "id": "I_kwDOR5Soos8AAAABSRTVTw",
+    "number": 564,
+    "url": "https://github.com/anokye-labs/kbexplorer-template/issues/564",
+    "repo": "primary",
+    "kind": "feature",
+    "parent": "E-template4",
+    "parentLinked": true
+  },
+  "T-template4-shell-1": {
+    "id": "I_kwDOR5Soos8AAAABSRTVbg",
+    "number": 565,
+    "url": "https://github.com/anokye-labs/kbexplorer-template/issues/565",
+    "repo": "primary",
+    "kind": "task",
+    "parent": "F-template4-shell",
+    "parentLinked": true
+  },
+  "T-template4-shell-2": {
+    "id": "I_kwDOR5Soos8AAAABSRTViQ",
+    "number": 566,
+    "url": "https://github.com/anokye-labs/kbexplorer-template/issues/566",
+    "repo": "primary",
+    "kind": "task",
+    "parent": "F-template4-shell",
+    "parentLinked": true
+  },
+  "T-template4-contracts-1": {
+    "id": "I_kwDOR5Soos8AAAABSRTVvA",
+    "number": 567,
+    "url": "https://github.com/anokye-labs/kbexplorer-template/issues/567",
+    "repo": "primary",
+    "kind": "task",
+    "parent": "F-template4-contracts",
+    "parentLinked": true
+  },
+  "T-template4-contracts-2": {
+    "id": "I_kwDOR5Soos8AAAABSRTV7g",
+    "number": 568,
+    "url": "https://github.com/anokye-labs/kbexplorer-template/issues/568",
+    "repo": "primary",
+    "kind": "task",
+    "parent": "F-template4-contracts",
+    "parentLinked": true
+  },
+  "__deps": {
+    "F-template4-contracts<-F-template4-shell": true,
+    "T-template4-shell-2<-T-template4-shell-1": true,
+    "T-template4-contracts-1<-T-template4-shell-2": true,
+    "T-template4-contracts-2<-T-template4-contracts-1": true
+  }
+}
