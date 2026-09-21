@@ -70,6 +70,10 @@ Visuals appear on these surfaces throughout the application:
 
 A `fallback` mode activates when the primary mode's asset is missing for a given node (e.g., a node without a `sprite` field falls back to `emoji`).
 
+## Architecture and docs
+
+For a repo-local architecture overview grounded in the current implementation, see [docs/SUBSYSTEMS.md](docs/SUBSYSTEMS.md). It documents the template's narrow presentation-layer ownership, runtime/UI layers, graph and viewer registration seams, adapter split, engine/core/provider/search/CLI contracts, and the rendering boundary for `KBGraph` data.
+
 ## Getting Started
 
 For a comprehensive guide, see [Getting Started](wiki-getting-started). For a deeper look at internals, see the [Architecture Deep Dive](wiki-deep-dive).
