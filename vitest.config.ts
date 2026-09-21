@@ -8,6 +8,7 @@ export default defineConfig({
       'src/**/__tests__/**/*.test.ts',
       'scripts/**/__tests__/**/*.test.js',
       'twins/**/__tests__/**/*.test.{js,mjs,ts}',
+      'tests/**/*.test.{js,mjs,ts}',
       'tests/golden/**/*.test.ts',
       'packages/*/test/**/*.test.ts',
     ],
