@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { templateDescriptor } from '../src/template';
 
 describe('template descriptor', () => {
-  it('declares a route and title', () => {
+  it('declares the full descriptor contract', () => {
+    expect(templateDescriptor.key).toBe('atlas');
     expect(templateDescriptor.route.startsWith('/')).toBe(true);
     expect(templateDescriptor.title.length).toBeGreaterThan(0);
+    expect(templateDescriptor.summary.length).toBeGreaterThan(0);
   });
 });

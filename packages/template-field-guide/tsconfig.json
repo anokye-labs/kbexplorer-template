@@ -6,6 +6,9 @@
     "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
+    "paths": {
+      "@anokye-labs/kbexplorer-template-contracts": ["../template-contracts/src/index.ts"]
+    },
     "noEmit": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts"]

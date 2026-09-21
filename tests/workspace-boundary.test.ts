@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTRACTS_ROOT = join(REPO_ROOT, 'packages', 'template-contracts', 'src');
@@ -143,19 +144,68 @@ describe('template workspace dependency boundaries', () => {
 });
 
 describe('shared presentation contracts stay DOM-agnostic', () => {
-  const forbiddenTokens = ['window', 'document', 'HTMLElement', 'import.meta.env'];
-  const stripCommentsAndStrings = (source: string): string =>
-    source
-      .replace(/\/\*[\s\S]*?\*\//g, ' ')
-      .replace(/\/\/.*$/gm, ' ')
-      .replace(/(["'`])(?:\\.|(?!\1)[^\\])*\1/g, ' ');
+  const isDeclarationName = (node: ts.Identifier): boolean => {
+    const parent = node.parent;
+    if (!parent) return false;
+
+    if (
+      (ts.isVariableDeclaration(parent) ||
+        ts.isParameter(parent) ||
+        ts.isPropertySignature(parent) ||
+        ts.isPropertyDeclaration(parent) ||
+        ts.isMethodDeclaration(parent) ||
+        ts.isFunctionDeclaration(parent) ||
+        ts.isClassDeclaration(parent) ||
+        ts.isInterfaceDeclaration(parent) ||
+        ts.isTypeAliasDeclaration(parent) ||
+        ts.isTypeParameterDeclaration(parent) ||
+        ts.isImportClause(parent) ||
+        ts.isImportSpecifier(parent) ||
+        ts.isImportEqualsDeclaration(parent) ||
+        ts.isBindingElement(parent)) &&
+      parent.name === node
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const findDomViolations = (source: string): string[] => {
+    const sourceFile = ts.createSourceFile('contracts.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const violations = new Set<string>();
+
+    const visit = (node: ts.Node): void => {
+      if (ts.isIdentifier(node) && !isDeclarationName(node)) {
+        if (node.text === 'window' || node.text === 'document') {
+          violations.add(node.text);
+        }
+        if (node.text === 'HTMLElement' && ts.isTypeReferenceNode(node.parent)) {
+          violations.add('HTMLElement');
+        }
+      }
+
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        ts.isMetaProperty(node.expression) &&
+        node.expression.keywordToken === ts.SyntaxKind.ImportKeyword &&
+        node.expression.name.text === 'meta' &&
+        node.name.text === 'env'
+      ) {
+        violations.add('import.meta.env');
+      }
+
+      ts.forEachChild(node, visit);
+    };
+
+    visit(sourceFile);
+    return [...violations];
+  };
 
   for (const filePath of walkSourceFiles(CONTRACTS_ROOT)) {
     it(`${toRepoRelative(filePath)} avoids DOM assumptions`, () => {
-      const source = stripCommentsAndStrings(readFileSync(filePath, 'utf8'));
-      const violations = forbiddenTokens.filter(token =>
-        new RegExp(`\\b${token.replace('.', '\\.')}\\b`).test(source),
-      );
+      const source = readFileSync(filePath, 'utf8');
+      const violations = findDomViolations(source);
       expect(violations, `${toRepoRelative(filePath)} uses forbidden DOM tokens: ${violations.join(', ')}`).toEqual([]);
     });
   }
