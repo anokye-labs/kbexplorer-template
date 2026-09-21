@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { applyAction, createFoundationState, createDefaultStore, getStateKey, normalizeInput } from './contracts.mjs';
+import { createFoundationState, createDefaultStore, getStateKey, resolveActionRequest } from './contracts.mjs';
 import { renderCanvasDocument } from './renderer.mjs';
 
 export async function createBridge({ stateStore = createDefaultStore(), providerId = 'kbx-canvas-foundation' } = {}) {
@@ -11,6 +11,12 @@ export async function createBridge({ stateStore = createDefaultStore(), provider
     for (const writer of listeners) {
       writer.write(message);
     }
+  };
+
+  const publishState = (artifactId, nextState) => {
+    const resolvedArtifactId = getStateKey(artifactId);
+    sendEvent(resolvedArtifactId, 'state', nextState);
+    return nextState;
   };
 
   const server = http.createServer((req, res) => {
@@ -52,14 +58,25 @@ export async function createBridge({ stateStore = createDefaultStore(), provider
       req.on('end', () => {
         try {
           const parsed = body ? JSON.parse(body) : {};
-          const action = parsed.action ?? 'set_state';
+          const actionName = parsed.action ?? 'set_state';
           const payload = parsed.payload ?? {};
-          const current = stateStore.get(getStateKey(artifactId)) ?? createFoundationState({ artifactId, title: 'KBX Canvas' });
-          const nextState = applyAction(current, action, payload);
-          stateStore.set(getStateKey(artifactId), nextState);
-          sendEvent(getStateKey(artifactId), 'state', nextState);
+          const result = resolveActionRequest({
+            stateStore,
+            artifactId,
+            action: actionName,
+            payload,
+            defaultTitle: 'KBX Canvas',
+          });
+
+          if (!result.ok) {
+            res.writeHead(400, { 'content-type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ ok: false, errors: result.errors }));
+            return;
+          }
+
+          publishState(result.artifactId, result.state);
           res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-          res.end(JSON.stringify(nextState));
+          res.end(JSON.stringify(result.state));
         } catch (error) {
           res.writeHead(400, { 'content-type': 'application/json; charset=utf-8' });
           res.end(JSON.stringify({ ok: false, error: error.message }));
@@ -76,7 +93,7 @@ export async function createBridge({ stateStore = createDefaultStore(), provider
         'cache-control': 'no-cache, no-transform',
         connection: 'keep-alive',
       });
-      res.write(`retry: 1000\n\n`);
+      res.write('retry: 1000\n\n');
 
       const listeners = subscribers.get(artifactId) ?? [];
       listeners.push(res);
@@ -103,12 +120,13 @@ export async function createBridge({ stateStore = createDefaultStore(), provider
     port: address.port,
     server,
     stateStore,
+    publishState,
     close: () => new Promise((resolve, reject) => {
       for (const listeners of subscribers.values()) {
         for (const writer of listeners) {
           try {
             writer.end();
-          } catch (error) {
+          } catch {
             // ignore closed response streams during shutdown
           }
         }

@@ -108,7 +108,7 @@ export function mergeState(current, incoming = {}) {
   };
 }
 
-export function validateAgainstSchema(schema, value) {
+export function validateAgainstSchema(schema, value, path = 'root') {
   if (!schema || typeof schema !== 'object') {
     return { valid: true, errors: [] };
   }
@@ -116,28 +116,33 @@ export function validateAgainstSchema(schema, value) {
   const errors = [];
   const expectedType = schema.type;
 
-  if (expectedType && typeof value !== expectedType) {
-    errors.push(`Expected ${expectedType} but received ${typeof value}`);
+  if (expectedType && expectedType !== 'object' && typeof value !== expectedType) {
+    errors.push(`${path}: Expected ${expectedType} but received ${typeof value}`);
   }
 
-  if (schema.enum && Array.isArray(schema.enum) && !schema.enum.includes(value)) {
-    errors.push(`Value must be one of ${schema.enum.join(', ')}`);
+  if (expectedType === 'object' && (value === null || typeof value !== 'object' || Array.isArray(value))) {
+    errors.push(`${path}: Expected object but received ${Array.isArray(value) ? 'array' : typeof value}`);
   }
 
-  if (schema.properties && typeof value === 'object' && value !== null) {
-    for (const [key, definition] of Object.entries(schema.properties)) {
-      if (key in value) {
-        const result = validateAgainstSchema(definition, value[key]);
-        if (!result.valid) {
-          errors.push(...result.errors.map((error) => `${key}: ${error}`));
-        }
+  if (schema.enum && Array.isArray(schema.enum) && value !== undefined && value !== null && !schema.enum.includes(value)) {
+    errors.push(`${path}: Value must be one of ${schema.enum.join(', ')}`);
+  }
+
+  if (schema.required && Array.isArray(schema.required) && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    for (const key of schema.required) {
+      if (!(key in value)) {
+        errors.push(`${path}: Missing required property '${key}'`);
       }
     }
+  }
 
-    if (value.action === 'set_theme' && value.payload && typeof value.payload === 'object') {
-      const theme = value.payload.theme;
-      if (typeof theme === 'string' && !KNOWN_THEME_IDS.includes(theme.toLowerCase())) {
-        errors.push('payload.theme: Value must be one of dark, light, sepia, ocean');
+  if (schema.properties && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    for (const [key, definition] of Object.entries(schema.properties)) {
+      if (key in value) {
+        const result = validateAgainstSchema(definition, value[key], `${path}.${key}`);
+        if (!result.valid) {
+          errors.push(...result.errors);
+        }
       }
     }
   }
@@ -181,6 +186,86 @@ export function applyAction(state, action, payload = {}) {
   }
 }
 
+export function resolveActionRequest({ stateStore, artifactId, action, payload = {}, defaultTitle = 'KBX Canvas' } = {}) {
+  const actionName = action ?? 'set_state';
+  const resolvedArtifactId = getStateKey(artifactId);
+  const current = stateStore.get(resolvedArtifactId) ?? createFoundationState({ artifactId: resolvedArtifactId, title: defaultTitle });
+
+  const rootValidation = validateAgainstSchema(createActionSchema(), { action: actionName, payload });
+  if (!rootValidation.valid) {
+    return { ok: false, errors: rootValidation.errors };
+  }
+
+  const actionSchema = getActionInputSchema(actionName);
+  const resolvedPayload = { ...payload, artifactId: payload.artifactId ?? resolvedArtifactId };
+  const payloadValidation = validateAgainstSchema(actionSchema, resolvedPayload, 'payload');
+  if (!payloadValidation.valid) {
+    return { ok: false, errors: payloadValidation.errors };
+  }
+
+  const nextState = applyAction(current, actionName, resolvedPayload);
+  stateStore.set(resolvedArtifactId, nextState);
+  return { ok: true, state: nextState, artifactId: resolvedArtifactId };
+}
+
+export function getActionInputSchema(actionName) {
+  switch (actionName) {
+    case 'set_state':
+      return {
+        type: 'object',
+        properties: {
+          artifactId: { type: 'string' },
+          title: { type: 'string' },
+          theme: { type: 'string', enum: ['dark', 'light', 'sepia', 'ocean'] },
+          status: { type: 'string', enum: ['loading', 'ready', 'empty', 'error'] },
+          items: { type: 'array' },
+          links: { type: 'array' },
+          metadata: { type: 'object' },
+        },
+        required: ['artifactId'],
+        additionalProperties: true,
+      };
+    case 'append_item':
+      return {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          title: { type: 'string' },
+          description: { type: 'string' },
+          status: { type: 'string', enum: ['blocked', 'active', 'done'] },
+          url: { type: 'string' },
+        },
+        required: ['title'],
+        additionalProperties: true,
+      };
+    case 'set_theme':
+      return {
+        type: 'object',
+        properties: {
+          theme: { type: 'string', enum: ['dark', 'light', 'sepia', 'ocean'] },
+        },
+        required: ['theme'],
+        additionalProperties: true,
+      };
+    case 'append_link':
+      return {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          label: { type: 'string' },
+          href: { type: 'string' },
+        },
+        required: ['href'],
+        additionalProperties: true,
+      };
+    default:
+      return {
+        type: 'object',
+        additionalProperties: true,
+      };
+  }
+}
+
 export function createActionSchema() {
   return {
     type: 'object',
@@ -194,6 +279,6 @@ export function createActionSchema() {
         additionalProperties: true,
       },
     },
-    required: ['action'],
+    required: ['action', 'payload'],
   };
 }

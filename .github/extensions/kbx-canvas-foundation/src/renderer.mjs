@@ -1,5 +1,23 @@
 import { escapeHtml, normalizeTheme } from './contracts.mjs';
 
+function isSafeHref(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return false;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.startsWith('#') || trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.startsWith('../')) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(trimmed, 'http://127.0.0.1');
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'mailto:';
+  } catch {
+    return false;
+  }
+}
+
 export function renderCanvasDocument(state) {
   const normalizedTheme = normalizeTheme(state && state.theme ? state.theme : 'dark');
   const items = Array.isArray(state && state.items) ? state.items : [];
@@ -261,6 +279,24 @@ export function renderCanvasDocument(state) {
       const artifactId = params.get('artifactId');
       const themeCycle = ['dark', 'light', 'sepia', 'ocean'];
 
+      function isSafeHref(value) {
+        if (typeof value !== 'string' || value.trim().length === 0) {
+          return false;
+        }
+
+        const trimmed = value.trim();
+        if (trimmed.startsWith('#') || trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.startsWith('../')) {
+          return true;
+        }
+
+        try {
+          const parsed = new URL(trimmed, 'http://127.0.0.1');
+          return parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'mailto:';
+        } catch {
+          return false;
+        }
+      }
+
       function renderState(state) {
         if (!state || !state.artifactId) {
           shellEl.hidden = true;
@@ -270,8 +306,8 @@ export function renderCanvasDocument(state) {
           return;
         }
 
-        itemListEl.innerHTML = '';
-        linkListEl.innerHTML = '';
+        itemListEl.replaceChildren();
+        linkListEl.replaceChildren();
 
         const items = Array.isArray(state.items) ? state.items : [];
         const links = Array.isArray(state.links) ? state.links : [];
@@ -285,27 +321,63 @@ export function renderCanvasDocument(state) {
           for (const item of items) {
             const li = document.createElement('li');
             li.className = 'item';
-            const statusText = item.status ? item.status : 'active';
-            const linkHtml = item.url ? \`<a href="\${item.url}" rel="noreferrer noopener">Open</a>\` : '';
-            li.innerHTML = \`
-              <div class="item-header">
-                <strong>\${item.title || 'Untitled item'}</strong>
-                <span class="tag">\${statusText}</span>
-              </div>
-              <div class="muted">\${item.description || ''}</div>
-              \${linkHtml}
-            \`;
+
+            const header = document.createElement('div');
+            header.className = 'item-header';
+
+            const title = document.createElement('strong');
+            title.textContent = item.title || 'Untitled item';
+
+            const tag = document.createElement('span');
+            tag.className = 'tag';
+            tag.textContent = item.status || 'active';
+
+            header.append(title, tag);
+
+            const description = document.createElement('div');
+            description.className = 'muted';
+            description.textContent = item.description || '';
+
+            li.append(header, description);
+
+            if (item.url) {
+              const anchor = document.createElement('a');
+              if (isSafeHref(item.url)) {
+                anchor.href = item.url;
+                anchor.rel = 'noreferrer noopener';
+              } else {
+                anchor.href = '#';
+                anchor.setAttribute('aria-disabled', 'true');
+                anchor.setAttribute('data-invalid', 'true');
+              }
+              anchor.textContent = 'Open';
+              li.appendChild(anchor);
+            }
+
             itemListEl.appendChild(li);
           }
         }
 
         if (links.length === 0) {
-          linkListEl.innerHTML = '<li class="placeholder">No links available.</li>';
+          const placeholder = document.createElement('li');
+          placeholder.className = 'placeholder';
+          placeholder.textContent = 'No links available.';
+          linkListEl.appendChild(placeholder);
         } else {
           for (const link of links) {
             const li = document.createElement('li');
             li.className = 'link';
-            li.innerHTML = \`<a href="\${link.href || '#'}" rel="noreferrer noopener">\${link.label || 'Link'}</a>\`;
+            const anchor = document.createElement('a');
+            if (isSafeHref(link.href)) {
+              anchor.href = link.href;
+              anchor.rel = 'noreferrer noopener';
+            } else {
+              anchor.href = '#';
+              anchor.setAttribute('aria-disabled', 'true');
+              anchor.setAttribute('data-invalid', 'true');
+            }
+            anchor.textContent = link.label || 'Link';
+            li.appendChild(anchor);
             linkListEl.appendChild(li);
           }
         }
@@ -381,13 +453,24 @@ export function renderCanvasDocument(state) {
         }
 
         const href = anchor.getAttribute('href');
-        if (!href || href.startsWith('javascript:')) {
+        if (!href || !isSafeHref(href)) {
           event.preventDefault();
+          return;
         }
       });
 
-      if (artifactId) {
+      function connectEventStream() {
+        if (!artifactId) {
+          return;
+        }
+
+        if (window.__kbxCanvasEventSource && window.__kbxCanvasEventSource.readyState !== EventSource.CLOSED) {
+          return;
+        }
+
         const source = new EventSource(\`/api/canvas/\${encodeURIComponent(artifactId)}/events\`);
+        window.__kbxCanvasEventSource = source;
+
         source.addEventListener('state', (event) => {
           try {
             const message = JSON.parse(event.data);
@@ -396,10 +479,20 @@ export function renderCanvasDocument(state) {
             handleError();
           }
         });
+
         source.addEventListener('error', () => {
-          source.close();
+          if (source.readyState === EventSource.CLOSED) {
+            window.setTimeout(() => {
+              if (window.__kbxCanvasEventSource === source) {
+                window.__kbxCanvasEventSource = null;
+              }
+              connectEventStream();
+            }, 1000);
+          }
         });
       }
+
+      connectEventStream();
 
       loadState();
     </script>
