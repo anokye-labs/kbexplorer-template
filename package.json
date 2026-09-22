@@ -45,7 +45,15 @@
     "capture:review": "node scripts/capture-review.mjs",
     "update:baselines": "node scripts/capture-review.mjs --update-baselines",
     "verify:visual": "node scripts/verify-visual.mjs",
-    "explore:dtu": "node scripts/explore-dtu.mjs"
+    "explore:dtu": "node scripts/explore-dtu.mjs",
+    "build:template:atlas": "npm run build --workspace @anokye-labs/kbexplorer-template-atlas",
+    "build:template:brief": "npm run build --workspace @anokye-labs/kbexplorer-template-brief",
+    "build:template:field-guide": "npm run build --workspace @anokye-labs/kbexplorer-template-field-guide",
+    "build:templates": "npm run build:template:atlas && npm run build:template:brief && npm run build:template:field-guide",
+    "test:template:atlas": "npm run test --workspace @anokye-labs/kbexplorer-template-atlas",
+    "test:template:brief": "npm run test --workspace @anokye-labs/kbexplorer-template-brief",
+    "test:template:field-guide": "npm run test --workspace @anokye-labs/kbexplorer-template-field-guide",
+    "test:templates": "npm run test:template:atlas && npm run test:template:brief && npm run test:template:field-guide"
   },
   "dependencies": {
     "@anokye-labs/kbexplorer-core": "^0.6.0",
@@ -54,7 +62,7 @@
     "@anokye-labs/kbexplorer-view-kit": "*",
     "@fluentui/react-components": "^9.74.2",
     "@github/copilot-sdk": "^1.0.14",
-    "@fluentui/react-icons": "^2.0.323",
+    "@fluentui/react-icons": "^2.0.341",
     "@octokit/rest": "^22.0.1",
     "marked": "^18.0.0",
     "mermaid": "^11.16.0",

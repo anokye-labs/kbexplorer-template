@@ -316,7 +316,16 @@ src/
 ├── hooks/        useKnowledgeBase, useTheme, useKeyboardNav
 ├── styles/       CSS style system
 └── types/        Core type definitions: KBNode, KBGraph, KBConfig
+
+packages/
+├── view-kit/             Published presentation primitives
+├── template-contracts/   Shared template descriptor + boundary policy contract
+├── template-atlas/       Repository Atlas template workspace (`/atlas`)
+├── template-brief/       Execution Briefing template workspace (`/brief`)
+└── template-field-guide/ Guided Field Guide template workspace (`/field-guide`)
 ```
+
+The three template workspaces are independently buildable/testable and must stay presentation-only: no imports from `src/engine/*`, no sibling-template `src/*` coupling, and no DOM assumptions inside shared contracts.
 
 **Data flow:** The [KB loader](kb-loader) fetches content via the [GitHub API client](github-api) with [localStorage caching](cache-system) → the [content pipeline](content-pipeline) normalizes it into `KBNode[]` using the [type system](type-system) → the [graph engine](graph-engine) computes [typed edges](spec-typed-edges), clusters, and related nodes → the [overview grid](overview-view), [constellation graph](graph-network), and [reading view](reading-view) render the `KBGraph`.
 
