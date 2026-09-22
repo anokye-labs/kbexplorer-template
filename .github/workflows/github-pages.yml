@@ -25,7 +25,32 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  template-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - '@anokye-labs/kbexplorer-template-atlas'
+          - '@anokye-labs/kbexplorer-template-brief'
+          - '@anokye-labs/kbexplorer-template-field-guide'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build and test template workspace
+        run: |
+          npm run test --workspace "${{ matrix.workspace }}"
+          npm run build --workspace "${{ matrix.workspace }}"
+
   test:
+    needs: template-matrix
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
