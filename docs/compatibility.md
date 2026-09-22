@@ -15,7 +15,9 @@ repo — and the contract a host repository follows when it vendors the template
 
 | Template tag | Status      | Compatible kbexplorer CLI | Notes |
 |--------------|-------------|---------------------------|-------|
-| `v0.2.0`     | **Current** | `>= 0.1.0`                | Adds release pinning, CHANGELOG, this matrix. Recommended for new installs. |
+| `v0.4.2`     | **Current** | `>= 0.2.1`                | Registry-only KBX dependency graph; recommended for new installs. |
+| `v0.4.1`     | Superseded  | —                         | Do not pin: it retained GitHub-hosted package dependencies and has no matching GitHub Release. |
+| `v0.2.0`     | Superseded  | `>= 0.1.0`                | Adds release pinning, CHANGELOG, and this matrix. |
 | `v0.1.0`     | Superseded  | `>= 0.1.0`                | Initial template release. Immutable; not re-pointed. |
 
 Compatibility is expressed against the CLI's published releases. Within a `0.x`
@@ -40,14 +42,14 @@ at an **immutable git tag**:
 
   ```bash
   git submodule add https://github.com/anokye-labs/kbexplorer-template.git .kbexplorer
-  git -C .kbexplorer checkout v0.2.0          # pin to an immutable tag
-  git add .kbexplorer && git commit -m "chore: pin kbexplorer-template to v0.2.0"
+  git -C .kbexplorer checkout v0.4.2          # pin to an immutable tag
+  git add .kbexplorer && git commit -m "chore: pin kbexplorer-template to v0.4.2"
   ```
 
 - **CLI bootstrap** — the kbexplorer CLI selects the same template ref at init time:
 
   ```bash
-  npx @anokye-labs/kbexplorer init --ref v0.2.0
+  npx @anokye-labs/kbexplorer init --ref v0.4.2
   ```
 
   > The `init --ref` resolution itself lives in the
@@ -76,8 +78,8 @@ the matrix:
 
 ```bash
 git -C .kbexplorer fetch --tags
-git -C .kbexplorer checkout v0.2.0
-git add .kbexplorer && git commit -m "chore: pin kbexplorer to v0.2.0"
+git -C .kbexplorer checkout v0.4.2
+git add .kbexplorer && git commit -m "chore: pin kbexplorer to v0.4.2"
 ```
 
 After re-pinning, re-run `kbexplorer doctor`; the branch-tracking check reports
@@ -103,12 +105,12 @@ documents:
 
 ```bash
 git checkout main && git pull
-git tag -a v0.2.0 -m "v0.2.0 — release pinning, CHANGELOG, compatibility matrix"
-git push origin v0.2.0
-gh release create v0.2.0 \
+git tag -a v0.4.2 -m "v0.4.2 — registry-only template release"
+git push origin v0.4.2
+gh release create v0.4.2 \
   --repo anokye-labs/kbexplorer-template \
-  --title "v0.2.0" \
-  --notes-file <(sed -n '/^## \[0.2.0\]/,/^## \[0.1.0\]/p' CHANGELOG.md)
+  --title "v0.4.2" \
+  --notes-file <(awk '/^## \[0.4.2\]/{capture=1} capture && /^## / && !/^## \[0.4.2\]/{exit} capture{print}' CHANGELOG.md)
 ```
 
 Because the matrix and CHANGELOG were already updated in the merged PR, the pushed tag

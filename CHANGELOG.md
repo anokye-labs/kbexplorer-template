@@ -12,6 +12,16 @@ template ↔ kbexplorer CLI compatibility matrix and the pinning contract.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-09-20
+
+### Changed
+- Published the registry-only KBX dependency set required for reproducible
+  downstream template pins: `@anokye-labs/kbexplorer-core` `^0.6.0`,
+  `@anokye-labs/kbexplorer-engine` `^0.1.1`,
+  `@anokye-labs/kbexplorer-provider-rich-markdown` `^0.1.3`, and
+  `@anokye-labs/kbx` `^0.2.1`. This supersedes the `v0.4.1` tag, which retained
+  GitHub-hosted package dependencies and has no matching GitHub Release.
+
 ## 0.4.0
 
 ### Added
@@ -111,6 +121,7 @@ establishes reproducible **release pinning** for the template.
 - Initial template release: repo-aware and authored content modes, constellation
   graph, reading view, HUD/minimap, theme switching, and the agent-driven setup skill.
 
-[Unreleased]: https://github.com/anokye-labs/kbexplorer-template/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/anokye-labs/kbexplorer-template/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/anokye-labs/kbexplorer-template/compare/v0.4.1...v0.4.2
 [0.2.0]: https://github.com/anokye-labs/kbexplorer-template/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/anokye-labs/kbexplorer-template/releases/tag/v0.1.0
