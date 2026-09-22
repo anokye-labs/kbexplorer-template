@@ -70,6 +70,10 @@ Visuals appear on these surfaces throughout the application:
 
 A `fallback` mode activates when the primary mode's asset is missing for a given node (e.g., a node without a `sprite` field falls back to `emoji`).
 
+## Architecture and docs
+
+For a repo-local architecture overview grounded in the current implementation, see [docs/SUBSYSTEMS.md](docs/SUBSYSTEMS.md). It documents the template's narrow presentation-layer ownership, runtime/UI layers, graph and viewer registration seams, adapter split, engine/core/provider/search/CLI contracts, and the rendering boundary for `KBGraph` data.
+
 ## Getting Started
 
 For a comprehensive guide, see [Getting Started](wiki-getting-started). For a deeper look at internals, see the [Architecture Deep Dive](wiki-deep-dive).
@@ -312,7 +316,16 @@ src/
 ├── hooks/        useKnowledgeBase, useTheme, useKeyboardNav
 ├── styles/       CSS style system
 └── types/        Core type definitions: KBNode, KBGraph, KBConfig
+
+packages/
+├── view-kit/             Published presentation primitives
+├── template-contracts/   Shared template descriptor + boundary policy contract
+├── template-atlas/       Repository Atlas template workspace (`/atlas`)
+├── template-brief/       Execution Briefing template workspace (`/brief`)
+└── template-field-guide/ Guided Field Guide template workspace (`/field-guide`)
 ```
+
+The three template workspaces are independently buildable/testable and must stay presentation-only: no imports from `src/engine/*`, no sibling-template `src/*` coupling, and no DOM assumptions inside shared contracts.
 
 **Data flow:** The [KB loader](kb-loader) fetches content via the [GitHub API client](github-api) with [localStorage caching](cache-system) → the [content pipeline](content-pipeline) normalizes it into `KBNode[]` using the [type system](type-system) → the [graph engine](graph-engine) computes [typed edges](spec-typed-edges), clusters, and related nodes → the [overview grid](overview-view), [constellation graph](graph-network), and [reading view](reading-view) render the `KBGraph`.
 

@@ -7,6 +7,265 @@
 > historical Phase-0 inventory (the two "fat loaders" and out-of-provider
 > post-processing this refactor removed), see the file history of this doc.
 
+## Template ownership: presentation layer, not graph logic
+
+This repository is intentionally a thin **presentation/template layer**. The real
+knowledge-base graph logic is not authored here; it is consumed from
+`@anokye-labs/kbexplorer-engine` and invoked through the `kbx` CLI, as declared
+in `AGENTS.md` and the scripts in `package.json`.
+
+The repository boundary is explicit:
+
+- `src/engine/local-loader.ts` and `src/engine/remote-loader.ts` are adapters that
+  choose a source and call the shared engine entrypoint.
+- `src/engine/loader.ts` is a thin template shim that re-exports
+  `loadKnowledgeBase()` and `registerProviders()` from
+  `@anokye-labs/kbexplorer-engine`; the local and remote loaders are the
+  template-side callers.
+- `src/types/index.ts` re-exports the pure `KBGraph` / `KBConfig` contracts from
+  `@anokye-labs/kbexplorer-core` so the UI and representations can consume a
+  stable, engine-free data shape.
+- `src/representation/targets/*` and `src/views/*` render the graph; they do not
+  regenerate or mutate upstream graph-domain logic.
+
+The repo owns the runtime UI shell, content-mode adapters, registration seams,
+visualization glue, and customization hooks. It does not own the authoritative
+provider/transform/manifest algorithms.
+
+## Actual runtime/UI layers
+
+The runtime composition starts in `src/App.tsx`:
+
+- `Explorer` calls `useKnowledgeBase()` from `src/hooks/useKnowledgeBase.ts`.
+- `useKnowledgeBase()` detects local mode with `detectLocalMode()` and then loads
+  either `loadLocalKnowledgeBase()` or `loadRemoteKnowledgeBase()`.
+- After the graph is ready, the app resolves the selected representation target
+  from `representationRegistry` and renders it.
+
+This flow is intentionally split by responsibility:
+
+1. `src/knowledge-base.ts` — environment-aware orchestration for loading and
+   applying external theme overrides.
+2. `src/engine/local-loader.ts` — local snapshot path using a pre-built manifest.
+3. `src/engine/remote-loader.ts` — live GitHub API path using `GitHubApiSource`.
+4. `src/representation/targets/spa.tsx` — route tree for the browser explorer.
+5. `src/views/*` — concrete screens (overview, reading, HUD, search, graph panel).
+6. `src/representation/graph-canvas/createGraphNetwork.ts` — vis-network graph
+   construction and deterministic layout.
+
+`App.tsx` renders the selected target through the representation registry:
+
+```ts
+const spaView = representationRegistry
+  .resolve<ReactNode>('spa')
+  .render(graph, { config, fluentTheme, landingPath }) as ReactNode;
+```
+
+The render boundary is therefore `KBGraph + KBConfig + render options`, not raw
+source objects or engine internals.
+
+## Environment-specific adapters
+
+The repo has two concrete source adapters that both converge on the same engine
+input contract:
+
+| Adapter | Entry point | Source | Intent |
+|---|---|---|---|
+| Local | `src/engine/local-loader.ts` | `ManifestSource` | zero-API manifest mode (`VITE_KB_LOCAL === 'true'`) |
+| Remote | `src/engine/remote-loader.ts` | `GitHubApiSource` | live GitHub API path |
+
+`loadLocalKnowledgeBase()` and `loadRemoteKnowledgeBase()` both return the same
+shape:
+
+```ts
+{ graph: KBGraph; config: KBConfig; themeFileRaw: string | null }
+```
+
+`src/knowledge-base.ts` then applies `themeFileRaw` via
+`applyExternalTheme(...)`, so the final config is a merged runtime config, not a
+new graph pipeline.
+
+## Graph visualization and viewer registration
+
+This repository owns the graph visualization layer while the graph content itself
+comes from the engine.
+
+### Representation targets
+
+`src/representation/targets/index.ts` pre-registers the built-ins:
+
+- `spa` → `src/representation/targets/spa.tsx`
+- `json-ld` → `src/representation/targets/json-ld.ts`
+- `llm-context` → `src/representation/targets/llm-context.ts`
+- `copilot` → `src/representation/targets/copilot.tsx`
+
+The registry is a simple `Map<string, Representation<unknown>>` in
+`src/representation/registry.ts`.
+
+### Viewer registry
+
+`src/views/viewers/registry.ts` maintains the separate `entityType` → viewer map.
+It resolves by `entityType`, JSON-LD `@type`, and falls back to
+`GenericStructuredView`.
+
+`registerViewers()` in `src/views/viewers/registerViewers.ts` is the shared boot
+hook used by both app entrypoints (`src/main.tsx` and `src/canvas.tsx`). Today
+it only calls `registerBuiltinViewers()`. Its comments reserve the post-built-in
+slot for future provider render contributions, which would inherit the
+registry's last-registration-wins precedence if that extension is wired later.
+
+Built-ins are registered in `src/views/viewers/builtin-map.ts`:
+
+- `workflow`, `action`, `github-action`, `skill`, `person`, `squad`, `workstream`,
+  and `mission`
+- `priority`, `cycle`, `org`, `team`, `system-of-record`, `service`, and
+  `decision`
+
+That is the safe seam for new typed renderers: register a viewer by entity type,
+not by editing the graph engine.
+
+```mermaid
+flowchart LR
+  A[App.tsx] --> B[useKnowledgeBase]
+  B --> C{local mode?}
+  C -->|yes| D[loadLocalKnowledgeBase]
+  C -->|no| E[loadRemoteKnowledgeBase]
+  D --> F[ManifestSource / KBGraph]
+  E --> G[GitHubApiSource / KBGraph]
+  F --> H[representationRegistry.resolve('spa')]
+  G --> H
+  H --> I[renderSpaRoutes]
+  I --> J[OverviewView / ReadingView / GraphView]
+  J --> K[vis-network canvas]
+```
+
+```mermaid
+flowchart TD
+  A[registerViewers()] --> B[registerBuiltinViewers()]
+  B --> C[registerViewer('person', PersonView)]
+  B --> D[registerViewer('team', TeamView)]
+  A -. future extension .-> E[provider contributions]
+  E --> F[registerViewer(type, Component)]
+  F --> G[registry.set(key, viewer)]
+  G --> H[resolveViewer(node)]
+  H --> I[GenericStructuredView fallback]
+```
+
+## Consumed engine/core/provider/search/CLI contracts
+
+The repo is intentionally narrow in what it consumes from the upstream stack.
+
+### Engine contract
+
+The template-side callers are `loadLocalKnowledgeBase()` and
+`loadRemoteKnowledgeBase()`. They invoke the upstream
+`loadKnowledgeBase(source, config)` entrypoint through `src/engine/loader.ts`,
+which is only a shim/re-export from `@anokye-labs/kbexplorer-engine`. The code
+in the template never reimplements the graph assembly; it passes the chosen
+source + config into the upstream engine and expects a compatible `KBGraph`.
+
+### Core contracts
+
+`src/types/index.ts` re-exports the core data contract from
+`@anokye-labs/kbexplorer-core` and keeps the template free of engine runtime
+imports. The data boundary includes:
+
+- `KBNode`, `KBEdge`, `KBGraph`, `KBConfig`
+- `SourceConfig`, `Theme`, `Cluster`, `Connection`
+- schema helpers such as `buildJsonLd`, edge type style helpers, and access-label
+  utilities
+
+This is the rendering boundary for all `Representation` implementations.
+
+### Provider contract
+
+The provider pattern is used by the upstream engine, not re-created here. The
+template is designed to work with providers that expose `GraphProvider` behavior
+and are registered by the engine when the repo data is assembled. The provider
+loading seam is visible in the template-side adapters
+`src/engine/local-loader.ts` and `src/engine/remote-loader.ts`, and in the
+cross-layer docs in `AGENTS.md`.
+
+### Search contract
+
+The repository’s local search layer is deliberately template-owned, not engine-owned.
+`src/search/index.ts` builds a hand-rolled inverted index over `KBNode[]` with:
+
+- `tokenize()` and `stripMarkdown()`
+- `extractHeadings()`
+- `buildSearchIndex()`
+- `searchIndex()`
+
+`src/search/useSearchIndex.ts` memoizes the index and keeps the app from
+re-indexing on every keystroke. Search only runs over the built graph and
+explicitly excludes withheld nodes using `isAccessWithheld()`.
+
+### CLI contract
+
+The CLI relationship is made explicit by `package.json`:
+
+- `prebuild`: `kbx manifest`
+- `validate`: `kbx graph validate`
+- `validate:drift`: `kbx manifest --check`
+- `assess`: `kbx graph assess`
+- `derive`: `kbx graph derive`
+- `compare`: `kbx graph compare`
+
+This repo's `src/engine/*` files are adapters, demos, or shims; it does not own
+the graph-domain implementation. The upstream CLI and engine remain the data
+production layer.
+
+## Data representation at the rendering boundary
+
+The rendering boundary is deliberately minimal and pure.
+
+- `src/types/index.ts` exposes the `KBGraph` contract that representations
+  consume.
+- `src/representation/targets/spa.tsx` receives `graph`, `config`, and
+  `fluentTheme` and returns React routes.
+- The graph canvas path is created by
+  `src/representation/graph-canvas/createGraphNetwork.ts`.
+- `src/views/viewers/registry.ts` resolves a viewer for each node based on the
+  node’s `entityType` or JSON-LD `@type`.
+
+The important contract is: the template does not hand a renderer a live source,
+raw GitHub payload, or engine context object. It hands the renderer the final
+`KBGraph` and config metadata needed to display it.
+
+## Safe extension points
+
+The template’s extension seams are intentionally narrow and stable:
+
+1. Add or alter a source adapter in `src/engine/local-loader.ts` or
+   `src/engine/remote-loader.ts`.
+2. Register a new representation target in `src/representation/targets/index.ts`.
+3. Register a new viewer in `src/views/viewers/registerViewers.ts` or `registerViewer()`.
+4. Add UI behavior in `src/App.tsx`, `src/hooks/*`, or `src/components/*` without
+   changing the graph engine contract.
+5. Replace or extend search logic in `src/search/*` without touching upstream core
+   graph generation.
+
+Do not edit the upstream graph assembly logic in the engine package when the
+requirement is only a template-side view, renderer, or provider adapter. The
+repo’s safe extension model is registration and composition, not replacing the
+engine’s algorithms.
+
+## Summary
+
+The template is best understood as a **thin runtime shell over a shared engine**:
+
+- runtime/UI shell: `src/App.tsx`, `src/hooks/*`, `src/components/*`, `src/views/*`
+- visualization and route rendering: `src/representation/*`
+- environment adapters and engine shim: `src/engine/local-loader.ts`,
+  `src/engine/remote-loader.ts`, `src/engine/loader.ts`
+- pure data boundary: `src/types/index.ts`
+- search/view layer: `src/search/*`, `src/views/viewers/*`
+- authoritative graph logic: `@anokye-labs/kbexplorer-engine` + `kbx` CLI
+
+This keeps the template focused on composition, rendering, and customization
+while the engine remains the source of truth for graph semantics and graph
+creation.
+
 ## Pipeline at a glance
 
 ```
@@ -29,16 +288,21 @@
                                        └─────────────────────────────────┘
 ```
 
-Both runtime entry points are now **thin wrappers** over the single engine
-entrypoint; they differ only in which `Source` they construct:
+Both runtime entry points are now **thin wrappers** over the single upstream
+engine entrypoint; they differ only in which `Source` they construct:
 
 | Mode | Entry point | Source |
 |------|-------------|--------|
 | local (`VITE_KB_LOCAL=true`) | `loadLocalKnowledgeBase()` in `src/engine/local-loader.ts` | `ManifestSource` over the pre-built `src/generated/repo-manifest.json` |
 | remote (default) | `loadRemoteKnowledgeBase()` in `src/engine/remote-loader.ts` | `GitHubApiSource` over the live GitHub API |
 
-Both call `loadKnowledgeBase(source, config)` (`src/engine/loader.ts`) and emit
-the identical `KBGraph` shape (re-exported from core via `src/types/index.ts`).
+Both call the upstream `loadKnowledgeBase(source, config)` entrypoint through
+the local shim in `src/engine/loader.ts` and emit the identical `KBGraph` shape
+(re-exported from core via `src/types/index.ts`).
+
+Unless a section explicitly calls out a template file, the engine-layer module
+references below describe upstream `@anokye-labs/kbexplorer-engine` internals,
+not template-local ownership.
 
 ## Shared contracts — `@anokye-labs/kbexplorer-core` (Phase 1)
 
@@ -51,7 +315,7 @@ from `src/types/index.ts` for back-compat:
   `GraphProvider`, `Representation`.
 
 > **Two URN schemes — don't conflate them.** Engine **node identity** is a `urn:*`
-> URN (e.g. `urn:file:<path>`), minted by `assignIdentity` (`src/engine/identity.ts`).
+> URN (e.g. `urn:file:<path>`), minted by the upstream `assignIdentity` helper.
 > The navigable **`kg://`** scheme is a *representation* concern — the inter-node
 > hyperlinks the `json-ld` / `llm-context` targets emit (e.g. `kg://node/<id>`).
 
@@ -59,9 +323,9 @@ from `src/types/index.ts` for back-compat:
 `src/types/__tests__/no-engine-import.test.ts` (Phase 2) — so the data types can
 be consumed as pure data by every representation target.
 
-## Layer 1 — Sources — `src/engine/sources/**`
+## Layer 1 — Sources — upstream `@anokye-labs/kbexplorer-engine/sources`
 
-A **`RepoSource`** (`src/engine/sources/repo-data.ts`) both implements the pure
+A **`RepoSource`** in the upstream engine package both implements the pure
 `Source` contract from core and exposes the engine-facing
 `getRepoData(): Promise<RepoData>`. `RepoData` is the normalized superset both
 acquisition paths produce, so the loader wires providers once.
@@ -80,17 +344,19 @@ worktree; once staged it additionally carries a first-class
 GitHub:** `GitHubApiSource` exposes Git resources (`file`/`tree`/`commit`/
 `staging-area`, addressed `git://`) separately from GitHub resources
 (`issue`/`pull-request`/`release`, addressed `github://`); PR `merge`/`comment`
-never leak onto git resources. Contract tests: `src/engine/__tests__/sources.test.ts`.
+never leak onto git resources. Contract tests live with the upstream engine
+package.
 
-## Layer 2 — Providers — `src/engine/providers/**`, `src/engine/providers.ts`
+## Layer 2 — Providers — upstream `@anokye-labs/kbexplorer-engine` internals
 
 Each provider implements `GraphProvider { id, name, dependencies?, resolve() }`
-and returns `{ nodes, edges }`. `ProviderRegistry` (`src/engine/providers.ts`)
-topologically sorts by each provider's `dependencies`, so a provider can read
-earlier providers' output via `existingNodes`.
+and returns `{ nodes, edges }`. The upstream `ProviderRegistry` topologically
+sorts by each provider's `dependencies`, so a provider can read earlier
+providers' output via `existingNodes`.
 
-Built-ins wired by `registerProviders()` (`src/engine/loader.ts`), conditional on
-what the `RepoData` bundle actually carries (absent inputs → safe no-op):
+Built-ins are wired by upstream `registerProviders()` (re-exported by
+`src/engine/loader.ts`), conditional on what the `RepoData` bundle actually
+carries (absent inputs → safe no-op):
 
 | Provider | Emits |
 |----------|-------|
@@ -102,7 +368,7 @@ what the `RepoData` bundle actually carries (absent inputs → safe no-op):
 | `ContentModelProvider` | content-model spine (no-op if absent) |
 
 **Pluggable providers (Phase 5).** External providers declared under
-`config.providers` are loaded by `src/engine/plugin-loader.ts`:
+`config.providers` are loaded by the upstream engine package:
 
 - **local ES module (F5a)** — a relative `module: ./...` specifier is dynamic
   imported and its `defineProvider()` default export instantiated. No core/engine
@@ -117,9 +383,10 @@ The built-in `WikipediaProvider` / `OrgChartProvider` remain resolvable by `type
 Examples: `src/engine/providers/examples/glossary-provider.ts` (local),
 `examples/quotes-provider/` (npm). Author guide: [`providers.md`](./providers.md).
 
-## Layer 3 — Engine — `src/engine/loader.ts`, `orchestrator.ts`, `transforms.ts`, `graph.ts`
+## Layer 3 — Engine — upstream `@anokye-labs/kbexplorer-engine` internals
 
-`loadKnowledgeBase(source, config)` is the single assembly path:
+The upstream `loadKnowledgeBase(source, config)` entrypoint — re-exported by
+the template shim in `src/engine/loader.ts` — is the single assembly path:
 
 1. `source.getRepoData()` → `RepoData`.
 2. `registerProviders(registry, data)` + external providers from `config.providers`.
@@ -128,10 +395,10 @@ Examples: `src/engine/providers/examples/glossary-provider.ts` (local),
      threading the accumulated `allNodes` into each `resolve`;
    - **transform** — `applyTransforms` runs the ordered post-provider stage
      (below);
-   - **cluster** — `extractClusters` (`src/engine/parser.ts`);
-   - **build** — `buildGraph` (`src/engine/graph.ts`).
+   - **cluster** — `extractClusters`;
+   - **build** — `buildGraph`.
 
-### Ordered transform stage — `src/engine/transforms.ts` (Phase 3)
+### Ordered transform stage — upstream transform modules (Phase 3)
 
 The ~150 lines of post-processing that used to be **duplicated inline in both
 loaders** are now discrete, ordered `GraphTransform`s run by the orchestrator.
@@ -148,7 +415,7 @@ loaders** are now discrete, ordered `GraphTransform`s run by the orchestrator.
 Loaders carry **no** post-processing; they only build the `TransformContext`
 (the source README) and hand it to the orchestrator.
 
-### Graph engine — `src/engine/graph.ts`
+### Graph engine — upstream graph module
 
 `buildGraph(nodes, clusters)`:
 
@@ -162,7 +429,7 @@ Loaders carry **no** post-processing; they only build the `TransformContext`
 
 Result: pure `KBGraph { nodes, edges, clusters, related }`.
 
-### Identity — `src/engine/identity.ts`
+### Identity — upstream identity module
 
 `assignIdentity(node)` derives a canonical `urn:` from `node.source`; providers
 and the transform stage call it as they mint nodes. `buildIdentityIndex(nodes)`
@@ -181,6 +448,7 @@ a target name to its implementation; `representationRegistry`
 | `spa` | `src/representation/targets/spa.tsx` | the interactive explorer website (React route tree) |
 | `json-ld` | `src/representation/targets/json-ld.ts` | deterministic, canonicalized JSON-LD `@graph` |
 | `llm-context` | `src/representation/targets/llm-context.ts` | **neighbor-anchored**, token-budgeted Markdown pack |
+| `copilot` | `src/representation/targets/copilot.tsx` | the embeddable canvas surface |
 
 `json-ld` and `llm-context` consume only the pure graph and **never import the
 engine/loader** — enforced statically by
@@ -192,7 +460,7 @@ Representation **styling** also lives in this layer (moved out of the core data
 types in Phase 2): `EDGE_TYPE_STYLES` / `RELATION_STYLES` / `NODE_LAYER_META`
 (`src/representation/styles.ts`) and `BUILT_IN_VIEWS` (`src/representation/views.ts`).
 
-## Write path (affordances) — `src/engine/source-edit.ts`
+## Write path (affordances) — upstream source-edit module
 
 Read is the default flow above. Edits go through `source-edit.ts`
 (`canEditSource`, `buildEditUrl`, `buildHandoffUrl`, `buildUnifiedDiff`, …),
