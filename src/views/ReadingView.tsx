@@ -194,6 +194,8 @@ async function loadMermaid(isDark: boolean): Promise<MermaidApi> {
       startOnLoad: false,
       securityLevel: 'strict',
       theme,
+      // Mermaid 12 changes the default look/layout; preserve the app's prior
+      // classic/dagre rendering behavior across theme switches.
       look: 'classic',
       layout: 'dagre',
     });
