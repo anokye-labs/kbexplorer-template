@@ -194,6 +194,8 @@ async function loadMermaid(isDark: boolean): Promise<MermaidApi> {
       startOnLoad: false,
       securityLevel: 'strict',
       theme,
+      look: 'classic',
+      layout: 'dagre',
     });
     initializedMermaidTheme = theme;
   }
