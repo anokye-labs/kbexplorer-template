@@ -62,7 +62,7 @@
     "@anokye-labs/kbexplorer-view-kit": "*",
     "@fluentui/react-components": "^9.74.8",
     "@github/copilot-sdk": "^1.0.14",
-    "@fluentui/react-icons": "^2.0.341",
+    "@fluentui/react-icons": "^2.0.343",
     "@octokit/rest": "^22.0.1",
     "marked": "^18.0.14",
     "mermaid": "^12.0.0",
