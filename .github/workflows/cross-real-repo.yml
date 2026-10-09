@@ -60,7 +60,7 @@ jobs:
       # re-running (which real-repo shapes / token rate could perturb).
       - name: Upload smoke log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cross-real-repo-smoke-${{ github.run_number }}
           path: cross-real-repo-smoke.json
